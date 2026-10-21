@@ -101,6 +101,37 @@ CI remota del primer HEAD publicado f082659: `verify-required` SUCCESS, run39532
 
 Solo se ejecutó la base personalizada; **CA-01…06 del negocio no están implementados ni probados**. Al publicar la implementación, HANDOFF distinguía 15 criterios propios comprobados y 7 pendientes; sus filas conservan el estado de aceptación vigente tras revisión. Veredicto global NO_LISTO hasta cierre elegible, sin transferir aceptación del starter ni del producto. La CI liviana del HEAD final se consulta en PR1; el reviewer debe comprobarla junto a HEAD/base publicados, sin confundirla con FULL. No repetir STARTER por este cierre Markdown si huella/base coinciden.
 
+## Checkpoint vigente · E-01 completado por Junie
+
+2026-10-21, sesión propia Junie del dueño para completar E-01 pedido en R1. Superficie IDE IntelliJ IDEA/AIR (plugin Junie), terminal PowerShell. Modelo expuesto por entorno: Qwen/Qwen3.6-27B-FP8. Impacto de esta sesión: TOOLS.md con evidencia real de MCP/skills y esta bitácora; sin cambios de comportamiento, API, permisos, datos o UI.
+
+### Primera comprobación Git y remotos
+
+Rama chore/t-000-adoption, árbol limpio. HEAD `6e9683a188d8d351b95b6badb60e1cfc1fcc2669`, base `fa52e546d24a412fd5729f4b15b8a4103cb3071a`. PR #1 OPEN, verify-required pass (run 39641176447). Sin cambios ajenos ni conflictos.
+
+### Sondas mínimas de T-000
+
+| Comando / superficie | Resultado real | Alcance |
+|---|---|---|
+| `git status --short --branch` | chore/t-000-adoption, árbol limpio | Lectura/edición del repo OK |
+| `node --version` | v24.21.0 | Node host OK |
+| `docker version --format '{{.Server.Version}}'` | 28.5.1 | Docker server OK |
+| `& "C:\Program Files\Git\bin\bash.exe" --version` | 5.2.37 | Git Bash OK |
+| `gh pr view 1 --json number,state,headRefOid,baseRefOid` | exit0, PR OPEN, HEAD/base coincidentes | Git/PR/CI autorizado |
+| `gh pr checks 1` | verify-required pass | CI verde del HEAD vigente |
+| `node scripts/docs-check.mjs` | exit0, 60 Markdown/15 tareas/HANDOFF 19/22 | docs-check OK |
+| `junie --version` | 26.10.12 (3659.7) exit0 | Launcher CLI detectado |
+
+### Herramientas Junie comprobadas
+
+Configuración MCP de usuario en `~/.junie/mcp/mcp.json`: 4 servers (Playwright, Chrome DevTools, Context7, GitHub). Sin mcp.json de proyecto en `.junie/mcp/`. Skills expuestos por plugin IDE: 7 skills (context7, database-connection-management, demo-setup, frontend-design, ij-debugger, java-engineer, spring-boot-engineer). Sin skills en `.junie/skills/` del proyecto ni en `~/.junie/skills/`. junie-cli-docs disponible como custom agent built-in.
+
+Todos los MCP y skills están activos y expuestos como herramientas en esta sesión. Detalle y evidencia en [.junie/TOOLS.md](../../.junie/TOOLS.md).
+
+### Veredicto E-01
+
+E-01 completado: inventario y sondas de herramientas Junie registrados con fecha, superficie, origen y estado. Las herramientas indispensables (lectura/edición repo, Git Bash/Node/Docker, Git/PR/CI, docs-check) están operativas. Sin bloqueantes. TOOLS.md actualizado con evidencia saneada, sin secretos ni configuración privada impresa.
+
 ## Checkpoint vigente · revisión R1
 
 2026-10-21, sesión nueva de frontera reviewer, distinta de la autora. Codex desktop/API y terminal PowerShell/Node/Git; familia GPT-6 expuesta, variante/esfuerzo efectivos no expuestos. Sin delegación ni ejecución de Junie. Impacto de esta sesión: solo transición documental de tarea/STATUS/HANDOFF, sin cambios de comportamiento, API, permisos, datos o UI.
