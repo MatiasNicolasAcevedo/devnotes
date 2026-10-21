@@ -3,13 +3,13 @@ id: S-102
 status: approved
 version: 1
 milestone: M1
-tasks: [T-009]
+tasks: [T-005, T-009, T-012, T-014]
 ---
 # S-102 · Enlaces sobre texto
 
 ## Objetivo I1 y contrato compartido
 
-CA-02/05: enlazar identificadores conservando texto, editar/quitar/abrir y persistir el mismo JSON. Depende de S-101 (documento y cola) y T-008 mergeada por la ruta secuencial. Una tarea de capacidad completa T-009: extensión, diálogo y pruebas; separación en spec conserva el contrato común con renderer readonly y backend. Retorno a frontera en salida I1/T-014 o decisión fuera de contrato.
+CA-02/05: enlazar identificadores conservando texto, editar/quitar/abrir y persistir el mismo JSON. Contrato compartido por base de representación T-005, interacción T-009, lectura T-012 y validación T-014. Depende de S-101 (documento y cola) y T-008 mergeada antes de la interacción por la ruta secuencial. Las tareas compartidas tienen una sola implementación/PR y una spec primaria en frontmatter; no se ejecutan dos veces. Retorno a frontera en salida I1/T-014 o decisión fuera de contrato.
 
 ## Reglas e interacción
 
@@ -21,15 +21,21 @@ En edición click normal posiciona cursor; abrir mediante acción «Abrir enlace
 
 ## Datos/API/seguridad
 
-Usar link mark de S-101; ningún endpoint, tabla ni migración nuevos. Server valida de nuevo href en cualquier PUT. No guardar HTML. Estado solo en editor y diálogo en memoria, limpiado por cambio identidad. Una acción válida participa del debounce/cola existente. Persistencia/recarga conserva texto/href; readonly muestra igual sin posibilidad de alterar la copia.
+Usar link mark de S-101, con **attrs.href únicamente** en JSON; extender addAttributes para excluir defaults target/rel/class, generando los atributos seguros solo en render HTML. Ningún endpoint, tabla ni migración nuevos. Server valida de nuevo href en cualquier PUT. No guardar HTML. Estado solo en editor y diálogo en memoria, limpiado por cambio identidad. Una acción válida participa del debounce/cola existente. Persistencia/recarga conserva texto/href; readonly muestra igual sin posibilidad de alterar la copia.
 
 ## Aceptación y pruebas
 
 | ID | Caso | CA | Archivo/capa | Tarea |
 |---|---|---|---|---|
+| L-00 | Mark href-only renderiza y hace roundtrip sin defaults extras ni pérdida de texto | 02/05 | dailyDocument.test.ts, DailyEditor.test.tsx | T-005 |
 | L-01 | Seleccionar 1279/Ctrl+K/URL válida conserva exactamente texto y agrega marca; editar/quitar roundtrip | 02 | LinkDialog.test.tsx, componente con editor real | T-009 |
 | L-02 | javascript/data/URL relativa y selección cruzada no alteran JSON ni guardan; Escape restaura foco | 05 | LinkDialog.test.tsx, negativos | T-009 |
 | L-03 | Reabrir y readonly preservan marca; apertura segura sin preview remoto | 02/05 | daily-notes.spec.ts, Playwright real | T-014 |
+| L-04 | Historial muestra enlace seguro sin shortcut de edición ni mutaciones | 02/05 | DailyHistoryPage.test.tsx | T-012 |
+
+## Tareas y dependencias
+
+T-005 (representación común, espera T-004) → T-009 (interacción, espera T-008 en cola global) → T-012 (lectura, espera T-011) → T-014 (recorrido, espera T-013). Cada transición exige MERGED y nueva sesión. Los contratos concretos están enlazados por BACKLOG; no hay trabajo paralelo ni PR duplicado por compartir esta spec.
 
 ## Archivos y decisiones
 

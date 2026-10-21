@@ -21,7 +21,7 @@ Espacio de notas por fecha, capacidad S-101 de I1. Resultado comprobable descrit
 
 ## Alcance y decisiones resueltas
 
-Conectar editor/hook a /notes y /notes/:date, selector fecha/listado paginado de propias y estados S-101. /notes calcula hoy con componentes locales; guardias fecha/ruta. Navegar con flush y beforeunload si dirty; cancelar navegación ante fallo. Tema oscuro único y enlaces Notas; mantener home/system/login/logout y referencia técnica.
+Conectar editor/hook a /notes y /notes/:date, selector fecha/listado paginado de propias y estados S-101. /notes calcula hoy con componentes locales; guardias fecha/ruta. Montar DailyDraftProvider sobre Outlet/nav bajo key de identidad en AppShell, usando navegación guardada para enlaces internos/header/fecha/lista. Ante browser atrás/adelante conservar dirty y aviso global Volver/Reintentar; no iniciar otra fecha editable mientras el borrador anterior siga pendiente. Mantener BrowserRouter declarativo; beforeunload si dirty/pending. Tema oscuro único y enlaces Notas; mantener home/system/login/logout y referencia técnica.
 
 Impacto previsto: UI de notas por fecha, tema oscuro y navegación; backend inalterado. Contrato completo; estado draft **únicamente por dependencia T-006 no mergeada/conciliada**. Al comprobarla, Junie puede habilitar ready sin otra planificación. En T-001 comprobar además la evidencia Junie y adopción T-000; si no existen, no comenzar negocio.
 

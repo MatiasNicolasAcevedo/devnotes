@@ -1,6 +1,6 @@
 # Orquestación y estados
 
-Contrato mínimo para encadenar sesiones. **No hay dispatcher instalado:** la continuidad es `POR_SESION` y el dueño abre cada sesión pegando el prompt de [STATUS.md](STATUS.md#prompt-de-la-siguiente-sesión). Este documento fija los valores que validan las tareas y docs-check; no describe la configuración interna de Junie Lite.
+Contrato mínimo para encadenar sesiones. **No hay dispatcher instalado:** la continuidad es `POR_SESION` y el dueño abre cada sesión pegando el prompt de [STATUS.md](STATUS.md#prompt-de-la-siguiente-sesión). Este documento fija los valores que validan las tareas y docs-check; no presume un modelo/superficie Junie heredado.
 
 ## Estados de tarea
 | Estado | Significado | Próximo rol |
@@ -23,7 +23,7 @@ Contrato mínimo para encadenar sesiones. **No hay dispatcher instalado:** la co
 |---|---|
 | `id` | `T-NNN` único; coincide con el nombre del archivo `docs/tasks/T-NNN-slug.md` |
 | `status` | uno de los estados anteriores |
-| `executor` | `frontier` (GPT-6.1 Sol u Opus 5.5; el checkpoint registra cuál) o `junie` (Junie Lite). Las tareas de M0 son `frontier` |
+| `executor` | `frontier` o `junie`; checkpoint registra herramienta/modelo/esfuerzo realmente expuestos en esa sesión, sin inferirlos del starter. M0 tiene executor frontier; su revisión independiente puede ser Junie por AUTONOMY |
 | `role` | `planner`, `implementer`, `reviewer`, `merger` |
 | `depends_on` | lista de IDs existentes, sin ciclos |
 | `product_cycle` | Opcional, solo si ayuda a agrupar un objetivo; no bloquea una tarea pequeña ready |

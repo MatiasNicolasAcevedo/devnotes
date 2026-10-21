@@ -21,7 +21,7 @@ Editor monoespaciado y líneas lógicas, capacidad S-101 de I1. Resultado compro
 
 ## Alcance y decisiones resueltas
 
-Instalar paquetes exactos elegidos en S-101 mediante comando debajo; inventario actualizado sin upgrades colaterales. Esquema TS/Zod y Tiptap mínimo: Document/Paragraph/Text/UndoRedo, separator solo render/roundtrip (shortcuts T-008), sin marcas generadas hasta T-009. Editor con pegar plano/Enter/Shift+Enter, gutter CSS por bloque y modo readonly. CSS del editor oscuro/Roboto Mono local sin tocar tema global hasta T-007.
+Instalar paquetes exactos elegidos en S-101 mediante comando debajo; inventario actualizado sin upgrades colaterales. Esquema TS/Zod y Tiptap mínimo: Document/Paragraph/Text/UndoRedo, separator y Link registrados para render/roundtrip completo (shortcuts T-008/T-009); Link sin autolink/linkOnPaste/openOnClick en edición. Editor con pegar plano/Enter/Shift+Enter, gutter CSS por bloque y modo readonly. CSS del editor oscuro/Roboto Mono local sin tocar tema global hasta T-007. No perder marks/separadores válidos de un documento cargado por API.
 
 Impacto previsto: Nuevas dependencias OSS/fuente locales, sin servicio externo ni persistencia de navegador. Contrato completo; estado draft **únicamente por dependencia T-004 no mergeada/conciliada**. Al comprobarla, Junie puede habilitar ready sin otra planificación. En T-001 comprobar además la evidencia Junie y adopción T-000; si no existen, no comenzar negocio.
 
@@ -35,7 +35,7 @@ Impacto previsto: Nuevas dependencias OSS/fuente locales, sin servicio externo n
 
 ## Archivos y pasos
 
-Rutas previstas: client/src/features/daily/editor/dailyDocument.ts, DailyEditor.tsx, separator.ts, dailyEditor.css y sus dailyDocument.test.ts/DailyEditor.test.tsx; client/package.json y package-lock.json; docs/DEPENDENCIES.md.
+Rutas previstas: client/src/features/daily/editor/dailyDocument.ts, DailyEditor.tsx, separator.ts, link.ts (mark href-only sin defaults target/rel/class en JSON), dailyEditor.css y sus dailyDocument.test.ts/DailyEditor.test.tsx; client/package.json y package-lock.json; docs/DEPENDENCIES.md.
 Los nombres sin prefijo de backend son relativos a server/src/main/java/com/example/devnotes/; sus tests conservan paquete bajo server/src/test/java/com/example/devnotes/. Frontend relativo indicado explícitamente o bajo client/src/features/daily/.
 
 1. Comprobar Git/PR/base, dependencia MERGED, capacidades mínimas y crear la rama exacta desde main actualizado; preservar cambios ajenos. Conciliar done de T-004 en primer avance útil.

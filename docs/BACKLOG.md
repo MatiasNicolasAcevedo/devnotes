@@ -29,4 +29,4 @@ Cada fila depende de MERGED y conciliación de la anterior; contratos completos,
 
 ## Fuera de I1
 
-Objetivos opcionales en PROJECT_CONTEXT/ROADMAP, sin ejecución autorizada. No usar el microensayo genérico de errorMessage como otra tarea/PR de adopción; la primera implementación de producto es T-001. La comprobación de herramientas Junie se hace como evidencia E-01 de T-000 en su sesión revisora, sin atribuir pruebas de frontera a Junie.
+Objetivos opcionales en PROJECT_CONTEXT/ROADMAP, sin ejecución autorizada. No usar el microensayo genérico de errorMessage como otra tarea/PR de adopción; la primera implementación de producto es T-001. Primera revisión T-000 por frontera en sesión nueva, decisión expresa del dueño. La comprobación de herramientas Junie requiere sesión propia como evidencia E-01; no atribuirle pruebas de frontera ni habilitar negocio sin precondiciones.

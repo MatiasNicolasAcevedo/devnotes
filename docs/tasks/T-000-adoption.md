@@ -1,15 +1,15 @@
 ---
 id: T-000
-status: in_progress
+status: in_review
 priority: P1
 size: M
 executor: frontier
-role: implementer
+role: reviewer
 milestone: M0
 spec: null
 spec_version: null
 branch: chore/t-000-adoption
-pr: null
+pr: 1
 depends_on: []
 ---
 # T-000 · Adopción de devnotes
@@ -34,13 +34,15 @@ Referencias de operación: [PROJECT_CONTEXT](../../PROJECT_CONTEXT.md), [AUTONOM
 | Junie | Versión instalada distinguida de capacidades en sesión; /mcp y /skills, herramientas mínimas con sonda de lectura por Junie en su instalación, sin secretos |
 | Entrega | PR propio, CI verify-required del HEAD final, revisión independiente y squash por política; no done con PR abierto |
 
-## Comprobación de Junie en su sesión revisora
+## Primera revisión y comprobación propia de Junie
 
-Frontera no abre otra sesión Junie: SETUP/TOOLS exigen que dueño/Junie comprueben la superficie elegida. El dueño abre una **sesión nueva Junie reviewer T-000**, no una implementación paralela. Registrar raíz/checkouts y rutas AGENTS/STATUS/T-000 leídas; modelo/herramienta/esfuerzo solo lo expuesto. Consultar /mcp y /skills (o mecanismo que exponga esa instalación), actualizar filas de .junie/TOOLS.md con nombres/fecha/superficie/origen/estado y sonda saneada para las herramientas necesarias. No leer configuración privada ni secretos, no instalar/autenticar ni delegar.
+El dueño confirmó que abre primero una **sesión nueva de frontera reviewer T-000**. Revisar el PR/contratos/evidencia sin implementar ni atribuir capacidades Junie a esa revisión. Frontera no abre otra sesión Junie: SETUP/TOOLS exigen que dueño/Junie comprueben su superficie. Si esa evidencia sigue faltando al revisar el criterio E-01, conservar el pendiente concreto y su condición de salida; no convertirlo en comprobado ni habilitar T-001 sin su precondición.
+
+En una sesión propia Junie del dueño, registrar raíz/checkouts y rutas AGENTS/STATUS/T-000 leídas; modelo/herramienta/esfuerzo solo lo expuesto. Consultar /mcp y /skills (o mecanismo que exponga esa instalación), actualizar filas de .junie/TOOLS.md con nombres/fecha/superficie/origen/estado y sonda saneada para las herramientas necesarias. Esta comprobación no implementa negocio ni crea otra tarea/PR. No leer configuración privada ni secretos, no instalar/autenticar ni delegar.
 
 Mínimo para revisar/continuar: lectura/edición del repo, terminal Git Bash/Node/Docker, acceso Git/PR/CI autorizado en este repo y capacidad de devolver diff/exit/log. Comprobar `git status --short --branch`, `node --version`, `docker version --format '{{.Server.Version}}'`, `gh pr view --json number,state,headRefOid,baseRefOid` desde esta rama y `node scripts/docs-check.mjs`; si se usa GitHub MCP en vez de gh, sonda equivalente de solo lectura al PR. No ejecutar el microensayo en una copia ni tocar errorMessage durante T-000. Herramientas opcionales ausentes no bloquean si el shell autorizado cubre la función; registrar límite. Si una capacidad indispensable falta, checkpoint bloqueado sin fingir resultado.
 
-Luego revisar T-000 por reviewer.md, incluidas nuevas specs/tareas, evidencia STARTER y diff completo. La sesión puede registrar inventario y transición documental de esta adopción, publicar el SHA final, esperar CI y emitir veredicto independiente. Si no hay bloqueantes puede mergear por AUTONOMY. No implementar T-001 en esa sesión; dejar STATUS con prompt de sesión nueva Junie implementer T-001, primera comprobación MERGED de T-000.
+Revisar T-000 por reviewer.md, incluidas nuevas specs/tareas, evidencia STARTER y diff completo. Registrar la transición documental, publicar SHA final, esperar CI y emitir veredicto independiente con pendientes reales. Si no hay bloqueantes puede mergear por AUTONOMY; si falta evidencia exigida, conservar el bloqueo/dato necesario sin inventar aceptación. No implementar T-001 en esa sesión; solo cuando corresponda, dejar STATUS con prompt de sesión nueva Junie implementer T-001, primera comprobación MERGED de T-000 y capacidades propias.
 
 ## Checkpoint vigente
 
@@ -75,14 +77,38 @@ COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-devnotes-t000
 
 Cleanup propio: `docker compose --env-file .env.example -p starter-verify-devnotes-t000-20261020 --profile verify down --volumes --remove-orphans`; E2E y tooling limpian solo sus labels internos. Comprobar labels container/network/volume vacíos y huella técnica idéntica al finalizar. Preservar exit real y logs; fallo no habilita publicación. Tooling prueba copia compilable y lifecycle persistente nginx/Vite incluyendo retoma sin adjudicarlo a Junie. El ensayo dev persistente deja DB solo durante su prueba y cleanup del runner la retira al final.
 
-Pendiente inmediato: docs-check final/dirigidos, commit local/huella, STARTER y cleanup; después publicar PR y CI. Junie E-01 y revisión independiente siguen pendientes de su sesión, no reemplazables por ejecuciones de frontera.
+Fuentes técnicas validadas: `f082659d3d24d7a5a1eabd17fe8dc939a3b28b51`, base `fa52e546d24a412fd5729f4b15b8a4103cb3071a`. **STARTER completado exit0**, cleanup exit0 y huella antes/después idéntica. Publicado [PR #1](https://github.com/MatiasNicolasAcevedo/devnotes/pull/1); este cierre posterior solo modifica Markdown, sin cambiar base/fuentes probadas. La primera revisión será frontera en sesión nueva, elección expresa del dueño. Junie E-01 y revisión independiente siguen pendientes: no reemplazarlas con ejecuciones de frontera.
+
+### Resultado propio del gate y recursos
+
+| Suite / evidencia | Resultado / tiempo de pared |
+|---|---|
+| docs | exit0, 3s; cierre documental vuelve a ejecutar docs-check |
+| server | exit0, 243s; 91 unitarios/slices +75 IT, 0 fail/error/skipped; Spotless/Failsafe/JaCoCo/PostgreSQL18 |
+| client | exit0, 46s; 16 archivos/133 tests, typecheck/lint/formato/cobertura/build |
+| tooling | exit0, 1773s; copia inicial294s, guardias26s, nginx326s, Vite287s, fallos556s, copia sin Git121s, señales25s, proxies134s; unitarios de sonda/init1s/3s |
+| e2e final | exit0, 418s; 15 casos API/DB/OIDC reales desktop1280/móvil375, sin mocks API propia/retries extra; saneador negativo y export final verdes |
+| total de suites | 2483s (~41min23s), no sumar de nuevo los ensayos internos de tooling |
+| cleanup principal | verify/e2e container/network/volume=0/0/0; exit0. Cada runner interno confirmó su cleanup por labels exactos; no tocar recursos ajenos |
+| huella técnica | manifiestos before/after SHA256 `DB9568E00B60F3BC02A5E0C48BEB3B2862FAA868C08247CFE493F86A80A4798C`; diferencia0 |
+| CI local | `node --test "scripts/ci/*.test.mjs"`, exit0, 83/83 pass, 0 fail/skipped antes y después del cierre documental; `.orchestrator/t000/ci-local.log` y `ci-final.log` |
+
+Logs ignorados: `.orchestrator/t000/starter.log`, `starter.exit`=0, `cleanup.log`, `technical-before.json`/`technical-after.json`, dirigidos y CI local. Capturas propias saneadas inspeccionadas en `e2e/artifacts/starter-dev-b1-nginx-1792547599-95533/safe-home-1280.png` y `safe-home-375.png`, con identidad ficticia. El canario negativo intencional exportó un fallo de prueba para comprobar el saneador; **no** es un fallo del gate ni se cuenta como caso final: export definitivo tests15/failures0/action-traces0.
+
+Auditoría final adicional: nueve proyectos propios identificados en el log del gate, todos sin contenedores/redes/volúmenes residuales; `.orchestrator/t000/final-audit.log`. No se borró ningún recurso fuera de los namespaces de los runners.
+
+CI remota del primer HEAD publicado f082659: `verify-required` SUCCESS, run39532992317/job119003036967, base fa52e54, comprobada por gh. El cierre documental cambia HEAD y exige consultar nuevamente esa CI antes de entregar/revisar; no reutilizar el verde anterior como check del nuevo SHA. El perfil del PR completo sigue FULL/STARTER (111 rutas en el primer commit); no se lo reclasifica DOCS_ONLY. `.junie/TOOLS.md` aparece técnico por ubicación en el clasificador, pero su cierre solo corrige procedencia/rol y conserva todos los MCP/skills como declarados: no cambia configuración de MCP, instalación ni código. Conservación del gate por transición Markdown según TESTING, con docs-check y las83 regresiones CI afectadas verdes; revisor comprueba esa distinción y la huella de código/configuración.
+
+Solo se ejecutó la base personalizada; **CA-01…06 del negocio no están implementados ni probados**. HANDOFF distingue 15 criterios propios comprobados y 7 pendientes de revisión/configuración/capacidad efectiva. Veredicto global NO_LISTO hasta cierre elegible, sin transferir aceptación del starter ni del producto. La CI liviana del HEAD final se consulta en PR1; el reviewer debe comprobarla junto a HEAD/base publicados, sin confundirla con FULL. No repetir STARTER por este cierre Markdown si huella/base coinciden.
 
 ## Correcciones significativas
 
 | Fecha | Causa | Corrección | Prueba |
 |---|---|---|---|
-| 2026-10-20 | Adjunto decía org.demo; checkout ya com.example | Dueño confirmó com.example.devnotes; se conserva paquete. Nombre visible DevNotes en config/client/E2E | Gate de identidad y FULL pendientes |
+| 2026-10-20 | Adjunto decía org.demo; checkout ya com.example | Dueño confirmó com.example.devnotes; se conserva paquete. Nombre visible DevNotes en config/client/E2E | 66 renombres contrastados; STARTER/FULL propio verde sobre f082659 |
+| 2026-10-20 | Tests de junction rechazados por sandbox (EPERM), sin fallo de lógica demostrado | Ejecutar mismas suites en host autorizado, sin alterar tests | 62 dirigidos y83 CI local verdes; logs propios |
+| 2026-10-20 | Defaults de Link podían añadir attrs fuera del contrato JSON; hook por página podía perder dirty al desmontar | Especificar href-only y coordinador de borrador/cola por identidad sobre Outlet | docs-check verde; ejecución futura T-005/T-006/T-007, sin afirmar runtime |
 
 ## Cierre y siguiente tarea
 
-No done hasta MERGED; HANDOFF mantiene evidencia/pendientes reales. Siguiente sesión reviewer Junie T-000 comprueba primero PR/HEAD/base/árbol y capacidades propias; luego revisión independiente. Tras merge, sesión nueva implementer [T-001](T-001-document-contract.md) verifica MERGED y concilia adopción antes de comenzar validación de documento. No aceptar producto por el solo cierre de adopción; I1 todavía sin implementar.
+No done hasta MERGED; HANDOFF mantiene evidencia/pendientes reales. Siguiente sesión **frontera reviewer T-000**, elección expresa del dueño: comprueba primero PR/HEAD/base/árbol; revisión independiente del diff y contratos. Capacidades Junie continúan pendientes de sesión propia, sin crédito por ejecución de frontera. Tras cierre elegible, sesión nueva Junie implementer [T-001](T-001-document-contract.md) verifica MERGED y capacidad propia, y concilia adopción antes de comenzar. No aceptar producto por cerrar adopción; I1 todavía sin implementar.

@@ -70,7 +70,7 @@ Cada tarea conserva una bitácora corta de correcciones significativas: problema
 
 Tu intervención diaria es copiar el único prompt de STATUS y abrir una sesión nueva del rol indicado: implementar, revisar/corregir o continuar con la siguiente tarea. El prompt lleva tarea/rama/PR, precondición y primera acción. Antes de pasar a la siguiente comprueba el cierre de la anterior; no tenés que reconstruir el contexto ni editar el tablero a mano. Si corresponde volver a frontera, el prompt explica qué objetivo se cumplió o qué decisión falta.
 
-Modelo/superficie Junie de DevNotes pendientes de comprobar en su propia sesión; no heredar la declaración Junie Lite/Qwen del starter. T-000 fija su comprobación de capacidades durante revisión independiente. El [microensayo genérico](docs/templates/junie-trial.md) se conserva como referencia, sin tarea/PR adicional en I1.
+Modelo/superficie Junie de DevNotes pendientes de comprobar en su propia sesión; no heredar la declaración Junie Lite/Qwen del starter. La primera revisión T-000 será frontera y no acredita capacidades Junie; el contrato conserva la comprobación propia pendiente. El [microensayo genérico](docs/templates/junie-trial.md) se conserva como referencia, sin tarea/PR adicional en I1.
 
 ## Modo local explícito sin credenciales
 
@@ -112,4 +112,4 @@ FULL cotidiano conserva backend/IT PostgreSQL, client y Playwright reales; los e
 
 El formulario genérico está versionado en docs/templates/project-context.md. Podés dárselo a frontera con la idea ya elaborada; después del inicializador las respuestas reemplazan PROJECT_CONTEXT raíz. El formulario permanece reutilizable en el repo y no hace falta copiar `plantilla/` a una aplicación nueva. El kit local no es necesario; su retiro corresponde al dueño. Ningún script lo copia o borra.
 
-Para una primera prueba acotada de Junie, está el [microensayo de mensaje vacío](docs/templates/junie-trial.md): una transformación frontend existente y su prueba unitaria, sin otra feature ni backend. Ejecutarlo en una copia descartable propia cuando la tarea vigente lo habilite y devolver diff, rutas de instrucciones, modelo realmente expuesto y logs rojo/verde. Ese resultado acredita únicamente el ensayo ejecutado, sin Google real. Para el estado y orden actuales, seguir únicamente STATUS.
+El [microensayo de mensaje vacío](docs/templates/junie-trial.md) se conserva como recurso genérico; no es la ruta activa de DevNotes ni una ejecución habilitada en esta adopción. La primera revisión T-000 será frontera en sesión nueva; las capacidades Junie se acreditan en su propia superficie y la primera implementación de producto es T-001 al cumplir sus precondiciones. Para retomar, seguir únicamente STATUS.

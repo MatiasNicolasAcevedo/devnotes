@@ -11,7 +11,7 @@ Frontera y Junie pueden leer Git/PR/CI, crear ramas, editar dentro del contrato,
 ## Ejecutores y continuidad
 
 - Frontera define producto, arquitectura, contratos y adopción M0. Modelo/herramienta/esfuerzo solo según lo realmente expuesto, sin inventar versión.
-- Junie implementa tareas I1 predefinidas. Otra **sesión nueva** de Junie revisa y puede hacer merge elegible; la sesión autora no revisa ni mergea su trabajo. T-000 también requiere revisión independiente.
+- Junie implementa tareas I1 predefinidas. Otra **sesión nueva** de Junie revisa y puede hacer merge elegible; la sesión autora no revisa ni mergea su trabajo. Excepción inicial confirmada expresamente por el dueño en esta sesión: **la primera revisión de T-000 será de frontera en sesión nueva**, con la misma política de merge elegible y sin aprobar su implementación propia. Capacidades Junie sin comprobar continúan pendientes, no se acreditan por esa revisión.
 - `POR_SESION`: el dueño abre cada sesión con el único prompt de STATUS. Sin dispatcher, instalación, autenticación, delegación o lanzamiento automático de otro agente. Cada tarea y revisión usa sesión nueva; correcciones vuelven al implementer en otra sesión.
 - Una tarea/PR en vuelo; máximo cinco ready. Draft solo por dependencia se habilita al comprobar MERGED y conciliar la anterior. No comenzar otra implementación en la sesión que cierra la anterior.
 - Junie controla avance tras cinco y diez tareas I1 mergeadas. Frontera vuelve al MVP completo (T-014 mergeada y CA-01…06), intención nueva o decisión/bloqueo fuera de contrato.

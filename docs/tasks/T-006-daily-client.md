@@ -21,7 +21,7 @@ Cliente y cola de guardado, capacidad S-101 de I1. Resultado comprobable descrit
 
 ## Alcance y decisiones resueltas
 
-Cliente con Zod/HTTP/CSRF/guardia actual; keys identidad+fecha y fetch cancelable. Hook coordina cola/debounce700ms, revisión confirmada, generaciones dirty y flush awaitable (también force para vacío al guardar versión). Evitar setQueryData/retries de mutaciones y refetch que pise dirty; desmontaje/identidad distinta invalida finalizaciones tardías. Incluir daily/api y hook en cobertura 80/70 conservando referencia.
+Cliente con Zod/HTTP/CSRF/guardia actual; keys identidad+fecha y fetch cancelable. Hook y DailyDraftProvider coordinan cola/debounce700ms, revisión confirmada, generaciones dirty y flush awaitable (también force para vacío al guardar versión). Provider conserva un único borrador activo pendiente en memoria por identidad sobre Outlet, para no perderlo al desmontar la página; su montaje y navegación de shell se conectan en T-007. Evitar setQueryData/retries de mutaciones y refetch que pise dirty; identidad distinta invalida finalizaciones tardías y descarta borrador. Incluir daily/api y hook en cobertura 80/70 conservando referencia.
 
 Impacto previsto: Guardado privado automático y memoria transitoria; sin store persistente. Contrato completo; estado draft **únicamente por dependencia T-005 no mergeada/conciliada**. Al comprobarla, Junie puede habilitar ready sin otra planificación. En T-001 comprobar además la evidencia Junie y adopción T-000; si no existen, no comenzar negocio.
 
@@ -35,7 +35,7 @@ Impacto previsto: Guardado privado automático y memoria transitoria; sin store 
 
 ## Archivos y pasos
 
-Rutas previstas: client/src/features/daily/api.ts y api.test.ts; useDailyNote.ts y useDailyNote.test.tsx; client/vite.config.ts solo cobertura.
+Rutas previstas: client/src/features/daily/api.ts y api.test.ts; useDailyNote.ts y useDailyNote.test.tsx; DailyDraftProvider.tsx (contexto y navegación guardada exportada, probados en useDailyNote.test.tsx); client/vite.config.ts solo cobertura.
 Los nombres sin prefijo de backend son relativos a server/src/main/java/com/example/devnotes/; sus tests conservan paquete bajo server/src/test/java/com/example/devnotes/. Frontend relativo indicado explícitamente o bajo client/src/features/daily/.
 
 1. Comprobar Git/PR/base, dependencia MERGED, capacidades mínimas y crear la rama exacta desde main actualizado; preservar cambios ajenos. Conciliar done de T-005 en primer avance útil.
@@ -45,7 +45,7 @@ Los nombres sin prefijo de backend son relativos a server/src/main/java/com/exam
 
 ## Aceptación y pruebas
 
-Vacío404 no guarda solo; múltiples teclas colapsan, edición durante PUT genera segundo guardado con revisión nueva. ACK antiguo no reemplaza texto/estado de generación actual. Error y 409 conservan dirty; flush falla y bloquea navegación; 401/logout/cambio identidad no reintroduce datos. Errores CSRF piden nueva acción.
+Vacío404 no guarda solo; múltiples teclas colapsan, edición durante PUT genera segundo guardado con revisión nueva. ACK antiguo no reemplaza texto/estado de generación actual. Error y 409 conservan dirty; flush falla y bloquea navegación controlada. Desmontar/remontar página conserva dirty en provider; cambio identidad lo borra y ACK tardío no lo recrea. Errores CSRF piden nueva acción.
 
 Capa elegida y motivo: Hooks con Query/providers reales y MSW, fake timers solo debounce; controlar respuestas retenidas para carreras de identidad.
 Comandos ejecutables desde raíz con Git Bash/Docker Desktop Linux/Node>=24 (npm ci instala del lock; no actualiza versiones). Antes de dirigidos Docker y gate, crear namespaces propios y comprobar ausencia:

@@ -1,33 +1,35 @@
 # HANDOFF · devnotes
 
-- **Veredicto:** `NO_LISTO` — 0/22 verificados.
+- **Veredicto:** `NO_LISTO` — 15/22 verificados.
 - **Continuidad:** `POR_SESION`.
-- **Merge:** `MANUAL_POR_DUENO` hasta autorización/configuración propia.
+- **Merge:** `AUTOMATICO_ELEGIBLE` según AUTONOMY; primera revisión T-000 por frontera en sesión nueva.
 
 | ID | Criterio | Estado | Evidencia heredada / propia requerida | Responsable / condición de revalidación |
 |---|---|---|---|---|
-| C-01 | Contexto propio aceptado: objetivo, usuarios, flujos, exclusiones y decisiones | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| C-02 | Spec del primer flujo o contrato de infraestructura vigente, aceptación y pruebas trazadas | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| C-03 | Arquitectura, contratos API/datos y versiones efectivos; auth y persistencia decididas | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| E-01 | Raíz, modelo/herramienta/esfuerzo y ejecutor siguiente; inventario [TOOLS](../.junie/TOOLS.md) actualizado con MCP/skills, estados, fecha, superficie y limitaciones explícitos; disponibilidad requerida por la tarea comprobada | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| E-02 | Wrappers/locks/imágenes inventariados; instalar, levantar, probar, detener y retomar desde copia limpia | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| E-03 | Ejemplos ficticios, variables/URLs/puertos claros; configuración real fuera de Git/builds | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| B-01 | db/server/client conectados; UI/API/DB reales, restart/rebuild/retoma conservan datos propios | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| B-02 | PostgreSQL 18, Flyway sobre DB vacía y validación JPA/Testcontainers, aislamiento de datos | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| B-03 | Patrones reales API/DTO/validación/errores, router/tema/HTTP/Query/formularios y estados | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| S-01 | OIDC local real, callback/sesión/identidad y recarga; Google real con estado explícito | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| S-02 | 401/403, propiedad/permisos, CSRF y logout/cache con dos identidades; perfiles separados | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| S-03 | Google real: smoke del dueño o pendiente externo explícito, responsable y acción sin secretos | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| V-01 | Unitarios/slices, PostgreSQL IT, componentes, typecheck/lint/formato/build reales | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| V-02 | Playwright desktop/móvil con API/DB/OIDC reales, errores, saneamiento y cleanup labels cero | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| V-03 | FULL local y CI requerida del HEAD publicado verdes, sin omitidos interpretados como éxito | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| G-01 | Git propio, licencia, kit excluido, repo y ruleset efectivos propios; copia sin kit funciona | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| G-02 | Autonomía propia, capacidades Git/PR/CI y continuidad/merge comprobadas | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| G-03 | PRs revisados en sesión distinta, checks y merges confirmados sobre SHA/base | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| H-01 | AGENTS/CLAUDE/docs/protocolos coherentes y autosuficientes, sin historia ni kit obligatorio | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| H-02 | Adopción limpia con contexto distinto y primera tarea derivada, sin evidencia por herencia | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| H-03 | Checkpoint, pendientes externos y único prompt vigente con precondición, continuidad explícita | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
-| O-01 | Swagger opt-in apagado por defecto, HTTP loopback/GET/api/docs; UI/JSON/Try it out y negativos nginx/Vite | pendiente | Sin evidencia propia; revalidar en T-000 | Dueño y revisor del producto |
+| C-01 | Contexto propio aceptado: objetivo, usuarios, flujos, exclusiones y decisiones | verificado | Propia: 2026-10-20, contexto del formulario acordado y confirmación explícita de identidad; PROJECT_CONTEXT y T-000. No acredita implementación. | Dueño y revisor del producto |
+| C-02 | Spec del primer flujo o contrato de infraestructura vigente, aceptación y pruebas trazadas | pendiente | Contratos I1 propios elaborados en S-101 a104 y T-001 a014; revisión independiente de frontera pendiente en PR1/T-000. | Dueño y revisor del producto |
+| C-03 | Arquitectura, contratos API/datos y versiones efectivos; auth y persistencia decididas | pendiente | Stack/base validados; diseño API/JSONB/concurrencia de I1 documentado, pendiente revisión de contrato en PR1; no negocio implementado. | Dueño y revisor del producto |
+| E-01 | Raíz, modelo/herramienta/esfuerzo y ejecutor siguiente; inventario [TOOLS](../.junie/TOOLS.md) actualizado con MCP/skills, estados, fecha, superficie y limitaciones explícitos; disponibilidad requerida por la tarea comprobada | pendiente | Frontera comprobó launcher CLI26.10.12; modelo/MCP/skills/superficie/sondas de Junie pendientes de sesión propia. Ver TOOLS y T-000. | Dueño y revisor del producto |
+| E-02 | Wrappers/locks/imágenes inventariados; instalar, levantar, probar, detener y retomar desde copia limpia | verificado | Propia: 2026-10-20, STARTER exit0: copia personalizada y sin Git, instalar/verificar, nginx/Vite up/check/down/retoma; T-000. | Dueño y revisor del producto |
+| E-03 | Ejemplos ficticios, variables/URLs/puertos claros; configuración real fuera de Git/builds | verificado | Propia: 2026-10-20, fixtures ficticias/.env.example y copias sin .env real/kit; guardias/puertos y cleanup verificados en STARTER; T-000. | Dueño y revisor del producto |
+| B-01 | db/server/client conectados; UI/API/DB reales, restart/rebuild/retoma conservan datos propios | verificado | Propia: 2026-10-20, lifecycle nginx326s/Vite287s, API/DB/OIDC/retoma, restart/rebuild y volumen preservado; T-000. Solo base personalizada. | Dueño y revisor del producto |
+| B-02 | PostgreSQL 18, Flyway sobre DB vacía y validación JPA/Testcontainers, aislamiento de datos | verificado | Propia: 2026-10-20, clean verify PostgreSQL18/Testcontainers/Flyway/JPA; 75 IT verdes en principal y copia; T-000. V3/V4 de negocio aún futuras. | Dueño y revisor del producto |
+| B-03 | Patrones reales API/DTO/validación/errores, router/tema/HTTP/Query/formularios y estados | verificado | Propia: 2026-10-20, suites backend/client de patrones existentes y capturas saneadas1280/375 inspeccionadas; T-000. No acredita UI diaria futura. | Dueño y revisor del producto |
+| S-01 | OIDC local real, callback/sesión/identidad y recarga; Google real con estado explícito | verificado | Propia: 2026-10-20, OIDC local HTTP real/recarga/sesión; FULL y 15 Playwright verdes; Google real pendiente del dueño; T-000. | Dueño y revisor del producto |
+| S-02 | 401/403, propiedad/permisos, CSRF y logout/cache con dos identidades; perfiles separados | verificado | Propia: 2026-10-20, suites de sesión/CSRF/logout/cache y referencia privada con dos identidades; T-000. CA-06 de notas sigue pendiente I1. | Dueño y revisor del producto |
+| S-03 | Google real: smoke del dueño o pendiente externo explícito, responsable y acción sin secretos | verificado | Propia: 2026-10-20, pendiente externo explícito del dueño: Google real sin smoke ni credenciales por agentes; requiere decisión futura específica; AUTONOMY/T-000. | Dueño y revisor del producto |
+| V-01 | Unitarios/slices, PostgreSQL IT, componentes, typecheck/lint/formato/build reales | verificado | Propia: 2026-10-20, 91 unitarios/slices +75 IT; client133 tests, tipos/lint/formato/cobertura/build; principal y copia verdes; T-000. | Dueño y revisor del producto |
+| V-02 | Playwright desktop/móvil con API/DB/OIDC reales, errores, saneamiento y cleanup labels cero | verificado | Propia: 2026-10-20, Playwright real15/15 desktop1280/móvil375, saneador negativo/export y cleanup propios0/0/0; T-000. Sin mocks API propia. | Dueño y revisor del producto |
+| V-03 | FULL local y CI requerida del HEAD publicado verdes, sin omitidos interpretados como éxito | pendiente | STARTER local verde sobre f082659/basefa52e54 y huella idéntica; CI del HEAD final y revisión pendientes de comprobar en PR1. | Dueño y revisor del producto |
+| G-01 | Git propio, licencia, kit excluido, repo y ruleset efectivos propios; copia sin kit funciona | pendiente | Repo propio privado/MIT/main, kit ausente y copias limpias comprobados; rulesets/protección403 por plan, sin enforcement acreditado. Revisar límite contra AUTONOMY. | Dueño y revisor del producto |
+| G-02 | Autonomía propia, capacidades Git/PR/CI y continuidad/merge comprobadas | pendiente | Dueño aprobó autonomía propia y POR_SESION; Git/PR probados por frontera, capacidades operativas Junie pendientes de su propia sesión. | Dueño y revisor del producto |
+| G-03 | PRs revisados en sesión distinta, checks y merges confirmados sobre SHA/base | pendiente | PR1 abierto por frontera autora; revisión independiente nueva de frontera, veredicto/checks del SHA final y merge siguen pendientes. | Dueño y revisor del producto |
+| H-01 | AGENTS/CLAUDE/docs/protocolos coherentes y autosuficientes, sin historia ni kit obligatorio | verificado | Propia: 2026-10-20, docs-check60 Markdown/15 tareas, contratos/protocolos propios y copia sin Git/kit verdes; T-000. Revisión independiente pendiente. | Dueño y revisor del producto |
+| H-02 | Adopción limpia con contexto distinto y primera tarea derivada, sin evidencia por herencia | verificado | Propia: 2026-10-20, copia adoptada preserva202 fuentes inmutables; cuatro specs I1 y T-001 derivada del contexto propio; T-000. Negocio no implementado. | Dueño y revisor del producto |
+| H-03 | Checkpoint, pendientes externos y único prompt vigente con precondición, continuidad explícita | verificado | Propia: 2026-10-20, T-000 con SHA/base/logs/cleanup/pendientes y STATUS con un único prompt frontera reviewer PR1; continuidad POR_SESION propia. | Dueño y revisor del producto |
+| O-01 | Swagger opt-in apagado por defecto, HTTP loopback/GET/api/docs; UI/JSON/Try it out y negativos nginx/Vite | verificado | Propia: 2026-10-20, tests API docs disabled/enabled/contrato y Swagger real desktop, nginx/Vite GET-only/negativos; STARTER exit0; T-000. | Dueño y revisor del producto |
 
 ## Pendientes externos
-Revalidar los 22 criterios con contexto, pruebas y GitHub propios. Google real pendiente del dueño. Las tareas y los resultados del mantenimiento no se trasladan a esta aplicación.
+Quedan siete criterios de contratos/revisión/configuración/capacidad efectiva por cerrar con evidencia propia; consultar sus filas y T-000. Primera revisión del PR1 por frontera en sesión nueva, no la autora. Junie CLI detectada no acredita MCP/skills/modelo/ejecución; requiere sesión propia. Protección/rulesets respondieron403 por plan, sin enforcement acreditado ni settings cambiados. Google real pendiente del dueño, sin smoke de agentes.
+
+Los quince verificados corresponden al contexto y la **base personalizada**, no a CA-01…06 de notas: I1 aún no está implementada. NO_LISTO no invalida el gate STARTER verde, ni el gate autoriza por sí solo merge/aceptación. No copiar resultados del mantenimiento ni marcar done con PR abierto.

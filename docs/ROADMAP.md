@@ -16,8 +16,8 @@ Objetivo de salida: abrir/editar notas privadas por fecha en editor oscuro Robot
 | Capacidad/épica | Contrato | Tareas en orden |
 |---|---|---|
 | Notas privadas + editor + guardado seguro | [S-101](specs/S-101-daily-notes.md) | T-001…T-007 |
-| Separadores visuales numerados | [S-103](specs/S-103-separators.md) | T-008 |
-| Enlaces sobre texto | [S-102](specs/S-102-text-links.md) | T-009 |
+| Separadores visuales numerados | [S-103](specs/S-103-separators.md) | T-005 base, T-008 interacción, T-012 lectura, T-014 validación |
+| Enlaces sobre texto | [S-102](specs/S-102-text-links.md) | T-005 base, T-009 interacción, T-012 lectura, T-014 validación |
 | Copias manuales + historial + recorrido final | [S-104](specs/S-104-daily-versions.md) | T-010…T-014 |
 
 Ruta completa y contratos pequeños en [BACKLOG](BACKLOG.md). Secuencial: implementación → revisión en sesión nueva → merge elegible → sesión nueva de siguiente tarea. Draft únicamente por dependencia no significa contrato por completar. WIP1 y máximo cinco ready; inicialmente cero hasta adopción mergeada. Junie puede habilitar la siguiente al conciliar MERGED.

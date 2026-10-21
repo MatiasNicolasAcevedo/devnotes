@@ -18,7 +18,7 @@ Estados: **declarado** = informado sin comprobar disponibilidad; **activo verifi
 
 No se ha confirmado ninguno activo o filtrado en Junie. Los cinco pueden provenir de proyecto, usuario o cliente ACP; verificar el origen real antes de registrar una ruta.
 
-Sonda propia de frontera, 2026-10-20, superficie terminal Windows de este checkout: `Get-Command junie` resuelve launcher local y `junie --version` informa **26.10.12 (3659.7)** (exit0). El sandbox rechazó crear logs globales; no se leyeron esos logs ni configuración privada. Esto acredita launcher/versión CLI, **no** sesión Junie, modelo, MCP, skills ni IDE. Filas permanecen declarado. Próxima comprobación por Junie en sesión revisora T-000 según SETUP; frontera no lanza otra sesión ni atribuye sus propias pruebas a Junie.
+Sonda propia de frontera, 2026-10-20, superficie terminal Windows de este checkout: `Get-Command junie` resuelve launcher local y `junie --version` informa **26.10.12 (3659.7)** (exit0). El sandbox rechazó crear logs globales; no se leyeron esos logs ni configuración privada. Esto acredita launcher/versión CLI, **no** sesión Junie, modelo, MCP, skills ni IDE. Filas permanecen declarado. Primera revisión T-000 por frontera en sesión nueva, elección del dueño; la comprobación efectiva requiere sesión propia Junie según SETUP, continúa pendiente y no se sustituye por revisión de frontera.
 
 ## Agent Skills
 | Skill | Uso previsto | Estado actual | Alcance/evidencia |
