@@ -5,35 +5,44 @@ Fuente canónica del inventario declarado y de la última disponibilidad comprob
 ## Estado y procedencia
 Inventario heredado declarado: cinco MCP y siete skills. Su presencia en esta copia no acredita que el dueño haya elegido/configurado esas herramientas en DevNotes. La tabla indica disponibilidad declarada, no instalación o ejecución comprobada. Cada sesión Junie verifica las herramientas expuestas en su propio entorno; las de otro agente no acreditan las suyas. No inspeccionar archivos privados globales ni secretos.
 
+Corrección 2026-10-21, sesión propia Junie tras R2: el dueño autorizó limitar estados a exposición demostrada. Se separan cuatro MCP expuestos, un agente integrado junie-cli-docs y siete skills listadas. Donde solo hay exposición en la sesión, el estado pasa a **expuesto/listado**; se retiran conclusiones globales que equiparaban presencia con activo verificado. El criterio «listado más sonda pertinente exitosa» para activo verificado se conserva sin aplicarlo a mera exposición.
+
 Estados: **declarado** = informado sin comprobar disponibilidad; **activo verificado** = listado en la sesión indicada y sonda pertinente exitosa; **filtrado/deshabilitado** = existe pero no está expuesto/habilitado en ese contexto; **no instalado** = ausencia comprobada en el alcance indicado, sin generalizar a otros; **error/autorización pendiente** = existe y no se puede usar. Una definición en disco no basta para afirmar activo. Registrar fecha, superficie CLI/IDE/ACP, alcance proyecto/usuario/cliente y evidencia saneada al cambiar un estado.
 
-Comprobación Junie, 2026-10-21, superficie IDE IntelliJ IDEA/AIR (plugin Junie), sesión propia del dueño para E-01 de T-000. Launcher CLI detectado: `junie --version` → **26.10.12 (3659.7)** exit0. Configuración MCP de usuario en `~/.junie/mcp/mcp.json` con 4 servers (Playwright, Chrome DevTools, Context7, GitHub). Skills expuestos por el plugin IDE: 7 skills (context7, database-connection-management, demo-setup, frontend-design, ij-debugger, java-engineer, spring-boot-engineer). Sin skills en `.junie/skills/` del proyecto ni en `~/.junie/skills/`. Sin `mcp.json` de proyecto en `.junie/mcp/`. GitHub MCP usa URL de cliente con header Authorization (token no impreso). Context7 usa URL remota sin auth visible. Playwright y Chrome DevTools usan npx local.
+Comprobación Junie, 2026-10-21, superficie IDE IntelliJ IDEA/AIR (plugin Junie), sesión propia del dueño para E-01 de T-000. Launcher CLI detectado: `junie --version` → **26.10.12 (3659.7)** exit0. Configuración MCP de usuario en `~/.junie/mcp/mcp.json` con 3 servers (Playwright, Chrome DevTools, GitHub). Context7 se removió de mcp.json el 2026-10-21 para resolver conflicto con extensión oficial context7@github-JetBrains-junie-extensions; ahora Context7 viene de la extensión instalada en `~/.junie/extensions/github-JetBrains-junie-extensions/context7/`. Skills expuestos por el plugin IDE: 7 skills (context7, database-connection-management, demo-setup, frontend-design, ij-debugger, java-engineer, spring-boot-engineer). Sin skills en `.junie/skills/` del proyecto ni en `~/.junie/skills/`. Sin `mcp.json` de proyecto en `.junie/mcp/`. GitHub MCP usa URL de cliente con header Authorization (token no impreso). Playwright y Chrome DevTools usan npx local.
 
-## MCP servers
+## MCP servers expuestos
+
 | Herramienta | Uso previsto | Estado actual | Alcance/evidencia |
 |---|---|---|---|
-| Context7 | Documentación actualizada de librerías y frameworks | activo verificado | 2026-10-21, IDE; `~/.junie/mcp/mcp.json` URL remota https://mcp.context7.com/mcp. Herramientas mcp_Context7_resolve-library-id y mcp_Context7_query-docs expuestas en sesión |
-| Playwright | Automatización del navegador | activo verificado | 2026-10-21, IDE; `~/.junie/mcp/mcp.json` npx @playwright/mcp@latest. Herramientas mcp_Playwright_* expuestas en sesión |
-| ChromeDevTools | Snapshot, red, performance y screenshots de Chrome | activo verificado | 2026-10-21, IDE; `~/.junie/mcp/mcp.json` npx chrome-devtools-mcp@latest. Herramientas mcp_ChromeDevTools_* expuestas en sesión |
-| GitHub | Repositorios, PRs, issues, commits y búsqueda | activo verificado | 2026-10-21, IDE; `~/.junie/mcp/mcp.json` URL cliente con auth. Herramientas mcp_GitHub_* expuestas en sesión. Sonda: `gh pr view 1` exit0, PR OPEN |
-| junie-cli-docs | Documentación interna de Junie; puede presentarse como subagente según la instalación | activo verificado | 2026-10-21, IDE; disponible como custom agent en CAPABILITIES. No requiere MCP, se spawnea como subagente |
+| Context7 | Documentación actualizada de librerías y frameworks | expuesto/listado | 2026-10-21, IDE; extensión oficial context7@github-JetBrains-junie-extensions en `~/.junie/extensions/`. MCP removido de mcp.json manual para evitar conflicto. Herramientas mcp_Context7_resolve-library-id y mcp_Context7_query-docs expuestas en sesión; llamada MCP no demostrada |
+| Playwright | Automatización del navegador | expuesto/listado | 2026-10-21, IDE; `~/.junie/mcp/mcp.json` npx @playwright/mcp@latest. Herramientas mcp_Playwright_* expuestas en sesión; llamada MCP no demostrada |
+| ChromeDevTools | Snapshot, red, performance y screenshots de Chrome | expuesto/listado | 2026-10-21, IDE; `~/.junie/mcp/mcp.json` npx chrome-devtools-mcp@latest. Herramientas mcp_ChromeDevTools_* expuestas en sesión; llamada MCP no demostrada |
+| GitHub | Repositorios, PRs, issues, commits y búsqueda | expuesto/listado | 2026-10-21, IDE; `~/.junie/mcp/mcp.json` URL cliente con auth. Herramientas mcp_GitHub_* expuestas en sesión. Sonda CLI: `gh pr view 1` exit0, PR OPEN — gh acredita CLI autorizado, no llamada MCP |
 
-Origen de los 4 MCP: configuración de usuario `~/.junie/mcp/mcp.json` (no de proyecto). junie-cli-docs es built-in del plugin IDE. Sin `mcp.json` en `.junie/mcp/` del proyecto.
+Origen: 3 MCP de usuario en `~/.junie/mcp/mcp.json` (Playwright, Chrome DevTools, GitHub) + Context7 de extensión oficial. Sin `mcp.json` en `.junie/mcp/` del proyecto.
 
-Sonda propia de Junie, 2026-10-21, superficie IDE: `junie --version` → **26.10.12 (3659.7)** exit0. Los 4 MCP de usuario están activos y expuestos como herramientas en esta sesión. junie-cli-docs disponible como custom agent. La versión CLI no prueba modelo/sesión, pero la presencia de herramientas MCP en la sesión sí acredita los servers activos.
+## Agente integrado
 
-## Agent Skills
+| Herramienta | Uso previsto | Estado actual | Alcance/evidencia |
+|---|---|---|---|
+| junie-cli-docs | Documentación interna de Junie; puede presentarse como subagente según la instalación | expuesto/listado | 2026-10-21, IDE; disponible como custom agent built-in en CAPABILITIES. No es MCP server, se spawnea como subagente. Uso no demostrado |
+
+## Agent Skills listadas
+
 | Skill | Uso previsto | Estado actual | Alcance/evidencia |
 |---|---|---|---|
-| context7 | Docs de librerías mediante Context7 MCP | activo verificado | 2026-10-21, IDE; skill expuesta en CAPABILITIES, requiere Context7 MCP activo |
-| database-connection-management | Conexiones BD en DataGrip/IDE | activo verificado | 2026-10-21, IDE; skill expuesta en CAPABILITIES |
-| demo-setup | Configuración de `/demo` | activo verificado | 2026-10-21, IDE; skill expuesta en CAPABILITIES |
-| frontend-design | Diseño de interfaces web | activo verificado | 2026-10-21, IDE; skill expuesta en CAPABILITIES |
-| ij-debugger | Análisis de runtime con debugger de IntelliJ | activo verificado | 2026-10-21, IDE; skill expuesta en CAPABILITIES |
-| java-engineer | Políticas y buenas prácticas Java | activo verificado | 2026-10-21, IDE; skill expuesta en CAPABILITIES |
-| spring-boot-engineer | Spring Boot4.x/Framework7/Security7/Hibernate7/Jackson3 | activo verificado | 2026-10-21, IDE; skill expuesta en CAPABILITIES |
+| context7 | Docs de librerías mediante Context7 MCP | expuesto/listado | 2026-10-21, IDE; skill expuesta en CAPABILITIES, requiere Context7 MCP activo. Uso no demostrado |
+| database-connection-management | Conexiones BD en DataGrip/IDE | expuesto/listado | 2026-10-21, IDE; skill expuesta en CAPABILITIES. Uso no demostrado |
+| demo-setup | Configuración de `/demo` | expuesto/listado | 2026-10-21, IDE; skill expuesta en CAPABILITIES. Uso no demostrado |
+| frontend-design | Diseño de interfaces web | expuesto/listado | 2026-10-21, IDE; skill expuesta en CAPABILITIES. Uso no demostrado |
+| ij-debugger | Análisis de runtime con debugger de IntelliJ | expuesto/listado | 2026-10-21, IDE; skill expuesta en CAPABILITIES. Uso no demostrado |
+| java-engineer | Políticas y buenas prácticas Java | expuesto/listado | 2026-10-21, IDE; skill expuesta en CAPABILITIES. Uso no demostrado |
+| spring-boot-engineer | Spring Boot4.x/Framework7/Security7/Hibernate7/Jackson3 | expuesto/listado | 2026-10-21, IDE; skill expuesta en CAPABILITIES. Uso no demostrado |
 
-Los 7 skills están expuestos por el plugin IDE en esta sesión. Sin skills en `.junie/skills/` del proyecto ni en `~/.junie/skills/`.
+Sonda propia de Junie, 2026-10-21, superficie IDE: `junie --version` → **26.10.12 (3659.7)** exit0. 4 MCP servers expuestos como herramientas en esta sesión, sin llamada MCP demostrada. junie-cli-docs disponible como custom agent built-in. La versión CLI no prueba modelo/sesión; la presencia de herramientas MCP en la sesión acredita exposición, no uso activo.
+
+Los 7 skills están expuestos por el plugin IDE en esta sesión. Sin skills en `.junie/skills/` del proyecto ni en `~/.junie/skills/`. Exposición no acredita uso.
 
 La skill es instrucción reutilizable, el MCP expone herramientas: disponer de uno no demuestra disponer del otro. Consultar solo las skills pertinentes, sin cargar todas por rutina.
 

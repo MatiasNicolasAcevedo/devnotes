@@ -126,11 +126,17 @@ Rama chore/t-000-adoption, árbol limpio. HEAD `6e9683a188d8d351b95b6badb60e1cfc
 
 Configuración MCP de usuario en `~/.junie/mcp/mcp.json`: 4 servers (Playwright, Chrome DevTools, Context7, GitHub). Sin mcp.json de proyecto en `.junie/mcp/`. Skills expuestos por plugin IDE: 7 skills (context7, database-connection-management, demo-setup, frontend-design, ij-debugger, java-engineer, spring-boot-engineer). Sin skills en `.junie/skills/` del proyecto ni en `~/.junie/skills/`. junie-cli-docs disponible como custom agent built-in.
 
-Todos los MCP y skills están activos y expuestos como herramientas en esta sesión. Detalle y evidencia en [.junie/TOOLS.md](../../.junie/TOOLS.md).
+Los MCP y skills están expuestos como herramientas en esta sesión; la exposición no acredita uso activo. Detalle y evidencia en [.junie/TOOLS.md](../../.junie/TOOLS.md).
 
 ### Veredicto E-01
 
-E-01 completado: inventario y sondas de herramientas Junie registrados con fecha, superficie, origen y estado. Las herramientas indispensables (lectura/edición repo, Git Bash/Node/Docker, Git/PR/CI, docs-check) están operativas. Sin bloqueantes. TOOLS.md actualizado con evidencia saneada, sin secretos ni configuración privada impresa.
+E-01 pendiente de aceptación: inventario y sondas de herramientas Junie registrados con fecha, superficie, origen y estado. Las herramientas indispensables (lectura/edición repo, Git Bash/Node/Docker, Git/PR/CI, docs-check) están operativas. Sin bloqueantes. TOOLS.md actualizado con evidencia saneada, sin secretos ni configuración privada impresa.
+
+**Corrección 2026-10-21, sesión propia Junie tras R2:** la conclusión anterior «E-01 completado» se rectifica. R2 identificó que TOOLS afirmaba «activo verificado» con evidencia de sola exposición. El dueño autorizó limitar estados a lo efectivamente demostrado. Se separan cuatro MCP expuestos, un agente integrado junie-cli-docs y siete skills listadas; el estado pasa a **expuesto/listado** donde solo hay exposición. La evidencia histórica de sondas CLI (Git Bash/Node/Docker/gh/docs-check) se conserva válida; G-02 permanece verificado. E-01 sigue pendiente de aceptación del dueño tras esta corrección publicada.
+
+### Trazabilidad de esta sesión de corrección
+
+2026-10-21, sesión propia Junie implementer para corrección documental autorizada. Raíz/checkout `C:\D\matias\proyectos-ia\devnotes`, rama `chore/t-000-adoption`. Instrucciones efectivamente leídas: `AGENTS.md`, `docs/STATUS.md`, `docs/tasks/T-000-adoption.md` (checkpoint vigente frontera planner, contrato de corrección y evidencia Junie/R2), `docs/AUTONOMY.md`, `docs/TESTING.md`, `docs/HANDOFF.md`, `.junie/TOOLS.md`. Superficie IDE IntelliJ IDEA/AIR (plugin Junie), terminal PowerShell. Modelo expuesto por entorno: Qwen/Qwen3.6-27B-FP8. Esfuerzo no expuesto (no inferido de catálogos). Impacto: corrección documental de TOOLS/T-000/STATUS; sin cambios de comportamiento, API, permisos, datos o UI.
 
 ## Revisión R1 conservada
 
@@ -210,6 +216,7 @@ Publicación de frontera: únicamente esta tarea, STATUS y la referencia de cont
 | 2026-10-20 | Tests de junction rechazados por sandbox (EPERM), sin fallo de lógica demostrado | Ejecutar mismas suites en host autorizado, sin alterar tests | 62 dirigidos y83 CI local verdes; logs propios |
 | 2026-10-20 | Defaults de Link podían añadir attrs fuera del contrato JSON; hook por página podía perder dirty al desmontar | Especificar href-only y coordinador de borrador/cola por identidad sobre Outlet | docs-check verde; ejecución futura T-005/T-006/T-007, sin afirmar runtime |
 | 2026-10-21 | R1/R2 agotadas con E-01 por exposición presentada como uso verificado y trazabilidad incompleta | Dueño elige una corrección documental propia Junie y devolución al dueño; contrato acotado arriba, sin R3 automática | HEAD/base/CI de R2 comprobados por frontera; aceptación E-01 todavía pendiente |
+| 2026-10-21 | TOOLS afirmaba «activo verificado» con evidencia de sola exposición; conclusión «E-01 completado» incompatible | Sesión propia Junie: cuatro MCP expuestos, agente integrado, siete skills listadas; estados a expuesto/listado; conclusión rectificada; trazabilidad añadida | docs-check exit0, git diff --check exit0; STARTER conservado con mismas fuentes/base |
 
 ## Cierre y siguiente tarea
 
