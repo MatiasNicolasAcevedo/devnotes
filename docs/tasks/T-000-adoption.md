@@ -1,6 +1,6 @@
 ---
 id: T-000
-status: changes_requested
+status: in_progress
 priority: P1
 size: M
 executor: frontier
