@@ -1,10 +1,9 @@
-# starter-spring-react
+# DevNotes
 
-Base inicial genérica MIT: Java 21 / Spring Boot 4.1.1, React/TypeScript/Vite/MUI y PostgreSQL 18. Incluye autenticación por sesión, referencia CRUD removible, pruebas y desarrollo local sin Google real.
+DevNotes · MIT · Matias Nicolas Acevedo. Slug `devnotes`; identidad Java: `com.example.devnotes`.
 
-Estado: ajustes de la base inicial en curso, pendientes de revisión. [Acción actual](docs/STATUS.md), [contexto](PROJECT_CONTEXT.md), [despliegue económico propuesto](docs/DEPLOYMENT.md). Cada aplicación define su idea y sus permisos con frontera antes de implementarlos con Junie.
+Editor de notas diarias privadas con enlaces, separadores y copia manual por fecha. Contexto y autonomía propios acordados; validación de adopción en [T-000](docs/tasks/T-000-adoption.md), acción vigente en [STATUS](docs/STATUS.md). Primera iteración completa y ruta Junie: [ROADMAP](docs/ROADMAP.md) y [BACKLOG](docs/BACKLOG.md). Negocio aún sin implementar. Ninguna prueba ni permiso GitHub se hereda; Google real pendiente del dueño, OIDC local con datos ficticios.
 
-<!-- adoption-guide:start -->
 ## Qué incluye esta base
 
 | Área | Ya configurado en el repositorio |
@@ -71,7 +70,7 @@ Cada tarea conserva una bitácora corta de correcciones significativas: problema
 
 Tu intervención diaria es copiar el único prompt de STATUS y abrir una sesión nueva del rol indicado: implementar, revisar/corregir o continuar con la siguiente tarea. El prompt lleva tarea/rama/PR, precondición y primera acción. Antes de pasar a la siguiente comprueba el cierre de la anterior; no tenés que reconstruir el contexto ni editar el tablero a mano. Si corresponde volver a frontera, el prompt explica qué objetivo se cumplió o qué decisión falta.
 
-Junie Lite con Qwen 3.6 27B es configuración declarada por el dueño, no ejecución comprobada. Hay un [microensayo unitario preparado](docs/templates/junie-trial.md); su resultado debe venir de Junie. No añade una feature de demostración.
+Modelo/superficie Junie de DevNotes pendientes de comprobar en su propia sesión; no heredar la declaración Junie Lite/Qwen del starter. La primera revisión T-000 será frontera y no acredita capacidades Junie; el contrato conserva la comprobación propia pendiente. El [microensayo genérico](docs/templates/junie-trial.md) se conserva como referencia, sin tarea/PR adicional en I1.
 
 ## Modo local explícito sin credenciales
 
@@ -113,5 +112,4 @@ FULL cotidiano conserva backend/IT PostgreSQL, client y Playwright reales; los e
 
 El formulario genérico está versionado en docs/templates/project-context.md. Podés dárselo a frontera con la idea ya elaborada; después del inicializador las respuestas reemplazan PROJECT_CONTEXT raíz. El formulario permanece reutilizable en el repo y no hace falta copiar `plantilla/` a una aplicación nueva. El kit local no es necesario; su retiro corresponde al dueño. Ningún script lo copia o borra.
 
-Para una primera prueba acotada de Junie, está el [microensayo de mensaje vacío](docs/templates/junie-trial.md): una transformación frontend existente y su prueba unitaria, sin otra feature ni backend. Ejecutarlo en una copia descartable propia cuando la tarea vigente lo habilite y devolver diff, rutas de instrucciones, modelo realmente expuesto y logs rojo/verde. Ese resultado acredita únicamente el ensayo ejecutado, sin Google real. Para el estado y orden actuales, seguir únicamente STATUS.
-<!-- adoption-guide:end -->
+El [microensayo de mensaje vacío](docs/templates/junie-trial.md) se conserva como recurso genérico; no es la ruta activa de DevNotes ni una ejecución habilitada en esta adopción. La primera revisión T-000 será frontera en sesión nueva; las capacidades Junie se acreditan en su propia superficie y la primera implementación de producto es T-001 al cumplir sus precondiciones. Para retomar, seguir únicamente STATUS.

@@ -1,6 +1,10 @@
-# Arquitectura de Starter
+# Arquitectura de DevNotes
 
-Base genérica; evidencia de cada cambio registrada en su tarea/PR. Versiones: DEPENDENCIES, decisiones duraderas: adr/.
+Base técnica existente; evidencia propia de cada cambio en su tarea/PR. Versiones: DEPENDENCIES, decisiones duraderas: adr/.
+
+## Extensión acordada I1 (todavía no implementada)
+
+Feature daily con domain/application/persistence/web: notas por dueño+fecha, documento JSONB validado y revisión CAS; copia manual independiente en la misma feature, sin acceso cruzado a repositorios. V3/V4 nuevas, V1/V2 inmutables. SPA features/daily con Tiptap OSS de esquema limitado, cola serial de guardado, fechas locales explícitas y renderer readonly compartido. Contratos exactos: [S-101](specs/S-101-daily-notes.md) y [S-104](specs/S-104-daily-versions.md); interacción en [S-102](specs/S-102-text-links.md) y [S-103](specs/S-103-separators.md). Sin nueva auth, infraestructura, servicios cloud ni persistencia de contenido en navegador. La referencia permanece como ejemplo técnico durante I1, sin borrar datos ni debilitar sus pruebas/cobertura.
 
 ## Vista general
 Monolito modular Spring Boot `/api/v1` + SPA React/nginx o Vite + PostgreSQL 18.6. El navegador usa un único origen client; API/OIDC/logout atraviesan el proxy sin CORS. El server queda interno salvo diagnóstico loopback explícito con forwarding none.
@@ -11,7 +15,7 @@ navegador → client (SPA/proxy) → server (MVC/Security/JPA) → db
 ```
 
 ## Backend y datos
-Paquete neutral `com.example.starter`, groupId com.example, artifactId starter-server. Feature contiene controller/DTO/servicio/persistencia; separar web/application/persistence/domain al crecer. Sin ciclos ni acceso al repositorio de otra feature.
+Paquete neutral `com.example.devnotes`, groupId com.example, artifactId devnotes-server. Feature contiene controller/DTO/servicio/persistencia; separar web/application/persistence/domain al crecer. Sin ciclos ni acceso al repositorio de otra feature.
 identity crea/recupera app_user por issuer/subject, UUID v7 y constraint única; email/nombre mutables sin otorgar permisos. security mantiene OIDC/sesión/CSRF/origen. shared/error ofrece ProblemDetail con errors de campo ordenados. system expone GET /api/v1/system/info con nombre/versión reales.
 Flyway V1 se conserva, JPA validate y open-in-view=false. Instant/TIMESTAMPTZ y JVM UTC; Clock inyectado. DB de pruebas efímera separada del volumen de desarrollo. El dominio de cada aplicación se define en su contexto.
 La feature CRUD privada `reference` agrega V2, consultas por dueño y contrato S-003. Conexiones y retiro seguro en [REFERENCE](REFERENCE.md); readiness DB y pantalla conectada incluidas.

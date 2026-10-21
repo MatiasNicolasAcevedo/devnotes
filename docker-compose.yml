@@ -3,7 +3,7 @@
 # - client-dev: perfil "dev" (Vite con HMR, opcional).
 # - server-tests, client-tests y docs-check: perfil "verify", los invoca scripts/verify.sh.
 # Los defaults coinciden con .env.example; un .env local (ignorado) puede sobrescribirlos.
-name: starter
+name: devnotes
 
 services:
   db:

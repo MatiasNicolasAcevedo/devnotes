@@ -11,7 +11,7 @@ COPY mvnw pom.xml ./
 RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -ntp -q dependency:resolve
 COPY src/ src/
 RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -ntp -DskipTests package \
-    && cp target/starter-server-*.jar /workspace/app.jar
+    && cp target/devnotes-server-*.jar /workspace/app.jar
 
 FROM ${JRE_IMAGE} AS runtime
 RUN groupadd --system app && useradd --system --gid app --home-dir /app --no-create-home app
