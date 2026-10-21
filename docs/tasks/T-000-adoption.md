@@ -1,10 +1,10 @@
 ---
 id: T-000
-status: in_review
+status: mergeable
 priority: P1
 size: M
 executor: frontier
-role: reviewer
+role: merger
 milestone: M0
 spec: null
 spec_version: null
@@ -208,7 +208,7 @@ Verificación propia de frontera: `node scripts/docs-check.mjs` exit0 (60 Markdo
 
 Publicación de frontera: únicamente esta tarea, STATUS y la referencia de continuidad H-03/HANDOFF; TOOLS concurrente queda fuera. Antes de publicar: docs-check/diff-check, kit no rastreado y staging explícito. Tras commit: docs-check del contenido publicado en extracción aislada sin Git/kit; tras push normal: comprobar refs remotos y CI del SHA final. Resultados y SHA de transición se entregan en el chat, sin emitir veredicto revisor ni añadir otro commit solo para registrar su propio SHA. Sin stacks creados ni cleanup Docker requerido.
 
-## Checkpoint vigente · corrección aceptada y revisión de cierre autorizada
+## Decisión del dueño conservada · corrección aceptada y revisión de cierre autorizada
 
 2026-10-21, sesión FRONTERA planner con el dueño, Codex desktop/API y terminal PowerShell/Node/Git/gh; modelo GPT-6 expuesto, variante/esfuerzo efectivos no expuestos. Raíz `C:\D\matias\proyectos-ia\devnotes`, rama `chore/t-000-adoption`. Leídos AGENTS, PROJECT_CONTEXT, STATUS, esta tarea, AUTONOMY, HANDOFF, TOOLS, ORCHESTRATION, protocolos planner/implementer/reviewer/merger y reglas pertinentes de TESTING. Impacto: aceptación E-01 y claridad del procedimiento documental; sin cambios de comportamiento, API, permisos, datos o UI de producto. Sin revisión R3 ni veredicto del PR por esta sesión.
 
@@ -232,6 +232,22 @@ Publicación de esta sesión: solo esta tarea, STATUS, HANDOFF y ORCHESTRATION/p
 
 Verificación documental: `node scripts/docs-check.mjs` exit0, 60 Markdown/15 tareas/HANDOFF 21/22; `git diff --check` exit0. Primer intento de `node --test scripts/ci/docs-check.test.mjs`:19/20; la fixture de desacuerdo BACKLOG/tarea fuerza `blocked` y presupone que T-000 no tiene ese estado; usarlo también en la tarea hizo coincidir ambos lados del negativo. Se conserva el test y se precisa el estado vigente `in_review` por implementación publicada y revisión pendiente, con autorización faltante explícita; no implica iniciar otra ronda. Repetición exit0:20/20 pass,0 fail/skipped. Huella técnica236/236 intacta y auditoría exit0; CI del SHA publicado se comprueba antes de entregar.
 
+## Checkpoint vigente · revisión independiente de cierre favorable
+
+2026-10-21, sesión nueva **FRONTERA reviewer independiente**, única revisión adicional expresamente autorizada por el dueño tras R1/R2; continúa como merger si cumple AUTONOMY. Codex desktop/API, terminal PowerShell/Node/Git/gh; modelo GPT-6 expuesto, variante/esfuerzo efectivos no expuestos. Raíz `C:\D\matias\proyectos-ia\devnotes`, rama `chore/t-000-adoption`. Leídos AGENTS raíz/server/client, PROJECT_CONTEXT, STATUS, T-000/T-001, AUTONOMY, reviewer/merger, HANDOFF, TESTING, ORCHESTRATION, TOOLS, specs S-101…104 y contratos T-002…014. Impacto propio: transición documental de T-000/STATUS/HANDOFF; sin cambios de comportamiento, API, permisos, datos o UI. Sin delegación, instalación, autenticación ni ejecución de Junie.
+
+Recibido árbol e índice limpios, HEAD local/publicado `f06d2c54bb03db0a08bb452a44d4a1a147fbb9a8`, base publicada `fa52e546d24a412fd5729f4b15b8a4103cb3071a`. PR1 único abierto, no draft, contra main, MERGEABLE/CLEAN, sin reviews ni hilos; último veredicto R2 CAMBIOS REQUERIDOS consultado íntegro. `verify-required` SUCCESS del HEAD exacto recibido, [run39652726995/job119404965131](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/39652726995/job/119404965131). Squash habilitado. Conector GitHub no encuentra este privado y shell restringido falla red; alternativa Git/gh en host autorizado exit0. No se cambian settings/protecciones ni se atribuye enforcement.
+
+**Resultado de revisión: sin bloqueantes.** Revisado diff publicado completo de115 rutas, personalización mecánica, contratos/dependencias/pruebas I1, corrección propia Junie aceptada y aclaraciones de ORCHESTRATION/protocolos. E-01 conserva aceptación expresa del dueño: cuatro MCP expuestos, agente integrado y siete skills listadas, sin atribuir llamadas/uso activo; sondas CLI válidas y G-02 conservados. La trazabilidad Junie y rectificación satisfacen la salida R2. El traspaso distingue entrega, aceptación, APROBADO independiente y MERGED; no amplía permisos, rondas ni alcance. Ningún negocio I1 ni CA-01…06 se anuncia implementado/aceptado.
+
+Auditoría propia `node .orchestrator/t000/review-audit.mjs` exit0:236/236 huellas coincidentes, before/after idénticos, SHA256 `DB9568E00B60F3BC02A5E0C48BEB3B2862FAA868C08247CFE493F86A80A4798C`;66 Java solo sustituyen paquete,67 rutas antiguas ausentes, kit no rastreado, desde gate solo Markdown. Inspeccionados starter.exit=0, timings/logs y cleanup/final-audit: docs/server/client/tooling/e2e exit0,91 unitarios/slices+75 IT PostgreSQL18,133 client,15 Playwright finales; canario negativo separado y nueve namespaces propios sin residuos. STARTER conservado sobre `f082659d3d24d7a5a1eabd17fe8dc939a3b28b51` y base indicada; perfil completo FULL/STARTER confirmado por clasificador, sin repetir FULL ni sondas por esta transición.
+
+Controles sobre HEAD recibido: `node scripts/docs-check.mjs` exit0 (60 Markdown/15 tareas/HANDOFF21/22); `git diff --check fa52e546d24a412fd5729f4b15b8a4103cb3071a HEAD` exit0. Antes de publicar esta transición: docs-check/diff-check y regresiones documentales afectadas; resultados abajo. Estado preparado `mergeable`, sin done ni APROBADO anticipados: el veredicto canónico se publica en PR1 **después** del commit/push documental, al comprobar refs finales y `verify-required` SUCCESS del HEAD exacto. Si falla un check, checkpoint al dueño sin otra ronda automática.
+
+Transición final comprobada: `node scripts/docs-check.mjs` exit0,60 Markdown/15 tareas/HANDOFF21/22; `git diff --check` exit0; `node --test scripts/ci/docs-check.test.mjs` exit0,20/20 pass,0 fail/cancelled/skipped, sin cambios de tests. Solo T-000/STATUS/HANDOFF se publican; BACKLOG y T-001 no cambian. No se crearon stacks ni recursos Docker, sin cleanup adicional que ejecutar.
+
+Próximo responsable: esta misma sesión reviewer→merger, ligada al SHA final del comentario, reconsulta HEAD/base/conversaciones y ejecuta squash elegible sin bypass; confirma MERGED/SHA/fecha y comenta cierre en PR1. No hacer commits después de APROBADO ni del merge. G-03 sigue pendiente hasta esa confirmación; su evidencia final vive en PR1. STATUS prepara una sesión nueva Junie implementer T-001 con precondición observable MERGED/conciliación, sin iniciarla aquí. El siguiente implementer concilia done/HANDOFF/cola en el primer avance de su rama exacta desde main; T-001 permanece draft hasta entonces.
+
 ## Correcciones significativas
 
 | Fecha | Causa | Corrección | Prueba |
@@ -243,7 +259,8 @@ Verificación documental: `node scripts/docs-check.mjs` exit0, 60 Markdown/15 ta
 | 2026-10-21 | TOOLS afirmaba «activo verificado» con evidencia de sola exposición; conclusión «E-01 completado» incompatible | Sesión propia Junie: cuatro MCP expuestos, agente integrado, siete skills listadas; estados a expuesto/listado; conclusión rectificada; trazabilidad añadida | docs-check exit0, git diff --check exit0; STARTER conservado con mismas fuentes/base |
 | 2026-10-21 | Dueño acepta corrección y señala circuito de cierre ambiguo: entrega del autor, aceptación y aprobación independiente confundidas | E-01 aceptado; responsabilidades y condiciones de traspaso explícitas en ORCHESTRATION/protocolos. G-03 separado, con propuesta de revisión adicional pendiente de autorización | Comprobaciones y publicación en checkpoint vigente; no APROBADO ni merge por planner |
 | 2026-10-21 | G-03 necesitaba autorización específica tras R1/R2 | Dueño autoriza una única sesión nueva FRONTERA reviewer, con merge en la misma sesión si elegible; STATUS sustituye el prompt planner por ese cierre | Refs/CI recibidos86b5143/basefa52e54 comprobados; docs-check/diff-check y CI del nuevo HEAD antes de entregar |
+| 2026-10-21 | Cierre independiente G-03 autorizado tras corrección Junie aceptada | Diff vigente sin bloqueantes; transición favorable y prompt T-001 condicionado a MERGED/conciliación; aprobación y squash solo con CI del SHA final | Auditoría236/236, docs-check/diff-check y20/20 regresiones documentales; veredicto/merge finales en PR1 |
 
 ## Cierre y siguiente tarea
 
-No done hasta MERGED. E-01 aceptado por el dueño; G-02 conserva verificación. G-03 pasa a la única sesión nueva FRONTERA reviewer de cierre expresamente autorizada, con aprobación y merge elegibles en esa misma sesión si corresponde. Solo tras APROBADO independiente y merge elegible, una sesión nueva Junie implementer [T-001](T-001-document-contract.md) verifica MERGED/capacidad propia y concilia adopción antes de comenzar. T-001 sigue draft; no aceptar producto por cerrar adopción, I1 todavía sin implementar.
+No done hasta MERGED y conciliación. Revisión de cierre favorable; E-01 aceptado por el dueño y G-02 conservado. Esta misma sesión publica APROBADO del HEAD/base finales solo tras CI exacta verde y continúa al merge elegible; confirmación y fecha en PR1, sin commit posterior. El único prompt de STATUS entrega la sesión nueva Junie implementer [T-001](T-001-document-contract.md), que comprueba MERGED/capacidad propia y concilia adopción en su rama antes de implementar. T-001 sigue draft hasta cumplirlo; I1 todavía sin implementar.
