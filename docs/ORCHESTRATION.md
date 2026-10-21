@@ -54,4 +54,22 @@ Checkpoint vigente para retoma; tabla breve por tarea para correcciones signific
 
 STATUS contiene un único prompt ejecutable; la tarea guarda evidencia y siguiente experimento. Un bloqueo incluye causa concreta y salida propuesta; si falta autorización, preguntar la decisión necesaria en vez de repetir el prompt condicionado. Una decisión nueva se registra y sustituye la precondición anterior.
 
+## Entrega, aceptación y aprobación del PR
+
+Cada cierre de sesión distingue estas evidencias y nombra su emisor:
+
+| Evidencia | Quién la emite | Qué acredita |
+|---|---|---|
+| Implementación o corrección publicada | implementer | Cambios entregados y pruebas ejecutadas; resultado «listo para revisión» cuando corresponde |
+| Gate local y CI verde | comandos y checks del SHA indicado | Verificación técnica en su alcance; no es un veredicto de revisión |
+| Aceptación de una decisión o criterio | dueño | La decisión o criterio concreto aceptado, registrado en la tarea; no sustituye la revisión independiente del PR |
+| `APROBADO` del PR | reviewer en sesión independiente | Veredicto canónico publicado en el PR con HEAD/base exactos; habilita merge si se cumplen las demás condiciones de AUTONOMY |
+| `MERGED` | GitHub, comprobado por merger | Merge confirmado con SHA/fecha; permite conciliación por la siguiente tarea |
+
+El implementer no presenta su entrega como `APROBADO` del PR. Si un resumen o chat usa «aprobado», comprobar emisor, alcance, enlace y SHA antes de atribuirle ese efecto. El estado `mergeable` requiere el veredicto y los checks vigentes; CI verde o aceptación del dueño por sí solas no lo acreditan.
+
+Cada traspaso deja en la tarea el resultado, el pendiente exacto, el próximo responsable y la condición de salida; STATUS ofrece una sola acción ejecutable. Evitar «volver al dueño» o «falta aprobación» sin nombrar la decisión o el veredicto que falta y quién debe emitirlo. El reviewer define la salida observable de cada hallazgo para que el implementer pueda corregirlo sin reinterpretar la aceptación. Tras una corrección ordinaria, continuar con revisión independiente dentro de las rondas permitidas, sin paso rutinario por planner.
+
+Al agotar las rondas, el checkpoint al dueño debe proponer una salida completa: corrección necesaria, evidencia que se conservará, quién verificará su cierre y cómo se llegará a aprobación/merge. Si esa salida exige otra revisión, pedir su autorización explícita antes de programarla. La aceptación del criterio por el dueño cierra ese pendiente y no se vuelve a pedir; cualquier condición de merge restante se identifica por separado. Estos límites no crean aprobaciones, rondas o permisos automáticos.
+
 Dispatcher, adaptador de resultados JSON, locks y automatizaciones de sesiones quedan fuera del cierre del starter. Reconsiderar esa infraestructura solo con una tarea futura y necesidad observada.

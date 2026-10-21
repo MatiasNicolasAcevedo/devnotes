@@ -3,13 +3,13 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-000](tasks/T-000-adoption.md) |
-| Estado | changes_requested |
-| Acción actual | Corrección documental Junie publicada: TOOLS limita estados a exposición, T-000 rectifica E-01; devolver al dueño para decidir cierre |
+| Estado | in_review |
+| Acción actual | E-01 aceptado por el dueño; decidir autorización excepcional de revisión independiente final para G-03 |
 | Rama / PR | chore/t-000-adoption · [PR #1](https://github.com/MatiasNicolasAcevedo/devnotes/pull/1) |
 
-Corrección documental ejecutada por Junie implementer en sesión propia 2026-10-21: TOOLS separa cuatro MCP expuestos, un agente integrado junie-cli-docs y siete skills listadas; estados a **expuesto/listado** donde solo hay exposición. Conclusión «E-01 completado» rectificada en T-000; trazabilidad de sesión añadida. Sondas CLI válidas y G-02 conservados. STARTER mantenido con mismas fuentes técnicas/base. [HANDOFF](HANDOFF.md) mantiene NO_LISTO 20/22, E-01 y G-03 pendientes. PR abierto, sin aprobación ni merge; T-001 sigue draft.
+La corrección documental Junie está aceptada; no hay otra corrección ni aceptación E-01 pendiente. [HANDOFF](HANDOFF.md) mantiene NO_LISTO21/22, solo G-03 pendiente. T-000 contiene causa del traspaso ambiguo, aclaración del procedimiento y propuesta completa de salida. Estado in_review por implementación publicada y revisión pendiente, aún sin reviewer programado: falta autorizar la revisión adicional tras R1/R2 para llegar a APROBADO del HEAD/base finales y merge elegible. Esta sesión planner no emite veredicto. T-001 sigue draft.
 
 ### Prompt de la siguiente sesión
 ```text
-Sesión nueva de FRONTERA, rol planner, con el dueño para decidir el cierre de T-000 tras la corrección documental publicada por Junie. Repositorio C:\D\matias\proyectos-ia\devnotes; rama chore/t-000-adoption, PR #1. Leer AGENTS.md, docs/STATUS.md, docs/tasks/T-000-adoption.md (corrección Junie y contrato vigente), docs/AUTONOMY.md, docs/HANDOFF.md y .junie/TOOLS.md. Comprobar git status, HEAD/base publicados, PR/CI y último veredicto. La corrección limita estados a exposición demostrada: cuatro MCP expuestos, agente integrado junie-cli-docs, siete skills listadas; E-01 pendiente de aceptación, G-03 pendiente. El dueño decide si acepta el cierre tras esta corrección o requiere acción adicional. Sin R3 automática ni programación de reviewer. T-001 permanece draft hasta cierre elegible, MERGED y conciliación de T-000.
+Retomar T-000 como FRONTERA planner con el dueño únicamente para resolver la propuesta de cierre G-03 del checkpoint vigente. Repositorio C:\D\matias\proyectos-ia\devnotes; rama chore/t-000-adoption, PR #1. Leer AGENTS.md, docs/STATUS.md, docs/tasks/T-000-adoption.md (checkpoint vigente), docs/AUTONOMY.md y docs/ORCHESTRATION.md (entrega/aceptación/aprobación). Comprobar Git/HEAD/base/PR/CI y último veredicto. E-01 ya está aceptado: no pedir otra aceptación ni corrección o sondas Junie. La decisión restante es autorizar o no la única revisión adicional excepcional de T-000 descrita en la tarea, para emitir veredicto independiente y continuar al merge si es elegible. No programar reviewer ni R3 sin esa autorización; registrarla y sustituir este prompt cuando el dueño decida. No volver a investigar evidencia conservada sin cambio material. T-001 sigue draft hasta cierre elegible, MERGED y conciliación de T-000.
 ```
