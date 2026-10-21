@@ -1,9 +1,9 @@
-# AGENTS · Starter
+# AGENTS · devnotes
 
 ## Contrato
 Contexto y alcance: PROJECT_CONTEXT.md. Entrada diaria: docs/STATUS.md → tarea actual y sus referencias concretas. Leer además server/AGENTS.md o client/AGENTS.md al tocar esa capa; Junie debe leerlos explícitamente. Protocolos por rol en docs/agents/; no recorrer todo docs/ por rutina.
 Herramientas externas de Junie: [.junie/TOOLS.md](.junie/TOOLS.md), única fuente del inventario/estado comprobado. Consultar lo pertinente; declarado no equivale a activo. No inferir herramientas Junie desde las de otro agente ni instalar/autenticar/delegar por ese inventario.
-Java 21, Spring Boot 4.1.1, paquete `com.example.starter`, PostgreSQL 18 obligatorio; React/TypeScript estricto/Vite/MUI. Conservar versiones de docs/DEPENDENCIES.md, wrappers y lockfiles; usar su gestor para cambiarlos. Cada CLAUDE.md contiene solo `@AGENTS.md`.
+Java 21, Spring Boot 4.1.1, paquete `com.example.devnotes`, PostgreSQL 18 obligatorio; React/TypeScript estricto/Vite/MUI. Conservar versiones de docs/DEPENDENCIES.md, wrappers y lockfiles; usar su gestor para cambiarlos. Cada CLAUDE.md contiene solo `@AGENTS.md`.
 
 ## Trabajo diario
 1. Leer STATUS, tarea y protocolo del rol; comprobar git status/último commit y, con Git propio autorizado, PR/CI y HEAD/base/remotos. Preservar cambios existentes y retomar la tarea activa.
@@ -26,8 +26,3 @@ Stacks propios con .env.example o fixtures ficticias, nombres únicos y cleanup 
 Kit local plantilla/ nunca se versiona, publica, empaqueta, copia automáticamente ni borra. La aplicación nueva decide su propia AUTONOMY; no hereda permisos.
 Dev persistente sin Google: `bash scripts/dev.sh up --mode local --proxy nginx --project starter-dev-local-nginx`; parámetros y retoma en SETUP. dev-auth.sh conserva sintaxis/semántica efímeras, no usar para datos persistentes.
 Buscar con rg y leer por rangos; no cargar dependencias, reportes ni lockfiles completos por defecto.
-
-<!-- starter-only:start -->
-## Mantenimiento de esta base
-El starter se mantiene como base inicial genérica. La acción vigente está en STATUS; cada cambio exige contrato, pruebas y revisión independiente. No trasladar tareas, evidencia, permisos ni decisiones del mantenimiento a una aplicación nueva. Las versiones de herramientas se conservan salvo una tarea explícita de actualización. El dueño decide cuándo la base está lista para su uso.
-<!-- starter-only:end -->

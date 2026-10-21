@@ -7,7 +7,7 @@ test('compiled shell displays real API data and recovers accessibly through Rein
   await page.goto('/');
   const data = await (await response).json();
   expect(Object.keys(data).sort()).toEqual(['name', 'version']);
-  expect(data.name).toBe('Starter');
+  expect(data.name).toBe('DevNotes');
   await expect(page).toHaveTitle(data.name);
   await expect(page.getByRole('status')).toContainText(`${data.name} · versión ${data.version}`);
   await expect(page.getByText('Servidor conectado', { exact: true })).toBeVisible();

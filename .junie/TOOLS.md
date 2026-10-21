@@ -3,7 +3,7 @@
 Fuente canónica del inventario declarado y de la última disponibilidad comprobada de MCP servers y Agent Skills para este proyecto. Sirve a Junie CLI y al plugin de IntelliJ IDEA/AIR; no configura, instala ni autoriza herramientas. Reglas y permisos en [AGENTS](../AGENTS.md) y [AUTONOMY](../docs/AUTONOMY.md).
 
 ## Estado y procedencia
-Inventario declarado: cinco MCP y siete skills. La tabla indica disponibilidad declarada, no instalación o ejecución comprobada. Cada sesión Junie verifica las herramientas expuestas en su propio entorno; las de otro agente no acreditan las suyas. No inspeccionar archivos privados globales ni secretos.
+Inventario heredado declarado: cinco MCP y siete skills. Su presencia en esta copia no acredita que el dueño haya elegido/configurado esas herramientas en DevNotes. La tabla indica disponibilidad declarada, no instalación o ejecución comprobada. Cada sesión Junie verifica las herramientas expuestas en su propio entorno; las de otro agente no acreditan las suyas. No inspeccionar archivos privados globales ni secretos.
 
 Estados: **declarado** = informado sin comprobar disponibilidad; **activo verificado** = listado en la sesión indicada y sonda pertinente exitosa; **filtrado/deshabilitado** = existe pero no está expuesto/habilitado en ese contexto; **no instalado** = ausencia comprobada en el alcance indicado, sin generalizar a otros; **error/autorización pendiente** = existe y no se puede usar. Una definición en disco no basta para afirmar activo. Registrar fecha, superficie CLI/IDE/ACP, alcance proyecto/usuario/cliente y evidencia saneada al cambiar un estado.
 
@@ -17,6 +17,8 @@ Estados: **declarado** = informado sin comprobar disponibilidad; **activo verifi
 | junie-cli-docs | Documentación interna de Junie; puede presentarse como subagente según la instalación | declarado | Dueño; naturaleza y acceso efectivos pendientes; no habilita delegación por sí solo |
 
 No se ha confirmado ninguno activo o filtrado en Junie. Los cinco pueden provenir de proyecto, usuario o cliente ACP; verificar el origen real antes de registrar una ruta.
+
+Sonda propia de frontera, 2026-10-20, superficie terminal Windows de este checkout: `Get-Command junie` resuelve launcher local y `junie --version` informa **26.10.12 (3659.7)** (exit0). El sandbox rechazó crear logs globales; no se leyeron esos logs ni configuración privada. Esto acredita launcher/versión CLI, **no** sesión Junie, modelo, MCP, skills ni IDE. Filas permanecen declarado. Próxima comprobación por Junie en sesión revisora T-000 según SETUP; frontera no lanza otra sesión ni atribuye sus propias pruebas a Junie.
 
 ## Agent Skills
 | Skill | Uso previsto | Estado actual | Alcance/evidencia |

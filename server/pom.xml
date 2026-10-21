@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<artifactId>starter-server</artifactId>
+	<artifactId>devnotes-server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Starter Server</name>
+	<name>DevNotes Server</name>
 	<description>API REST genérica del starter</description>
 	<url/>
 	<licenses>

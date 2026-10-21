@@ -4,7 +4,7 @@ La ruta `/reference` demuestra un flujo completo con datos ficticios propios de 
 
 ## Conexiones
 
-Backend en `server/src/main/java/com/example/starter/reference/`: `application/` contiene servicio transaccional, entrada normalizada y DTOs; `persistence/` entidad y consultas por UUID de dueño; `web/` controller, advice de errores y metadata OpenAPI. El controller extrae exclusivamente `LocalOidcUser.identity().id()`; servicio y repositorio aplican propiedad a cada recurso. Ninguna consulta de recurso prueba existencia global antes de filtrar. V2 agrega tabla, FK sin cascada e índice de listado. El Clock produce micros UTC antes de persistir para que POST/PUT y GET conserven la misma representación PostgreSQL.
+Backend en `server/src/main/java/com/example/devnotes/reference/`: `application/` contiene servicio transaccional, entrada normalizada y DTOs; `persistence/` entidad y consultas por UUID de dueño; `web/` controller, advice de errores y metadata OpenAPI. El controller extrae exclusivamente `LocalOidcUser.identity().id()`; servicio y repositorio aplican propiedad a cada recurso. Ninguna consulta de recurso prueba existencia global antes de filtrar. V2 agrega tabla, FK sin cascada e índice de listado. El Clock produce micros UTC antes de persistir para que POST/PUT y GET conserven la misma representación PostgreSQL.
 
 Las únicas aperturas son los métodos/rutas explícitos de referencia en `security/SecurityConfig.java`. El centinela `/api/v1/reference/private` sigue denegado. `AuthOpenApi` expone constantes de los esquemas existentes; `ReferenceOpenApi` exige sesión y CSRF juntos para mutaciones. Swagger conserva el opt-in y «Try it out» solo GET de ADR 0003.
 

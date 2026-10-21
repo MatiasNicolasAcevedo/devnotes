@@ -1,15 +1,15 @@
-# Estado del starter
+# Estado de devnotes
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-005](tasks/T-005-generic-baseline.md) |
-| Estado | mergeable |
-| Acción actual | Revisión R1/R2 favorable; publicar veredicto con CI propia del HEAD documental y continuar merger del mismo PR |
-| Rama / PR | codex/t-005-generic-baseline · [PR #6](https://github.com/MatiasNicolasAcevedo/starter-spring-react/pull/6) |
+| Tarea y contrato | [T-000](tasks/T-000-adoption.md) |
+| Estado | in_progress |
+| Acción actual | Frontera valida adopción propia y prepara entrega a revisión Junie |
+| Rama / PR | chore/t-000-adoption; PR pendiente de gate |
 
-La base sigue en ajuste para el uso del dueño. Evidencia y comandos en la tarea; HEAD/CI propios del cierre en el comentario de publicación más reciente del PR. Proveedor/región/dominio pendientes para cuando exista una app; ningún despliegue ni ejecución Junie acreditados. Kit sin operar.
+Contexto/autonomía propios acordados; contratos I1 en ROADMAP/BACKLOG. Aceptación técnica en [HANDOFF](HANDOFF.md), evidencia/checkpoint solo en T-000. Ningún negocio implementado ni capacidad Junie acreditada por frontera.
 
 ### Prompt de la siguiente sesión
 ```text
-Retomar T-005/PR #6 en sesión nueva. Leer AGENTS, PROJECT_CONTEXT, tarea y último checkpoint de revisión R1/R2, AUTONOMY, TESTING y protocolo merger. Primero consultar estado remoto: si sigue OPEN, completar únicamente el merge elegible según el último APROBADO con HEAD/base/checks exactos; si falta veredicto vigente, devolver a revisión. Si está MERGED, confirmar SHA/fecha y reconciliar T-005/STATUS en el primer avance de una futura rama autorizada, nunca en main ni en la rama mergeada. El objetivo de mantenimiento vuelve a frontera/dueño: no hay otra tarea predefinida ready; no inventar ni iniciar implementación. Preservar cambios ajenos y evidencia válida, sin repetir suites largas por cierre Markdown. CI liviana no acredita FULL remoto. Sin operación Junie automática, compra/deploy, Google/datos reales, otros repos ni kit; sin aceptación/adopción por herencia.
+Retomar como frontera implementer T-000 en chore/t-000-adoption. Leer AGENTS.md, docs/STATUS.md y docs/tasks/T-000-adoption.md. Primera comprobación: git status/HEAD/base y operación STARTER/cleanup registrada en el checkpoint; preservar cambios y no repetir ensayos equivalentes si existe bloqueo. Completar evidencia propia, publicar solo tras gate y preparar revisión independiente Junie con comprobación de capacidades en su instalación. No implementar negocio ni iniciar T-001.
 ```
