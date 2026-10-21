@@ -1,0 +1,49 @@
+# CI automática liviana. Pruebas de producto en local: docs/TESTING.md.
+# verify-required conserva su nombre y no acredita FULL. FULL remoto solo manual: full.yml.
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  GATE_PHASE: FULL
+  NODE_VERSION: 24.21.0
+
+jobs:
+  verify-required:
+    name: verify-required
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Regresiones de herramientas y contrato documental
+        run: node --test "scripts/ci/*.test.mjs"
+      - name: Documentación coherente
+        run: node scripts/docs-check.mjs
+      - name: Política local exigida por el diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          node scripts/ci/classify-diff.mjs --base "$BASE" --head "$HEAD" --phase "$GATE_PHASE" | tee -a "$GITHUB_STEP_SUMMARY"
+          {
+            echo "CI liviana: herramientas/documentación verificadas. No ejecuta ni acredita FULL."
+            echo "Evidencia local y revisión independiente exigidas para merge: docs/TESTING.md."
+            echo "Base: $BASE; HEAD: $HEAD"
+          } >> "$GITHUB_STEP_SUMMARY"
