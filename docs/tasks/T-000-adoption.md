@@ -1,6 +1,6 @@
 ---
 id: T-000
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 executor: frontier
@@ -44,7 +44,7 @@ Mínimo para revisar/continuar: lectura/edición del repo, terminal Git Bash/Nod
 
 Revisar T-000 por reviewer.md, incluidas nuevas specs/tareas, evidencia STARTER y diff completo. Registrar la transición documental, publicar SHA final, esperar CI y emitir veredicto independiente con pendientes reales. Si no hay bloqueantes puede mergear por AUTONOMY; si falta evidencia exigida, conservar el bloqueo/dato necesario sin inventar aceptación. No implementar T-001 en esa sesión; solo cuando corresponda, dejar STATUS con prompt de sesión nueva Junie implementer T-001, primera comprobación MERGED de T-000 y capacidades propias.
 
-## Checkpoint vigente
+## Evidencia de implementación y gate conservada
 
 Fecha local 2026-10-20. Rol frontera planner→implementer adopción, herramienta Codex desktop/terminal PowerShell+Git Bash; modelo identificado por entorno como GPT-6, variante/esfuerzo no expuestos (no inferidos de catálogos). Impacto: documentación/contratos y personalización mecánica existente; ningún negocio, permiso de usuario, datos reales o auth nueva implementados.
 
@@ -99,7 +99,31 @@ Auditoría final adicional: nueve proyectos propios identificados en el log del 
 
 CI remota del primer HEAD publicado f082659: `verify-required` SUCCESS, run39532992317/job119003036967, base fa52e54, comprobada por gh. El cierre documental cambia HEAD y exige consultar nuevamente esa CI antes de entregar/revisar; no reutilizar el verde anterior como check del nuevo SHA. El perfil del PR completo sigue FULL/STARTER (111 rutas en el primer commit); no se lo reclasifica DOCS_ONLY. `.junie/TOOLS.md` aparece técnico por ubicación en el clasificador, pero su cierre solo corrige procedencia/rol y conserva todos los MCP/skills como declarados: no cambia configuración de MCP, instalación ni código. Conservación del gate por transición Markdown según TESTING, con docs-check y las83 regresiones CI afectadas verdes; revisor comprueba esa distinción y la huella de código/configuración.
 
-Solo se ejecutó la base personalizada; **CA-01…06 del negocio no están implementados ni probados**. HANDOFF distingue 15 criterios propios comprobados y 7 pendientes de revisión/configuración/capacidad efectiva. Veredicto global NO_LISTO hasta cierre elegible, sin transferir aceptación del starter ni del producto. La CI liviana del HEAD final se consulta en PR1; el reviewer debe comprobarla junto a HEAD/base publicados, sin confundirla con FULL. No repetir STARTER por este cierre Markdown si huella/base coinciden.
+Solo se ejecutó la base personalizada; **CA-01…06 del negocio no están implementados ni probados**. Al publicar la implementación, HANDOFF distinguía 15 criterios propios comprobados y 7 pendientes; sus filas conservan el estado de aceptación vigente tras revisión. Veredicto global NO_LISTO hasta cierre elegible, sin transferir aceptación del starter ni del producto. La CI liviana del HEAD final se consulta en PR1; el reviewer debe comprobarla junto a HEAD/base publicados, sin confundirla con FULL. No repetir STARTER por este cierre Markdown si huella/base coinciden.
+
+## Checkpoint vigente · revisión R1
+
+2026-10-21, sesión nueva de frontera reviewer, distinta de la autora. Codex desktop/API y terminal PowerShell/Node/Git; familia GPT-6 expuesta, variante/esfuerzo efectivos no expuestos. Sin delegación ni ejecución de Junie. Impacto de esta sesión: solo transición documental de tarea/STATUS/HANDOFF, sin cambios de comportamiento, API, permisos, datos o UI.
+
+Primera comprobación remota/local: PR1 OPEN, no draft, único PR abierto, rama chore/t-000-adoption contra main. HEAD recibido `08059edc17d5d93e6284547215bdc7133b7c753b`, base `fa52e546d24a412fd5729f4b15b8a4103cb3071a`, ambos coincidentes con refs publicadas; árbol inicialmente limpio. `verify-required` SUCCESS en run39533470447/job119004558873, headSha exacto recibido; sin reviews ni hilos de revisión. Conector GitHub devolvió404 para este privado; alternativa gh autorizada, fuera del sandbox tras fallo de red restringida. No se cambiaron permisos ni settings. Repo privado/MIT/main, push y squash habilitados; rulesets/protección siguen403 por plan, límite aceptado en AUTONOMY, sin enforcement acreditado.
+
+Revisado diff completo de112 rutas, contratos S-101…104, tareas T-001…014, dependencias secuenciales, comandos/gates y trazabilidad CA-01…06. Resultado de diseño favorable: JSON limitado y validación de URLs, propiedad desde sesión, CAS/carreras PostgreSQL, copia manual con lock, borrador/cola por identidad, navegación con flush y readonly definidos; no nuevo negocio implementado ni aceptación de runtime I1. No se encontraron otros bloqueantes de código/contratos. Java66/66 coincide con base tras sustituir únicamente paquete; POM/Docker/Compose/config/client/E2E conservan controles y versiones, con cambios de identidad previstos. La baja de la tarea genérica evita heredar su aceptación y no elimina suites. El manifiesto project-identity conserva la instantánea del inicializador anterior al ajuste visible devnotes→DevNotes: las cinco diferencias técnicas de ese inventario se explican exactamente por ese nombre; la evidencia de gate válida es el manifiesto técnico propio, no esa instantánea.
+
+| Comprobación propia del reviewer | Resultado / evidencia ignorada |
+|---|---|
+| `node .orchestrator/t000/review-audit.mjs` | exit0;236 entradas actuales coinciden con technical-before, before/after idénticos con SHA256 DB9568E00B60F3BC02A5E0C48BEB3B2862FAA868C08247CFE493F86A80A4798C;66 Java mecánicos;67 rutas del inicializador ausentes; review-audit.json/log |
+| Base/fuentes del STARTER contra HEAD recibido | Base publicada intacta; f082659→08059ed solo16 Markdown, incluido TOOLS sin configuración ni capacidad acreditada. Perfil completo sigue FULL/STARTER,112 rutas. Se conserva gate, no se repite por transición Markdown |
+| Inspección de starter.log/starter.exit/cleanup.log/final-audit.log | docs/server/client/tooling/e2e exit0;91 unitarios/slices,75 IT PostgreSQL18,133 client y15 Playwright finales; canario negativo separado; nueve proyectos propios con cleanup0/0/0 |
+| `node scripts/docs-check.mjs`; `git diff --check` | exit0 sobre HEAD recibido; repetir tras transición y antes de publicar |
+| `node scripts/ci/classify-diff.mjs --base fa52e546d24a412fd5729f4b15b8a4103cb3071a --head HEAD --phase FULL` | policy=FULL, profile=STARTER; no reclasificar adopción como DOCS_ONLY |
+| `node --test "scripts/ci/*.test.mjs"` | Host exit0,83/83 pass,0 fail/skipped; review-ci-host.log. Intento restringido con errores de permisos/procesos hijos en review-ci.log no acredita tests verdes |
+| `node --test scripts/test-init-adopted.mjs` | Host exit0,3/3 pass,0 fail/skipped; preservación de edición/identidad y negativos junction/hardlink; review-adopted-host.log |
+
+**R1 / CAMBIOS REQUERIDOS — E-01 (bloqueante de aceptación).** La aceptación de T-000 exige inventario y sondas por Junie en su propia sesión; TOOLS mantiene cinco MCP/siete skills declarados y solo acredita la versión del launcher por frontera. Falta raíz/superficie/modelo expuesto, `/mcp` y `/skills` o equivalente, y sondas mínimas lectura/edición, Git Bash/Node/Docker y Git/PR/CI. Frontera no puede generar esa procedencia ejecutando las mismas herramientas. Sin esa evidencia no corresponde aprobar ni mergear; G-02 sigue pendiente por la misma causa y G-03 por veredicto favorable/merge aún ausentes. La limitación403 de protecciones ya está documentada y aceptada; no constituye otro defecto ni autoriza cambiar settings.
+
+Condición de salida y siguiente acción: el dueño abre una sesión propia Junie para completar únicamente la comprobación descrita arriba, en esta rama/PR, registrando evidencia saneada en TOOLS/T-000. No instalar/autenticar ni ejecutar microensayo o negocio. Herramientas opcionales ausentes no bloquean si el shell autorizado demuestra la capacidad; indispensable ausente deja causa, intento y dato necesario al dueño. Publicar cierre con docs-check/CI del nuevo HEAD y preparar sesión nueva frontera reviewer R2 del mismo PR, dentro del máximo de dos rondas. T-001 continúa draft y no se habilita antes de evidencia Junie más MERGED/conciliación de T-000.
+
+Esta transición solo modifica tres Markdown de documentación; diff explícito revisado, docs-check60 Markdown/15 tareas/HANDOFF19/22 y `git diff --check` exit0. Regresión afectada `node --test scripts/ci/docs-check.test.mjs` host exit0,20/20 pass,0 fail/skipped; review-transition-host.log. Antes del veredicto en PR: commit/push normal, comprobar HEAD/base remotos y esperar `verify-required` SUCCESS del SHA final. El SHA final y enlace CI quedan en el comentario canónico del PR para evitar un commit posterior al veredicto. No hay recursos Docker creados por esta sesión ni cleanup adicional de stacks que ejecutar.
 
 ## Correcciones significativas
 
@@ -111,4 +135,4 @@ Solo se ejecutó la base personalizada; **CA-01…06 del negocio no están imple
 
 ## Cierre y siguiente tarea
 
-No done hasta MERGED; HANDOFF mantiene evidencia/pendientes reales. Siguiente sesión **frontera reviewer T-000**, elección expresa del dueño: comprueba primero PR/HEAD/base/árbol; revisión independiente del diff y contratos. Capacidades Junie continúan pendientes de sesión propia, sin crédito por ejecución de frontera. Tras cierre elegible, sesión nueva Junie implementer [T-001](T-001-document-contract.md) verifica MERGED y capacidad propia, y concilia adopción antes de comenzar. No aceptar producto por cerrar adopción; I1 todavía sin implementar.
+No done hasta MERGED; HANDOFF mantiene evidencia/pendientes reales. R1 solicita evidencia propia Junie E-01; el único prompt vigente está en STATUS. Después de publicarla corresponde sesión nueva frontera reviewer R2 sobre HEAD/base/CI vigentes, sin implementar T-001. Solo tras revisión favorable y merge elegible, una sesión nueva Junie implementer [T-001](T-001-document-contract.md) verifica MERGED/capacidad propia y concilia adopción antes de comenzar. No aceptar producto por cerrar adopción; I1 todavía sin implementar.
