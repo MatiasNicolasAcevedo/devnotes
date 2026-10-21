@@ -10,7 +10,7 @@ counts_for_cycle: false
 spec: null
 spec_version: null
 branch: codex/t-015-adoption-checks
-pr: null
+pr: 2
 depends_on: [T-000]
 ---
 # T-015 · Traslado acotado de controles de adopción
@@ -116,4 +116,4 @@ Controles de esta preparación: `node scripts/docs-check.mjs` exit0 (61 Markdown
 
 ## Cierre y siguiente tarea
 
-Contrato ready y un único PR draft de T-015; esta sesión planner no implementa, aprueba ni mergea. La próxima sesión implementer continúa la misma tarea/PR. Después, reviewer en sesión nueva verifica HEAD/base/gate/CI, publica transición favorable y prepara STATUS para Junie T-001 condicionado a MERGED/conciliación. Solo con APROBADO exacto y CI verde puede squash mergear en esa sesión; confirmar SHA/fecha y comentar cierre sin commits posteriores. El primer avance de la rama nueva de T-001 concilia T-015 done/G-03/HANDOFF y cola con evidencia propia; la primera tarea de producto sigue siendo T-001, sin nueva planificación ni otra aceptación E-01.
+Contrato ready publicado en el único [PR draft #2](https://github.com/MatiasNicolasAcevedo/devnotes/pull/2) de T-015; esta sesión planner no implementa, aprueba ni mergea. La próxima sesión implementer continúa la misma tarea/PR. Después, reviewer en sesión nueva verifica HEAD/base/gate/CI, publica transición favorable y prepara STATUS para Junie T-001 condicionado a MERGED/conciliación. Solo con APROBADO exacto y CI verde puede squash mergear en esa sesión; confirmar SHA/fecha y comentar cierre sin commits posteriores. El primer avance de la rama nueva de T-001 concilia T-015 done/G-03/HANDOFF y cola con evidencia propia; la primera tarea de producto sigue siendo T-001, sin nueva planificación ni otra aceptación E-01.
