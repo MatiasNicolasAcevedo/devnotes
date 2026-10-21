@@ -1,6 +1,6 @@
 ---
 id: T-000
-status: in_progress
+status: changes_requested
 priority: P1
 size: M
 executor: frontier
@@ -101,7 +101,7 @@ CI remota del primer HEAD publicado f082659: `verify-required` SUCCESS, run39532
 
 Solo se ejecutó la base personalizada; **CA-01…06 del negocio no están implementados ni probados**. Al publicar la implementación, HANDOFF distinguía 15 criterios propios comprobados y 7 pendientes; sus filas conservan el estado de aceptación vigente tras revisión. Veredicto global NO_LISTO hasta cierre elegible, sin transferir aceptación del starter ni del producto. La CI liviana del HEAD final se consulta en PR1; el reviewer debe comprobarla junto a HEAD/base publicados, sin confundirla con FULL. No repetir STARTER por este cierre Markdown si huella/base coinciden.
 
-## Checkpoint vigente · E-01 completado por Junie
+## Comprobación aportada por Junie para E-01
 
 2026-10-21, sesión propia Junie del dueño para completar E-01 pedido en R1. Superficie IDE IntelliJ IDEA/AIR (plugin Junie), terminal PowerShell. Modelo expuesto por entorno: Qwen/Qwen3.6-27B-FP8. Impacto de esta sesión: TOOLS.md con evidencia real de MCP/skills y esta bitácora; sin cambios de comportamiento, API, permisos, datos o UI.
 
@@ -132,7 +132,7 @@ Todos los MCP y skills están activos y expuestos como herramientas en esta sesi
 
 E-01 completado: inventario y sondas de herramientas Junie registrados con fecha, superficie, origen y estado. Las herramientas indispensables (lectura/edición repo, Git Bash/Node/Docker, Git/PR/CI, docs-check) están operativas. Sin bloqueantes. TOOLS.md actualizado con evidencia saneada, sin secretos ni configuración privada impresa.
 
-## Checkpoint vigente · revisión R1
+## Revisión R1 conservada
 
 2026-10-21, sesión nueva de frontera reviewer, distinta de la autora. Codex desktop/API y terminal PowerShell/Node/Git; familia GPT-6 expuesta, variante/esfuerzo efectivos no expuestos. Sin delegación ni ejecución de Junie. Impacto de esta sesión: solo transición documental de tarea/STATUS/HANDOFF, sin cambios de comportamiento, API, permisos, datos o UI.
 
@@ -156,6 +156,24 @@ Condición de salida y siguiente acción: el dueño abre una sesión propia Juni
 
 Esta transición solo modifica tres Markdown de documentación; diff explícito revisado, docs-check60 Markdown/15 tareas/HANDOFF19/22 y `git diff --check` exit0. Regresión afectada `node --test scripts/ci/docs-check.test.mjs` host exit0,20/20 pass,0 fail/skipped; review-transition-host.log. Antes del veredicto en PR: commit/push normal, comprobar HEAD/base remotos y esperar `verify-required` SUCCESS del SHA final. El SHA final y enlace CI quedan en el comentario canónico del PR para evitar un commit posterior al veredicto. No hay recursos Docker creados por esta sesión ni cleanup adicional de stacks que ejecutar.
 
+## Checkpoint vigente · revisión R2 y pendiente al dueño
+
+2026-10-21, sesión nueva de frontera reviewer, independiente de implementación y de la comprobación Junie. Codex desktop/API y terminal PowerShell/Node/Git/gh; modelo GPT-6 expuesto, variante/esfuerzo efectivos no expuestos. Sin delegación ni ejecución de Junie. Impacto propio: transición documental de T-000/STATUS/HANDOFF, sin cambios de comportamiento, API, permisos, datos o UI.
+
+Primera comprobación: árbol limpio en chore/t-000-adoption. El HEAD vigente local/remoto es `12b371599dda9b6b2dd63ad145a7bd4ce1ed9f18`, posterior al `f12d1b4eb46c52f0b1230e487b38042153b48034` del prompt: el commit adicional solo cambia STATUS y el estado de T-000. Base publicada `fa52e546d24a412fd5729f4b15b8a4103cb3071a`, intacta. PR1 OPEN/no draft, único PR abierto contra main, MERGEABLE/CLEAN, sin hilos de revisión. `verify-required` SUCCESS del HEAD recibido, run39642986928/job119371096191; headSha del run coincide exactamente. Conector GitHub404 para este privado y red restringida del shell: alternativa gh/Git en host autorizado, sin instalar/autenticar ni cambiar settings.
+
+Revisado diff completo de112 rutas, S-101…104 y T-001…014, comandos/gates, dependencias y CA-01…06. Sin otros bloqueantes encontrados en código o contratos. La auditoría propia `node .orchestrator/t000/review-audit.mjs` exit0 confirma236 huellas actuales iguales a technical-before/after, manifiestos idénticos y SHA256 `DB9568E00B60F3BC02A5E0C48BEB3B2862FAA868C08247CFE493F86A80A4798C`;66 Java difieren de base solo por paquete,67 rutas anteriores ausentes, kit no rastreado. Las cinco diferencias del inventario del inicializador siguen explicadas solo por DevNotes/devnotes. Desde f082659 solo cambian Markdown; fuentes técnicas/base del STARTER conservadas. Clasificador propio: policy FULL/profile STARTER. Logs starter.exit/starter.log/cleanup/final-audit corroboran docs/server/client/tooling/e2e exit0,91 unitarios/slices+75 IT,133 client,15 Playwright finales y nueve namespaces con cleanup0/0/0. No repetir STARTER por esta transición documental; no se acredita runtime I1.
+
+**R2 / CAMBIOS REQUERIDOS — E-01, un pendiente concreto de procedencia del inventario (P2).** La comprobación Junie sí acredita superficie/modelo expuestos, inventario listado y sondas mínimas de Git Bash/Node/Docker/Git/PR/CI/docs-check; se conserva esa evidencia y G-02 pasa a verificado. Sin embargo, TOOLS define activo verificado como listado más sonda pertinente exitosa (línea8), mientras las filas Context7/Playwright/ChromeDevTools solo registran exposición, GitHub cita una sonda gh y junie-cli-docs solo disponibilidad como custom agent (líneas15…23). No hay resultado de una llamada MCP en esas filas ni en la comprobación Junie de T-000. La disponibilidad de siete skills también está documentada como exposición en CAPABILITIES, no como uso probado. La frase que equipara presencia de herramientas con servers activos contradice el criterio del propio inventario. `gh pr view` prueba la alternativa CLI autorizada, no una llamada al MCP GitHub; junie-cli-docs se describe como agente integrado, no como quinto server MCP. No corresponde mantener la conclusión global «5 MCP y7 skills activos verificados» con esta evidencia.
+
+Condición de salida acotada: en sesión propia Junie, corregir estados/alcance a lo efectivamente demostrado, distinguiendo cuatro MCP expuestos, agente integrado y skills listadas; conservar sondas CLI válidas. Si se mantiene activo verificado para un MCP, aportar llamada mínima pertinente y resultado saneado en esa superficie. Las herramientas opcionales pueden permanecer declaradas/listadas sin sonda; no se exige activar/probar todo el catálogo, cargar todas las skills, delegar, instalar ni autenticar. Registrar además raíz/checkout y rutas AGENTS/STATUS/T-000 leídas según el contrato, y esfuerzo expuesto o explícitamente no expuesto. Frontera no genera esa procedencia ni edita TOOLS para certificarla. La aceptación E-01 sigue pendiente exclusivamente de esta concordancia y trazabilidad; G-03 de aprobación/merge.
+
+R1 y R2 agotaron el máximo de dos rondas de AGENTS/AUTONOMY. Se deja checkpoint al dueño/frontera para resolver esta salida y autorizar la continuidad concreta; no se programa una R3 automática ni se repiten sondas equivalentes. PR abierto, sin aprobación ni merge. T-001 permanece draft; no crear su rama ni implementar negocio. El único prompt de STATUS retoma este checkpoint, no T-001.
+
+Transición comprobada: `node --test scripts/ci/docs-check.test.mjs` host exit0,20/20 pass,0 fail/skipped (`.orchestrator/t000/review-r2-docs-final.log`); docs-check60 Markdown/15 tareas/HANDOFF20/22 y diff-check exit0. Primer intento:17/20 porque la fila G-02 nueva carecía de fecha propia; se añadió2026-10-21 y se repitió sin alterar tests. Durante la revisión apareció una edición concurrente no publicada en TOOLS que cambia el origen de Context7; se preserva sin incluirla en la transición. El hallazgo corresponde al TOOLS publicado del HEAD recibido, no se atribuye esa edición al reviewer ni se certifica su procedencia.
+
+Publicación de esta revisión: solo T-000/STATUS/HANDOFF, staging explícito; comprobar transición final en checkout aislado, HEAD/base remotos nuevos y verify-required del HEAD final. SHA final/enlace CI y veredicto canónico se registran en el comentario del PR, sin commit posterior al veredicto. No se crearon stacks ni recursos Docker en esta sesión; no hay cleanup de recursos adicional.
+
 ## Correcciones significativas
 
 | Fecha | Causa | Corrección | Prueba |
@@ -166,4 +184,4 @@ Esta transición solo modifica tres Markdown de documentación; diff explícito 
 
 ## Cierre y siguiente tarea
 
-No done hasta MERGED; HANDOFF mantiene evidencia/pendientes reales. R1 solicita evidencia propia Junie E-01; el único prompt vigente está en STATUS. Después de publicarla corresponde sesión nueva frontera reviewer R2 sobre HEAD/base/CI vigentes, sin implementar T-001. Solo tras revisión favorable y merge elegible, una sesión nueva Junie implementer [T-001](T-001-document-contract.md) verifica MERGED/capacidad propia y concilia adopción antes de comenzar. No aceptar producto por cerrar adopción; I1 todavía sin implementar.
+No done hasta MERGED; HANDOFF mantiene evidencia/pendientes reales. R2 conserva un pendiente E-01 de concordancia/procedencia del inventario, con capacidad mínima Junie y G-02 ya acreditadas. Alcanzado el máximo de dos rondas, retoma por dueño/frontera según checkpoint y único prompt de STATUS; sin R3 automática ni implementación T-001. Solo tras revisión favorable y merge elegible, una sesión nueva Junie implementer [T-001](T-001-document-contract.md) verifica MERGED/capacidad propia y concilia adopción antes de comenzar. No aceptar producto por cerrar adopción; I1 todavía sin implementar.
