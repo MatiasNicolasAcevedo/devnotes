@@ -4,7 +4,7 @@ status: changes_requested
 priority: P1
 size: M
 executor: frontier
-role: reviewer
+role: planner
 milestone: M0
 spec: null
 spec_version: null
@@ -156,7 +156,7 @@ Condición de salida y siguiente acción: el dueño abre una sesión propia Juni
 
 Esta transición solo modifica tres Markdown de documentación; diff explícito revisado, docs-check60 Markdown/15 tareas/HANDOFF19/22 y `git diff --check` exit0. Regresión afectada `node --test scripts/ci/docs-check.test.mjs` host exit0,20/20 pass,0 fail/skipped; review-transition-host.log. Antes del veredicto en PR: commit/push normal, comprobar HEAD/base remotos y esperar `verify-required` SUCCESS del SHA final. El SHA final y enlace CI quedan en el comentario canónico del PR para evitar un commit posterior al veredicto. No hay recursos Docker creados por esta sesión ni cleanup adicional de stacks que ejecutar.
 
-## Checkpoint vigente · revisión R2 y pendiente al dueño
+## Revisión R2 conservada · checkpoint elevado al dueño
 
 2026-10-21, sesión nueva de frontera reviewer, independiente de implementación y de la comprobación Junie. Codex desktop/API y terminal PowerShell/Node/Git/gh; modelo GPT-6 expuesto, variante/esfuerzo efectivos no expuestos. Sin delegación ni ejecución de Junie. Impacto propio: transición documental de T-000/STATUS/HANDOFF, sin cambios de comportamiento, API, permisos, datos o UI.
 
@@ -174,6 +174,34 @@ Transición comprobada: `node --test scripts/ci/docs-check.test.mjs` host exit0,
 
 Publicación de esta revisión: solo T-000/STATUS/HANDOFF, staging explícito; comprobar transición final en checkout aislado, HEAD/base remotos nuevos y verify-required del HEAD final. SHA final/enlace CI y veredicto canónico se registran en el comentario del PR, sin commit posterior al veredicto. No se crearon stacks ni recursos Docker en esta sesión; no hay cleanup de recursos adicional.
 
+## Checkpoint vigente · frontera planner y decisión del dueño
+
+2026-10-21, sesión nueva de **FRONTERA, rol planner**, para resolver la continuidad tras R1/R2. Herramienta Codex desktop/API y terminal PowerShell/Node/Git/gh; modelo GPT-6 expuesto, variante/esfuerzo efectivos no expuestos. Raíz/checkout `C:\D\matias\proyectos-ia\devnotes`, rama `chore/t-000-adoption`. Leídos explícitamente `AGENTS.md`, `PROJECT_CONTEXT.md`, `docs/STATUS.md`, esta tarea (comprobación Junie y checkpoint R2), `docs/AUTONOMY.md`, `docs/agents/planner.md`, `docs/HANDOFF.md`, `.junie/TOOLS.md` publicado y local; consultados TESTING/ORCHESTRATION para gate y continuidad. Impacto: contrato de corrección y transición documental; sin cambios de comportamiento, API, permisos, datos o UI. Esta sesión no es revisión R3 ni produce/certifica evidencia Junie.
+
+Primera comprobación propia: HEAD local/publicado `780089838bddb15372da204ad6e8942880afcdeb`, base local/publicada `fa52e546d24a412fd5729f4b15b8a4103cb3071a`. PR1 OPEN/no draft, único PR abierto contra main, mergeStateStatus CLEAN; último veredicto canónico [R2 / CAMBIOS REQUERIDOS](https://github.com/MatiasNicolasAcevedo/devnotes/pull/1#issuecomment-6322410927). CI `verify-required` SUCCESS, [run39644821210/job119377485607](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/39644821210/job/119377485607), headSha exacto recibido. Conector GitHub404 y fallo de red restringida; alternativa gh/Git en host autorizado exit0, sin instalar/autenticar ni cambiar settings.
+
+Único cambio local recibido: `.junie/TOOLS.md` sin commit, sobre origen de Context7 (tres MCP de usuario más Context7 por extensión, frente a cuatro en configuración de usuario del publicado). Se conserva íntegro y fuera de esta publicación; es una declaración concurrente, no evidencia comprobada por frontera. El hallazgo R2 corresponde al TOOLS publicado de `7800898`, y ambos contenidos siguen afirmando activo verificado con evidencia de exposición. Junie deberá conciliar su procedencia sin leer configuración privada ni atribuir el cambio a esta sesión.
+
+**Decisión del dueño en esta sesión:** «Corrección documental; volver al dueño (recomendado)», en respuesta a la propuesta de una única corrección por Junie que limite estados a exposición demostrada, conserve sondas CLI y complete raíz/rutas/esfuerzo. Se autoriza esa salida acotada tras las dos rondas; no una tercera revisión, nuevas sondas MCP ni aceptación anticipada. Después de publicar la corrección, Junie devuelve checkpoint al dueño con E-01 pendiente de aceptación. La forma de comprobar/aceptar el cierre y una eventual revisión adicional requieren decisión posterior explícita del dueño; esta sesión no las programa ni exceptúa AUTONOMY.
+
+### Contrato de la única corrección documental Junie
+
+Resultado observable: TOOLS y la conclusión de la comprobación Junie concuerdan con la evidencia conservada, sin afirmar llamadas MCP o uso de skills no demostrados. Misma tarea/rama/PR. Referencias concretas: este checkpoint, [.junie/TOOLS.md](../../.junie/TOOLS.md), [AUTONOMY](../AUTONOMY.md), [TESTING](../TESTING.md) y [HANDOFF E-01](../HANDOFF.md). AGENTS/STATUS son la entrada obligatoria de sesión.
+
+Archivos previstos: `.junie/TOOLS.md`, `docs/tasks/T-000-adoption.md` y `docs/STATUS.md`. HANDOFF mantiene NO_LISTO20/22, E-01/G-03 pendientes y G-02 verificado; no actualizar sus criterios por mera corrección de redacción. No cambiar AUTONOMY, specs, cola, configuración ni fuentes de producto.
+
+1. En sesión propia Junie, comprobar cambios concurrentes, rama, HEAD/base publicados, PR/CI y último checkpoint. Preservar el delta local de Context7 y distinguir su origen declarado de la evidencia de sesión. Registrar fecha, raíz/checkout y rutas de instrucciones efectivamente leídas (`AGENTS.md`, `docs/STATUS.md`, esta tarea y demás referencias consultadas), superficie, modelo/herramienta y esfuerzo expuesto o «no expuesto». No reconstruir esa trazabilidad de la sesión anterior ni copiar la identidad de frontera.
+2. Corregir el inventario a **cuatro MCP expuestos/listados**, **un agente integrado junie-cli-docs** y **siete skills listadas**, en categorías distintas. Usar estado declarado con alcance «expuesto/listado en la sesión indicada; llamada/uso no demostrado» cuando solo existe exposición, o definir ese nivel explícitamente sin equipararlo a activo verificado. Conservar el criterio listado más sonda pertinente exitosa para activo verificado y retirar las conclusiones globales incompatibles. No afirmar que la versión CLI prueba sesión/modelo ni que gh prueba MCP. No invocar el agente integrado ni cargar/probar todas las skills.
+3. Conservar sin repetir las sondas mínimas Junie y G-02. Rectificar expresamente la conclusión previa «E-01 completado» y la atribución de herramientas activas; mantener la evidencia histórica válida y registrar la corrección en bitácora. El origen nuevo de Context7 puede constar como declarado/concurrente si no está demostrado por la superficie propia; no inspeccionar archivos privados para certificarlo. No instalar, autenticar, delegar ni modificar configuración.
+4. Comprobar el diff acotado, docs-check y mismas fuentes/base del STARTER; publicar solo rutas explícitas con Conventional Commit en inglés y footer `Refs: T-000`, respetando kit excluido. Esperar CI `verify-required` SUCCESS del nuevo HEAD y comprobar headSha/base exactos. No anunciar éxito con checks ausentes, omitidos o pendientes.
+5. Dejar tarea `changes_requested`, E-01 pendiente de aceptación y G-03 pendiente; STATUS con único prompt de sesión nueva **frontera planner con el dueño** para decidir el cierre tras la corrección publicada. Sin prompt de reviewer/R3, APROBADO, merge, done, rama T-001 ni implementación de negocio. T-001 permanece draft hasta cierre elegible, MERGED y conciliación de T-000.
+
+Verificación de esta corrección, desde la raíz: `node scripts/docs-check.mjs` y `git diff --check`. El riesgo es concordancia documental; no requiere tests nuevos ni repetir sondas/gates largos. Conservar STARTER de `f082659d3d24d7a5a1eabd17fe8dc939a3b28b51` solo con base `fa52e546d24a412fd5729f4b15b8a4103cb3071a` y fuentes técnicas idénticas; verificar manifiestos/diff, sin reclasificar el PR completo como DOCS_ONLY. Si cambian esas condiciones o surge una decisión fuera del contrato, registrar causa/dato necesario y volver al dueño; no ensayar correcciones equivalentes.
+
+Verificación propia de frontera: `node scripts/docs-check.mjs` exit0 (60 Markdown/15 tareas/HANDOFF20/22) y `git diff --check` exit0. Comparación SHA256 de las236 fuentes contra `technical-before.json`: cero diferencias; before/after idénticos, manifiesto `DB9568E00B60F3BC02A5E0C48BEB3B2862FAA868C08247CFE493F86A80A4798C`. Desde el gate hasta HEAD recibido solo cambian Markdown, base intacta; STARTER conservado. TOOLS local conserva SHA256 `9926D02AFE4C438105894595ACCCD3BC0732280361A5930E3655DA80A74A8B2D` antes/después, sin edición por frontera. Kit ausente y no rastreado; índice recibido vacío.
+
+Publicación de frontera: únicamente esta tarea, STATUS y la referencia de continuidad H-03/HANDOFF; TOOLS concurrente queda fuera. Antes de publicar: docs-check/diff-check, kit no rastreado y staging explícito. Tras commit: docs-check del contenido publicado en extracción aislada sin Git/kit; tras push normal: comprobar refs remotos y CI del SHA final. Resultados y SHA de transición se entregan en el chat, sin emitir veredicto revisor ni añadir otro commit solo para registrar su propio SHA. Sin stacks creados ni cleanup Docker requerido.
+
 ## Correcciones significativas
 
 | Fecha | Causa | Corrección | Prueba |
@@ -181,7 +209,8 @@ Publicación de esta revisión: solo T-000/STATUS/HANDOFF, staging explícito; c
 | 2026-10-20 | Adjunto decía org.demo; checkout ya com.example | Dueño confirmó com.example.devnotes; se conserva paquete. Nombre visible DevNotes en config/client/E2E | 66 renombres contrastados; STARTER/FULL propio verde sobre f082659 |
 | 2026-10-20 | Tests de junction rechazados por sandbox (EPERM), sin fallo de lógica demostrado | Ejecutar mismas suites en host autorizado, sin alterar tests | 62 dirigidos y83 CI local verdes; logs propios |
 | 2026-10-20 | Defaults de Link podían añadir attrs fuera del contrato JSON; hook por página podía perder dirty al desmontar | Especificar href-only y coordinador de borrador/cola por identidad sobre Outlet | docs-check verde; ejecución futura T-005/T-006/T-007, sin afirmar runtime |
+| 2026-10-21 | R1/R2 agotadas con E-01 por exposición presentada como uso verificado y trazabilidad incompleta | Dueño elige una corrección documental propia Junie y devolución al dueño; contrato acotado arriba, sin R3 automática | HEAD/base/CI de R2 comprobados por frontera; aceptación E-01 todavía pendiente |
 
 ## Cierre y siguiente tarea
 
-No done hasta MERGED; HANDOFF mantiene evidencia/pendientes reales. R2 conserva un pendiente E-01 de concordancia/procedencia del inventario, con capacidad mínima Junie y G-02 ya acreditadas. Alcanzado el máximo de dos rondas, retoma por dueño/frontera según checkpoint y único prompt de STATUS; sin R3 automática ni implementación T-001. Solo tras revisión favorable y merge elegible, una sesión nueva Junie implementer [T-001](T-001-document-contract.md) verifica MERGED/capacidad propia y concilia adopción antes de comenzar. No aceptar producto por cerrar adopción; I1 todavía sin implementar.
+No done hasta MERGED; HANDOFF mantiene evidencia/pendientes reales. Tras R2 y decisión del dueño, sigue una sesión nueva Junie implementer únicamente para la corrección documental contratada arriba; después devuelve al dueño/frontera planner para decidir el cierre, con E-01 pendiente de aceptación y sin R3 automática. G-02 conserva verificación. Solo tras revisión favorable y merge elegible, una sesión nueva Junie implementer [T-001](T-001-document-contract.md) verifica MERGED/capacidad propia y concilia adopción antes de comenzar. T-001 sigue draft; no aceptar producto por cerrar adopción, I1 todavía sin implementar.
