@@ -1,6 +1,6 @@
 ---
 id: T-000
-status: mergeable
+status: done
 priority: P1
 size: M
 executor: frontier
@@ -232,7 +232,7 @@ Publicación de esta sesión: solo esta tarea, STATUS, HANDOFF y ORCHESTRATION/p
 
 Verificación documental: `node scripts/docs-check.mjs` exit0, 60 Markdown/15 tareas/HANDOFF 21/22; `git diff --check` exit0. Primer intento de `node --test scripts/ci/docs-check.test.mjs`:19/20; la fixture de desacuerdo BACKLOG/tarea fuerza `blocked` y presupone que T-000 no tiene ese estado; usarlo también en la tarea hizo coincidir ambos lados del negativo. Se conserva el test y se precisa el estado vigente `in_review` por implementación publicada y revisión pendiente, con autorización faltante explícita; no implica iniciar otra ronda. Repetición exit0:20/20 pass,0 fail/skipped. Huella técnica236/236 intacta y auditoría exit0; CI del SHA publicado se comprueba antes de entregar.
 
-## Checkpoint vigente · revisión independiente de cierre favorable
+## Revisión independiente de cierre favorable conservada
 
 2026-10-21, sesión nueva **FRONTERA reviewer independiente**, única revisión adicional expresamente autorizada por el dueño tras R1/R2; continúa como merger si cumple AUTONOMY. Codex desktop/API, terminal PowerShell/Node/Git/gh; modelo GPT-6 expuesto, variante/esfuerzo efectivos no expuestos. Raíz `C:\D\matias\proyectos-ia\devnotes`, rama `chore/t-000-adoption`. Leídos AGENTS raíz/server/client, PROJECT_CONTEXT, STATUS, T-000/T-001, AUTONOMY, reviewer/merger, HANDOFF, TESTING, ORCHESTRATION, TOOLS, specs S-101…104 y contratos T-002…014. Impacto propio: transición documental de T-000/STATUS/HANDOFF; sin cambios de comportamiento, API, permisos, datos o UI. Sin delegación, instalación, autenticación ni ejecución de Junie.
 
@@ -247,6 +247,10 @@ Controles sobre HEAD recibido: `node scripts/docs-check.mjs` exit0 (60 Markdown/
 Transición final comprobada: `node scripts/docs-check.mjs` exit0,60 Markdown/15 tareas/HANDOFF21/22; `git diff --check` exit0; `node --test scripts/ci/docs-check.test.mjs` exit0,20/20 pass,0 fail/cancelled/skipped, sin cambios de tests. Solo T-000/STATUS/HANDOFF se publican; BACKLOG y T-001 no cambian. No se crearon stacks ni recursos Docker, sin cleanup adicional que ejecutar.
 
 Próximo responsable: esta misma sesión reviewer→merger, ligada al SHA final del comentario, reconsulta HEAD/base/conversaciones y ejecuta squash elegible sin bypass; confirma MERGED/SHA/fecha y comenta cierre en PR1. No hacer commits después de APROBADO ni del merge. G-03 sigue pendiente hasta esa confirmación; su evidencia final vive en PR1. STATUS prepara una sesión nueva Junie implementer T-001 con precondición observable MERGED/conciliación, sin iniciarla aquí. El siguiente implementer concilia done/HANDOFF/cola en el primer avance de su rama exacta desde main; T-001 permanece draft hasta entonces.
+
+## Checkpoint vigente · MERGED conciliado en T-015
+
+2026-10-21, sesión FRONTERA planner para preparar el mantenimiento T-015 solicitado por el dueño. PR1 consultado nuevamente: MERGED2026-10-21T18:37:39Z (15:37:39 Buenos Aires), squash `cbbe1c9075a41edf2ceffd35eedf1e05dedd6870`, coincidente con main publicado y HEAD local inicial limpio. [APROBADO](https://github.com/MatiasNicolasAcevedo/devnotes/pull/1#issuecomment-6323649332) ligado a HEAD `34ee8973a5a7415bf311b5d27f6875726cc9610d`/base `fa52e546d24a412fd5729f4b15b8a4103cb3071a`; [cierre MERGED](https://github.com/MatiasNicolasAcevedo/devnotes/pull/1#issuecomment-6323681078). Se concilia done en el primer avance de la nueva rama `codex/t-015-adoption-checks`, sin editar main ni la rama mergeada. T-000 no se reabre; E-01 aceptado y evidencia STARTER conservados con sus fuentes/base originales. La nueva tarea [T-015](T-015-adoption-checks.md) tiene gate/revisión propios pendientes y precede a T-001 por nueva instrucción del dueño; no acredita producto ni otra ronda de esta adopción.
 
 ## Correcciones significativas
 
@@ -263,4 +267,4 @@ Próximo responsable: esta misma sesión reviewer→merger, ligada al SHA final 
 
 ## Cierre y siguiente tarea
 
-No done hasta MERGED y conciliación. Revisión de cierre favorable; E-01 aceptado por el dueño y G-02 conservado. Esta misma sesión publica APROBADO del HEAD/base finales solo tras CI exacta verde y continúa al merge elegible; confirmación y fecha en PR1, sin commit posterior. El único prompt de STATUS entrega la sesión nueva Junie implementer [T-001](T-001-document-contract.md), que comprueba MERGED/capacidad propia y concilia adopción en su rama antes de implementar. T-001 sigue draft hasta cumplirlo; I1 todavía sin implementar.
+Adopción MERGED y conciliada done con evidencia de PR1. E-01 aceptado por el dueño y G-02 conservado. Por la continuación solicitada tras starter PR7, sigue [T-015](T-015-adoption-checks.md) antes de la primera tarea de producto [T-001](T-001-document-contract.md); estado/acción únicos en STATUS. T-015 no hereda gate de fuentes nuevas ni permisos del starter. I1 todavía sin implementar.
