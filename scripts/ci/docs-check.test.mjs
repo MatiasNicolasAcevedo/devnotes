@@ -21,6 +21,7 @@ const originals = new Map(['docs/HANDOFF.md', 'docs/STATUS.md', 'docs/BACKLOG.md
   ...readdirSync(join(temporary, 'docs/tasks')).map(name => 'docs/tasks/' + name), '.github/workflows/ci.yml', '.github/workflows/full.yml',
   'scripts/verify.sh'].map(path => [path, readFileSync(join(temporary, path), 'utf8')]));
 const change = (path, transform) => writeFileSync(join(temporary, path), transform(originals.get(path)));
+const update = (path, transform) => writeFileSync(join(temporary, path), transform(readFileSync(join(temporary, path), 'utf8')));
 const run = () => spawnSync(process.execPath, ['scripts/docs-check.mjs'], { cwd: temporary, encoding: 'utf8' });
 const rejects = (pattern) => {
   const result = run();
@@ -30,7 +31,7 @@ const rejects = (pattern) => {
 afterEach(() => { for (const [path, text] of originals) writeFileSync(join(temporary, path), text); });
 after(() => rmSync(temporary, { recursive: true, force: true }));
 
-// Own the whole board arrangement, including STATUS/WIP, independently of live task states.
+// Own the whole board and adoption arrangement, independently of the live checkout.
 const arrangeBoard = (state = 'done', milestone = 'M0') => {
   for (const path of originals.keys()) if (path.startsWith('docs/tasks/')) {
     change(path, text => text.replace(/^status: \w+/m, 'status: done'));
@@ -39,11 +40,24 @@ const arrangeBoard = (state = 'done', milestone = 'M0') => {
     .replace(/^milestone: \w+/m, `milestone: ${milestone}`).replace(/^pr: .*$/m, 'pr: null'));
   change('docs/BACKLOG.md', () => `# Cola\n\n| Tarea | Estado |\n|---|---|\n| [${firstId}](tasks/${firstTask.split('/').pop()}) | ${state} |\n`);
   change('docs/STATUS.md', () => `# Estado\n\n| Tarea y contrato | [${firstId}](${firstTask.replace('docs/', '')}) |\n| Estado | ${state} |\n\n### Prompt de la siguiente sesión\n\x60\x60\x60text\nRetomar ${firstId}.\n\x60\x60\x60\n`);
+  pendingHandoff();
 };
-const completeHandoff = () => change('docs/HANDOFF.md', text => text
-  .replace('`NO_LISTO`', '`STARTER_VALIDADO`').replace(/— \d+\/22 verificados/, '— 22/22 verificados')
-  .replace(/^(\| [A-Z]-\d{2} \|[^|]*\|)[^|]*\|[^|]*\|/gm,
-    '$1 verificado | Propia: 2026-10-21 fixture ficticia del checker |'));
+const completeHandoff = () => {
+  update('docs/HANDOFF.md', text => text
+    .replace(/`(?:NO_LISTO|STARTER_VALIDADO)`/, '`STARTER_VALIDADO`').replace(/— \d+\/22 verificados/, '— 22/22 verificados')
+    .replace(/^(\| [A-Z]-\d{2} \|[^|]*\|)[^|]*\|[^|]*\|/gm,
+      '$1 verificado | Propia: 2026-10-21 fixture ficticia del checker |'));
+  update('docs/STATUS.md', text => text.replace(/\nHANDOFF del (?:starter|producto):[^\n]*/g, '') + '\nHANDOFF del starter: 22/22 verificados\n');
+};
+const pendingHandoff = () => {
+  completeHandoff();
+  update('docs/HANDOFF.md', text => {
+    assert.match(text, /^(\| C-01 \|[^|]*\|) verificado/m);
+    return text.replace('`STARTER_VALIDADO`', '`NO_LISTO`').replace('— 22/22', '— 21/22')
+      .replace(/^(\| C-01 \|[^|]*\|) verificado/m, '$1 pendiente');
+  });
+  update('docs/STATUS.md', text => text.replace('HANDOFF del starter: 22/22', 'HANDOFF del starter: 21/22'));
+};
 
 test('current generic contract passes without Git or the local kit', () => {
   const result = run();
@@ -83,11 +97,24 @@ test('inherited evidence cannot be declared verified', () => {
   rejects(/requiere evidencia propia fechada/);
 });
 test('a completed verdict cannot bypass pending criteria and tasks', () => {
-  change('docs/HANDOFF.md', text => text.replace('`NO_LISTO`', '`STARTER_VALIDADO`'));
+  arrangeBoard();
+  update('docs/HANDOFF.md', text => {
+    assert.match(text, /`NO_LISTO`/);
+    assert.match(text, /^(\| C-01 \|[^|]*\|) pendiente/m);
+    const invalid = text.replace('`NO_LISTO`', '`STARTER_VALIDADO`');
+    assert.notEqual(invalid, text);
+    return invalid;
+  });
   rejects(/STARTER_VALIDADO exige 22\/22/);
 });
 test('STATUS must report the actual handoff count', () => {
-  change('docs/STATUS.md', text => text + '\nHANDOFF del starter: 22/22 verificados\n');
+  arrangeBoard();
+  update('docs/STATUS.md', text => {
+    assert.match(text, /HANDOFF del starter: 21\/22 verificados/);
+    const invalid = text.replace('HANDOFF del starter: 21/22', 'HANDOFF del starter: 22/22');
+    assert.notEqual(invalid, text);
+    return invalid;
+  });
   rejects(/distinto de HANDOFF/);
 });
 test('backlog and task state must agree', () => {
@@ -101,8 +128,11 @@ for (const state of ['draft', 'blocked', 'in_review', 'mergeable', 'done']) {
   test(`H01: coherent ${state} board passes and a real disagreement rejects`, () => {
     arrangeBoard(state);
     let result = run(); assert.equal(result.status, 0, result.stderr);
-    writeFileSync(join(temporary, 'docs/BACKLOG.md'), readFileSync(join(temporary, 'docs/BACKLOG.md'), 'utf8')
-      .replace(`| ${state} |`, `| ${state === 'blocked' ? 'draft' : 'blocked'} |`));
+    update('docs/BACKLOG.md', text => {
+      const invalid = text.replace(`| ${state} |`, `| ${state === 'blocked' ? 'draft' : 'blocked'} |`);
+      assert.notEqual(invalid, text);
+      return invalid;
+    });
     rejects(new RegExp(`${firstId} figura como .*frontmatter dice ${state}`));
   });
 }
@@ -134,8 +164,12 @@ test('H02: no M0 cannot validate an empty adoption scope', () => {
 });
 test('H02: completed M0 cannot bypass a pending criterion', () => {
   arrangeBoard(); completeHandoff();
-  writeFileSync(join(temporary, 'docs/HANDOFF.md'), readFileSync(join(temporary, 'docs/HANDOFF.md'), 'utf8')
-    .replace(/^(\| C-01 \|[^|]*\|) verificado/m, '$1 pendiente').replace('— 22/22', '— 21/22'));
+  update('docs/HANDOFF.md', text => {
+    assert.match(text, /^(\| C-01 \|[^|]*\|) verificado/m);
+    const invalid = text.replace(/^(\| C-01 \|[^|]*\|) verificado/m, '$1 pendiente').replace('— 22/22', '— 21/22');
+    assert.notEqual(invalid, text);
+    return invalid;
+  });
   rejects(/STARTER_VALIDADO exige 22\/22/);
 });
 

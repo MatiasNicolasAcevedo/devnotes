@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-018](tasks/T-018-docs-fixture-independence.md) |
-| Estado | ready |
-| Acción actual | Sesión nueva frontera implementer: corregir fixtures de HANDOFF/conteo antes de iniciar producto con Junie |
+| Estado | in_progress |
+| Acción actual | Frontera implementer: renovar rojo, aislar fixtures HANDOFF/conteo y verificar STARTER propio |
 | Rama / PR | codex/t-018-docs-fixture-independence · sin PR; preparación documental, corrección aún no implementada |
 
 T-000/T-015 MERGED y conciliadas, adopción histórica STARTER_VALIDADO22/22 y E-01 aceptado conservado. Revisión previa del dueño: quince contratos I1 completos (T-016 entre T-006/T-007), S-101/S-104 v2 y voz I2 posterior S-105/T-017 draft. Se detectan seis regresiones de fixtures al cambiar a22/22: docs-check real pasa; suite35 tests/29 pass/6 fail. Causa/evidencia/salida en T-018. T-001 vuelve a draft solo por T-018; no afirmar listo para ejecutar Junie ni modificar estados reales para satisfacer tests. No hay código de producto ni voz implementado.
