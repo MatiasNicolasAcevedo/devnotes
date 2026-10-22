@@ -1,10 +1,10 @@
 ---
 id: T-015
-status: in_review
+status: mergeable
 priority: P1
 size: S
 executor: frontier
-role: reviewer
+role: merger
 milestone: M0
 counts_for_cycle: false
 spec: null
@@ -92,7 +92,7 @@ printf 'gate_exit=%s cleanup_exit=%s\n' "$gate_exit" "$cleanup_exit"
 
 Conservar logs y huellas antes/después, exit original y resultado de cada consulta/labels; salidas de recursos deben estar vacías. E2E/tooling limpian sus namespaces internos; comprobar sus logs y labels exactos, nunca prune ni recursos ajenos. Si falla consulta o cleanup no anunciar verde. Perfil STARTER por scripts; no rebajarlo a DOCS_ONLY por llamarse mantenimiento documental. Tras commit final, `bash scripts/verify.sh --policy origin/main` y diff sin commit; clasificador no incluye pendientes sin commit. Cierre solo Markdown conserva el gate de esta tarea si fuentes/base coinciden, con docs-check/afectados/CI del HEAD nuevo.
 
-## Checkpoint vigente · implementación publicada para revisión
+## Evidencia de implementación publicada conservada
 
 2026-10-21, sesión nueva FRONTERA implementer pedida por el dueño. Codex desktop/API, GPT-6 expuesto; variante/esfuerzo efectivos no expuestos. PowerShell, Node24.21.0, Git/gh, Git Bash y Docker host autorizados; conector GitHub consultado para starter, 404 para DevNotes y alternativa gh autorizada. Sin instalación, autenticación, delegación ni ejecución Junie. Leídos AGENTS/STATUS/PROJECT_CONTEXT, esta tarea/protocolo implementer, AUTONOMY y referencias concretas de código, TESTING/ORCHESTRATION/HANDOFF/TOOLS y T-000/T-001. Impacto: checker, regresiones y aclaraciones documentales; sin aplicación/API/permisos/auth/datos/UI/dependencias.
 
@@ -119,10 +119,24 @@ Preparación anterior conservada: planner dejó contrato/cola/conciliación y so
 | Manifiesto upstream retira T-006 del starter; aquí es producto | Excluir inicializador/manifiesto y preservar contratos I1 | Diff17 rutas contrastado con dos scripts pertinentes; solo esos dos scripts modificados |
 | README/SETUP repetían inventario y comprobación Junie pendiente ya aceptada | Referenciar TOOLS/T-000 y precisar expuesto/listado, conservando filas/sondas/fechas y E-01 | Diff documental; docs-check/35 regresiones; ninguna configuración o sonda Junie reemplazada |
 
+## Checkpoint vigente · revisión independiente favorable R1
+
+2026-10-21 (Buenos Aires), sesión nueva FRONTERA reviewer independiente solicitada por el dueño; continúa como merger si cumple AUTONOMY. Codex desktop/API, modelo GPT-6 expuesto; variante/esfuerzo efectivos no expuestos. Herramientas utilizadas: PowerShell, Node24.21.0, Git/gh y Docker para consultas de labels; conector GitHub para fuente inmutable starter. Conector devuelve404 para DevNotes; gh host autorizado consulta PR/CI. Sin instalación, autenticación, delegación ni ejecución Junie. Leídos AGENTS, PROJECT_CONTEXT, STATUS, esta tarea, reviewer/merger, AUTONOMY, TESTING, ORCHESTRATION, HANDOFF, TOOLS, T-000/T-001, BACKLOG/ROADMAP y las referencias concretas de los dos scripts. Impacto propio: transición documental; sin cambios de código, comportamiento/API/permisos/auth/datos/UI/dependencias.
+
+Recibido árbol limpio en HEAD local/remoto `1828f22963c580e3f13c3af8f1563dc0e6d0c96d`, base main publicada `cbbe1c9075a41edf2ceffd35eedf1e05dedd6870`. PR2 OPEN/no draft contra main; único PR abierto y sin conversaciones de revisión bloqueantes. CI exacta [verify-required SUCCESS, run39699710285](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/39699710285/job/119565702363), headSha1828f22; corrida concurrente cancelada no se cuenta como verde. PR1 reconsultado MERGED2026-10-21T18:37:39Z/squashcbbe1c9 y conciliado; E-01/inventario/sondas CLI aceptados se conservan.
+
+Diff completo publicado:13 rutas,11 Markdown y únicamente los dos scripts permitidos, sin cambios de modos. Starter PR7 reconsultado MERGED2026-10-21T23:18:44Z, squash `8d2fafecb0cfbd617998a41388c0855c676b3848`, HEAD2ac3767/baseacbc2c3. Lectura por conector de los dos archivos en los SHA inmutables, sin depender del checkout hermano: blobs del squash `4980b1485bf2c1d0eaca5c34b21fc2f8dc2a8e8b` (checker) y `03e03ffc059defbfac9a4919a765159627f1fd26` (tests) idénticos a DevNotes HEAD; blobs previos `e8de75b5055a556e3d65328969610dc3859075ca`/`83f0b5f338cc91453bcf0366da0069eb51e7f10c` idénticos a la base propia. Inicializador/manifiesto/T-006 de producto intactos. H01 conserva los20 tests existentes y añade fixture dueña/positivos/negativos de estados; H02 rechaza M0 vacía o abierta y criterio pendiente, permite M1 draft solo con22/22 y M0 completa. Sin debilitamiento de controles ni estados reales acomodados a tests.
+
+Verificación independiente en `.orchestrator/t015/reviewer-audit.mjs`: copia ficticia de archivos versionados propios, excluye kit/secretos, checker/tests anteriores extraídos de basecbbe1c9 y regresiones publicadas; `NODE_TEST_CONTEXT` retirado del runner hijo, reporter TAP y assertions de exit/conteos reales. Baseline y blocked coherente exit0; rojo H01 exit1,1 test/1 fallo; rojo H02 exit1,10 tests/8 pass/2 fallos, sin skipped/cancelled. Verde `node --test --test-reporter=tap "scripts/ci/*.test.mjs"` exit0,98/98,0 fail/cancelled/skipped, incluidos35 del checker. Primer ensayo sandbox:60 tests/13 fallos por Git temporal denegado, enlaces EPERM y procesos Bash; log reviewer-ci-sandbox.log conservado. Misma suite en host autorizado verde, sin editar fuentes/tests ni omitir casos. Logs reviewer-h01-red.log/reviewer-h02-red.log/reviewer-ci.log y reviewer-audit.json conservan la evidencia.
+
+STARTER propio comprobado por runner/logs/exit original: docs/server/client/tooling/E2E exit0,91+75 IT PostgreSQL/133 client/15 Playwright reales, canario negativo separado y export saneado. Se conserva conforme TESTING: mismas fuentes técnicas/base, sin riesgo nuevo ni evidencia faltante. Manifiestos before/after/reviewer idénticos,237 huellas, SHA256 `8332922279d570ee83af9e19af02abbec0cef844d1231cbdd9628f3afd4c0c76`; no se repite FULL por esta transición solo Markdown. Cleanup original exit0 y auditoría independiente `node .orchestrator/t015/reviewer-resources.mjs` exit0: nueve namespaces exactos,27 consultas de labels container/network/volume exit0, cero recursos, sin mutaciones Docker. Evidencia reviewer-resources.json; namespaces y logs originales arriba.
+
+Resultado R1: sin bloqueantes; transición favorable `mergeable`, condicionada a publicar este cierre, comprobar docs-check/afectados/huellas/policy y CI del nuevo HEAD. El veredicto canónico APROBADO con HEAD/base finales se publica en PR2 únicamente tras CI exacta verde. No hay commits después de ese veredicto. Una ronda consumida de máximo dos; sin correcciones de código pedidas. WIP1, T-001 draft y HANDOFF NO_LISTO21/22 hasta MERGED/conciliación propios.
+
+Transición documental comprobada antes de publicar: `node scripts/docs-check.mjs` exit0,61 Markdown/16 tareas/HANDOFF21/22; `git diff --check` exit0; `node --test --test-reporter=tap scripts/ci/docs-check.test.mjs` exit0,35/35 sin fallos/cancelled/skipped (reviewer-docs-final.log); `node .orchestrator/t015/fingerprint.mjs final` exit0,237/237 intactas y mismo manifiesto. Git Bash `bash scripts/verify.sh --policy origin/main` exit0: policy FULL/profile STARTER,13 rutas; diff sin commit revisado limitado a tarea/STATUS y H-03 por prompt/evidencia de traspaso. BACKLOG conserva la cola/dependencias, sin anticipar done ni22/22. Tras commit se reconsulta policy/docs-check/refs y CI exacta; SHA final en veredicto PR2.
+
 ## Cierre y siguiente tarea
 
-Implementación/corrección publicada en el mismo [PR #2](https://github.com/MatiasNicolasAcevedo/devnotes/pull/2) contra main; tarea `in_review`. Código b95a9b0, gate STARTER propio exit0 y evidencia arriba. El cierre documental conserva fuentes/base y exige docs-check/afectados/CI del HEAD final; SHA remoto y enlace de CI se entregan al cerrar sin otro commit solo para autorreferenciarlo. Esta sesión implementer no aprueba ni mergea; no implementa T-001.
+Esta misma sesión reviewer→merger reconsulta HEAD/base, CI y conversaciones, publica APROBADO ligado a ambos SHA y ejecuta squash elegible con `--match-head-commit`, sin `--admin`; confirma MERGED/SHA/fecha y comenta cierre en PR2. SHA/CI finales viven en ese comentario, sin commit para autorreferenciarlos. Si cambia HEAD/base o falla CI, no mergear y dejar causa/evidencia/dato necesario conforme protocolo; sin ampliar rondas ni modificar protecciones.
 
-Próxima acción única: sesión nueva FRONTERA reviewer según STATUS; revisar diff publicado completo, H01/H02/negativos, documentación e inventario aceptado, huellas/base/gate/cleanup y CI verify-required del HEAD exacto. Si es favorable, publicar transición documental y preparar antes de APROBADO el prompt final Junie T-001 con precondición MERGED/conciliación de T-015; comprobar CI del nuevo HEAD y emitir veredicto ligado a HEAD/base. Puede squash mergear elegiblemente en esa sesión según AUTONOMY, sin --admin ni commits después de aprobar, y confirmar SHA/fecha MERGED. Máximo dos rondas y tres correcciones distintas por bloqueo; sin autorización para ampliar esos límites.
-
-Solo después de MERGED confirmado, una sesión nueva Junie implementer T-001 (rama codex/t-001-document-contract desde main actualizado) concilia T-015 done/G-03/HANDOFF y cola en su primer avance útil, conserva E-01 aceptado y comprueba STARTER_VALIDADO22/22 con todas las M0 done. T-001 sigue draft hasta esa comprobación; T-000/PR1 no se reabre. Ningún CA-01…06 queda aceptado por este mantenimiento.
+Antes de APROBADO queda preparado en STATUS el único prompt de sesión nueva Junie implementer T-001. Su precondición es comprobar T-015 MERGED y crear `codex/t-001-document-contract` desde main actualizado, conciliando T-015 done/G-03/HANDOFF/cola en el primer avance útil. Conserva E-01 aceptado y comprueba STARTER_VALIDADO22/22 con todas las M0 done, sin aceptar CA-01…06 ni producto futuro. T-001 sigue draft hasta esa comprobación; T-000/PR1 no se reabre. No se implementa T-001 ni se commitea en la rama mergeada en esta sesión.
