@@ -8,7 +8,7 @@ role: implementer
 milestone: M1
 product_cycle: I1
 spec: S-101
-spec_version: 1
+spec_version: 2
 branch: codex/t-004-daily-api
 pr: null
 depends_on: [T-003]
@@ -28,7 +28,7 @@ Impacto previsto: API de notas privada, nuevos matchers limitados; sin auth nuev
 ## Leer antes
 
 1. [AGENTS server](../../server/AGENTS.md).
-2. [S-101 v1](../specs/S-101-daily-notes.md).
+2. [S-101 v2](../specs/S-101-daily-notes.md).
 3. [S-101: contenido/API](../specs/S-101-daily-notes.md).
 4. [TESTING](../TESTING.md).
 5. [T-003](T-003-daily-service.md), solo cierre/MERGED y evidencia necesaria. AGENTS raíz, STATUS y protocolo implementer son la entrada común.
@@ -39,13 +39,13 @@ Rutas previstas: daily/web/DailyNoteController.java, DailyNoteExceptionHandler.j
 Los nombres sin prefijo de backend son relativos a server/src/main/java/com/example/devnotes/; sus tests conservan paquete bajo server/src/test/java/com/example/devnotes/. Frontend relativo indicado explícitamente o bajo client/src/features/daily/.
 
 1. Comprobar Git/PR/base, dependencia MERGED, capacidades mínimas y crear la rama exacta desde main actualizado; preservar cambios ajenos. Conciliar done de T-003 en primer avance útil.
-2. Implementar solo este resultado siguiendo spec v1; pruebas de riesgo y negativos abajo, sin reducir suites/assertions/coverage/retries.
+2. Implementar solo este resultado siguiendo spec v2; pruebas de riesgo y negativos abajo, sin reducir suites/assertions/coverage/retries.
 3. Dirigidos durante iteración; fijar huella/SHA/base antes del gate, publicar al pasar gate. No cambiar fuentes mientras corre.
 4. Documentar resultado y preparar revisión independiente en STATUS; no autoaprobar ni comenzar siguiente tarea.
 
 ## Aceptación y pruebas
 
-200 crear/leer/listar/actualizar; 404 vacío; 400 fecha imposible/body extra/revisión inválida; 409 conserva DB; 401/403/CSRF y dos dueños. POST/PATCH/DELETE/rutas vecinas/IDs siguen denegados; GET no crea filas. OpenAPI sesión/CSRF.
+200 crear/leer/listar/actualizar; 404 vacío; 400 fecha imposible/body extra/revisión inválida; 409 conserva DB; 401/403/CSRF y dos dueños. POST/PATCH/DELETE/rutas vecinas/IDs siguen denegados; GET no crea filas. OpenAPI sesión/CSRF. Probar revisión segura máxima/+1, fracciones/booleanos/strings sin coerción, page máximo/+1/offset long y size distinto de20; fallos no mutan DB.
 
 Capa elegida y motivo: HTTP/PostgreSQL con principal permitido/denegado y CSRF; la suite OIDC real existente se conserva para el gate.
 Comandos ejecutables desde raíz con Git Bash/Docker Desktop Linux/Node>=24 (npm ci instala del lock; no actualiza versiones). Antes de dirigidos Docker y gate, crear namespaces propios y comprobar ausencia:

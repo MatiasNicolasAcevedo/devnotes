@@ -8,7 +8,7 @@ role: implementer
 milestone: M1
 product_cycle: I1
 spec: S-101
-spec_version: 1
+spec_version: 2
 branch: codex/t-003-daily-service
 pr: null
 depends_on: [T-002]
@@ -28,7 +28,7 @@ Impacto previsto: Reglas transaccionales/cobertura; aún sin rutas públicas nue
 ## Leer antes
 
 1. [AGENTS server](../../server/AGENTS.md).
-2. [S-101 v1](../specs/S-101-daily-notes.md).
+2. [S-101 v2](../specs/S-101-daily-notes.md).
 3. [S-101: contenido/API](../specs/S-101-daily-notes.md).
 4. [TESTING](../TESTING.md).
 5. [T-002](T-002-daily-persistence.md), solo cierre/MERGED y evidencia necesaria. AGENTS raíz, STATUS y protocolo implementer son la entrada común.
@@ -39,13 +39,13 @@ Rutas previstas: daily/application/DailyNoteService.java, DailyNoteView.java (re
 Los nombres sin prefijo de backend son relativos a server/src/main/java/com/example/devnotes/; sus tests conservan paquete bajo server/src/test/java/com/example/devnotes/. Frontend relativo indicado explícitamente o bajo client/src/features/daily/.
 
 1. Comprobar Git/PR/base, dependencia MERGED, capacidades mínimas y crear la rama exacta desde main actualizado; preservar cambios ajenos. Conciliar done de T-002 en primer avance útil.
-2. Implementar solo este resultado siguiendo spec v1; pruebas de riesgo y negativos abajo, sin reducir suites/assertions/coverage/retries.
+2. Implementar solo este resultado siguiendo spec v2; pruebas de riesgo y negativos abajo, sin reducir suites/assertions/coverage/retries.
 3. Dirigidos durante iteración; fijar huella/SHA/base antes del gate, publicar al pasar gate. No cambiar fuentes mientras corre.
 4. Documentar resultado y preparar revisión independiente en STATUS; no autoaprobar ni comenzar siguiente tarea.
 
 ## Aceptación y pruebas
 
-Revisión0 crea1, CAS vigente incrementa, conflicto no escribe. Carrera primera escritura solo un ganador, carrera actualización solo un ganador; B no altera A; guardar valida documento antes de mutar. Fecha y timestamps coherentes.
+Revisión0 crea1, CAS vigente incrementa, conflicto no escribe. Carrera primera escritura solo un ganador, carrera actualización solo un ganador; B no altera A; guardar valida documento antes de mutar. Fecha y timestamps coherentes. Límites de revisión segura S-101 v2, incluido máximo sin incremento posible: 409 sin modificar nota ni timestamp; no overflow de BIGINT ni redondeo JS.
 
 Capa elegida y motivo: IT de servicio/transacción PostgreSQL prueba concurrencia y aislamiento que mock de repositorio no demuestra.
 Comandos ejecutables desde raíz con Git Bash/Docker Desktop Linux/Node>=24 (npm ci instala del lock; no actualiza versiones). Antes de dirigidos Docker y gate, crear namespaces propios y comprobar ausencia:

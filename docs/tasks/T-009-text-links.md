@@ -93,3 +93,5 @@ Sin correcciones ni resultados de implementación acreditados.
 ## Cierre y siguiente tarea
 
 Publicar PR y evidencia según TESTING; pasar a in_review con prompt reviewer en sesión nueva. Reviewer comprueba HEAD/base, gate, CI y arquitectura/propiedad, publica veredicto del SHA final y puede squash merge por AUTONOMY. Sin done hasta MERGED comprobado. El siguiente implementer concilia done al primer avance de su rama nueva; no editar la rama ya mergeada. Próxima: [T-010](T-010-version-storage.md).
+
+Antes de preparar la siguiente sesión, controlar avance de las últimas cinco tareas I1 mergeadas: contratos/evidencia/dependencias vigentes, costo de pruebas medido y cola consistente. Registrar hallazgos en esta tarea; fuera de alcance a BACKLOG. No regresar a frontera si la ruta sigue completa. Esta es la décima tarea I1 tras insertar T-016 antes de T-007.

@@ -25,7 +25,15 @@ Resultado del MVP: encontrar las notas de cada fecha y leer la copia guardada ma
 
 Objetivo de salida I1: recorrido completo de las cuatro capacidades, CA-01…06 demostrados con datos ficticios, tareas revisadas/mergeadas y evidencia propia. [ROADMAP](docs/ROADMAP.md) y [BACKLOG](docs/BACKLOG.md) fijan la ruta. Frontera vuelve al completar I1 o ante nueva intención/decisión fuera del contrato. Cada tarea y revisión usa sesión nueva; Junie controla el avance cada cinco tareas de producto.
 
-Fuera del MVP: API/sincronización Jira, inferir URLs, importación/exportación, colaboración, carpetas o varios documentos por fecha, búsquedas avanzadas, restauración/comparación/múltiples revisiones de un día, app móvil nativa, notificaciones, servicios externos, personalización de fuente/tema y despliegue. No es un clon completo de Sublime o Notion.
+Fuera del MVP I1: API/sincronización Jira, inferir URLs, importación/exportación, colaboración, carpetas o varios documentos por fecha, búsquedas avanzadas, restauración/comparación/múltiples revisiones de un día, app móvil nativa, notificaciones, servicios externos, personalización de fuente/tema y despliegue. No es un clon completo de Sublime o Notion. La intención posterior I2 de voz se registra abajo y no añade dependencias a I1.
+
+## I2 posterior · Notas por voz
+
+Intención confirmada por el dueño el 2026-10-21: grabar con un botón, indicar en rojo y con texto que el micrófono está grabando, detener y transcribir a texto; poder editar, copiar con un botón, guardar, volver a consultar y borrar cada transcripción. Uso principal: preparar prompts para web/CLI y conservar notas hasta borrarlas. La captura aportada orienta el flujo mínimo; sus textos de demo/simulación no son requisitos de implementación.
+
+Propuesta de frontera para mantenerlo simple: transcribir al detener, español, colección privada independiente con varias transcripciones por día, guardado manual de texto y sin almacenar el audio. No insertar automáticamente en la nota diaria ni compartir/enviar a otros servicios. El usuario controla cuándo copiar y usar el texto fuera de DevNotes. [S-105](docs/specs/S-105-voice-notes.md) conserva aceptación, investigación Groq/Whisper, errores y desglose futuro; [T-017](docs/tasks/T-017-voice-readiness.md) concreta su habilitación tras cerrar I1. Es planificación posterior, no una ampliación del MVP ni ejecución anticipada de Junie.
+
+Groq (con q) es el candidato investigado, distinto de Grok/xAI. Cuotas y política del proveedor se vuelven a comprobar al habilitar I2; cuenta/clave y una prueba externa con audio ficticio aún no se acreditan. No se contratan planes pagos ni se envía audio real con esta solicitud de planificación.
 
 ## Datos, reglas y permisos
 
