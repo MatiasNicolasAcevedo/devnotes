@@ -1,10 +1,10 @@
 ---
 id: T-018
-status: in_review
+status: mergeable
 priority: P1
 size: S
 executor: frontier
-role: reviewer
+role: merger
 milestone: M1
 counts_for_cycle: false
 spec: null
@@ -83,7 +83,7 @@ bash scripts/verify.sh --policy origin/main
 
 Auditar namespaces internos del runner por labels exactos según logs. Ningún gate anterior acredita el cambio de tests/estado/base; no rebajar STARTER por ser un archivo de test. Quitar NODE_TEST_CONTEXT de cualquier runner hijo si se orquesta otra suite, exigir conteos/exit y no tomar stdout vacío como éxito.
 
-## Checkpoint vigente
+## Evidencia de implementación conservada
 
 2026-10-21 Buenos Aires, sesión nueva FRONTERA implementer solicitada por el dueño. Codex desktop/API, modelo GPT-6 expuesto; variante/esfuerzo efectivos no expuestos. PowerShell, Node24.21.0, Git/gh, Git Bash/Docker host autorizados realmente usados. Sin instalación, autenticación, delegación ni ejecución/capacidades Junie atribuidas. Impacto: fixtures y coordinación documental, sin cambios de comportamiento/API/permisos/datos/UI de aplicación.
 
@@ -107,6 +107,22 @@ Validación del cierre solo Markdown: docs-check exit0 (65 Markdown/19 tareas/HA
 |---|---|---|
 | Seis regresiones al pasar adopción21→22/22 | arrangeBoard posee HANDOFF/veredicto/criterios/conteo; completeHandoff usa contenido actual; negativos afirman desacuerdo creado | Rojo propio35/29/6; verde35/35 en22/22 y21/22 ficticio; suite98/98; STARTER propio exit0 |
 
+## Checkpoint vigente · revisión independiente favorable R1
+
+2026-10-22 Buenos Aires, sesión nueva FRONTERA reviewer independiente solicitada por el dueño; continúa como merger de este mismo PR según AUTONOMY. Codex desktop/API, modelo GPT-6 expuesto; variante/esfuerzo efectivos no expuestos. Herramientas usadas: PowerShell, Node24.21.0, Git/gh, Git Bash y Docker host para consultas de labels. Conector GitHub devuelve404 para DevNotes; gh autorizado comprueba PR/CI. Sin instalación, autenticación, delegación ni capacidades Junie atribuidas. Impacto propio: transición documental de tarea/STATUS, sin código ni comportamiento/API/permisos/datos/UI de aplicación.
+
+Recibido árbol limpio, HEAD local/remoto `7cf3589a8379ebd65ebd8ffcd9444309ad27d364`; fetch/ls-remote/PR confirman main/base/merge-base `b52b1fde51194c62c0911f9f0462431508c22f77`. PR3 único abierto, no draft contra main, sin reviews/conversaciones bloqueantes; [verify-required SUCCESS run39708955520](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/39708955520/job/119595439092), head_sha7cf3589 confirmado por API. PR1/PR2 reconsultados MERGED con SHA/fechas históricos; T-000/T-015 done/conciliadas, E-01 e histórico22/22 conservados.
+
+Diff completo revisado:28 rutas regulares,27 Markdown de preparación/conciliación y solo scripts/ci/docs-check.test.mjs técnico. Checker/reglas/aplicación/dependencias/workflows/protecciones intactos. Se conservan35 tests y todas las assertions; se añaden precondiciones de mutación. arrangeBoard posee HANDOFF/criterio/conteo21/22, completeHandoff usa contenido actual y sincroniza STATUS; negativos crean desacuerdo y exigen exit1. H01 conserva cinco estados coherentes y sus desacuerdos; H02 conserva M0 completa/futura M1 draft, siete estados M0 abiertos, M0 vacía y criterio pendiente. Quince contratos I1, S-101/S-104 v2 y T-016 entre T-006/T-007 coherentes; S-105/T-017 sigue I2 draft sin ejecución ni proveedor acreditados.
+
+Auditoría independiente `node .orchestrator/t018/reviewer-audit.mjs` host autorizado exit0: copia ficticia versionada sin Git/kit/secretos, con test anterior de base, reproduce35/29 pass/6 fail/exit1; test publicado en copia NO_LISTO21/22 propia35/35/exit0; suite actual `node --test --test-reporter=tap "scripts/ci/*.test.mjs"`98/98/exit0, incluidos35 del checker,0 fail/cancelled/skipped. NODE_TEST_CONTEXT retirado de hijos, exit/conteos afirmados; copia resuelta y limpiada en finally. Logs reviewer-red.log/reviewer-context21.log/reviewer-ci.log y reviewer-audit.json ignorados sin sobrescribir implementer. docs-check65 Markdown/19 tareas/HANDOFF22/22 y diff-check exit0. Git Bash `bash scripts/verify.sh --policy origin/main`: FULL/profile STARTER,28 rutas.
+
+STARTER conservado según TESTING: runner/log/exit0, docs/server/client/tooling/E2E,91 unitarios/slices+75 IT PostgreSQL/133 frontend, copia compilable207 fuentes y91+75/133, Playwright real15/15/export tests15 failures0 action-traces0; canario negativo separado.236 huellas before/after/publicadas/reviewer idénticas, manifiesto `41a9d849c34862d5b95d46efc768d3e6ff2f6249b30932fcb248b65cbe3de98d`, base intacta. Runner/huellas/ausencia preceden suites; se conserva la incidencia del checkpoint ampliado posterior al inicio, sin inventar registro previo. La evidencia material permite contrastar fuentes/base/comando/exit/cleanup; no se repite FULL por esta transición Markdown. Cleanup original exit0; auditoría independiente de solo lectura: nueve namespaces exactos extraídos de logs,27 consultas container -a/network/volume exit0 y vacías, reviewer-resources.json. Sin prune ni recursos ajenos.
+
+R1 favorable sin bloqueantes, una ronda de máximo dos, sin correcciones de código pedidas. Publicar solo transición tarea/STATUS mergeable/merger y prompt Junie T-001; comprobar docs-check/35 dirigidos/huellas/policy y CI del HEAD nuevo. APROBADO canónico con HEAD/base exactos únicamente tras verify-required SUCCESS; ningún commit posterior. Si cambia HEAD/base o falla CI, detener merge y aplicar protocolos sin ampliar rondas por rutina. SHA final/CI/veredicto y eventual MERGED/SHA/fecha viven en PR3, sin commit autorreferente. Squash ligado al SHA revisado, sin --admin/bypass/protecciones; confirmar GitHub MERGED y comentar cierre. No marcar done con PR abierto ni implementar T-001 aquí. El prompt de STATUS condiciona su sesión nueva a MERGED comprobado y conciliación en rama nueva.
+
+Transición documental comprobada antes de publicar: docs-check exit0 (65 Markdown/19 tareas/HANDOFF22/22), diff-check exit0; `node --test --test-reporter=tap scripts/ci/docs-check.test.mjs`35/35,0 fail/cancelled/skipped,10.06s (reviewer-docs-final.log). `node .orchestrator/t018/fingerprint.mjs final` confirma236/236 y mismo manifiesto/base. Diff local revisado limitado a tarea/STATUS; kit ausente/no rastreado e índice sin plantilla. Tras commit se reconsulta policy/docs-check/refs y CI del HEAD final antes de comentar APROBADO.
+
 ## Cierre y siguiente tarea
 
-Corrección y gate propios publicados en [PR3](https://github.com/MatiasNicolasAcevedo/devnotes/pull/3) contra main; in_review, pendiente revisión independiente sobre HEAD/base exactos y CI propia final verde antes de la entrega. El primer commit de preparación Markdown se conserva en ese PR. Implementer deja in_review; FRONTERA reviewer en sesión nueva verifica HEAD/base publicados, diff completo, gate/CI y puede mergear solo por AUTONOMY. Autor no aprueba ni mergea. Próxima [T-001](T-001-document-contract.md), draft por T-018, se habilita únicamente tras MERGED comprobado: sesión nueva Junie crea codex/t-001-document-contract desde main actualizado y concilia T-018 done en su primer avance, sin editar rama mergeada. Quince contratos I1 de BACKLOG, S-101/S-104 v2 y T-016 entre T-006/T-007 se conservan; S-105/T-017 voz I2 sigue posterior draft. HANDOFF22/22/E-01 conserva adopción histórica T-000/T-015, sin aceptar mantenimiento/producto/voz por herencia.
+Corrección y gate propios publicados en [PR3](https://github.com/MatiasNicolasAcevedo/devnotes/pull/3) contra main; revisión independiente R1 favorable y transición mergeable, pendiente publicación/CI final y veredicto canónico antes de merge. El primer commit de preparación Markdown se conserva en ese PR. Implementer deja in_review; FRONTERA reviewer en sesión nueva verifica HEAD/base publicados, diff completo, gate/CI y puede mergear solo por AUTONOMY. Autor no aprueba ni mergea. Próxima [T-001](T-001-document-contract.md), draft por T-018, se habilita únicamente tras MERGED comprobado: sesión nueva Junie crea codex/t-001-document-contract desde main actualizado y concilia T-018 done en su primer avance, sin editar rama mergeada. Quince contratos I1 de BACKLOG, S-101/S-104 v2 y T-016 entre T-006/T-007 se conservan; S-105/T-017 voz I2 sigue posterior draft. HANDOFF22/22/E-01 conserva adopción histórica T-000/T-015, sin aceptar mantenimiento/producto/voz por herencia.
