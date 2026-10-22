@@ -8,46 +8,48 @@ role: implementer
 milestone: M1
 product_cycle: I1
 spec: S-101
-spec_version: 1
+spec_version: 2
 branch: codex/t-006-daily-client
 pr: null
 depends_on: [T-005]
 ---
-# T-006 · Cliente y cola de guardado
+# T-006 · Cliente HTTP y consultas privadas
 
 ## Objetivo
 
-Cliente y cola de guardado, capacidad S-101 de I1. Resultado comprobable descrito abajo; ninguna implementación de otra tarea en esta sesión. Siguiente: [T-007](T-007-daily-workspace.md), habilitada solo tras MERGED de esta tarea y su conciliación en una nueva sesión. Salida a frontera: T-014 mergeada con los seis CA o decisión/bloqueo fuera del contrato.
+Cliente HTTP y consultas privadas, capacidad S-101 v2 de I1. El cliente valida contrato y aísla lecturas por identidad/fecha; aún no programa guardado automático ni monta pantalla. Siguiente: [T-016](T-016-daily-draft-coordinator.md), habilitada solo tras MERGED y conciliación en una nueva sesión. Salida a frontera: T-014 mergeada con los seis CA o decisión/bloqueo fuera del contrato.
 
 ## Alcance y decisiones resueltas
 
-Cliente con Zod/HTTP/CSRF/guardia actual; keys identidad+fecha y fetch cancelable. Hook y DailyDraftProvider coordinan cola/debounce700ms, revisión confirmada, generaciones dirty y flush awaitable (también force para vacío al guardar versión). Provider conserva un único borrador activo pendiente en memoria por identidad sobre Outlet, para no perderlo al desmontar la página; su montaje y navegación de shell se conectan en T-007. Evitar setQueryData/retries de mutaciones y refetch que pise dirty; identidad distinta invalida finalizaciones tardías y descarta borrador. Incluir daily/api y hook en cobertura 80/70 conservando referencia.
+Cliente con Zod/HTTP/CSRF/guardia actual; exportar dailyNoteKeys(owner, date/page), getDailyNote, listDailyNotes y saveDailyNote(date, content, expectedRevision, scope). Recibir AbortSignal y guardia sessionIsCurrent como patrones existentes; owner solo identifica keys/guardia, nunca se envía al backend. 404 de detalle representa ausencia explícita, otros errores no se convierten en vacío. Validar DTOs/revisiones seguras/fechas antes de exponerlos. Hook useDailyNoteQuery(owner, date) solo de lectura, habilitado con sesión actual, keys privadas y cancelación; exportar invalidación de detalle/lista para T-016 sin setQueryData. Sin retries de mutación ni repetición automática de PUT por CSRF. No debounce, provider, borrador ni UI aquí.
 
-Impacto previsto: Guardado privado automático y memoria transitoria; sin store persistente. Contrato completo; estado draft **únicamente por dependencia T-005 no mergeada/conciliada**. Al comprobarla, Junie puede habilitar ready sin otra planificación. En T-001 comprobar además la evidencia Junie y adopción T-000; si no existen, no comenzar negocio.
+Incluir daily/api y patrón de hooks daily/useDaily*.ts y daily/DailyDraftProvider.tsx en cobertura 80/70 conservando referencia. Configurar esos globs ahora; la cola posterior se cubre cuando exista, sin excluir archivos para cumplir mínimos.
+
+Impacto previsto: transporte/consultas privadas y cobertura; sin nueva persistencia. Contrato completo; draft **únicamente por T-005 no mergeada/conciliada**. La cola separada de T-016 evita concentrar transporte, concurrencia y navegación en esta tarea.
 
 ## Leer antes
 
 1. [AGENTS client](../../client/AGENTS.md).
-2. [S-101 v1](../specs/S-101-daily-notes.md).
+2. [S-101 v2](../specs/S-101-daily-notes.md).
 3. [S-101: JSON/editor/guardado](../specs/S-101-daily-notes.md).
 4. [TESTING](../TESTING.md).
 5. [T-005](T-005-editor-foundation.md), solo cierre/MERGED y evidencia necesaria. AGENTS raíz, STATUS y protocolo implementer son la entrada común.
 
 ## Archivos y pasos
 
-Rutas previstas: client/src/features/daily/api.ts y api.test.ts; useDailyNote.ts y useDailyNote.test.tsx; DailyDraftProvider.tsx (contexto y navegación guardada exportada, probados en useDailyNote.test.tsx); client/vite.config.ts solo cobertura.
+Rutas previstas: client/src/features/daily/api.ts y api.test.ts; useDailyNoteQuery.ts y useDailyNoteQuery.test.tsx; client/vite.config.ts solo cobertura.
 Los nombres sin prefijo de backend son relativos a server/src/main/java/com/example/devnotes/; sus tests conservan paquete bajo server/src/test/java/com/example/devnotes/. Frontend relativo indicado explícitamente o bajo client/src/features/daily/.
 
 1. Comprobar Git/PR/base, dependencia MERGED, capacidades mínimas y crear la rama exacta desde main actualizado; preservar cambios ajenos. Conciliar done de T-005 en primer avance útil.
-2. Implementar solo este resultado siguiendo spec v1; pruebas de riesgo y negativos abajo, sin reducir suites/assertions/coverage/retries.
+2. Implementar solo transporte y consultas S-101 v2; probar negativos abajo sin reducir suites/assertions/coverage/retries.
 3. Dirigidos durante iteración; fijar huella/SHA/base antes del gate, publicar al pasar gate. No cambiar fuentes mientras corre.
 4. Documentar resultado y preparar revisión independiente en STATUS; no autoaprobar ni comenzar siguiente tarea.
 
 ## Aceptación y pruebas
 
-Vacío404 no guarda solo; múltiples teclas colapsan, edición durante PUT genera segundo guardado con revisión nueva. ACK antiguo no reemplaza texto/estado de generación actual. Error y 409 conservan dirty; flush falla y bloquea navegación controlada. Desmontar/remontar página conserva dirty en provider; cambio identidad lo borra y ACK tardío no lo recrea. Errores CSRF piden nueva acción.
+GET404 se distingue de error/403; lectura no genera PUT. DTO inválido, fecha/revisión no segura y campos desconocidos se rechazan. Query cancela lectura previa, separa A/B y no presenta respuesta tardía de A en B. PUT usa CSRF y revisión exacta; 400/401/403/409/red se propagan sin éxito ni reenvío automático. Invalidación no escribe cache con respuestas de otra identidad.
 
-Capa elegida y motivo: Hooks con Query/providers reales y MSW, fake timers solo debounce; controlar respuestas retenidas para carreras de identidad.
+Capa elegida y motivo: cliente y Query/providers reales con MSW; respuestas retenidas para cambios de identidad. Cola/debounce pertenecen a T-016.
 Comandos ejecutables desde raíz con Git Bash/Docker Desktop Linux/Node>=24 (npm ci instala del lock; no actualiza versiones). Antes de dirigidos Docker y gate, crear namespaces propios y comprobar ausencia:
 
 ```bash
@@ -62,7 +64,7 @@ for project in "$COMPOSE_PROJECT_NAME" "$STARTER_E2E_PROJECT"; do
   done
 done
 npm --prefix client ci
-npm --prefix client test -- --run src/features/daily/api.test.ts src/features/daily/useDailyNote.test.tsx
+npm --prefix client test -- --run src/features/daily/api.test.ts src/features/daily/useDailyNoteQuery.test.tsx
 npm --prefix client run typecheck
 ```
 
@@ -88,8 +90,8 @@ Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie regist
 
 ## Correcciones significativas
 
-Sin correcciones ni resultados de implementación acreditados.
+2026-10-21, frontera planner: separar la cola/borrador en T-016; esta tarea retiene transporte/Query/cobertura. Se conservan todas las pruebas críticas, reasignadas a T-016 donde corresponden. No hay implementación ni pruebas ejecutadas.
 
 ## Cierre y siguiente tarea
 
-Publicar PR y evidencia según TESTING; pasar a in_review con prompt reviewer en sesión nueva. Reviewer comprueba HEAD/base, gate, CI y arquitectura/propiedad, publica veredicto del SHA final y puede squash merge por AUTONOMY. Sin done hasta MERGED comprobado. El siguiente implementer concilia done al primer avance de su rama nueva; no editar la rama ya mergeada. Próxima: [T-007](T-007-daily-workspace.md).
+Publicar PR y evidencia según TESTING; pasar a in_review con prompt reviewer en sesión nueva. Reviewer comprueba HEAD/base, gate, CI y propiedad y puede squash merge elegible. Sin done hasta MERGED comprobado. Próxima: [T-016](T-016-daily-draft-coordinator.md), no T-007; el siguiente implementer concilia done en rama nueva.

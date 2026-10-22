@@ -8,7 +8,7 @@ role: implementer
 milestone: M1
 product_cycle: I1
 spec: S-101
-spec_version: 1
+spec_version: 2
 branch: codex/t-005-editor-foundation
 pr: null
 depends_on: [T-004]
@@ -28,7 +28,7 @@ Impacto previsto: Nuevas dependencias OSS/fuente locales, sin servicio externo n
 ## Leer antes
 
 1. [AGENTS client](../../client/AGENTS.md).
-2. [S-101 v1](../specs/S-101-daily-notes.md).
+2. [S-101 v2](../specs/S-101-daily-notes.md).
 3. [S-101: JSON/editor/guardado](../specs/S-101-daily-notes.md).
 4. [TESTING](../TESTING.md).
 5. [T-004](T-004-daily-api.md), solo cierre/MERGED y evidencia necesaria. AGENTS raíz, STATUS y protocolo implementer son la entrada común.
@@ -39,7 +39,7 @@ Rutas previstas: client/src/features/daily/editor/dailyDocument.ts, DailyEditor.
 Los nombres sin prefijo de backend son relativos a server/src/main/java/com/example/devnotes/; sus tests conservan paquete bajo server/src/test/java/com/example/devnotes/. Frontend relativo indicado explícitamente o bajo client/src/features/daily/.
 
 1. Comprobar Git/PR/base, dependencia MERGED, capacidades mínimas y crear la rama exacta desde main actualizado; preservar cambios ajenos. Conciliar done de T-004 en primer avance útil.
-2. Implementar solo este resultado siguiendo spec v1; pruebas de riesgo y negativos abajo, sin reducir suites/assertions/coverage/retries.
+2. Implementar solo este resultado siguiendo spec v2; pruebas de riesgo y negativos abajo, sin reducir suites/assertions/coverage/retries.
 3. Dirigidos durante iteración; fijar huella/SHA/base antes del gate, publicar al pasar gate. No cambiar fuentes mientras corre.
 4. Documentar resultado y preparar revisión independiente en STATUS; no autoaprobar ni comenzar siguiente tarea.
 
@@ -50,7 +50,7 @@ npm --prefix client install --save-exact @tiptap/core@3.32.0 @tiptap/react@3.32.
 
 ## Aceptación y pruebas
 
-Vacío numerado1, líneas vacías, wrap sin números extra, paste multilinea sin HTML, undo/redo, JSON inválido rechazado y readonly sin callbacks de edición. TS coincide con fixtures de validación backend; Roboto Mono empaquetada localmente. Compatibilidad efectiva de deps probada, no inferida de npm.
+Vacío numerado1, líneas vacías, wrap sin números extra, paste multilinea sin importar HTML, undo/redo, JSON inválido rechazado y readonly sin callbacks de edición. Texto HTML literal visible como texto, CRLF/CR normalizado preservando líneas vacías iniciales/finales. TS coincide con fixtures backend y límites/+1 de bloques/texto/fragmentos/href agregado; JSON remoto inválido no se hidrata ni se guarda normalizado. Probar roundtrip semántico sin exigir fragmentos adyacentes idénticos. Roboto Mono empaquetada localmente. Compatibilidad efectiva de deps probada, no inferida de npm.
 
 Capa elegida y motivo: Transformación pura + componente con editor real; geometría/wrap final en navegador T-014. No simular Tiptap con un textarea.
 Comandos ejecutables desde raíz con Git Bash/Docker Desktop Linux/Node>=24 (npm ci instala del lock; no actualiza versiones). Antes de dirigidos Docker y gate, crear namespaces propios y comprobar ausencia:

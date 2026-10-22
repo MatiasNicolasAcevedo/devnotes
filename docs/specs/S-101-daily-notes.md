@@ -1,9 +1,9 @@
 ---
 id: S-101
 status: approved
-version: 1
+version: 2
 milestone: M1
-tasks: [T-001, T-002, T-003, T-004, T-005, T-006, T-007]
+tasks: [T-001, T-002, T-003, T-004, T-005, T-006, T-016, T-007]
 ---
 # S-101 · Notas diarias privadas y editor
 
@@ -22,8 +22,11 @@ JSON persistido y transmitido, sin HTML ni contenido arbitrario:
 - Paragraph sin attrs/marks; content omitido, [] o lista de text. Text no vacío, sin CR/LF; campos type/text y marks opcional. Texto conserva espacios; cada salto es otro paragraph, incluso vacío. No hardBreak, listas, imágenes, estilos ni HTML.
 - Marks omitido/[] o exactamente un link con attrs.href string; sin otros atributos. Separator tiene solo type y attrs.width numérico entero 25/50/75/100; sin hijos ni marcas.
 - Rechazar campos/nodos/marcas desconocidos, null, estructura anidada, versión de formato incompatible. Máximo 100000 unidades UTF-16 de texto agregado y 2048 por href; cada href HTTP/HTTPS absoluto, host no vacío, sin espacios/controles ni credenciales. Misma validación en Java y TS con fixtures equivalentes. No convertir URL a otra ni consultar destino.
+- Acotar también la fragmentación: máximo 4000 nodos text y 100000 unidades UTF-16 de href agregadas (cada aparición cuenta). Así texto corto con muchas marcas no elude los límites del árbol. Contadores enteros seguros; probar cada límite y +1 en T-001/T-005.
+- Texto literal como `<script>alert(1)</script>` o `<b>hola</b>` es texto válido y se muestra literalmente. Lo prohibido son nodos/atributos HTML o renderizar ese texto como HTML. Roundtrip conserva texto, links, bloques y anchos; no exige conservar fragmentos text adyacentes con marcas iguales ni distinguir content omitido/[] o marks omitido/[] si el editor los normaliza de forma equivalente.
 - Validar el árbol antes de guardar; error no muta DB/documento. Server es autoridad; serializar JSON estructurado, nunca renderizar HTML del servidor. PostgreSQL JSONB, DTOs separados de entidades.
 - Por línea lógica se entiende cada bloque superior. Enter divide paragraph; Shift+Enter también crea paragraph, sin hardBreak. Pegar texto plano conserva líneas vacías y espacios; pegar HTML lo trata como texto, sin importar marcas/nodos.
+- Normalizar CRLF y CR del portapapeles a LF antes de dividir en paragraphs; conservar líneas vacías iniciales/finales. Validar el JSON recibido antes de hidratar Tiptap: un documento remoto inválido muestra error y no se normaliza/guarda silenciosamente.
 - Documento vacío sigue teniendo una línea. Borrar todo produce el vacío canónico. Undo/redo dentro del editor; sin historial remoto adicional. Límites muestran error y conservan la última edición para corregir, sin enviar contenido inválido.
 
 ## Datos y concurrencia
@@ -33,6 +36,8 @@ Feature `daily/` bajo com.example.devnotes, separando domain/application/persist
 `daily_note(id UUID PK, owner_id UUID NOT NULL REFERENCES app_user(id), note_date DATE NOT NULL, content JSONB NOT NULL, revision BIGINT NOT NULL CHECK(revision>=1), created_at TIMESTAMPTZ NOT NULL, updated_at TIMESTAMPTZ NOT NULL, UNIQUE(owner_id,note_date))`. Índice único soporta consultas por dueño/fecha; FK sin cascada, check jsonb_typeof(content)='object'. UUIDv7, Clock UTC truncado a micros. Fecha de API ISO estricta 0001-01-01…9999-12-31; nunca timestamp ni conversión timezone.
 
 Guardar con revisión esperada: primera escritura expectedRevision=0 inserta revision=1; siguientes usan compare-and-set atómico por dueño/fecha/revisión e incrementan en uno. Una carrera de creación o CAS=0 devuelve 409 sin sobrescribir. No capturar constraint y continuar una transacción PostgreSQL abortada: insert on conflict do nothing + lectura/operación acotada, o transacción separada; probar carrera con dos transacciones reales. No tomar propietario del body ni consultar existencia global.
+
+Revisiones JSON enteras seguras entre 0 y 9007199254740991 (persistidas desde 1); rechazar fracciones, strings numéricas, booleanos y overflow sin coerción en Java/TS. Si incrementar excede ese máximo, 409 sin escritura. Page entre 0 y 2147483647 inclusive, offset calculado como long; size solo 20. Las versiones comparten estos límites y fechas de S-101.
 
 ## API
 
@@ -62,23 +67,28 @@ Debounce 700 ms tras última edición válida, cola serial **una escritura en vu
 
 Coordinador de borrador/cola en DailyDraftProvider, montado sobre Outlet y navegación en AppShell bajo key de identidad. Conserva únicamente la edición activa no confirmada y su cola, no otra cache de documentos remotos. Desmontar una página no pierde dirty/snapshot; al volver, hidratar del borrador antes que Query. Controles internos de navegación (fecha/lista/header/shell/historial) esperan flush antes de navegar. Para atrás/adelante del navegador que ya cambió la ruta, conservar borrador y mostrar aviso global accesible con Volver a la nota y Reintentar; impedir empezar otra edición por fecha hasta confirmar o descartar expresamente la anterior. No cambiar BrowserRouter a data router ni depender de useBlocker no disponible en el modo declarativo. Logout/cambio de identidad elimina coordinador/borrador y las finalizaciones pendientes no lo recrean.
 
+Ese aviso ofrece además Descartar cambios con confirmación explícita. Descartar no borra la copia remota; si queda un PUT en vuelo, esperar su finalización antes de recargar el estado remoto o habilitar otra fecha (un aborto de fetch no demuestra rollback). En error de red tras PUT, el resultado remoto puede ser desconocido: no anunciar que nada se guardó ni repetir ciegamente. Un reintento con revisión vieja puede dar 409; conservar texto y ofrecer copiar el borrador y recargar con confirmación. T-016 prueba cola/descarte y T-007 conecta el aviso. Los límites o el conflicto nunca eliminan silenciosamente la edición local.
+
 Fecha sin nota: GET 404 se interpreta vacío+revision0 sin PUT automático; listar no incluye hasta primera escritura. Fecha cambiada/seleccionada: flush del borrador actual antes de navegar; fallo mantiene fecha/editor; doble navegación bloqueada mientras flush. beforeunload advierte dirty/pending (navegador decide texto); una pestaña cerrada a la fuerza no acredita guardado. Indicadores Cargando, Sin notas, Sin guardar, Guardando, Guardado, Error con reintento, Conflicto. Solo Guardado después del ACK de la última generación. Selector fecha y listado paginado de fechas existentes, no búsqueda avanzada.
 
 ## Aceptación trazada
 
 | ID | Dado / cuando / entonces | CA | Prueba/archivo | Tarea |
 |---|---|---|---|---|
-| N-01 | Árbol permitido roundtrip; script/HTML/nodos extras rechazados sin mutación | 05 | DailyContentTest.java | T-001 |
+| N-01 | Árbol permitido y texto HTML literal roundtrip; nodos/atributos extras y límites rechazados sin mutación | 05 | DailyContentTest.java | T-001 |
 | N-02 | V1+V2→V3 y DB vacía conservan referencia/identidad; unicidad y dueño en PostgreSQL | 06 | DailyNoteRepositoryIT.java | T-002 |
 | N-03 | Dos escritores misma revisión: uno guarda, otro 409; otro dueño no altera nota | 05/06 | DailyNoteServiceIT.java | T-003 |
 | N-04 | HTTP fechas, paginación, 401/403/CSRF/400/409 y vecinos denegados | 05/06 | DailyNoteApiIT.java | T-004 |
 | N-05 | Enter/pegar/vacío/wrap/gutter conservan líneas y JSON | 01 | DailyEditor.test.tsx, dailyDocument.test.ts | T-005 |
-| N-06 | ACK tardío/edición en vuelo/cambio identidad no pierden texto ni escriben cache ajena | 05/06 | useDailyNote.test.tsx | T-006 |
+| N-06a | HTTP/Query valida límites, cancela lecturas y aísla identidad sin cache persistente | 05/06 | api.test.ts, useDailyNoteQuery.test.tsx | T-006 |
+| N-06 | ACK tardío/edición en vuelo/descarte/cambio identidad no pierden texto ni escriben cache ajena | 05/06 | useDailyNote.test.tsx | T-016 |
 | N-07 | Fecha local, navegación con flush, error/409 retienen borrador, recarga recupera nota | 01/05 | DailyNotesPage.test.tsx | T-007 |
 
 ## Tareas y dependencias
 
-T-001 → T-002 → T-003 → T-004 → T-005 → T-006 → T-007, cada una con contrato en docs/tasks y MERGED como dependencia de la siguiente. T-001 espera adopción T-000 revisada/mergeada y capacidad Junie comprobada. T-005 agrega dependencias/config y exige perfil STARTER; las demás APPLICATION salvo que el diff completo diga otro perfil. Backend dominio nuevo debe quedar cubierto por mínimos 80/70 sin reducir referencia; ajustar reglas en T-003 y client en T-006, lo cual también exige STARTER cuando cambia POM/Vite.
+T-001 → T-002 → T-003 → T-004 → T-005 → T-006 → T-016 → T-007, cada una con contrato en docs/tasks y MERGED como dependencia de la siguiente. T-016 separa la cola crítica del transporte/Query de T-006; los IDs no determinan el orden. T-001 espera T-000/T-015/T-018 MERGED y conciliadas y capacidad Junie comprobada. T-018 es mantenimiento previo, no tarea I1. T-005 agrega dependencias/config y exige STARTER. T-003 y T-006 ajustan cobertura y también exigen STARTER; T-016 y las restantes APPLICATION salvo diff completo más conservador. Mínimos 80/70 en dominio/aplicación y API/hooks, sin reducir referencia; T-006 incluye en cobertura los futuros archivos useDailyNote/DailyDraftProvider para que T-016 no necesite cambiar Vite.
+
+Revisión de contratos 2026-10-21, v2: límites agregados/numéricos, HTML literal/normalización, descarte con PUT incierto y división de T-006. No cambia CA-01…06 ni incorpora I2. Contratos aún sin implementación; control de avance por Junie tras T-005, T-009 y T-014 (5/10/15 tareas I1).
 
 ## Fuentes de la decisión
 

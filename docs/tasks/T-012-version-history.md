@@ -8,7 +8,7 @@ role: implementer
 milestone: M1
 product_cycle: I1
 spec: S-104
-spec_version: 1
+spec_version: 2
 branch: codex/t-012-version-history
 pr: null
 depends_on: [T-011]
@@ -28,7 +28,7 @@ Impacto previsto: Lectura de copias privadas y navegación, sin modificar datos.
 ## Leer antes
 
 1. [AGENTS client](../../client/AGENTS.md).
-2. [S-104 v1](../specs/S-104-daily-versions.md).
+2. [S-104 v2](../specs/S-104-daily-versions.md).
 3. [S-101: JSON/editor/guardado](../specs/S-101-daily-notes.md).
 4. [TESTING](../TESTING.md).
 5. [T-011](T-011-version-api.md), solo cierre/MERGED y evidencia necesaria. AGENTS raíz, STATUS y protocolo implementer son la entrada común.
@@ -39,7 +39,7 @@ Rutas previstas: client/src/features/daily/versionApi.ts y versionApi.test.ts; D
 Los nombres sin prefijo de backend son relativos a server/src/main/java/com/example/devnotes/; sus tests conservan paquete bajo server/src/test/java/com/example/devnotes/. Frontend relativo indicado explícitamente o bajo client/src/features/daily/.
 
 1. Comprobar Git/PR/base, dependencia MERGED, capacidades mínimas y crear la rama exacta desde main actualizado; preservar cambios ajenos. Conciliar done de T-011 en primer avance útil.
-2. Implementar solo este resultado siguiendo spec v1; pruebas de riesgo y negativos abajo, sin reducir suites/assertions/coverage/retries.
+2. Implementar solo este resultado siguiendo spec v2; pruebas de riesgo y negativos abajo, sin reducir suites/assertions/coverage/retries.
 3. Dirigidos durante iteración; fijar huella/SHA/base antes del gate, publicar al pasar gate. No cambiar fuentes mientras corre.
 4. Documentar resultado y preparar revisión independiente en STATUS; no autoaprobar ni comenzar siguiente tarea.
 

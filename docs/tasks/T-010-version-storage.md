@@ -8,7 +8,7 @@ role: implementer
 milestone: M1
 product_cycle: I1
 spec: S-104
-spec_version: 1
+spec_version: 2
 branch: codex/t-010-version-storage
 pr: null
 depends_on: [T-009]
@@ -28,7 +28,7 @@ Impacto previsto: Tabla aditiva de versiones manuales; sin endpoints todavía. C
 ## Leer antes
 
 1. [AGENTS server](../../server/AGENTS.md).
-2. [S-104 v1](../specs/S-104-daily-versions.md).
+2. [S-104 v2](../specs/S-104-daily-versions.md).
 3. [S-101: contenido/API](../specs/S-101-daily-notes.md).
 4. [TESTING](../TESTING.md).
 5. [T-009](T-009-text-links.md), solo cierre/MERGED y evidencia necesaria. AGENTS raíz, STATUS y protocolo implementer son la entrada común.
@@ -39,7 +39,7 @@ Rutas previstas: server/src/main/resources/db/migration/V4__create_daily_version
 Los nombres sin prefijo de backend son relativos a server/src/main/java/com/example/devnotes/; sus tests conservan paquete bajo server/src/test/java/com/example/devnotes/. Frontend relativo indicado explícitamente o bajo client/src/features/daily/.
 
 1. Comprobar Git/PR/base, dependencia MERGED, capacidades mínimas y crear la rama exacta desde main actualizado; preservar cambios ajenos. Conciliar done de T-009 en primer avance útil.
-2. Implementar solo este resultado siguiendo spec v1; pruebas de riesgo y negativos abajo, sin reducir suites/assertions/coverage/retries.
+2. Implementar solo este resultado siguiendo spec v2; pruebas de riesgo y negativos abajo, sin reducir suites/assertions/coverage/retries.
 3. Dirigidos durante iteración; fijar huella/SHA/base antes del gate, publicar al pasar gate. No cambiar fuentes mientras corre.
 4. Documentar resultado y preparar revisión independiente en STATUS; no autoaprobar ni comenzar siguiente tarea.
 
@@ -91,5 +91,3 @@ Sin correcciones ni resultados de implementación acreditados.
 ## Cierre y siguiente tarea
 
 Publicar PR y evidencia según TESTING; pasar a in_review con prompt reviewer en sesión nueva. Reviewer comprueba HEAD/base, gate, CI y arquitectura/propiedad, publica veredicto del SHA final y puede squash merge por AUTONOMY. Sin done hasta MERGED comprobado. El siguiente implementer concilia done al primer avance de su rama nueva; no editar la rama ya mergeada. Próxima: [T-011](T-011-version-api.md).
-
-Antes de preparar la siguiente sesión, controlar avance de las últimas cinco tareas I1 mergeadas: contratos/evidencia/dependencias vigentes, costo de pruebas medido y cola consistente. Registrar hallazgos en esta tarea; fuera de alcance a BACKLOG. No regresar a frontera si la ruta sigue completa.

@@ -1,6 +1,6 @@
 ---
 id: T-015
-status: mergeable
+status: done
 priority: P1
 size: S
 executor: frontier
@@ -140,3 +140,7 @@ Transición documental comprobada antes de publicar: `node scripts/docs-check.mj
 Esta misma sesión reviewer→merger reconsulta HEAD/base, CI y conversaciones, publica APROBADO ligado a ambos SHA y ejecuta squash elegible con `--match-head-commit`, sin `--admin`; confirma MERGED/SHA/fecha y comenta cierre en PR2. SHA/CI finales viven en ese comentario, sin commit para autorreferenciarlos. Si cambia HEAD/base o falla CI, no mergear y dejar causa/evidencia/dato necesario conforme protocolo; sin ampliar rondas ni modificar protecciones.
 
 Antes de APROBADO queda preparado en STATUS el único prompt de sesión nueva Junie implementer T-001. Su precondición es comprobar T-015 MERGED y crear `codex/t-001-document-contract` desde main actualizado, conciliando T-015 done/G-03/HANDOFF/cola en el primer avance útil. Conserva E-01 aceptado y comprueba STARTER_VALIDADO22/22 con todas las M0 done, sin aceptar CA-01…06 ni producto futuro. T-001 sigue draft hasta esa comprobación; T-000/PR1 no se reabre. No se implementa T-001 ni se commitea en la rama mergeada en esta sesión.
+
+## Conciliación posterior · 2026-10-21 Buenos Aires
+
+Durante la revisión previa del dueño, conservada en el primer avance documental de la rama nueva codex/t-018-docs-fixture-independence, frontera planner comprueba con gh: [PR2 MERGED](https://github.com/MatiasNicolasAcevedo/devnotes/pull/2#issuecomment-6329785413), `2026-10-22T00:36:24Z` (21/10 21:36:24 local), squash `b52b1fde51194c62c0911f9f0462431508c22f77`. APROBADO independiente R1 de HEAD `8d8f6e5783d2aaf3ea60d2a654ac0636e353ab32` / base `cbbe1c9075a41edf2ceffd35eedf1e05dedd6870`, verify-required SUCCESS del mismo HEAD, según enlaces del cierre. Main/origin/main recibidos en ese squash y árbol limpio; ningún PR abierto. Se concilia done y G-03/STARTER_VALIDADO22/22 con T-000 ya done, sin otra revisión ni aceptación E-01, sin editar la rama mergeada. La evidencia/gate de T-015 conserva su alcance original; no acredita implementación de T-001. Un nuevo fallo de fixtures del checker al cambiar a22/22 se especifica en T-018, sin alterar este cierre histórico; retoma vigente en T-018/STATUS.

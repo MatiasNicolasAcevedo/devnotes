@@ -1,7 +1,7 @@
 ---
 id: S-104
 status: approved
-version: 1
+version: 2
 milestone: M1
 tasks: [T-010, T-011, T-012, T-013, T-014]
 ---
@@ -35,6 +35,8 @@ Guardar versión de este día se habilita cuando editor válido y usuario activo
 
 Éxito solo después de ACK POST; invalidar listas/detalle de la identidad iniciadora sin escribir respuesta tardía en otra sesión. 409 informa conflicto, conserva borrador y no reintenta; error/CSRF pide acción explícita. Guardar trabajo después no cambia copia. No restaurar ni editar historial.
 
+Antes de decidir crear/reemplazar, consultar el detalle actual de la versión propia: 200 exige confirmación, 404 habilita crear, otros errores bloquean la acción con reintento explícito. No interpretar loading/error o cache ausente como «sin versión». Esto evita omitir la confirmación por un estado todavía desconocido; no promete arbitraje entre dos pestañas que confirmen al mismo tiempo. El lock y sourceRevision del backend siguen garantizando copia coherente y una sola fila. Una respuesta perdida del POST deja resultado desconocido: no anunciar fallo sin efecto ni éxito; permitir consultar historial antes de repetir la acción. La UI solo habilita mutaciones con sesión y CSRF listos.
+
 ## Aceptación y trazabilidad
 
 | ID | Caso | CA | Archivo/capa | Tarea |
@@ -42,7 +44,7 @@ Guardar versión de este día se habilita cuando editor válido y usuario activo
 | V-01 | V4 desde vacío/V3; una fila por nota, copia independiente, carrera/lock y dueño | 04/06 | DailyVersionServiceIT.java | T-010 |
 | V-02 | HTTP crear/reemplazar/listar/consultar, negativos de propietario/CSRF/body/rutas | 04/05/06 | DailyVersionApiIT.java | T-011 |
 | V-03 | Historial readonly preserva JSON y no dispara mutaciones, cambio identidad limpia | 02/03/05/06 | DailyHistoryPage.test.tsx | T-012 |
-| V-04 | Flush antes de POST; cancelar reemplazo/error no alteran copia; vacío explícito y respuesta tardía | 04/05 | SaveDailyVersion.test.tsx | T-013 |
+| V-04 | Consulta previa/confirmación, flush antes de POST; cancelación/errores previos no alteran copia, POST sin ACK informa incertidumbre; vacío explícito y respuesta tardía | 04/05 | SaveDailyVersion.test.tsx | T-013 |
 | V-05 | Notas 19/10 y 20/10 independientes; reemplazar mantiene una versión; editar trabajo no cambia copia | 04/05 | daily-versions.spec.ts, API/DB/OIDC reales | T-014 |
 | V-06 | Texto/link/separadores/empty/wrap/recarga/nuevo login/dos identidades | 01…06 | daily-notes.spec.ts + daily-versions.spec.ts | T-014 |
 
@@ -55,3 +57,5 @@ T-014 no es otra épica de implementación: consolida los flujos reales, corrige
 ## Validación de planificación
 
 Frontera/Codex, 2026-10-20, v1 alineada al contexto aceptado y AUTONOMY confirmada. Revisión independiente de estos contratos junto a T-000; aceptación técnica solo después de ejecutar y revisar las tareas. Google real/despliegue/pagos/datos reales siguen fuera.
+
+2026-10-21, v2: explicita consulta previa, estado incierto tras POST sin ACK y límites comunes S-101 v2. No añade restauración, historial múltiple ni aceptación de runtime.
