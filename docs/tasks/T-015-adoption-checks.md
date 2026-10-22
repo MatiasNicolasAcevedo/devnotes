@@ -1,10 +1,10 @@
 ---
 id: T-015
-status: in_progress
+status: in_review
 priority: P1
 size: S
 executor: frontier
-role: implementer
+role: reviewer
 milestone: M0
 counts_for_cycle: false
 spec: null
@@ -92,7 +92,7 @@ printf 'gate_exit=%s cleanup_exit=%s\n' "$gate_exit" "$cleanup_exit"
 
 Conservar logs y huellas antes/después, exit original y resultado de cada consulta/labels; salidas de recursos deben estar vacías. E2E/tooling limpian sus namespaces internos; comprobar sus logs y labels exactos, nunca prune ni recursos ajenos. Si falla consulta o cleanup no anunciar verde. Perfil STARTER por scripts; no rebajarlo a DOCS_ONLY por llamarse mantenimiento documental. Tras commit final, `bash scripts/verify.sh --policy origin/main` y diff sin commit; clasificador no incluye pendientes sin commit. Cierre solo Markdown conserva el gate de esta tarea si fuentes/base coinciden, con docs-check/afectados/CI del HEAD nuevo.
 
-## Checkpoint vigente · gate propio verde y publicación
+## Checkpoint vigente · implementación publicada para revisión
 
 2026-10-21, sesión nueva FRONTERA implementer pedida por el dueño. Codex desktop/API, GPT-6 expuesto; variante/esfuerzo efectivos no expuestos. PowerShell, Node24.21.0, Git/gh, Git Bash y Docker host autorizados; conector GitHub consultado para starter, 404 para DevNotes y alternativa gh autorizada. Sin instalación, autenticación, delegación ni ejecución Junie. Leídos AGENTS/STATUS/PROJECT_CONTEXT, esta tarea/protocolo implementer, AUTONOMY y referencias concretas de código, TESTING/ORCHESTRATION/HANDOFF/TOOLS y T-000/T-001. Impacto: checker, regresiones y aclaraciones documentales; sin aplicación/API/permisos/auth/datos/UI/dependencias.
 
@@ -102,7 +102,7 @@ Rojo renovado sobre fuentes actuales antes del port: `node .orchestrator/t015/pl
 
 **Checkpoint previo a operación larga:** fuentes técnicas cerradas en el árbol sobre HEAD805a805/basecbbe1c9, diff sin commit limitado a dos scripts y Markdown del contrato. `node .orchestrator/t015/fingerprint.mjs before` exit0:237 archivos versionados no Markdown, manifiesto SHA256 `8332922279d570ee83af9e19af02abbec0cef844d1231cbdd9628f3afd4c0c76`; technical-before.json/fingerprint-before.log ignorados. No editar fuentes durante el gate. Comando ejecutable desde raíz: Git Bash `bash .orchestrator/t015/run-gate.sh`, que ejecuta exactamente `COMPOSE_ENV_FILES=.env.example STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter` con dos namespaces únicos starter-verify-devnotes-t015-época-pid y starter-e2e-devnotes-t015-época-pid. Registrar nombres exactos en gate-projects.txt, comprobar labels container-a/network/volume vacíos antes (resources-before.log); abortar ante error/recursos existentes. Logs saneados starter.log/starter.exit y gate-result.log bajo .orchestrator/t015, con exit original preservado.
 
-Cleanup: Compose down --volumes --remove-orphans solo del proyecto verify propio con --env-file .env.example; runner E2E/tooling limpia sus namespaces internos. resources-after.log audita los dos namespaces exactos; al terminar auditar también nombres internos extraídos de logs, sin prune ni recursos ajenos. Huellas después deben coincidir en technical-after.json; cleanup/consultas/huellas fallidas impiden verde. Siguiente paso: publicar el código verificado en PR2; después cierre solo Markdown/in_review y prompt único FRONTERA reviewer en STATUS, docs-check/CI del HEAD exacto/árbol limpio. Ningún gate de T-000/starter acredita este port.
+Cleanup: Compose down --volumes --remove-orphans solo del proyecto verify propio con --env-file .env.example; runner E2E/tooling limpia sus namespaces internos. resources-after.log audita los dos namespaces exactos; al terminar auditar también nombres internos extraídos de logs, sin prune ni recursos ajenos. Huellas después deben coincidir en technical-after.json; cleanup/consultas/huellas fallidas impiden verde. Código publicado en PR2 en `b95a9b03b0d37b08f65f58af92c65b4463e5a9ae`; cierre posterior solo Markdown, con huellas/base conservadas, docs-check y regresiones afectadas. Siguiente responsable: sesión nueva FRONTERA reviewer sobre HEAD/base finales publicados; CI exacta y árbol limpio se comprueban antes de entregar. STATUS contiene su único prompt. Esta entrega no emite APROBADO ni realiza merge. Ningún gate de T-000/starter acredita este port.
 
 **Resultado STARTER propio:** `bash .orchestrator/t015/run-gate.sh` exit0; comando interno `bash scripts/verify.sh --starter`. Docs3s, server229s, client45s, tooling1768s y E2E417s, todos exit0 (suma de etapas2462s). Backend91 unitarios/slices+75 IT PostgreSQL; client133 tests+tipos/lint/formato/cobertura/build; copia personalizada también91+75/133 y203 fuentes inmutables idénticas. Tooling: guards, copia compilable288s, nginx297s/Vite301s, fallos567s, copia sin Git123s, señales26s y proxies136s. Playwright real15/15 desktop/móvil; export final tests15/failures0/action-traces0. El canario negativo intencional tests1/failures1 está separado y no es fallo del gate.
 
@@ -116,8 +116,13 @@ Preparación anterior conservada: planner dejó contrato/cola/conciliación y so
 |---|---|---|
 | H01: negativo presupone estado vivo distinto de blocked | Port de fixture dueña del tablero, sin cambiar estados reales | Rojo renovado1/1; verde35/35, CI local98/98 y STARTER propio exit0 |
 | H02: cierre exige terminar producto futuro y acepta M0 vacía | Predicado22/22+M0 no vacía/completa con negativos | Rojo renovado2/10; verde35/35 y STARTER propio exit0 |
-| Manifiesto upstream retira T-006 del starter; aquí es producto | Excluir inicializador/manifiesto y preservar contratos I1 | Diff17 rutas contrastado con dos scripts pertinentes |
+| Manifiesto upstream retira T-006 del starter; aquí es producto | Excluir inicializador/manifiesto y preservar contratos I1 | Diff17 rutas contrastado con dos scripts pertinentes; solo esos dos scripts modificados |
+| README/SETUP repetían inventario y comprobación Junie pendiente ya aceptada | Referenciar TOOLS/T-000 y precisar expuesto/listado, conservando filas/sondas/fechas y E-01 | Diff documental; docs-check/35 regresiones; ninguna configuración o sonda Junie reemplazada |
 
 ## Cierre y siguiente tarea
 
-Contrato ready publicado en el único [PR draft #2](https://github.com/MatiasNicolasAcevedo/devnotes/pull/2) de T-015; esta sesión planner no implementa, aprueba ni mergea. La próxima sesión implementer continúa la misma tarea/PR. Después, reviewer en sesión nueva verifica HEAD/base/gate/CI, publica transición favorable y prepara STATUS para Junie T-001 condicionado a MERGED/conciliación. Solo con APROBADO exacto y CI verde puede squash mergear en esa sesión; confirmar SHA/fecha y comentar cierre sin commits posteriores. El primer avance de la rama nueva de T-001 concilia T-015 done/G-03/HANDOFF y cola con evidencia propia; la primera tarea de producto sigue siendo T-001, sin nueva planificación ni otra aceptación E-01.
+Implementación/corrección publicada en el mismo [PR #2](https://github.com/MatiasNicolasAcevedo/devnotes/pull/2) contra main; tarea `in_review`. Código b95a9b0, gate STARTER propio exit0 y evidencia arriba. El cierre documental conserva fuentes/base y exige docs-check/afectados/CI del HEAD final; SHA remoto y enlace de CI se entregan al cerrar sin otro commit solo para autorreferenciarlo. Esta sesión implementer no aprueba ni mergea; no implementa T-001.
+
+Próxima acción única: sesión nueva FRONTERA reviewer según STATUS; revisar diff publicado completo, H01/H02/negativos, documentación e inventario aceptado, huellas/base/gate/cleanup y CI verify-required del HEAD exacto. Si es favorable, publicar transición documental y preparar antes de APROBADO el prompt final Junie T-001 con precondición MERGED/conciliación de T-015; comprobar CI del nuevo HEAD y emitir veredicto ligado a HEAD/base. Puede squash mergear elegiblemente en esa sesión según AUTONOMY, sin --admin ni commits después de aprobar, y confirmar SHA/fecha MERGED. Máximo dos rondas y tres correcciones distintas por bloqueo; sin autorización para ampliar esos límites.
+
+Solo después de MERGED confirmado, una sesión nueva Junie implementer T-001 (rama codex/t-001-document-contract desde main actualizado) concilia T-015 done/G-03/HANDOFF y cola en su primer avance útil, conserva E-01 aceptado y comprueba STARTER_VALIDADO22/22 con todas las M0 done. T-001 sigue draft hasta esa comprobación; T-000/PR1 no se reabre. Ningún CA-01…06 queda aceptado por este mantenimiento.

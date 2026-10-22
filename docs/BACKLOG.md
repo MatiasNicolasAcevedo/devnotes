@@ -4,7 +4,7 @@ Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este í
 
 ## En curso
 
-- [T-015](tasks/T-015-adoption-checks.md): mantenimiento previo a producto, port selectivo de checks desde starter PR7 y aclaraciones necesarias; contrato preparado, próximo implementer en sesión nueva sobre el mismo PR draft. No cuenta para el ciclo I1.
+- [T-015](tasks/T-015-adoption-checks.md): mantenimiento previo a producto, port selectivo de checks desde starter PR7 y aclaraciones necesarias; evidencia y retoma en su tarea/STATUS sobre el mismo PR. No cuenta para el ciclo I1.
 
 ## Hechas
 
