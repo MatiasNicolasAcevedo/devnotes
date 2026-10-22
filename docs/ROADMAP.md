@@ -9,6 +9,8 @@
 
 [T-000](tasks/T-000-adoption.md): conservar personalización, acordar contexto/autonomía, validar copia y lifecycle con datos ficticios y comprobar instalación/capacidades Junie en su superficie. Gate STARTER por el diff de identidad/Compose/POM, CI y revisión independiente. Ninguna tarea de negocio se ejecuta antes de MERGED y conciliación de T-000.
 
+T-000 MERGED y conciliada. Por instrucción del dueño tras starter PR7, [T-015](tasks/T-015-adoption-checks.md) incorpora únicamente los checks de adopción y aclaraciones pertinentes antes de T-001; requiere gate/revisión/merge propios. No cuenta para las cinco tareas I1 ni reabre la adopción aceptada. Producto comienza después de MERGED/conciliación de T-015 en una sesión nueva Junie.
+
 ## I1 / M1 · MVP local completo
 
 Objetivo de salida: abrir/editar notas privadas por fecha en editor oscuro Roboto Mono con números lógicos, asociar enlaces, insertar separadores y guardar/reemplazar/consultar una copia manual por día. CA-01…06 de PROJECT_CONTEXT demostrados en API/DB/OIDC/navegador reales, dos identidades y 1280/375, sin Google real ni datos reales.

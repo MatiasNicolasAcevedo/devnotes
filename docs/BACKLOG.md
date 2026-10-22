@@ -4,15 +4,19 @@ Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este í
 
 ## En curso
 
-- [T-000](tasks/T-000-adoption.md): adopción propia, validación y traspaso; única tarea en vuelo. Contratos I1 se publican en este PR, sin PR extra de planificación.
+- [T-015](tasks/T-015-adoption-checks.md): mantenimiento previo a producto, port selectivo de checks desde starter PR7 y aclaraciones necesarias; evidencia y retoma en su tarea/STATUS sobre el mismo PR. No cuenta para el ciclo I1.
+
+## Hechas
+
+- [T-000](tasks/T-000-adoption.md): adopción MERGED/conciliada; evidencia propia y aceptación E-01 conservadas en la tarea/PR1. No acredita implementación I1.
 
 ## Siguientes · I1
 
-Cada fila depende de MERGED y conciliación de la anterior; contratos completos, draft solo por esa dependencia. Estados canónicos en tareas, sin duplicarlos aquí. La próxima habilitada es T-001 después de T-000; ninguna de negocio ready por herencia.
+Contratos completos; draft solo por dependencias. T-001 espera MERGED/conciliación de T-015, con T-000 ya cerrada. Después cada fila depende de MERGED/conciliación de la anterior. Estados canónicos en tareas; ninguna de negocio ready por herencia.
 
 | Orden | Contrato / resultado | Dependencia |
 |---|---|---|
-| 1 | [T-001](tasks/T-001-document-contract.md) · JSON/validación | T-000 + evidencia Junie |
+| 1 | [T-001](tasks/T-001-document-contract.md) · JSON/validación | T-000 cerrada + T-015 + evidencia Junie conservada |
 | 2 | [T-002](tasks/T-002-daily-persistence.md) · DB privada por fecha | T-001 |
 | 3 | [T-003](tasks/T-003-daily-service.md) · Guardado concurrente | T-002 |
 | 4 | [T-004](tasks/T-004-daily-api.md) · HTTP privado | T-003 |

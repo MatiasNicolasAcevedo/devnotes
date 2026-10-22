@@ -18,6 +18,8 @@ Contrato mínimo para encadenar sesiones. **No hay dispatcher instalado:** la co
 - `blocked` sin PR describe una tarea que espera una dependencia; no está en vuelo.
 - Máximo cinco tareas `ready`. `done` nunca se usa para un PR abierto o simplemente cerrado.
 
+El cierre de adopción `STARTER_VALIDADO` exige 22/22 criterios con evidencia propia, al menos una tarea de alcance `M0` y todas las M0 `done`, con MERGED confirmado y conciliado. Las tareas de producto futuro M1 pueden seguir `draft`: tienen su propio objetivo y aceptación. Ninguna M0 abierta permite ese veredicto, aunque pasen sus pruebas; mientras T-015 siga abierta, HANDOFF conserva `NO_LISTO`.
+
 ## Campos de frontmatter validados
 | Campo | Valores |
 |---|---|
