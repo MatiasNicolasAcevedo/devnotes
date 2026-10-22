@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-015](tasks/T-015-adoption-checks.md) |
-| Estado | ready |
-| Acción actual | Contrato de mantenimiento preparado; sesión nueva FRONTERA implementer para portar los checks pertinentes antes de T-001 |
+| Estado | in_progress |
+| Acción actual | FRONTERA implementer porta los dos checks fijados, renueva el rojo propio y verifica STARTER antes de publicar para revisión |
 | Rama / PR | codex/t-015-adoption-checks · [PR #2 draft](https://github.com/MatiasNicolasAcevedo/devnotes/pull/2) |
 
 T-000 MERGED y conciliada; aceptación E-01 y evidencia propia conservadas. T-015 tiene port/gate/revisión/merge pendientes: pruebas del starter no acreditan DevNotes. HANDOFF sigue NO_LISTO21/22 hasta cierre propio. T-001 continúa draft dependiente de T-015; producto todavía no iniciado. El reviewer de T-015 preparará el prompt final Junie T-001 antes de aprobar, condicionado a MERGED/conciliación.
