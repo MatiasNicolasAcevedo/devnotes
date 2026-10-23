@@ -1,6 +1,6 @@
 ---
 id: T-001
-status: changes_requested
+status: done
 priority: P1
 size: S
 executor: junie
