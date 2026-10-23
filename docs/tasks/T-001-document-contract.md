@@ -1,6 +1,6 @@
 ---
 id: T-001
-status: draft
+status: changes_requested
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-101
 spec_version: 2
 branch: codex/t-001-document-contract
-pr: null
+pr: 4
 depends_on: [T-000, T-015, T-018]
 ---
 # T-001 · Contrato de contenido estructurado
@@ -82,13 +82,23 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-2026-10-21 (Buenos Aires), frontera **planner**, Codex desktop/API, modelo GPT-6 expuesto; variante/esfuerzo efectivos no expuestos. Herramientas realmente usadas: PowerShell, Node24.21.0, Git/gh y web; conector GitHub consultado devuelve404 para este repo privado, alternativa gh host autorizada sí funciona. Sin instalación, autenticación, delegación ni ejecución Junie. Leídos AGENTS raíz/server/client, PROJECT_CONTEXT, STATUS, planner, AUTONOMY/ORCHESTRATION/TESTING, S-101…104, T-001…015, HANDOFF, ROADMAP/BACKLOG/PROJECT; código de router/HTTP/referencia y checker solo como contraste. No se consultó otro catálogo para inferir capacidad Junie.
+2026-10-22 (Buenos Aires), Junie implementer, superficie IDE IntelliJ IDEA/AIR. Modelo Qwen3.6-27B-FP8 expuesto. Herramientas usadas: PowerShell, Git/gh, Maven wrapper (JDK 21), Node 24.21.0. Sin instalación, autenticación ni delegación.
+
+Base main/origin/main `7b53ad2ce973787c0e53c9f32f361ef07dafeb11`. T-018 MERGED en PR3 (SHA 7b53ad2, 2026-10-22T19:00:48Z), conciliada done al crear rama.
+
+DailyContent.java y DailyContentTest.java implementados y publicados. HEAD `5a25475` en [PR4](https://github.com/MatiasNicolasAcevedo/devnotes/pull/4) contra main.
+
+Gate APPLICATION: docs ✓ (65 Markdown, 19 tareas, HANDOFF 22/22), server ✓ (75 tests + Spotless + JaCoCo), client ✓ (133 tests + build). E2E no afectado (infraestructura host Node PATH en bash). 60 tests DailyContentTest exit0.
+
+Estado: changes_requested. Revisión independiente completada 2026-10-22: textTotal en DailyContent.java:65 usa codePointCount() en lugar de String.length() para unidades UTF-16 según S-101 v2. Veredicto publicado en [PR4#issuecomment-6354815953](https://github.com/MatiasNicolasAcevedo/devnotes/pull/4#issuecomment-6354815953). Siguiente: sesión nueva Junie implementer corrige la línea 65 a text.length(), añade test con caracteres suplementarios, ejecuta dirigidos y reenvía a revisión.
 
 Árbol inicial limpio, main/origin/main `b52b1fde51194c62c0911f9f0462431508c22f77`. gh confirma PR2 MERGED2026-10-22T00:36:24Z (21/10 21:36:24 Buenos Aires), squashb52b1fd. [APROBADO independiente R1](https://github.com/MatiasNicolasAcevedo/devnotes/pull/2#issuecomment-6329769856), HEAD `8d8f6e5783d2aaf3ea60d2a654ac0636e353ab32` / base `cbbe1c9075a41edf2ceffd35eedf1e05dedd6870`, verify-required SUCCESS [run39700505420](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/39700505420/job/119568294133), [cierre MERGED](https://github.com/MatiasNicolasAcevedo/devnotes/pull/2#issuecomment-6329785413). Sin PR abiertos al consultar. La preparación comenzó en rama propia T-001 vacía; al comprobar el nuevo bloqueo se trasladó sin commits a la rama T-018 y se retiró solo la rama propia T-001 vacía. No hay PR de planificación ni implementación DailyContent.
 
 Impacto de esta preparación: solo Markdown; S-101/S-104 v2, tarea T-016 divide la cola de T-006, tareas existentes precisadas, reconciliación de adopción y nueva intención I2/S-105 con T-017 de frontera futura. No cambia código/API efectiva/permisos/datos/UI/dependencias, ni acredita runtime CA/VO. I1 conserva sus cuatro capacidades y quince tareas; I2 no es dependencia. Evidencia E-01 e inventario Junie aceptados conservados. La retoma y resultados de la preparación se registran ahora en T-018, incluido rojo35 tests/6 fallos de fixtures; esta sesión no cambia scripts ni acredita gate de mantenimiento. T-001 espera T-018 MERGED; después una sesión nueva Junie implementer registra sus capacidades y ejecuta DailyContent v2/gate APPLICATION.
 
 ## Correcciones significativas
+
+2026-10-22: revisión independiente solicita corrección en PR4 — textTotal usa codePointCount() en lugar de String.length() para unidades UTF-16 (S-101 v2). Se requiere cambiar DailyContent.java:65 a text.length() y añadir test con caracteres suplementarios. Veredicto en [PR4#issuecomment-6354815953](https://github.com/MatiasNicolasAcevedo/devnotes/pull/4#issuecomment-6354815953). Primera ronda de revisión.
 
 2026-10-21: el dueño inserta T-015 para corregir checks de adopción antes de producto; se añade dependencia y conciliación, sin cambiar aceptación/implementación de DailyContent ni acreditar resultados de T-001.
 
