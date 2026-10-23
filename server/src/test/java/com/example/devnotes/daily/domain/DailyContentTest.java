@@ -1038,4 +1038,46 @@ class DailyContentTest {
         assertThatThrownBy(() -> DailyContent.validate(validDoc))
                 .isInstanceOf(DailyContent.DailyContentException.class);
     }
+
+    @Test
+    void countsSupplementaryCharactersAsUtf16Units() {
+        // Emoji 🎉 (U+1F389) is a supplementary character: 1 code point, 2 UTF-16 code units.
+        // S-101 v2 specifies the limit in UTF-16 units (String.length()), not code points.
+        // With codePointCount(), 50_001 emoji would be 50_001 units (passes).
+        // With String.length(), 50_001 emoji are 100_002 UTF-16 units (rejects).
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode text = MAPPER.createObjectNode();
+        text.put("type", "text");
+        // 50_001 emoji × 2 UTF-16 units = 100_002 > MAX_TEXT_TOTAL (100_000)
+        text.put("text", "🎉".repeat(50_001));
+        inline.add(text);
+        para.set("content", inline);
+
+        assertThatThrownBy(() -> DailyContent.validate(validDoc))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @Test
+    void acceptsSupplementaryCharactersAtUtf16Limit() {
+        // 50_000 emoji × 2 UTF-16 units = 100_000 == MAX_TEXT_TOTAL (exactly at limit)
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode text = MAPPER.createObjectNode();
+        text.put("type", "text");
+        text.put("text", "🎉".repeat(50_000));
+        inline.add(text);
+        para.set("content", inline);
+
+        var result = DailyContent.validate(validDoc);
+
+        assertThat(result.getTree()
+                        .path("content")
+                        .get(0)
+                        .path("content")
+                        .get(0)
+                        .path("text")
+                        .asText(""))
+                .hasSize(100_000);
+    }
 }

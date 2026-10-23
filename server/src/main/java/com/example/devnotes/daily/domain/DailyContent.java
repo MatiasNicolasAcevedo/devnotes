@@ -62,7 +62,7 @@ public final class DailyContent {
                             textNodes++;
                             String text = node.path("text").asText(null);
                             if (text != null) {
-                                int len = text.codePointCount(0, text.length());
+                                int len = text.length();
                                 textTotal += len;
                                 if (textTotal > MAX_TEXT_TOTAL) {
                                     throw new DailyContentException("Text content exceeds maximum length");
