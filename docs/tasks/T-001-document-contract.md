@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-101
 spec_version: 2
 branch: codex/t-001-document-contract
-pr: null
+pr: 4
 depends_on: [T-000, T-015, T-018]
 ---
 # T-001 · Contrato de contenido estructurado
