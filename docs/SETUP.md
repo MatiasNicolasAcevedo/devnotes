@@ -4,7 +4,25 @@ Versiones congeladas y efectivas en [DEPENDENCIES](DEPENDENCIES.md). Comandos y 
 
 ## Requisitos del host
 Docker Desktop abierto (Linux/WSL2), Compose V2 y Git Bash. Node >=24 en host para control cerrado E2E; npm para scripts de navegador. JDK 21 solo para IDE/alternativa backend host; builds ordinarios en contenedor. Versiones de referencia del host: Docker 28.5.1, Compose v2.40.2-desktop.1, Git 2.51.1, gh 2.96.0, Node 24.21.0/npm 11.19.0, Corretto 21.0.9. Contenedores Temurin 21.0.12+8, Node 24.21.0, PostgreSQL 18.6.
-En PowerShell usar `& "C:\Program Files\Git\bin\bash.exe" scripts/verify.sh`. No ejecutar scripts con otro shell ni modificar configuración global.
+En PowerShell usar el verificador canónico con la ruta explícita de Git Bash y el Node instalado. Probar en la superficie Junie la resolución de Bash/Node/Docker y `--policy origin/main`; documentar un comando de entrada completo y cómo conservar su exit. Si falta PATH, pasar al proceso hijo el directorio del Node que PowerShell resuelve, sin configuración global ni instalación. No reemplazar el gate por pasos manuales ni por `run-e2e.mjs` aislado; conservar readiness, señales, aislamiento, saneado y cleanup del script original. Si la superficie impide esa ejecución, registrar el error exacto saneado y la alternativa necesaria; no declarar un genérico «falta Git Bash con Node».
+
+```powershell
+$taskBash = Join-Path $env:ProgramFiles 'Git\bin\bash.exe'
+$taskNodeDirectory = Split-Path (Get-Command node -CommandType Application -ErrorAction Stop).Source
+$taskOriginalPath = $env:PATH
+try {
+  $env:PATH = "$taskNodeDirectory;$taskOriginalPath"
+  & $taskBash -c 'set -e; command -v bash; command -v node; node -e "process.exit(parseInt(process.versions.node)>=24?0:1)"; node --version; command -v docker; docker compose version'
+  if ($LASTEXITCODE -ne 0) { throw 'Preflight Bash/Node/Docker falló; conservar diagnóstico saneado' }
+  & $taskBash scripts/verify.sh --policy origin/main
+  $taskPolicyExit = $LASTEXITCODE
+} finally { $env:PATH = $taskOriginalPath }
+if ($taskPolicyExit -ne 0) { throw "Clasificación falló: $taskPolicyExit" }
+node scripts/docs-check.mjs
+git diff --check
+```
+
+La sonda no inicia stacks ni acredita FULL. Para un gate DOCUMENTATION/DOCS_ONLY, ejecutar `node scripts/docs-check.mjs` y `git diff --check` sobre el diff final. No ejecutar scripts con otro shell ni modificar configuración global.
 
 ## Primer uso local sin Google
 Comandos persistentes mínimos en [README](../README.md#modo-local-explícito-sin-credenciales). Cada acción exige --mode local, --proxy nginx|vite y --project starter-dev- seguido de un sufijo propio. El namespace starter-dev-auth- está reservado al harness efímero. Docker Desktop/Compose V2/Git Bash bastan para up/check/down; Node >=24 host sigue siendo requisito separado del controlador FULL/E2E.

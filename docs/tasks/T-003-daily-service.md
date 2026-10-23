@@ -11,7 +11,7 @@ spec: S-101
 spec_version: 2
 branch: codex/t-003-daily-service
 pr: null
-depends_on: [T-002]
+depends_on: [T-002, T-019]
 ---
 # T-003 · Guardado concurrente del trabajo
 
@@ -23,7 +23,7 @@ Guardado concurrente del trabajo, capacidad S-101 de I1. Resultado comprobable d
 
 Servicio con Clock, UUIDv7 y timestamp micros. Implementar abrir/listar/guardar por owner+fecha y revisión esperada, usando primitivas T-002 sin transacción abortada reutilizada. Dos escritores/carrera de creación probados en transacciones reales. Agregar regla de cobertura daily/domain y daily/application con mínimos 80/70; conservar referencia y resto del POM.
 
-Impacto previsto: Reglas transaccionales/cobertura; aún sin rutas públicas nuevas. Contrato completo; estado draft **únicamente por dependencia T-002 no mergeada/conciliada**. Al comprobarla, Junie puede habilitar ready sin otra planificación. En T-001 comprobar además la evidencia Junie y adopción T-000; si no existen, no comenzar negocio.
+Impacto previsto: Reglas transaccionales/cobertura; aún sin rutas públicas nuevas. Contrato completo; estado draft **únicamente por el mantenimiento previo T-019 solicitado por el dueño**. T-002 ya fue conciliada; volver a comprobar su MERGED remoto al adoptar. Tras MERGED/conciliación de T-019, Junie puede habilitar ready sin otra planificación. En T-001 comprobar además la evidencia Junie y adopción T-000; si no existen, no comenzar negocio.
 
 ## Leer antes
 

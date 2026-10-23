@@ -2,11 +2,14 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
-## Actual · I1
+## Actual · mantenimiento previo a T-003
 
-- [T-001](tasks/T-001-document-contract.md): contrato de contenido estructurado (DailyContent validador inmutable). Primera tarea de producto I1.
+- [T-019](tasks/T-019-agent-operating-rules.md): aplicar las tres observaciones operativas antes de continuar I1; no cuenta para el ciclo de producto.
 
 ## Hechas
+
+- [T-001](tasks/T-001-document-contract.md): contrato de contenido; MERGED/conciliada en PR4.
+- [T-002](tasks/T-002-daily-persistence.md): persistencia privada por fecha; MERGED/conciliada en PR5.
 
 - [T-000](tasks/T-000-adoption.md): adopción MERGED/conciliada; evidencia propia y aceptación E-01 conservadas en la tarea/PR1. No acredita implementación I1.
 - [T-015](tasks/T-015-adoption-checks.md): mantenimiento previo MERGED/conciliado, PR2/squashb52b1fd; no cuenta para ciclo I1.
@@ -14,13 +17,13 @@ Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este í
 
 ## Siguientes · I1
 
-Quince contratos completos de producto, draft solo por dependencias. T-001 espera MERGED/conciliación de T-018; adopción histórica T-000/T-015 cerrada. Cada fila posterior depende de MERGED/conciliación de la anterior. Estados canónicos en tareas. Los IDs no fijan el orden: T-016 se inserta entre T-006/T-007 para separar cola y transporte; no es una capacidad adicional.
+Quince contratos completos de producto, draft solo por dependencias. T-001/T-002 ya conciliadas; T-003 espera el mantenimiento T-019 priorizado por el dueño. Cada fila posterior depende de MERGED/conciliación de la anterior. Estados canónicos en tareas. Los IDs no fijan el orden: T-016 se inserta entre T-006/T-007 para separar cola y transporte; no es una capacidad adicional.
 
 | Orden | Contrato / resultado | Dependencia |
 |---|---|---|
 | 1 | [T-001](tasks/T-001-document-contract.md) · JSON/validación | T-000/T-015 cerradas + T-018 + evidencia Junie conservada |
 | 2 | [T-002](tasks/T-002-daily-persistence.md) · DB privada por fecha | T-001 |
-| 3 | [T-003](tasks/T-003-daily-service.md) · Guardado concurrente | T-002 |
+| 3 | [T-003](tasks/T-003-daily-service.md) · Guardado concurrente | T-002 + mantenimiento T-019 |
 | 4 | [T-004](tasks/T-004-daily-api.md) · HTTP privado | T-003 |
 | 5 | [T-005](tasks/T-005-editor-foundation.md) · Editor/números/dependencias | T-004; control de avance de cinco tras merge |
 | 6 | [T-006](tasks/T-006-daily-client.md) · HTTP/Query privado | T-005 |

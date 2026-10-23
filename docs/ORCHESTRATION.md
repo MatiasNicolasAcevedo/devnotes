@@ -56,6 +56,10 @@ Checkpoint vigente para retoma; tabla breve por tarea para correcciones signific
 
 STATUS contiene un único prompt ejecutable; la tarea guarda evidencia y siguiente experimento. Un bloqueo incluye causa concreta y salida propuesta; si falta autorización, preguntar la decisión necesaria en vez de repetir el prompt condicionado. Una decisión nueva se registra y sustituye la precondición anterior.
 
+Cada cierre de sesión —incluidos bloqueos— actualiza el único prompt de STATUS y lo reproduce completo y copiable en la respuesta final: próximo rol/tarea, precondición remota, acción y salida. Si el prompt recibido ya se ejecutó, reconsultar el estado y sustituirlo por el paso vigente. Tras merge no hacer commits en la rama mergeada: entregar el prompt actualizado en el chat y conciliar STATUS en el primer avance de la siguiente rama autorizada.
+
+Confirmar publicación y merge mediante `gh pr view <número> --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName`. Exigir consulta exitosa, PR/repositorio/base correctos, `state == MERGED`, `mergedAt` no nulo y `mergeCommit.oid` no vacío. Conservar comando, resultado mínimo, enlace y SHA completo en la evidencia de la tarea. Si GitHub devuelve OPEN, CLOSED sin merge, PR inexistente, campos incompletos o error de red/autenticación, no anunciar MERGED ni dar por satisfecha la dependencia. Informar el estado real o «merge no verificado» y la siguiente acción concreta. No usar como sustituto `git merge`, rebase/cherry-pick, contenido presente en main local, fetch/pull, CI verde, aprobación, solicitud de auto-merge ni exit 0 de `gh pr merge`.
+
 ## Entrega, aceptación y aprobación del PR
 
 Cada cierre de sesión distingue estas evidencias y nombra su emisor:
