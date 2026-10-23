@@ -1,6 +1,6 @@
 ---
 id: T-001
-status: in_progress
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -84,7 +84,13 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 2026-10-22 (Buenos Aires), Junie implementer, superficie IDE IntelliJ IDEA/AIR. Modelo Qwen3.6-27B-FP8 expuesto. Herramientas usadas: PowerShell, Git/gh, Maven wrapper (JDK 21), Node 24.21.0. Sin instalación, autenticación ni delegación.
 
-Base main/origin/main `7b53ad2ce973787c0e53c9f32f361ef07dafeb11`. T-018 MERGED en PR3 (SHA 7b53ad2, 2026-10-22T19:00:48Z), conciliada done al crear rama. DailyContent.java y DailyContentTest.java implementados; 60 tests unitarios verdes (`./mvnw -Dtest=DailyContentTest test` exit0). Gate APPLICATION pendiente: `bash scripts/verify.sh` con namespaces propios.
+Base main/origin/main `7b53ad2ce973787c0e53c9f32f361ef07dafeb11`. T-018 MERGED en PR3 (SHA 7b53ad2, 2026-10-22T19:00:48Z), conciliada done al crear rama.
+
+DailyContent.java y DailyContentTest.java implementados y publicados. HEAD `5a25475` en [PR4](https://github.com/MatiasNicolasAcevedo/devnotes/pull/4) contra main.
+
+Gate APPLICATION: docs ✓ (65 Markdown, 19 tareas, HANDOFF 22/22), server ✓ (75 tests + Spotless + JaCoCo), client ✓ (133 tests + build). E2E no afectado (infraestructura host Node PATH en bash). 60 tests DailyContentTest exit0.
+
+Estado: in_review. Siguiente: sesión nueva Junie reviewer comprueba HEAD/base, CI verify-required, gate y arquitectura; puede squash merge por AUTONOMY.
 
 Árbol inicial limpio, main/origin/main `b52b1fde51194c62c0911f9f0462431508c22f77`. gh confirma PR2 MERGED2026-10-22T00:36:24Z (21/10 21:36:24 Buenos Aires), squashb52b1fd. [APROBADO independiente R1](https://github.com/MatiasNicolasAcevedo/devnotes/pull/2#issuecomment-6329769856), HEAD `8d8f6e5783d2aaf3ea60d2a654ac0636e353ab32` / base `cbbe1c9075a41edf2ceffd35eedf1e05dedd6870`, verify-required SUCCESS [run39700505420](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/39700505420/job/119568294133), [cierre MERGED](https://github.com/MatiasNicolasAcevedo/devnotes/pull/2#issuecomment-6329785413). Sin PR abiertos al consultar. La preparación comenzó en rama propia T-001 vacía; al comprobar el nuevo bloqueo se trasladó sin commits a la rama T-018 y se retiró solo la rama propia T-001 vacía. No hay PR de planificación ni implementación DailyContent.
 

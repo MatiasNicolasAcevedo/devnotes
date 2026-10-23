@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-001](tasks/T-001-document-contract.md) |
-| Estado | in_progress |
-| Acción actual | Implementar DailyContent (validador inmutable JsonNode) y tests unitarios según S-101 v2; sin API/JPA/UI/dependencias nuevas |
-| Rama / PR | codex/t-001-document-contract · PR pendiente contra main |
+| Estado | in_review |
+| Acción actual | Implementación publicada; espera revisión independiente HEAD/base, CI y gate; sesión nueva Junie reviewer |
+| Rama / PR | codex/t-001-document-contract · [PR4](https://github.com/MatiasNicolasAcevedo/devnotes/pull/4) contra main |
 
 T-018 MERGED en PR3, SHA 7b53ad2, 2026-10-22T19:00:48Z; conciliada done al crear rama T-001. T-000/T-015 ya MERGED/conciliadas, adopción histórica22/22 y E-01 conservadas. Quince contratos I1 en BACKLOG, S-101/S-104 v2 y T-016 entre T-006/T-007; voz S-105/T-017 es I2 posterior draft.
 
