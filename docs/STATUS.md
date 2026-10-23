@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-018](tasks/T-018-docs-fixture-independence.md) |
-| Estado | mergeable |
-| Acción actual | FRONTERA reviewer→merger: publicar transición, comprobar CI final, comentar APROBADO y completar merge elegible; Junie T-001 en sesión nueva solo tras MERGED |
-| Rama / PR | codex/t-018-docs-fixture-independence · [PR3](https://github.com/MatiasNicolasAcevedo/devnotes/pull/3) contra main |
+| Tarea y contrato | [T-001](tasks/T-001-document-contract.md) |
+| Estado | in_progress |
+| Acción actual | Implementar DailyContent (validador inmutable JsonNode) y tests unitarios según S-101 v2; sin API/JPA/UI/dependencias nuevas |
+| Rama / PR | codex/t-001-document-contract · PR pendiente contra main |
 
-Revisión independiente R1 favorable; evidencia y condiciones de publicación/veredicto/merge en T-018. Resultado final y SHA/fecha de MERGED en PR3, sin commits después de aprobar. T-000/T-015 MERGED/conciliadas, adopción histórica22/22 y E-01 conservadas. T-001 sigue draft hasta comprobar MERGED de T-018 y conciliarla en su rama nueva. Quince contratos I1 en BACKLOG, S-101/S-104 v2 y T-016 entre T-006/T-007; voz S-105/T-017 es I2 posterior draft. Sin implementación de producto ni voz en esta sesión.
+T-018 MERGED en PR3, SHA 7b53ad2, 2026-10-22T19:00:48Z; conciliada done al crear rama T-001. T-000/T-015 ya MERGED/conciliadas, adopción histórica22/22 y E-01 conservadas. Quince contratos I1 en BACKLOG, S-101/S-104 v2 y T-016 entre T-006/T-007; voz S-105/T-017 es I2 posterior draft.
 
 ### Prompt de la siguiente sesión
 ```text

@@ -1,6 +1,6 @@
 ---
 id: T-018
-status: mergeable
+status: done
 priority: P1
 size: S
 executor: frontier

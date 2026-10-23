@@ -2,14 +2,15 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
-## Actual · mantenimiento antes de Junie
+## Actual · I1
 
-- [T-018](tasks/T-018-docs-fixture-independence.md): seis tests de fixtures fallan al pasar adopción a22/22; contrato ready de frontera implementer. Rama preparada con documentos; corrección/gate propios antes de T-001, sin PR separado de planificación. No cuenta para las quince tareas I1 ni reabre T-015.
+- [T-001](tasks/T-001-document-contract.md): contrato de contenido estructurado (DailyContent validador inmutable). Primera tarea de producto I1.
 
 ## Hechas
 
 - [T-000](tasks/T-000-adoption.md): adopción MERGED/conciliada; evidencia propia y aceptación E-01 conservadas en la tarea/PR1. No acredita implementación I1.
 - [T-015](tasks/T-015-adoption-checks.md): mantenimiento previo MERGED/conciliado, PR2/squashb52b1fd; no cuenta para ciclo I1.
+- [T-018](tasks/T-018-docs-fixture-independence.md): fixtures de adopción aislados, PR3 MERGED 7b53ad2; no cuenta para ciclo I1.
 
 ## Siguientes · I1
 
