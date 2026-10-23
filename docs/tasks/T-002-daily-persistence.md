@@ -1,6 +1,6 @@
 ---
 id: T-002
-status: ready
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-101
 spec_version: 2
 branch: codex/t-002-daily-persistence
-pr: null
+pr: 5
 depends_on: [T-001]
 ---
 # T-002 · Persistencia privada por fecha
