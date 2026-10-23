@@ -1,6 +1,6 @@
 ---
 id: T-002
-status: draft
+status: ready
 priority: P1
 size: S
 executor: junie
@@ -82,11 +82,13 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-001. El prompt vigente está solo en STATUS.
+En codex/t-002-daily-persistence desde main (bd60fff). V3 aditiva, DailyNote.java (JSONB/revisión), DailyNoteRepository.java (owner+fecha, paginación offset long, CAS con clearAutomatically), DailyNoteRepositoryIT.java (11 tests IT con PostgreSQL 18, todos passing). Gate FULL pendiente. Dependencia T-001 MERGED/conciliada.
 
 ## Correcciones significativas
 
-Sin correcciones ni resultados de implementación acreditados.
+1. **CAS updateWithCas — Hibernate no reconocía `:content::jsonb`**: El cast PostgreSQL `::jsonb` se parseaba como parte del nombre del parámetro. Solución: usar `CAST(:content AS jsonb)` en la consulta nativa. Verificado con tests updateWithCasSucceedsWhenRevisionMatches y updateWithCasReturnsZeroWhenRevisionDoesNotMatch.
+2. **CAS sin clearAutomatically — entidad caché del EntityManager**: `@Modifying` sin `clearAutomatically = true` dejaba la entidad antigua en el primer nivel de caché; el refresh leía revision=1 en vez de revision=2. Solución: agregar `clearAutomatically = true`. Verificado con assertion de revision=2 tras CAS.
+3. **JDBC INSERT con JSONB — BadSqlGrammarException**: jdbc.update con `?` directo para columna jsonb lanzaba error de tipo. Solución: usar `CAST(? AS jsonb)` en SQL directo. Verificado con databaseRejectsInvalidRevisionAndNonObjectContent.
 
 ## Cierre y siguiente tarea
 

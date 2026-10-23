@@ -2,14 +2,15 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-001](tasks/T-001-document-contract.md) |
-| Estado | changes_requested |
-| Acción actual | Revisión solicita corrección: textTotal usa codePointCount en lugar de length() para unidades UTF-16; implementer corrige y reenvía |
-| Rama / PR | codex/t-001-document-contract · [PR4](https://github.com/MatiasNicolasAcevedo/devnotes/pull/4) contra main |
+| Tarea y contrato | [T-002](tasks/T-002-daily-persistence.md) |
+| Estado | in_progress |
+| Acción actual | Preparando PR limpio: rebase sobre main post-merge T-001 (SHA 94150b1) |
+| Rama / PR | codex/t-002-daily-persistence · PR pendiente contra main |
 
-T-018 MERGED en PR3, SHA 7b53ad2, 2026-10-22T19:00:48Z; conciliada done al crear rama T-001. T-000/T-015 ya MERGED/conciliadas, adopción histórica22/22 y E-01 conservadas. Quince contratos I1 en BACKLOG, S-101/S-104 v2 y T-016 entre T-006/T-007; voz S-105/T-017 es I2 posterior draft.
+T-001 MERGED en PR4, SHA 94150b1, 2026-10-23; conciliada done al primer avance de T-002. T-002 en codex/t-002-daily-persistence: migración V3, DailyNote.java (JSONB/revisión), DailyNoteRepository.java (owner+fecha, paginación offset long, CAS), DailyNoteRepositoryIT.java (11 tests IT con PostgreSQL 18).
 
 ### Prompt de la siguiente sesión
+
 ```text
-Sesión nueva Junie implementer para corrección T-001 en codex/t-001-document-contract. La revisión independiente rechazó PR4: textTotal en DailyContent.java:65 usa codePointCount() en lugar de String.length() para contar unidades UTF-16 según S-101 v2. Corregir la línea 65 a text.length(), añadir test con caracteres suplementarios (emoji) que demuestre el fallo con codePointCount y el paso con length(), ejecutar DailyContentTest y spotless:apply, commit y push. No cambiar otra lógica. Ver veredicto en https://github.com/MatiasNicolasAcevedo/devnotes/pull/4#issuecomment-6354815953.
+Sesión nueva Junie reviewer para T-002 en codex/t-002-daily-persistence. Verificar gate, CI, arquitectura de persistencia DailyNote y propiedad por owner según protocolo reviewer. Contratos y comandos en T-002; leer docs/agents/reviewer.md antes de empezar.
 ```
