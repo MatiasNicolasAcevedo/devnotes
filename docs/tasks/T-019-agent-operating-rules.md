@@ -1,6 +1,6 @@
 ---
 id: T-019
-status: in_progress
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -9,7 +9,7 @@ milestone: M1
 counts_for_cycle: false
 spec: null
 branch: codex/t-019-agent-operating-rules
-pr: null
+pr: 6
 depends_on: [T-002]
 ---
 # T-019 · Continuidad, verificación Windows y hechos remotos
@@ -72,4 +72,4 @@ La sonda no inicia stacks ni acredita FULL. En esta preparación frontera compro
 
 ## Checkpoint vigente
 
-Implementer Junie, sesión 2026-10-23. Rama codex/t-019-agent-operating-rules desde origin/main 89cbb87. PR5 (T-002) confirmado MERGED en GitHub. Las tres reglas incorporadas en documentos canónicos: prompt de continuación (implementer paso 7, ORCHESTRATION), comprobación MERGED (implementer paso 8, merger paso 4, ORCHESTRATION), verificador PowerShell (SETUP, TESTING). AGENTS.md enlazado. Pendiente: docs-check, diff-check, commit, push y PR a revisión. Impacto: instrucciones de agentes y operación de pruebas; sin API/permisos/datos/UI de aplicación.
+Implementer Junie, sesión 2026-10-23. PR6 publicado en codex/t-019-agent-operating-rules, SHA 54edcc1 contra main 89cbb87. docs-check OK, diff-check OK. Las tres reglas incorporadas y enlazadas desde AGENTS.md. T-002 conciliada done tras confirmación remota de PR5 MERGED (89cbb87). Pendiente: revisión independiente y merge. Impacto: instrucciones de agentes y operación de pruebas; sin API/permisos/datos/UI de aplicación.
