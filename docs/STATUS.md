@@ -2,15 +2,15 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-002](tasks/T-002-daily-persistence.md) |
-| Estado | in_review |
-| Acción actual | PR5 publicado, CI ejecutando, gate docs/server/client OK en fuentes anteriores |
-| Rama / PR | codex/t-002-daily-persistence · [PR5](https://github.com/MatiasNicolasAcevedo/devnotes/pull/5) contra main |
+| Tarea y contrato | [T-003](tasks/T-003-daily-service.md) |
+| Estado | ready |
+| Acción actual | T-002 MERGED, esperando sesión nueva para T-003 |
+| Rama / PR | Sin rama activa |
 
-T-001 MERGED en PR4, SHA 94150b1, 2026-10-23; conciliada done al primer avance de T-002. T-002 en codex/t-002-daily-persistence: migración V3, DailyNote.java (JSONB/revisión), DailyNoteRepository.java (owner+fecha, paginación offset long, CAS), DailyNoteRepositoryIT.java (11 tests IT con PostgreSQL 18).
+T-002 MERGED en PR5, SHA 89cbb87, 2026-10-23; persistencia DailyNote con V3, JSONB, CAS y 11 tests IT. T-001 MERGED en PR4, SHA 94150b1, 2026-10-23; DailyContent validador inmutable.
 
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie reviewer para T-002 en codex/t-002-daily-persistence. Verificar gate, CI, arquitectura de persistencia DailyNote y propiedad por owner según protocolo reviewer. Contratos y comandos en T-002; leer docs/agents/reviewer.md antes de empezar.
+Sesión nueva Junie implementer para T-003 en codex/t-003-daily-service. T-002 MERGED en PR5 (SHA 89cbb87). Leer contrato T-003, spec S-101 v2 y AGENTS server antes de comenzar.
 ```
