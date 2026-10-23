@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-002](tasks/T-002-daily-persistence.md) |
-| Estado | in_progress |
-| Acción actual | Preparando PR limpio: rebase sobre main post-merge T-001 (SHA 94150b1) |
-| Rama / PR | codex/t-002-daily-persistence · PR pendiente contra main |
+| Estado | in_review |
+| Acción actual | PR5 publicado, CI ejecutando, gate docs/server/client OK en fuentes anteriores |
+| Rama / PR | codex/t-002-daily-persistence · [PR5](https://github.com/MatiasNicolasAcevedo/devnotes/pull/5) contra main |
 
 T-001 MERGED en PR4, SHA 94150b1, 2026-10-23; conciliada done al primer avance de T-002. T-002 en codex/t-002-daily-persistence: migración V3, DailyNote.java (JSONB/revisión), DailyNoteRepository.java (owner+fecha, paginación offset long, CAS), DailyNoteRepositoryIT.java (11 tests IT con PostgreSQL 18).
 
