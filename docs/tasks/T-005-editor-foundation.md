@@ -89,11 +89,11 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Revisión independiente el 2026-10-24. Junie reviewer, Qwen3.6-27B-FP8. Rama codex/t-005-editor-foundation, HEAD 3fc5845, base main 595050a. PR#9 abierto.
+Revisión independiente el 2026-10-24. Junie reviewer, Qwen3.6-27B-FP8. Rama codex/t-005-editor-foundation, HEAD f56ee45, base main 595050a. PR#9 abierto.
 
 Evidencia de revisión:
-- HEAD/base: 3fc5845 / 595050a, 6 commits (implementación + conciliación T-004 + veredicto reviewer + corrección SHA).
-- CI verify-required: pass sobre HEAD 3fc5845.
+- HEAD/base: f56ee45 / 595050a, 7 commits (implementación + conciliación T-004 + veredicto reviewer).
+- CI verify-required: pass sobre HEAD f56ee45.
 - docs-check: OK (65 Markdown, 19 tareas, HANDOFF 22/22).
 - typecheck: OK, lint: OK, format: OK, build: OK.
 - Tests dirigidos: 46 passed (dailyDocument.test.ts + DailyEditor.test.tsx).
@@ -110,7 +110,7 @@ Hallazgos de revisión:
 - editorExtensions.ts exporta extensiones pero no es importado en ningún lado. Código muerto menor, no bloqueante. Se recomienda eliminar en corrección o usar en tests futuros.
 - Gate STARTER completo no ejecutado: requiere Docker no disponible en host Windows. La evidencia del implementer (gate client completo) se verificó parcialmente (typecheck/lint/format/tests/build OK). Un gate STARTER completo con `bash scripts/verify.sh --starter` requiere sesión con Docker/Git Bash.
 
-Veredicto: **APROBADO** con observación menor (editorExtensions.ts código muerto). El STARTER gate pendiente no es bloqueante si se completa en sesión con Docker antes del merge. SHA HEAD: 3fc5845, SHA base: 595050a.
+Veredicto: **APROBADO** con observación menor (editorExtensions.ts código muerto). El STARTER gate pendiente no es bloqueante si se completa en sesión con Docker antes del merge. SHA HEAD: f56ee45, SHA base: 595050a.
 
 ## Correcciones significativas
 
