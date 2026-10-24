@@ -1,6 +1,6 @@
 ---
 id: T-016
-status: changes_requested
+status: mergeable
 priority: P1
 size: S
 executor: junie
