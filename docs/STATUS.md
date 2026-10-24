@@ -2,17 +2,15 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-006](tasks/T-006-daily-client.md) |
-| Estado | done |
-| Acción actual | MERGED, squash PR#10 → main (6eb2c42) |
-| Rama / PR | codex/t-006-daily-client, PR#10 (merge 6eb2c42) |
-
-T-005: conciliada como MERGED (5e6c247). Junie merger, Qwen3.6-27B-FP8. Client gate 179 tests OK, 92.16% líneas. Backend SecurityConfigTest con fallo preexistente en main (OIDC), no causado por T-005. docs-check OK, CI verify-required pass.
+| Tarea y contrato | [T-016](tasks/T-016-daily-draft-coordinator.md) |
+| Estado | in_progress |
+| Acción actual | Implementando coordinador de borrador (useDailyNote + DailyDraftProvider) |
+| Rama / PR | codex/t-016-daily-draft-coordinator |
 
 T-006: conciliada como MERGED (6eb2c42). Junie reviewer + merger, Qwen3.6-27B-FP8. Client gate 218 tests OK, 100% líneas daily, 90.47% branches. Revisión APROBADA sin observaciones, CI verify-required pass.
 
-### Prompt de la siguiente sesión
+T-016: en progreso. Junie implementer, Qwen3.6-27B-FP8. Coordinador de borrador implementado: useDailyNote.ts (debounce 700 ms, cola serial, snapshot por generación, ACK por revisión, flush awaitable, discard), DailyDraftProvider.tsx (provider de memoria por identidad), useDailyNote.test.tsx (11 tests). Client gate 229 tests OK, 91% líneas, 86% branches. Thresholds 80/70 cumplidos.
 
-```text
-Sesión nueva Junie implementer para T-016. Conciliar MERGED de T-006 (6eb2c42) y comenzar implementación del coordinador de borrador según contrato.
-```
+### Checkpoint vigente
+
+2026-10-24, implementación completa en codex/t-016-daily-draft-coordinator. Tests dirigidos y gate client OK. Pendiente: commit y PR.
