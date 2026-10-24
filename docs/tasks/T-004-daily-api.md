@@ -1,6 +1,6 @@
 ---
 id: T-004
-status: draft
+status: ready
 priority: P1
 size: S
 executor: junie
@@ -23,7 +23,7 @@ API privada de notas diarias, capacidad S-101 de I1. Resultado comprobable descr
 
 Adaptar servicio T-003 al HTTP exacto de S-101 y principal LocalOidcUser.identity().id(). DTOs record anidados en controller si reduce archivos; rechazo de claves desconocidas explícito sin cambiar Jackson global. Advice 400/404/409 ProblemDetail seguro. Abrir solo GET colección/recurso y PUT recurso; metadata OpenAPI y negativos incluidos.
 
-Impacto previsto: API de notas privada, nuevos matchers limitados; sin auth nueva. Contrato completo; estado draft **únicamente por dependencia T-003 no mergeada/conciliada**. Al comprobarla, Junie puede habilitar ready sin otra planificación. En T-001 comprobar además la evidencia Junie y adopción T-000; si no existen, no comenzar negocio.
+Impacto previsto: API de notas privada, nuevos matchers limitados; sin auth nueva. Contrato completo; dependencia T-003 MERGED (f87f0cf, 2026-10-24). Estado cambiado a ready el 2026-10-24. En T-001 comprobar además la evidencia Junie y adopción T-000; si no existen, no comenzar negocio.
 
 ## Leer antes
 
@@ -82,7 +82,7 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-003. El prompt vigente está solo en STATUS.
+Habilitada el 2026-10-24 tras MERGED de T-003 (PR7, f87f0cf). Dependencia T-003 satisfecha. Lista para implementación por Junie en sesión nueva. El prompt vigente está en STATUS.
 
 ## Correcciones significativas
 

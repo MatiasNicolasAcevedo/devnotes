@@ -1,6 +1,6 @@
 ---
 id: T-003
-status: mergeable
+status: MERGED
 priority: P1
 size: S
 executor: junie
@@ -12,6 +12,8 @@ spec_version: 2
 branch: codex/t-003-daily-service
 pr: 7
 depends_on: [T-002]
+merged_sha: f87f0cf7c756d852da370d2a61fe40077033c09d
+merged_date: 2026-10-24
 ---
 # T-003 · Guardado concurrente del trabajo
 
@@ -82,7 +84,7 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Revisión independiente APROBADA por Junie reviewer el 2026-10-23. HEAD e3871d0 (código) + 27eb3c0 (veredicto documental) contra main 89cbb87. Server 99/99 tests ✓, JaCoCo daily 80/70 ✓, CI verify-required pass. Listo para squash merge.
+MERGED el 2026-10-24. Squash merge de PR7 (HEAD e3871d0) a main, commit f87f0cf7c756d852da370d2a61fe40077033c09d. Revisión APROBADA por Junie reviewer el 2026-10-23. Rama codex/t-003-daily-service borrada. T-004 habilitada.
 
 ## Correcciones significativas
 

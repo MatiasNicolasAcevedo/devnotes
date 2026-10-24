@@ -2,15 +2,15 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-003](tasks/T-003-daily-service.md) |
-| Estado | mergeable |
-| Acción actual | Revisión APROBADA por Junie reviewer, SHA e3871d0 · listo para squash merge |
-| Rama / PR | codex/t-003-daily-service · [PR7](https://github.com/MatiasNicolasAcevedo/devnotes/pull/7) contra main |
+| Tarea y contrato | [T-004](tasks/T-004-daily-api.md) |
+| Estado | ready |
+| Acción actual | T-003 MERGED en PR7, SHA f87f0cf, 2026-10-24; T-004 habilitada y lista para implementación |
+| Rama / PR | codex/t-004-daily-api · PR pendiente contra main |
 
-Revisión independiente completada por Junie reviewer el 2026-10-23. Veredicto **APROBADO** para HEAD e3871d0 contra main 89cbb87. Arquitectura CAS/Clock/concurrencia conforme a S-101 v2: CAS atómico por SQL nativo, Clock inyectado con @MockitoBean, UUIDv7 por Hibernate, timestamps a microsegundos. 13 IT de servicio (carrera creación/actualización con virtual threads, aislamiento cross-owner, 409 segura, contenido inválido rechazado antes de mutar) + 11 IT de repositorio. JaCoCo daily/domain y daily/application 80/70 mínimos verificados. Server 99/99 tests ✓ con JaCoCo check-merged pasado (verificado localmente). CI verify-required pass en HEAD e3871d0. Client 133/133 ✓ (evidencia implementer). Tooling exit 127 preexistente. Observaciones menores no bloqueantes: nowMicros() llama clock.millis() y clock.instant() por separado (ventana mínima de race, funcionalmente correcto); list() page > Integer.MAX_VALUE es condición muerta inofensiva.
+T-003 MERGED en PR7, SHA f87f0cf7c756d852da370d2a61fe40077033c09d, 2026-10-24T19:04:10Z. Squash merge de e3871d0 contra main 89cbb87, rama codex/t-003-daily-service borrada. Revisión APROBADA por Junie reviewer el 2026-10-23. T-004 habilitada, dependencia T-003 satisfecha, lista para implementación.
 
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie merger para T-003 PR7. Squash merge de e3871d0 a main, borrar rama, confirmar MERGED y habilitar T-004.
+Sesión nueva Junie implementer para T-004. Crear rama codex/t-004-daily-api desde main, implementar API privada de notas diarias (GET colección/recurso, PUT recurso) según S-101 v2, abrir PR y pasar gate.
 ```
