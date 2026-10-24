@@ -86,7 +86,7 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-005. El prompt vigente está solo en STATUS.
+Implementación publicada por Junie (Qwen3.6-27B-FP8) el 2026-10-24. Rama codex/t-006-daily-client, HEAD c49b894, base 5e6c247. Gate client completo: 218 tests OK, 92.14% statements, 88.02% branches, 92.65% lines. docs-check OK. Cobertura daily/api y daily/useDailyNoteQuery dentro de thresholds 80/70. Pendiente: revisión independiente. Sin PR creado manualmente.
 
 ## Correcciones significativas
 
