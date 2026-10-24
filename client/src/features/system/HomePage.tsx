@@ -1,8 +1,10 @@
 import projectIdentity from '../../project-identity.json'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
+import Link from '@mui/material/Link'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
+import { Link as RouterLink } from 'react-router'
 import { SystemInfoPanel } from './SystemInfoPanel'
 
 export function HomePage() {
@@ -23,6 +25,19 @@ export function HomePage() {
               Estado del servidor
             </Typography>
             <SystemInfoPanel />
+          </Stack>
+        </CardContent>
+      </Card>
+      <Card variant="outlined">
+        <CardContent>
+          <Stack spacing={1.5}>
+            <Typography variant="h6" component="h2">
+              Notas diarias
+            </Typography>
+            <Typography>Editá y recuperá una nota privada por día.</Typography>
+            <Link component={RouterLink} to="/notes">
+              Ir a Notas
+            </Link>
           </Stack>
         </CardContent>
       </Card>
