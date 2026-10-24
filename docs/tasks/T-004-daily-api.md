@@ -1,10 +1,10 @@
 ---
 id: T-004
-status: in_progress
+status: done
 priority: P1
 size: S
 executor: junie
-role: implementer
+role: merger
 milestone: M1
 product_cycle: I1
 spec: S-101
@@ -82,7 +82,7 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-PR8 abierto (ca92590) contra main 306fd68, 2026-10-24. 6/6 IT tests DailyNoteApiIT verdes. Pendiente revisión independiente y gate FULL.
+MERGED el 2026-10-24. Squash merge de PR8 (HEAD 640c474) a main, commit 595050ae979604368e3ae4d19310230abf2fb76c. Revisión APROBADA por Junie reviewer. Corrección durante revisión: T-003 status `MERGED` → `done`. T-005 habilitada.
 
 ## Correcciones significativas
 
@@ -92,4 +92,4 @@ PR8 abierto (ca92590) contra main 306fd68, 2026-10-24. 6/6 IT tests DailyNoteApi
 
 ## Cierre y siguiente tarea
 
-Publicar PR y evidencia según TESTING; pasar a in_review con prompt reviewer en sesión nueva. Reviewer comprueba HEAD/base, gate, CI y arquitectura/propiedad, publica veredicto del SHA final y puede squash merge por AUTONOMY. Sin done hasta MERGED comprobado. El siguiente implementer concilia done al primer avance de su rama nueva; no editar la rama ya mergeada. Próxima: [T-005](T-005-editor-foundation.md).
+MERGED. El siguiente implementer concilia done al primer avance de su rama nueva; no editar la rama ya mergeada. Próxima: [T-005](T-005-editor-foundation.md).

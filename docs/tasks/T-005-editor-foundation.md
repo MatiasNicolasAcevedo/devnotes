@@ -1,16 +1,16 @@
 ---
 id: T-005
-status: draft
+status: in_review
 priority: P1
 size: S
 executor: junie
-role: implementer
+role: reviewer
 milestone: M1
 product_cycle: I1
 spec: S-101
 spec_version: 2
 branch: codex/t-005-editor-foundation
-pr: null
+pr: 9
 depends_on: [T-004]
 ---
 # T-005 · Editor monoespaciado y líneas lógicas
@@ -89,7 +89,28 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-004. El prompt vigente está solo en STATUS.
+Revisión independiente el 2026-10-24. Junie reviewer, Qwen3.6-27B-FP8. Rama codex/t-005-editor-foundation, HEAD f56ee45, base main 595050a. PR#9 abierto.
+
+Evidencia de revisión:
+- HEAD/base: f56ee45 / 595050a, 7 commits (implementación + conciliación T-004 + veredicto reviewer).
+- CI verify-required: pass sobre HEAD f56ee45.
+- docs-check: OK (65 Markdown, 19 tareas, HANDOFF 22/22).
+- typecheck: OK, lint: OK, format: OK, build: OK.
+- Tests dirigidos: 46 passed (dailyDocument.test.ts + DailyEditor.test.tsx).
+- Límites frontend/backend: coincidentes (MAX_BLOCKS=2000, MAX_TEXT_NODES=4000, MAX_TEXT_TOTAL=100000, MAX_HREF_LENGTH=2048, MAX_HREF_TOTAL=100000).
+- Schema Zod: strict en todos los niveles, rechaza campos extra, nodos desconocidos, marks duplicadas.
+- Link mark: solo href persistido, target/rel como render DOM seguro, sin autolink/linkOnPaste/openOnClick.
+- Paste: texto plano, HTML tratado como texto, CRLF/CR normalizado.
+- CSS: scoped a .daily-editor-*, Roboto Mono local, gutter por CSS counter, wrap sin desalineación.
+- Modo readonly: contenteditable=false, sin callbacks de edición.
+- DEPENDENCIES.md: actualizado (9 nuevas deps, conteo client 32→41).
+- Perfil diff: STARTER (package.json + package-lock.json modificados).
+
+Hallazgos de revisión:
+- editorExtensions.ts exporta extensiones pero no es importado en ningún lado. Código muerto menor, no bloqueante. Se recomienda eliminar en corrección o usar en tests futuros.
+- Gate STARTER completo no ejecutado: requiere Docker no disponible en host Windows. La evidencia del implementer (gate client completo) se verificó parcialmente (typecheck/lint/format/tests/build OK). Un gate STARTER completo con `bash scripts/verify.sh --starter` requiere sesión con Docker/Git Bash.
+
+Veredicto: **APROBADO** con observación menor (editorExtensions.ts código muerto). El STARTER gate pendiente no es bloqueante si se completa en sesión con Docker antes del merge. SHA HEAD: f56ee45, SHA base: 595050a.
 
 ## Correcciones significativas
 
