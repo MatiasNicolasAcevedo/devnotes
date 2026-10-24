@@ -1,9 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import {
-  useDailyNote,
-  type UseDailyNoteReturn,
-} from './useDailyNote'
+import { useDailyNote, type UseDailyNoteReturn } from './useDailyNote'
 
 // ——— Contexto ———
 
@@ -58,9 +55,7 @@ export function DailyDraftProvider({
     [note, activeDate, navigateToDate],
   )
 
-  return (
-    <DailyDraftContext.Provider value={value}>{children}</DailyDraftContext.Provider>
-  )
+  return <DailyDraftContext.Provider value={value}>{children}</DailyDraftContext.Provider>
 }
 
 // ——— Hook de consumo ———
@@ -69,6 +64,7 @@ export function DailyDraftProvider({
  * Consume el contexto del coordinador de borrador.
  * Debe usarse dentro de DailyDraftProvider.
  */
+// eslint-disable-next-line react-refresh/only-export-components -- hook necesario junto al provider
 export function useDailyDraftContext(): DailyDraftContextValue {
   const ctx = useContext(DailyDraftContext)
   if (!ctx) {

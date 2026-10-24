@@ -108,6 +108,7 @@ export function useDailyNote(
   const generationRef = useRef<Generation>(0)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const flushersRef = useRef<Array<{ resolve: () => void; reject: (e: unknown) => void }>>([])
+  const forceRef = useRef<boolean>(false)
 
   // Sincronizar refs con estado.
   useEffect(() => {
@@ -156,77 +157,92 @@ export function useDailyNote(
   }, [query.error])
 
   // ——— Cola de escritura ———
-  const flushQueue = useCallback(() => {
-    timerRef.current = null
-    const entry = draftRef.current
-    if (!entry) {
-      setQueueState('idle')
-      return
-    }
+  // flushQueue se refiere a sí misma dentro del .then() para encadenar
+  // la siguiente generación. Usamos una ref mutable para evitar el problema
+  // de useCallback que captura el valor antiguo.
+  const flushQueueRef = useRef<(force?: boolean) => void | null>(null)
 
-    // Validar antes de enviar.
-    const validation = validateDailyContent(entry.content)
-    if (!validation.valid) {
-      setError(new Error(validation.error ?? 'Contenido inválido') as ApiError)
-      setQueueState('idle')
-      return
-    }
+  const flushQueue = useCallback(
+    (force?: boolean) => {
+      timerRef.current = null
+      const entry = draftRef.current
+      if (!entry) {
+        setQueueState('idle')
+        return
+      }
 
-    const rev = revisionRef.current
-    setQueueState('flushing')
-
-    saveDailyNote(owner, date, entry.content, rev)
-      .then((response) => {
-        // ACK: actualizar revisión confirmada.
-        setConfirmedRevision(response.revision)
-        setConfirmedContent(response.content)
-        setError(null)
-
-        // Invalidar query para refetch.
-        invalidateDailyNote(queryClient, owner, date)
-
-        // Verificar si hay nueva generación pendiente ANTES de limpiar.
-        const nextDraft = draftRef.current
-        if (nextDraft && nextDraft.generation > entry.generation) {
-          // Hay ediciones posteriores; no limpiar draft, enviar la más reciente.
-          setTimeout(() => flushQueue(), 0)
-        } else {
-          setDraft(null)
+      // Validar antes de enviar, a menos que force permita saltar.
+      if (!force) {
+        const validation = validateDailyContent(entry.content)
+        if (!validation.valid) {
+          setError(new Error(validation.error ?? 'Contenido inválido') as ApiError)
           setQueueState('idle')
-          // Resolver flushers pendientes.
-          const flushers = flushersRef.current
-          flushersRef.current = []
-          for (const f of flushers) {
-            f.resolve()
-          }
+          return
         }
-      })
-      .catch((err: unknown) => {
-        const apiErr = err as ApiError | null
-        if (apiErr && 'status' in apiErr && (apiErr as ApiError).status === 409) {
-          setError(apiErr)
+      }
+
+      const rev = revisionRef.current
+      setQueueState('flushing')
+
+      saveDailyNote(owner, date, entry.content, rev)
+        .then((response) => {
+          // ACK: actualizar revisión confirmada.
+          setConfirmedRevision(response.revision)
+          setConfirmedContent(response.content)
+          setError(null)
+
+          // Invalidar query para refetch.
+          invalidateDailyNote(queryClient, owner, date)
+
+          // Verificar si hay nueva generación pendiente ANTES de limpiar.
+          const nextDraft = draftRef.current
+          if (nextDraft && nextDraft.generation > entry.generation) {
+            // Hay ediciones posteriores; no limpiar draft, enviar la más reciente.
+            setTimeout(() => flushQueueRef.current?.(), 0)
+          } else {
+            setDraft(null)
+            setQueueState('idle')
+            // Resolver flushers pendientes.
+            const flushers = flushersRef.current
+            flushersRef.current = []
+            for (const f of flushers) {
+              f.resolve()
+            }
+          }
+        })
+        .catch((err: unknown) => {
+          const apiErr = err as ApiError | null
+          if (apiErr && 'status' in apiErr && (apiErr as ApiError).status === 409) {
+            setError(apiErr)
+            setQueueState('idle')
+            // Rechazar flushers con el error.
+            const flushers = flushersRef.current
+            flushersRef.current = []
+            for (const f of flushers) {
+              f.reject(apiErr)
+            }
+            return
+          }
+          // Error de red u otro: conservar borrador, detener cola.
+          if (apiErr) {
+            setError(apiErr)
+          }
           setQueueState('idle')
-          // Rechazar flushers con el error.
+          // No resolver flushers; el error se propaga.
           const flushers = flushersRef.current
           flushersRef.current = []
           for (const f of flushers) {
             f.reject(apiErr)
           }
-          return
-        }
-        // Error de red u otro: conservar borrador, detener cola.
-        if (apiErr) {
-          setError(apiErr)
-        }
-        setQueueState('idle')
-        // No resolver flushers; el error se propaga.
-        const flushers = flushersRef.current
-        flushersRef.current = []
-        for (const f of flushers) {
-          f.reject(apiErr)
-        }
-      })
-  }, [owner, date, queryClient])
+        })
+    },
+    [owner, date, queryClient],
+  )
+
+  // Mantener flushQueueRef sincronizado para la llamada recursiva en .then().
+  useEffect(() => {
+    flushQueueRef.current = flushQueue
+  }, [flushQueue])
 
   const scheduleFlush = useCallback(() => {
     if (timerRef.current !== null) {
@@ -253,10 +269,9 @@ export function useDailyNote(
 
       // Si hay un PUT en vuelo, no interrumpir; la cola enviará la nueva
       // generación tras el ACK.
-      if (queueRef.current === 'idle' && timerRef.current === null) {
+      if (queueRef.current === 'idle') {
         scheduleFlush()
       }
-      // Si ya hay timer, se reprogramó en scheduleFlush.
       // Si hay PUT en vuelo, el .then() detectará draftRef.current con generación mayor.
     },
     [scheduleFlush],
@@ -272,18 +287,21 @@ export function useDailyNote(
 
   // ——— flush ———
   const flush = useCallback(
-    (_options?: { force?: boolean }) => {
+    (options?: { force?: boolean }) => {
+      const force = options?.force ?? false
       return new Promise<void>((resolve, reject) => {
         // Si hay timer pendiente, lo ejecuta inmediatamente.
         if (timerRef.current !== null) {
           clearTimeout(timerRef.current)
           timerRef.current = null
-          flushQueue()
+          forceRef.current = force
+          flushQueue(force)
         } else if (queueRef.current === 'flushing') {
           // Ya hay PUT en vuelo; esperar.
         } else if (draftRef.current !== null) {
           // Borrador sin timer ni PUT: enviar ahora.
-          flushQueue()
+          forceRef.current = force
+          flushQueue(force)
         } else {
           // Nada pendiente.
           resolve()
