@@ -4,8 +4,8 @@
 |---|---|
 | Tarea y contrato | [T-016](tasks/T-016-daily-draft-coordinator.md) |
 | Estado | in_progress |
-| Acción actual | Implementando coordinador de borrador (useDailyNote + DailyDraftProvider) |
-| Rama / PR | codex/t-016-daily-draft-coordinator |
+| Acción actual | Implementado, commit 3c1770b, rama publicada. Pendiente PR y revisión. |
+| Rama / PR | codex/t-016-daily-draft-coordinator, PR pendiente |
 
 T-006: conciliada como MERGED (6eb2c42). Junie reviewer + merger, Qwen3.6-27B-FP8. Client gate 218 tests OK, 100% líneas daily, 90.47% branches. Revisión APROBADA sin observaciones, CI verify-required pass.
 
