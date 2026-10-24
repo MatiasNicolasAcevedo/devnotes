@@ -1,6 +1,6 @@
 ---
 id: T-006
-status: in_review
+status: done
 priority: P1
 size: S
 executor: junie
@@ -105,7 +105,7 @@ Hallazgos de revisión:
 - useDailyNoteQuery.test.tsx: QueryResultConsumer auxiliar correcto. Tests de cancelación con promesas retenidas. Separación de identidades A/B verificada. Invalidación marca stale sin escribir cache.
 - vite.config.ts: Threshold 80/70 añadido correctamente para daily. Sin rebajar referencia de reference.
 
-Veredicto: **APROBADO** sin observaciones. HEAD fa49a3e (incluye commit de reviewer), base 5e6c247. PR#10 abierto, CI verify-required pass. Pendiente: squash merge según AUTONOMY.md.
+MERGED 2026-10-24. Junie merger, Qwen3.6-27B-FP8. Squash merge PR#10 → main, merge SHA 6eb2c42. Rama codex/t-006-daily-client eliminada.
 
 ## Correcciones significativas
 
