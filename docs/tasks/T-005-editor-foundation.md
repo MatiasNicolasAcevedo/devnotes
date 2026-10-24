@@ -1,6 +1,6 @@
 ---
 id: T-005
-status: ready
+status: in_progress
 priority: P1
 size: S
 executor: junie
