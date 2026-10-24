@@ -89,7 +89,21 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-004. El prompt vigente está solo en STATUS.
+Implementación completada el 2026-10-24. Junie implementer, Qwen3.6-27B-FP8. Rama codex/t-005-editor-foundation, HEAD 3cf8a38, base main 595050a.
+
+Evidencia técnica:
+- typecheck: OK (tsc -b)
+- lint: OK (eslint --max-warnings 0)
+- format: OK (prettier --check)
+- tests: 179 passed (vitest run --coverage), cobertura 92%/88%
+- build: OK (vite build)
+- docs-check: OK
+- Gate client completo (`npm run verify`): exit 0
+
+Archivos nuevos: client/src/features/daily/editor/{dailyDocument,separator,link,editorExtensions,DailyEditor,dailyEditor.css} + tests.
+Dependencias: 9 nuevas (Tiptap 3.32.0, Roboto Mono 5.3.0).
+
+Siguiente: PR y revisión independiente. Gate STARTER pendiente (requiere Docker).
 
 ## Correcciones significativas
 
