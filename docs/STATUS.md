@@ -3,14 +3,14 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-004](tasks/T-004-daily-api.md) |
-| Estado | ready |
-| Acción actual | T-003 MERGED en PR7, SHA f87f0cf, 2026-10-24; T-004 habilitada y lista para implementación |
-| Rama / PR | codex/t-004-daily-api · PR pendiente contra main |
+| Estado | in_progress |
+| Acción actual | PR8 abierto, 6/6 IT tests verdes (DailyNoteApiIT), pendiente revisión independiente |
+| Rama / PR | codex/t-004-daily-api · PR8 contra main |
 
-T-003 MERGED en PR7, SHA f87f0cf7c756d852da370d2a61fe40077033c09d, 2026-10-24T19:04:10Z. Squash merge de e3871d0 contra main 89cbb87, rama codex/t-003-daily-service borrada. Revisión APROBADA por Junie reviewer el 2026-10-23. T-004 habilitada, dependencia T-003 satisfecha, lista para implementación.
+T-004: PR8 abierto (ca92590) contra main 306fd68. DailyNoteController (GET colección/recurso, PUT recurso), DailyNoteExceptionHandler (400/404/409), DailyNoteOpenApi (sesión+CSRF), SecurityConfig actualizado. 6/6 tests dirigidos DailyNoteApiIT: CRUD dos dueños, 401/403/CSRF, vecinos denegados, 400 fecha/body/revisión inválida, 409 conserva DB, paginación. Pendiente revisión independiente y gate FULL.
 
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie implementer para T-004. Crear rama codex/t-004-daily-api desde main, implementar API privada de notas diarias (GET colección/recurso, PUT recurso) según S-101 v2, abrir PR y pasar gate.
+Sesión nueva Junie reviewer para PR8 (T-004). Revisar HEAD ca92590 contra base main 306fd68: gate, CI, arquitectura y propiedad. Veredicto y squash merge si aprueba.
 ```
