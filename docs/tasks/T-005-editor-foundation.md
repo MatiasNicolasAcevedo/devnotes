@@ -1,16 +1,16 @@
 ---
 id: T-005
-status: in_progress
+status: in_review
 priority: P1
 size: S
 executor: junie
-role: implementer
+role: reviewer
 milestone: M1
 product_cycle: I1
 spec: S-101
 spec_version: 2
 branch: codex/t-005-editor-foundation
-pr: null
+pr: 9
 depends_on: [T-004]
 ---
 # T-005 · Editor monoespaciado y líneas lógicas
@@ -89,21 +89,28 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Implementación completada el 2026-10-24. Junie implementer, Qwen3.6-27B-FP8. Rama codex/t-005-editor-foundation, HEAD 3cf8a38, base main 595050a.
+Revisión independiente el 2026-10-24. Junie reviewer, Qwen3.6-27B-FP8. Rama codex/t-005-editor-foundation, HEAD 2641efc, base main 595050a. PR#9 abierto.
 
-Evidencia técnica:
-- typecheck: OK (tsc -b)
-- lint: OK (eslint --max-warnings 0)
-- format: OK (prettier --check)
-- tests: 179 passed (vitest run --coverage), cobertura 92%/88%
-- build: OK (vite build)
-- docs-check: OK
-- Gate client completo (`npm run verify`): exit 0
+Evidencia de revisión:
+- HEAD/base: 2641efc / 595050a, 4 commits (implementación + conciliación T-004).
+- CI verify-required: pass sobre HEAD 2641efc.
+- docs-check: OK (65 Markdown, 19 tareas, HANDOFF 22/22).
+- typecheck: OK, lint: OK, format: OK, build: OK.
+- Tests dirigidos: 46 passed (dailyDocument.test.ts + DailyEditor.test.tsx).
+- Límites frontend/backend: coincidentes (MAX_BLOCKS=2000, MAX_TEXT_NODES=4000, MAX_TEXT_TOTAL=100000, MAX_HREF_LENGTH=2048, MAX_HREF_TOTAL=100000).
+- Schema Zod: strict en todos los niveles, rechaza campos extra, nodos desconocidos, marks duplicadas.
+- Link mark: solo href persistido, target/rel como render DOM seguro, sin autolink/linkOnPaste/openOnClick.
+- Paste: texto plano, HTML tratado como texto, CRLF/CR normalizado.
+- CSS: scoped a .daily-editor-*, Roboto Mono local, gutter por CSS counter, wrap sin desalineación.
+- Modo readonly: contenteditable=false, sin callbacks de edición.
+- DEPENDENCIES.md: actualizado (9 nuevas deps, conteo client 32→41).
+- Perfil diff: STARTER (package.json + package-lock.json modificados).
 
-Archivos nuevos: client/src/features/daily/editor/{dailyDocument,separator,link,editorExtensions,DailyEditor,dailyEditor.css} + tests.
-Dependencias: 9 nuevas (Tiptap 3.32.0, Roboto Mono 5.3.0).
+Hallazgos de revisión:
+- editorExtensions.ts exporta extensiones pero no es importado en ningún lado. Código muerto menor, no bloqueante. Se recomienda eliminar en corrección o usar en tests futuros.
+- Gate STARTER completo no ejecutado: requiere Docker no disponible en host Windows. La evidencia del implementer (gate client completo) se verificó parcialmente (typecheck/lint/format/tests/build OK). Un gate STARTER completo con `bash scripts/verify.sh --starter` requiere sesión con Docker/Git Bash.
 
-Siguiente: PR y revisión independiente. Gate STARTER pendiente (requiere Docker).
+Veredicto: **APROBADO** con observación menor (editorExtensions.ts código muerto). El STARTER gate pendiente no es bloqueante si se completa en sesión con Docker antes del merge. SHA HEAD: 2641efc, SHA base: 595050a.
 
 ## Correcciones significativas
 

@@ -3,14 +3,14 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-005](tasks/T-005-editor-foundation.md) |
-| Estado | in_progress |
-| Acción actual | Implementación completa, gate client OK, STARTER pendiente (Docker) |
-| Rama / PR | codex/t-005-editor-foundation |
+| Estado | in_review |
+| Acción actual | Revisión APROBADA con observación menor, STARTER gate pendiente (Docker) |
+| Rama / PR | codex/t-005-editor-foundation, PR#9 |
 
-T-004: conciliada como MERGED (595050a) al crear rama de T-005. T-005: Junie implementer, Qwen3.6-27B-FP8, esfuerzo en curso.
+T-004: conciliada como MERGED (595050a). T-005: Junie reviewer, Qwen3.6-27B-FP8, veredicto APROBADO HEAD 2641efc / base 595050a.
 
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie reviewer para T-005. Comprobar HEAD/base, gate STARTER, CI y arquitectura/propiedad del editor foundation.
+Sesión nueva Junie merger para T-005. Completar gate STARTER con Docker, verificar CI verde, y squash merge de PR#9 si todo pasa.
 ```
