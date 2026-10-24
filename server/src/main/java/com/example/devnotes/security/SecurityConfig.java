@@ -66,6 +66,10 @@ public class SecurityConfig {
                             .authenticated()
                             .requestMatchers(HttpMethod.DELETE, "/api/v1/reference-items/{id}")
                             .authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/v1/daily-notes", "/api/v1/daily-notes/{date}")
+                            .authenticated()
+                            .requestMatchers(HttpMethod.PUT, "/api/v1/daily-notes/{date}")
+                            .authenticated()
                             .anyRequest()
                             .denyAll();
                 })
