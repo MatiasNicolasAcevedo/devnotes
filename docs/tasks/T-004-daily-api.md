@@ -1,6 +1,6 @@
 ---
 id: T-004
-status: ready
+status: in_progress
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-101
 spec_version: 2
 branch: codex/t-004-daily-api
-pr: null
+pr: 8
 depends_on: [T-003]
 ---
 # T-004 · API privada de notas diarias
@@ -82,11 +82,13 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Habilitada el 2026-10-24 tras MERGED de T-003 (PR7, f87f0cf). Dependencia T-003 satisfecha. Lista para implementación por Junie en sesión nueva. El prompt vigente está en STATUS.
+PR8 abierto (ca92590) contra main 306fd68, 2026-10-24. 6/6 IT tests DailyNoteApiIT verdes. Pendiente revisión independiente y gate FULL.
 
 ## Correcciones significativas
 
-Sin correcciones ni resultados de implementación acreditados.
+1. **JsonNode abstracto en @RequestBody** — Spring Boot 4 no deserializa `com.fasterxml.jackson.databind.JsonNode` directamente. Solución: aceptar `@RequestBody String`, parsear con `ObjectMapper` propio y validar manualmente claves permitidas en `DailyNoteInput.fromJson()`.
+2. **Serialización de content en respuesta** — `com.fasterxml.jackson.databind.JsonNode` se serializa como metadata por `tools.jackson.ObjectMapper`. Solución: `DailyNoteResponse` usa `tools.jackson.databind.JsonNode` convertido vía `toToolsNode()`.
+3. **DailyContentException no manejada** — Contenido inválido (`{"type":"unknown"}`) lanzaba 500. Solución: handler `@ExceptionHandler(DailyContentException.class)` devuelve 400.
 
 ## Cierre y siguiente tarea
 
