@@ -12,5 +12,5 @@ T-005: conciliada como MERGED (5e6c247). Junie merger, Qwen3.6-27B-FP8. Client g
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie reviewer para T-006. Revisar HEAD c49b894 contra origin/main (5e6c247), gate client 218 tests OK, 92.14% líneas, docs-check OK. Verificar propiedad, cobertura 80/70 en daily/api y daily/useDailyNoteQuery, y calidad de pruebas negativas.
+Sesión nueva Junie merger para T-006. Revisión APROBADA HEAD c49b894 / base 5e6c247. Crear PR, esperar CI verify-required, y squash merge si checks verdes.
 ```
