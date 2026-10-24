@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-101
 spec_version: 2
 branch: codex/t-006-daily-client
-pr: null
+pr: 10
 depends_on: [T-005]
 ---
 # T-006 · Cliente HTTP y consultas privadas
@@ -105,7 +105,7 @@ Hallazgos de revisión:
 - useDailyNoteQuery.test.tsx: QueryResultConsumer auxiliar correcto. Tests de cancelación con promesas retenidas. Separación de identidades A/B verificada. Invalidación marca stale sin escribir cache.
 - vite.config.ts: Threshold 80/70 añadido correctamente para daily. Sin rebajar referencia de reference.
 
-Veredicto: **APROBADO** sin observaciones. HEAD c49b894, base 5e6c247. Pendiente: PR y merge según AUTONOMY.md.
+Veredicto: **APROBADO** sin observaciones. HEAD fa49a3e (incluye commit de reviewer), base 5e6c247. PR#10 abierto, CI verify-required pass. Pendiente: squash merge según AUTONOMY.md.
 
 ## Correcciones significativas
 
