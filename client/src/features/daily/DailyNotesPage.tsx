@@ -72,9 +72,9 @@ function DailyNotesInner() {
   const { isDirty, isSaving, status, error, content, retry, navigateToDate, activeDate, discard } =
     ctx
 
-  // Estado de la lista paginada
+  // Estado de la lista paginada (listLoading inicia true para cargar al montar sin setState en efecto)
   const [notesList, setNotesList] = useState<DailyNoteListItem[]>([])
-  const [listLoading, setListLoading] = useState(false)
+  const [listLoading, setListLoading] = useState(true)
   const [listError, setListError] = useState<Error | null>(null)
   const [listPage, setListPage] = useState(0)
   const [listTotalPages, setListTotalPages] = useState(1)
@@ -107,7 +107,6 @@ function DailyNotesInner() {
 
   // Cargar lista de notas
   const loadList = useCallback(async (page: number) => {
-    setListLoading(true)
     setListError(null)
     try {
       const result = await listDailyNotes(page)
@@ -119,6 +118,23 @@ function DailyNotesInner() {
     } finally {
       setListLoading(false)
     }
+  }, [])
+
+  // Cargar lista al montar (llamada directa para evitar setState síncrono en efecto)
+  useEffect(() => {
+    listDailyNotes(0)
+      .then((result) => {
+        setNotesList(result.content)
+        setListTotalPages(result.totalPages)
+        setListPage(result.page)
+        setListError(null)
+      })
+      .catch((err) => {
+        setListError(err instanceof Error ? err : new Error('Error al cargar notas'))
+      })
+      .finally(() => {
+        setListLoading(false)
+      })
   }, [])
 
   // Navegar a otra fecha, con flush si hay dirty
