@@ -20,11 +20,7 @@ const IsoDate = z
     if (day < 1 || day > 31) return false
     // Validación básica: el Date constructor acepta la fecha
     const d = new Date(Date.UTC(year, month - 1, day))
-    return (
-      d.getUTCFullYear() === year &&
-      d.getUTCMonth() === month - 1 &&
-      d.getUTCDate() === day
-    )
+    return d.getUTCFullYear() === year && d.getUTCMonth() === month - 1 && d.getUTCDate() === day
   }, 'Fecha inválida')
 
 // ——— Schemas de respuesta ———

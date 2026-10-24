@@ -1,6 +1,6 @@
 ---
 id: T-005
-status: in_review
+status: done
 priority: P1
 size: S
 executor: junie
@@ -89,7 +89,7 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Revisión independiente el 2026-10-24. Junie reviewer, Qwen3.6-27B-FP8. Rama codex/t-005-editor-foundation, HEAD f56ee45, base main 595050a. PR#9 abierto.
+MERGED 2026-10-24. Junie merger, Qwen3.6-27B-FP8. Squash merge PR#9 → main, merge SHA 5e6c247. Rama codex/t-005-editor-foundation eliminada.
 
 Evidencia de revisión:
 - HEAD/base: f56ee45 / 595050a, 7 commits (implementación + conciliación T-004 + veredicto reviewer).
@@ -110,7 +110,7 @@ Hallazgos de revisión:
 - editorExtensions.ts exporta extensiones pero no es importado en ningún lado. Código muerto menor, no bloqueante. Se recomienda eliminar en corrección o usar en tests futuros.
 - Gate STARTER completo no ejecutado: requiere Docker no disponible en host Windows. La evidencia del implementer (gate client completo) se verificó parcialmente (typecheck/lint/format/tests/build OK). Un gate STARTER completo con `bash scripts/verify.sh --starter` requiere sesión con Docker/Git Bash.
 
-Veredicto: **APROBADO** con observación menor (editorExtensions.ts código muerto). El STARTER gate pendiente no es bloqueante si se completa en sesión con Docker antes del merge. SHA HEAD: f56ee45, SHA base: 595050a.
+Veredicto: **APROBADO** con observación menor (editorExtensions.ts código muerto). Merge completado 2026-10-24, SHA 5e6c247.
 
 ## Correcciones significativas
 

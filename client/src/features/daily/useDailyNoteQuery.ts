@@ -28,9 +28,13 @@ export function useDailyNoteQuery(owner: string, date: string, sessionIsCurrent?
  * Invalida las queries de detalle y lista para una identidad.
  * Se usa tras mutaciones (T-016) para refetch sin escribir la cache con setQueryData.
  */
-export function invalidateDailyNote(queryClient: {
-  invalidateQueries: (opts: { queryKey: readonly unknown[] }) => Promise<void>
-}, owner: string, date?: string) {
+export function invalidateDailyNote(
+  queryClient: {
+    invalidateQueries: (opts: { queryKey: readonly unknown[] }) => Promise<void>
+  },
+  owner: string,
+  date?: string,
+) {
   const keys = dailyNoteKeys(owner)
   if (date) {
     return queryClient.invalidateQueries({ queryKey: keys.detail(date) })

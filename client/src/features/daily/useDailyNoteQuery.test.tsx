@@ -72,9 +72,7 @@ describe('useDailyNoteQuery', () => {
   })
 
   it('distingue 404 de error de red', async () => {
-    server.use(
-      mock.get(DETAIL_A, () => problemResponse(404, { title: 'Not Found' })),
-    )
+    server.use(mock.get(DETAIL_A, () => problemResponse(404, { title: 'Not Found' })))
 
     renderWithProviders(<QueryResultConsumer hook={wrapHook('owner-a', '2024-01-15')} />)
 
@@ -120,9 +118,7 @@ describe('useDailyNoteQuery', () => {
     await screen.findByText('loading')
 
     // Cambiar a B sin liberar A
-    rerender(
-      <QueryResultConsumer hook={wrapHook('owner-a', '2024-01-16')} />,
-    )
+    rerender(<QueryResultConsumer hook={wrapHook('owner-a', '2024-01-16')} />)
 
     // B resuelve inmediatamente
     expect(await screen.findByText(/2024-01-16/)).toBeInTheDocument()
@@ -158,9 +154,7 @@ describe('useDailyNoteQuery', () => {
     await screen.findByText('loading')
 
     // Cambiar identidad y fecha
-    rerender(
-      <QueryResultConsumer hook={wrapHook('owner-b', '2024-01-16')} />,
-    )
+    rerender(<QueryResultConsumer hook={wrapHook('owner-b', '2024-01-16')} />)
 
     expect(await screen.findByText(/2024-01-16/)).toBeInTheDocument()
 
@@ -193,9 +187,7 @@ describe('useDailyNoteQuery', () => {
     await screen.findByText('loading')
 
     // Cambiar a B
-    rerender(
-      <QueryResultConsumer hook={wrapHook('owner-a', '2024-01-16')} />,
-    )
+    rerender(<QueryResultConsumer hook={wrapHook('owner-a', '2024-01-16')} />)
 
     // B resuelve con revision 99
     expect(await screen.findByText(/99/)).toBeInTheDocument()
@@ -254,11 +246,7 @@ describe('invalidateDailyNote', () => {
 })
 
 /** Componente auxiliar para renderizar el resultado del hook. */
-function QueryResultConsumer({
-  hook: Hook,
-}: {
-  hook: () => ReturnType<typeof useDailyNoteQuery>
-}) {
+function QueryResultConsumer({ hook: Hook }: { hook: () => ReturnType<typeof useDailyNoteQuery> }) {
   const result = Hook()
   const client = useQueryClient()
 

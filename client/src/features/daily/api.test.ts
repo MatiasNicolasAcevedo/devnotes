@@ -30,9 +30,7 @@ function buildDetail(overrides = {}) {
 
 function buildPage(overrides = {}) {
   return {
-    content: [
-      { date: '2024-01-15', updatedAt: '2024-01-15T10:00:00Z', revision: 1 },
-    ],
+    content: [{ date: '2024-01-15', updatedAt: '2024-01-15T10:00:00Z', revision: 1 }],
     page: 0,
     size: 20,
     totalElements: 1,
@@ -70,9 +68,7 @@ describe('getDailyNote', () => {
   })
 
   it('distingue 404 (ausencia explícita) de otros errores', async () => {
-    server.use(
-      mock.get(DETAIL_PATH, () => problemResponse(404, { title: 'Not Found' })),
-    )
+    server.use(mock.get(DETAIL_PATH, () => problemResponse(404, { title: 'Not Found' })))
 
     const error = await getDailyNote('2024-01-15').catch((e: unknown) => e)
 
@@ -81,9 +77,7 @@ describe('getDailyNote', () => {
   })
 
   it('no convierte 403 en vacío', async () => {
-    server.use(
-      mock.get(DETAIL_PATH, () => problemResponse(403, { title: 'Forbidden' })),
-    )
+    server.use(mock.get(DETAIL_PATH, () => problemResponse(403, { title: 'Forbidden' })))
 
     const error = await getDailyNote('2024-01-15').catch((e: unknown) => e)
 
@@ -105,9 +99,7 @@ describe('getDailyNote', () => {
   })
 
   it('rechaza fecha inválida en la ruta', async () => {
-    server.use(
-      mock.get('/api/v1/daily-notes/2024-13-01', () => problemResponse(400)),
-    )
+    server.use(mock.get('/api/v1/daily-notes/2024-13-01', () => problemResponse(400)))
 
     await expect(getDailyNote('2024-13-01')).rejects.toBeInstanceOf(ApiError)
   })
@@ -122,9 +114,7 @@ describe('getDailyNote', () => {
     // sessionIsCurrent solo afecta si se publica el evento de sesión en http.ts
     // El hook useDailyNoteQuery usa enabled para evitar la query si la sesión expiró
     // Aquí verificamos que el parámetro llega al http.request sin errores
-    server.use(
-      mock.get(DETAIL_PATH, () => HttpResponse.json(buildDetail())),
-    )
+    server.use(mock.get(DETAIL_PATH, () => HttpResponse.json(buildDetail())))
 
     const result = await getDailyNote('2024-01-15', undefined, () => false)
     expect(result.date).toBe('2024-01-15')
@@ -192,12 +182,7 @@ describe('saveDailyNote', () => {
       }),
     )
 
-    const result = await saveDailyNote(
-      'owner-a',
-      '2024-01-15',
-      emptyDocument(),
-      1,
-    )
+    const result = await saveDailyNote('owner-a', '2024-01-15', emptyDocument(), 1)
 
     expect(result.revision).toBe(2)
     expect(capturedBody).toEqual({
@@ -219,17 +204,17 @@ describe('saveDailyNote', () => {
   it('rechaza revisión no segura (fracción)', async () => {
     document.cookie = 'XSRF-TOKEN=csrf-test-token'
 
-    await expect(
-      saveDailyNote('owner-a', '2024-01-15', emptyDocument(), 1.5),
-    ).rejects.toThrow('Solicitud inválida')
+    await expect(saveDailyNote('owner-a', '2024-01-15', emptyDocument(), 1.5)).rejects.toThrow(
+      'Solicitud inválida',
+    )
   })
 
   it('rechaza revisión negativa', async () => {
     document.cookie = 'XSRF-TOKEN=csrf-test-token'
 
-    await expect(
-      saveDailyNote('owner-a', '2024-01-15', emptyDocument(), -1),
-    ).rejects.toThrow('Solicitud inválida')
+    await expect(saveDailyNote('owner-a', '2024-01-15', emptyDocument(), -1)).rejects.toThrow(
+      'Solicitud inválida',
+    )
   })
 
   it('propaga 409 sin éxito ni reenvío automático', async () => {
@@ -242,12 +227,9 @@ describe('saveDailyNote', () => {
       }),
     )
 
-    const error = await saveDailyNote(
-      'owner-a',
-      '2024-01-15',
-      emptyDocument(),
-      1,
-    ).catch((e: unknown) => e)
+    const error = await saveDailyNote('owner-a', '2024-01-15', emptyDocument(), 1).catch(
+      (e: unknown) => e,
+    )
 
     expect(error).toBeInstanceOf(ApiError)
     expect((error as ApiError).status).toBe(409)
@@ -256,16 +238,11 @@ describe('saveDailyNote', () => {
 
   it('propaga 400 sin éxito', async () => {
     document.cookie = 'XSRF-TOKEN=csrf-test-token'
-    server.use(
-      mock.put(DETAIL_PATH, () => problemResponse(400, { title: 'Bad Request' })),
-    )
+    server.use(mock.put(DETAIL_PATH, () => problemResponse(400, { title: 'Bad Request' })))
 
-    const error = await saveDailyNote(
-      'owner-a',
-      '2024-01-15',
-      emptyDocument(),
-      1,
-    ).catch((e: unknown) => e)
+    const error = await saveDailyNote('owner-a', '2024-01-15', emptyDocument(), 1).catch(
+      (e: unknown) => e,
+    )
 
     expect(error).toBeInstanceOf(ApiError)
     expect((error as ApiError).status).toBe(400)
@@ -273,16 +250,11 @@ describe('saveDailyNote', () => {
 
   it('propaga 401 sin éxito', async () => {
     document.cookie = 'XSRF-TOKEN=csrf-test-token'
-    server.use(
-      mock.put(DETAIL_PATH, () => problemResponse(401, { title: 'Unauthorized' })),
-    )
+    server.use(mock.put(DETAIL_PATH, () => problemResponse(401, { title: 'Unauthorized' })))
 
-    const error = await saveDailyNote(
-      'owner-a',
-      '2024-01-15',
-      emptyDocument(),
-      1,
-    ).catch((e: unknown) => e)
+    const error = await saveDailyNote('owner-a', '2024-01-15', emptyDocument(), 1).catch(
+      (e: unknown) => e,
+    )
 
     expect(error).toBeInstanceOf(ApiError)
     expect((error as ApiError).status).toBe(401)
@@ -298,12 +270,9 @@ describe('saveDailyNote', () => {
       }),
     )
 
-    const error = await saveDailyNote(
-      'owner-a',
-      '2024-01-15',
-      emptyDocument(),
-      1,
-    ).catch((e: unknown) => e)
+    const error = await saveDailyNote('owner-a', '2024-01-15', emptyDocument(), 1).catch(
+      (e: unknown) => e,
+    )
 
     expect(error).toBeInstanceOf(ApiError)
     expect((error as ApiError).status).toBe(403)
@@ -316,12 +285,9 @@ describe('saveDailyNote', () => {
       mock.put(DETAIL_PATH, () => problemResponse(500, { title: 'Internal Server Error' })),
     )
 
-    const error = await saveDailyNote(
-      'owner-a',
-      '2024-01-15',
-      emptyDocument(),
-      1,
-    ).catch((e: unknown) => e)
+    const error = await saveDailyNote('owner-a', '2024-01-15', emptyDocument(), 1).catch(
+      (e: unknown) => e,
+    )
 
     expect(error).toBeInstanceOf(ApiError)
     expect((error as ApiError).status).toBe(500)
