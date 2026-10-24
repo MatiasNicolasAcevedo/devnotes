@@ -1,6 +1,6 @@
 ---
 id: T-006
-status: draft
+status: in_progress
 priority: P1
 size: S
 executor: junie
