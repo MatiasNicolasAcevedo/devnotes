@@ -1,6 +1,6 @@
 ---
 id: T-003
-status: ready
+status: mergeable
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-101
 spec_version: 2
 branch: codex/t-003-daily-service
-pr: null
+pr: 7
 depends_on: [T-002]
 ---
 # T-003 · Guardado concurrente del trabajo
@@ -82,11 +82,11 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-002. El prompt vigente está solo en STATUS.
+Revisión independiente APROBADA por Junie reviewer el 2026-10-23. HEAD e3871d0 (código) + 27eb3c0 (veredicto documental) contra main 89cbb87. Server 99/99 tests ✓, JaCoCo daily 80/70 ✓, CI verify-required pass. Listo para squash merge.
 
 ## Correcciones significativas
 
-Sin correcciones ni resultados de implementación acreditados.
+Sin correcciones durante implementación ni revisión.
 
 ## Cierre y siguiente tarea
 
