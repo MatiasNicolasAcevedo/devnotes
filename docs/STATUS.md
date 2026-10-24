@@ -7,7 +7,7 @@
 | Acción actual | Revisión APROBADA con observación menor, STARTER gate pendiente (Docker) |
 | Rama / PR | codex/t-005-editor-foundation, PR#9 |
 
-T-004: conciliada como MERGED (595050a). T-005: Junie reviewer, Qwen3.6-27B-FP8, veredicto APROBADO HEAD 2641efc / base 595050a.
+T-004: conciliada como MERGED (595050a). T-005: Junie reviewer, Qwen3.6-27B-FP8, veredicto APROBADO HEAD bdb7e7d / base 595050a.
 
 ### Prompt de la siguiente sesión
 
