@@ -5,11 +5,11 @@
 | Tarea y contrato | [T-013](tasks/T-013-version-save.md) |
 | Estado | in_progress |
 | Acción actual | Implementación: saveDailyVersion API, hook + componente SaveDailyVersion, integración en DailyNotesPage. 12 tests, typecheck OK. |
-| Rama / PR | codex/t-013-version-save
+| Rama / PR | codex/t-013-version-save (pushed, sin PR todavía)
 
 T-012: conciliada como MERGED (dc6dcbd). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. Client gate OK: 304 tests, 83.41% statements, 77.71% branches, typecheck OK, build OK. CI verify-required SUCCESS. Squash merge dc6dcbd, 2026-10-25.
 
-T-013: implementación en progreso. Rama codex/t-013-version-save. Archivos: versionApi.ts (saveDailyVersion POST), SaveDailyVersion.tsx (hook + componente), SaveDailyVersion.test.tsx (12 tests), DailyNotesPage.tsx (integración), dateUtils.ts (formatDateLocal). 316 tests OK, typecheck OK.
+T-013: implementación en progreso. Rama codex/t-013-version-save push 8946257. Archivos: versionApi.ts (saveDailyVersion POST), SaveDailyVersion.tsx (hook useSaveDailyVersion + componente), SaveDailyVersion.test.tsx (12 tests), DailyNotesPage.tsx (integración con bloqueo del editor), dateUtils.ts (formatDateLocal). 316 tests OK, typecheck OK. Pendiente: gate FULL y PR/revisión.
 
 T-011: conciliada como MERGED (397798e). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. DailyVersionApiIT 23/23 OK (PostgreSQL Testcontainers, OIDC real), docs-check OK, CI verify-required SUCCESS. Squash merge 397798e, 2026-10-25.
 
