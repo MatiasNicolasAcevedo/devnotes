@@ -39,10 +39,11 @@ test('CA-01: text blocks, separator, empty lines are numbered consecutively; wra
   // Type after separator
   await page.keyboard.type('Despues separador');
 
-  // Check line numbers are consecutive: 1, 2, 3 (separator), 4
+  // After typing: "Linea uno" (p1), "Linea dos" (p2), separator (hr), "Despues separador" (p3)
+  // The separator replaces the paragraph that contained "---", so we have 3 paragraphs + 1 hr
   const paragraphs = page.locator('.daily-editor-content > p');
   const paraCount = await paragraphs.count();
-  expect(paraCount).toBeGreaterThanOrEqual(4);
+  expect(paraCount).toBeGreaterThanOrEqual(3);
 
   // Verify wrap: type a long text that wraps visually but stays on one line number
   await page.keyboard.press('End');
@@ -142,7 +143,7 @@ test('CA-02: select text, Mod-k link dialog, create/edit/remove link; readonly o
   const saveButton = page.getByRole('button', { name: 'Guardar versión' });
   if (await saveButton.isVisible()) {
     await saveButton.click();
-    await expect(page.getByRole('alert').filter({ hasText: 'Versión guardada' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('alert').filter({ hasText: 'Versión guardada correctamente' })).toBeVisible({ timeout: 10000 });
   }
 
   // Navigate to history
@@ -254,8 +255,8 @@ test('CA-05: javascript: URL rejected; literal HTML text does not execute; reloa
   await page.keyboard.press('Enter');
   await page.keyboard.type('<script>alert(1)</script>');
 
-  // Wait for save
-  await page.waitForTimeout(1000);
+  // Wait for autosave debounce (700ms) plus margin
+  await page.waitForTimeout(1500);
 
   // Verify the text is displayed as literal text, not executed
   await expect(page.locator('.daily-editor-content')).toContainText('<script>alert(1)</script>');
@@ -276,6 +277,9 @@ test('CA-06: two identities on the same date only see their own space; IDs/URLs 
   const identityA = identity;
   const identityB = randomUUID();
 
+  // Register identityB with the OIDC provider before using it
+  await control('reset', identityB);
+
   // Actor A logs in and writes a note
   await login(page, identityA);
   await page.getByRole('link', { name: 'Notas', exact: true }).click();
@@ -284,8 +288,8 @@ test('CA-06: two identities on the same date only see their own space; IDs/URLs 
 
   await editorA.click();
   await page.keyboard.type('Nota secreta de A');
-  // Wait for autosave
-  await page.waitForTimeout(1000);
+  // Wait for autosave debounce (700ms) plus margin
+  await page.waitForTimeout(1500);
 
   // Get today's date from URL
   const urlA = new URL(page.url());

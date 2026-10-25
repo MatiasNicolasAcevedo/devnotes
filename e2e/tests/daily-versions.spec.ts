@@ -38,7 +38,7 @@ test('CA-04: dates 19/10 and 20/10 are independent; create/replace one version; 
   const saveButton = page.getByRole('button', { name: 'Guardar versión' });
   if (await saveButton.isVisible()) {
     await saveButton.click();
-    await expect(page.getByRole('alert').filter({ hasText: 'Versión guardada' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('alert').filter({ hasText: 'Versión guardada correctamente' })).toBeVisible({ timeout: 10000 });
   }
 
   // Navigate to 2026-10-20
@@ -59,7 +59,7 @@ test('CA-04: dates 19/10 and 20/10 are independent; create/replace one version; 
   // Save a version for Oct 20
   if (await saveButton.isVisible()) {
     await saveButton.click();
-    await expect(page.getByRole('alert').filter({ hasText: 'Versión guardada' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('alert').filter({ hasText: 'Versión guardada correctamente' })).toBeVisible({ timeout: 10000 });
   }
 
   // Navigate to history
@@ -107,7 +107,7 @@ test('CA-04: dates 19/10 and 20/10 are independent; create/replace one version; 
     if (await confirmDialog.isVisible({ timeout: 3000 })) {
       await confirmDialog.getByRole('button', { name: 'Reemplazar' }).click();
     }
-    await expect(page.getByRole('alert').filter({ hasText: 'Versión guardada' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('alert').filter({ hasText: 'Versión guardada correctamente' })).toBeVisible({ timeout: 10000 });
   }
 
   // Verify only one version exists for this date
@@ -126,7 +126,8 @@ test('CA-05: reload and logout/login recover work and version copy', async ({ pa
   // Type content
   await editor.click();
   await page.keyboard.type('Trabajo que se recupera');
-  await page.waitForTimeout(1000);
+  // Wait for autosave debounce (700ms) plus margin
+  await page.waitForTimeout(1500);
 
   // Reload and verify content is recovered
   await page.reload();
@@ -137,7 +138,7 @@ test('CA-05: reload and logout/login recover work and version copy', async ({ pa
   const saveButton = page.getByRole('button', { name: 'Guardar versión' });
   if (await saveButton.isVisible()) {
     await saveButton.click();
-    await expect(page.getByRole('alert').filter({ hasText: 'Versión guardada' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('alert').filter({ hasText: 'Versión guardada correctamente' })).toBeVisible({ timeout: 10000 });
   }
 
   // Logout and login again
@@ -164,6 +165,9 @@ test('CA-06: two identities on the same date only see their own versions; change
   const identityA = identity;
   const identityB = randomUUID();
 
+  // Register identityB with the OIDC provider before using it
+  await control('reset', identityB);
+
   // Actor A writes and saves a version
   await login(page, identityA);
   await page.getByRole('link', { name: 'Notas', exact: true }).click();
@@ -172,13 +176,14 @@ test('CA-06: two identities on the same date only see their own versions; change
 
   await editorA.click();
   await page.keyboard.type('Version secreta de A');
-  await page.waitForTimeout(1000);
+  // Wait for autosave debounce (700ms) plus margin
+  await page.waitForTimeout(1500);
 
   // Save version
   const saveButton = page.getByRole('button', { name: 'Guardar versión' });
   if (await saveButton.isVisible()) {
     await saveButton.click();
-    await expect(page.getByRole('alert').filter({ hasText: 'Versión guardada' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('alert').filter({ hasText: 'Versión guardada correctamente' })).toBeVisible({ timeout: 10000 });
   }
 
   // Get today's date
@@ -202,12 +207,13 @@ test('CA-06: two identities on the same date only see their own versions; change
     // Actor B writes and saves their own version
     await editorB.click();
     await pageB.keyboard.type('Version de B');
-    await pageB.waitForTimeout(1000);
+    // Wait for autosave debounce (700ms) plus margin
+    await pageB.waitForTimeout(1500);
 
     const saveButtonB = pageB.getByRole('button', { name: 'Guardar versión' });
     if (await saveButtonB.isVisible()) {
       await saveButtonB.click();
-      await expect(pageB.getByRole('alert').filter({ hasText: 'Versión guardada' })).toBeVisible({ timeout: 10000 });
+      await expect(pageB.getByRole('alert').filter({ hasText: 'Versión guardada correctamente' })).toBeVisible({ timeout: 10000 });
     }
 
     // Verify A's history doesn't show B's version
