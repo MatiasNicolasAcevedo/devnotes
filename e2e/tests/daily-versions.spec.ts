@@ -193,17 +193,15 @@ test('CA-06: two identities on the same date only see their own versions; change
   await page.waitForTimeout(1500);
 
   // Save version via API (more reliable)
+  const today = (() => {
+    const u = new URL(page.url());
+    return u.pathname.split('/').pop() ?? '';
+  })();
   try {
-    const urlA = new URL(page.url());
-    const today = urlA.pathname.split('/').pop() ?? '';
     await page.request.post(`/api/v1/daily-notes/${today}/version`, { data: { expectedRevision: 1 } });
   } catch {
     // May fail if revision changed, continue with test
   }
-
-  // Get today's date
-  const urlA = new URL(page.url());
-  const today = urlA.pathname.split('/').pop() ?? '';
 
   // Actor B logs in with a new context
   const contextB = await browser.newContext({ baseURL: 'http://localhost', viewport: page.viewportSize()! });
