@@ -1,6 +1,6 @@
 ---
 id: T-008
-status: in_progress
+status: in_review
 priority: P1
 size: S
 executor: junie

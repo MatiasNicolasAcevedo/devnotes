@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-008](tasks/T-008-separator-editing.md) |
-| Estado | in_progress |
-| Acción actual | Implementación T-008: shortcuts de teclado para separadores. Código y tests publicados, pendiente PR y revisión. |
-| Rama / PR | codex/t-008-separator-editing, 2386358
+| Estado | in_review |
+| Acción actual | Revisión T-008: PR #13 abierto, CI verify-required SUCCESS. Veredicto pendiente. |
+| Rama / PR | codex/t-008-separator-editing, PR #13, HEAD 4ee15d6, base main 1702fd9
 
 T-006: conciliada como MERGED (6eb2c42). Junie reviewer + merger, Qwen3.6-27B-FP8. Client gate 218 tests OK, 100% líneas daily, 90.47% branches. Revisión APROBADA sin observaciones, CI verify-required pass.
 
