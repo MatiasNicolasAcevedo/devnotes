@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-009](tasks/T-009-text-links.md) |
 | Estado | in_review |
-| Acción actual | Implementación T-009: diálogo de enlaces Mod-k con validación URL. PR #14 creado, pendiente CI y revisión. |
+| Acción actual | Revisión T-009: APROBADA sin bloqueantes. Gate client OK, docs-check OK, pendiente CI y merge. |
 | Rama / PR | codex/t-009-text-links, PR #14
 
 T-008: conciliada como MERGED (5d2a70f). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. Client gate OK: 27 tests (18 separator + 9 DailyEditor), typecheck OK, docs-check OK. CI verify-required SUCCESS. Squash merge 5d2a70f, 2026-10-25.

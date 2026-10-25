@@ -1,6 +1,6 @@
 ---
 id: T-009
-status: in_review
+status: mergeable
 priority: P1
 size: S
 executor: junie
