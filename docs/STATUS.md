@@ -4,8 +4,8 @@
 |---|---|
 | Tarea y contrato | [T-008](tasks/T-008-separator-editing.md) |
 | Estado | in_review |
-| Acción actual | Revisión T-008: PR #13 abierto, CI verify-required SUCCESS. Veredicto pendiente. |
-| Rama / PR | codex/t-008-separator-editing, PR #13, HEAD 4ee15d6, base main 1702fd9
+| Acción actual | Revisión T-008: APROBADO sin bloqueantes. HEAD 87e5e02, base main 1702fd9. CI verify-required SUCCESS. Pendiente squash merge. |
+| Rama / PR | codex/t-008-separator-editing, PR #13, HEAD 87e5e02, base main 1702fd9
 
 T-006: conciliada como MERGED (6eb2c42). Junie reviewer + merger, Qwen3.6-27B-FP8. Client gate 218 tests OK, 100% líneas daily, 90.47% branches. Revisión APROBADA sin observaciones, CI verify-required pass.
 
