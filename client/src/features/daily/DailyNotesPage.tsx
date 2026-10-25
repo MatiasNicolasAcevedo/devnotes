@@ -25,7 +25,8 @@ import { listDailyNotes, type DailyNoteListItem } from '../../features/daily/api
 import { DailyEditor } from '../../features/daily/editor/DailyEditor'
 import { emptyDocument } from '../../features/daily/editor/dailyDocument'
 import type { DailyContent } from '../../features/daily/editor/dailyDocument'
-import { SaveDailyVersion, useSaveDailyVersion } from '../../features/daily/SaveDailyVersion'
+import { SaveDailyVersion } from '../../features/daily/SaveDailyVersion'
+import { useSaveDailyVersion } from '../../features/daily/useSaveDailyVersion'
 import { isValidIsoDate, todayLocal } from './dateUtils'
 
 // ——— Fallbacks sin provider ———
@@ -173,20 +174,21 @@ function DailyNotesInner() {
     [ctx],
   )
 
+  // Hook de guardar versión manual — debe estar antes de cualquier early return
+  const targetDateForHook = paramDate ?? todayLocal()
+  const saveVersion = useSaveDailyVersion({
+    owner: sessionUser?.id ?? '',
+    date: targetDateForHook,
+    note: { flush: ctx.flush, revision: ctx.revision },
+    sessionIsCurrent: () => sessionStatus === 'authenticated',
+  })
+
   // Sin sesión no debería llegar aquí, pero por seguridad
   if (sessionStatus !== 'authenticated') {
     return <DailyNotesLoginRequired />
   }
 
   const targetDate = paramDate ?? todayLocal()
-
-  // Hook de guardar versión manual — comparte isLocked con el editor
-  const saveVersion = useSaveDailyVersion({
-    owner: sessionUser!.id,
-    date: targetDate,
-    note: { flush: ctx.flush, revision: ctx.revision },
-    sessionIsCurrent: () => sessionStatus === 'authenticated',
-  })
 
   // Indicador de guardado
   let saveIndicator: React.ReactNode
