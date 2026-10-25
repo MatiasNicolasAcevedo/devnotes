@@ -2,10 +2,10 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-009](tasks/T-009-text-links.md) (habilitada tras T-008 MERGED) |
-| Estado | ready |
-| Acción actual | T-008 conciliada como MERGED. Siguiente tarea T-009 habilitada. |
-| Rama / PR | —
+| Tarea y contrato | [T-009](tasks/T-009-text-links.md) |
+| Estado | mergeable |
+| Acción actual | Revisión T-009: APROBADA sin bloqueantes. Gate client OK, docs-check OK, pendiente CI y merge. |
+| Rama / PR | codex/t-009-text-links, PR #14
 
 T-008: conciliada como MERGED (5d2a70f). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. Client gate OK: 27 tests (18 separator + 9 DailyEditor), typecheck OK, docs-check OK. CI verify-required SUCCESS. Squash merge 5d2a70f, 2026-10-25.
 
@@ -18,7 +18,8 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie implementer para T-009 — links de texto en notas diarias.
-Dependencia T-008 MERGED (5d2a70f). Leer contrato T-009, specs S-103/S-101, y AGENTS client.
-Crear rama codex/t-009-text-links desde main actualizado.
+Sesión nueva Junie reviewer para T-009 — links de texto en notas diarias.
+Rama codex/t-009-text-links. Revisar implementación S-102: diálogo Mod-k con validación URL HTTP/HTTPS.
+Verificar gate client: LinkDialog.test.tsx (14 tests), DailyEditor.test.tsx (9 tests), typecheck OK.
+Comprobar HEAD/base, arquitectura, negativos y docs-check. Publicar veredicto del SHA final.
 ```
