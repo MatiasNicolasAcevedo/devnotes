@@ -1,6 +1,6 @@
 ---
 id: T-013
-status: draft
+status: changes_requested
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-104
 spec_version: 2
 branch: codex/t-013-version-save
-pr: null
+pr: 18
 depends_on: [T-012]
 ---
 # T-013 · Guardar versión del trabajo confirmado
@@ -86,7 +86,11 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-012. El prompt vigente está solo en STATUS.
+En implementación. Junie implementer, Qwen3.6-27B-FP8. Rama codex/t-013-version-save desde main dc6dcbd. Dependencia T-012 satisfecha (MERGED dc6dcbd).
+
+Implementado: saveDailyVersion en versionApi.ts (POST con expectedRevision), hook useSaveDailyVersion + componente SaveDailyVersion (consulta previa 200/404/error, confirmación, flush con force, POST, invalidación), integración en DailyNotesPage (botón + bloqueo del editor vía readOnly). formatDateLocal en dateUtils.ts.
+
+Evidencia: 316 tests OK (12 nuevos en SaveDailyVersion.test.tsx), typecheck OK. Sin PR todavía.
 
 ## Correcciones significativas
 

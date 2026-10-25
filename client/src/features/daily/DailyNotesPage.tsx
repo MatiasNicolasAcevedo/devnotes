@@ -25,6 +25,8 @@ import { listDailyNotes, type DailyNoteListItem } from '../../features/daily/api
 import { DailyEditor } from '../../features/daily/editor/DailyEditor'
 import { emptyDocument } from '../../features/daily/editor/dailyDocument'
 import type { DailyContent } from '../../features/daily/editor/dailyDocument'
+import { SaveDailyVersion } from '../../features/daily/SaveDailyVersion'
+import { useSaveDailyVersion } from '../../features/daily/useSaveDailyVersion'
 import { isValidIsoDate, todayLocal } from './dateUtils'
 
 // ——— Fallbacks sin provider ———
@@ -65,7 +67,7 @@ function DailyNotesLoginRequired() {
 
 function DailyNotesInner() {
   const { date: paramDate } = useParams<{ date?: string }>()
-  const { status: sessionStatus } = useSession()
+  const { status: sessionStatus, user: sessionUser } = useSession()
 
   // Hook del provider — siempre disponible aquí porque solo se monta dentro de DailyDraftProvider
   const ctx = useDailyDraftContext()
@@ -172,6 +174,15 @@ function DailyNotesInner() {
     [ctx],
   )
 
+  // Hook de guardar versión manual — debe estar antes de cualquier early return
+  const targetDateForHook = paramDate ?? todayLocal()
+  const saveVersion = useSaveDailyVersion({
+    owner: sessionUser?.id ?? '',
+    date: targetDateForHook,
+    note: { flush: ctx.flush, revision: ctx.revision },
+    sessionIsCurrent: () => sessionStatus === 'authenticated',
+  })
+
   // Sin sesión no debería llegar aquí, pero por seguridad
   if (sessionStatus !== 'authenticated') {
     return <DailyNotesLoginRequired />
@@ -260,8 +271,15 @@ function DailyNotesInner() {
 
       {/* Editor */}
       <Paper variant="outlined" sx={{ p: 2 }}>
-        <DailyEditor initialContent={content ?? emptyDocument()} onChange={handleEditorChange} />
+        <DailyEditor
+          initialContent={content ?? emptyDocument()}
+          onChange={handleEditorChange}
+          readOnly={saveVersion.isLocked}
+        />
       </Paper>
+
+      {/* Guardar versión manual */}
+      <SaveDailyVersion save={saveVersion} date={targetDate} />
 
       {/* Lista de notas existentes */}
       <Stack spacing={1}>

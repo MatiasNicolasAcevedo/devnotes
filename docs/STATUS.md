@@ -3,11 +3,14 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-013](tasks/T-013-version-save.md) |
-| Estado | draft |
-| Acción actual | T-012 conciliada como MERGED. T-013 pendiente de implementación. |
-| Rama / PR | —
+| Estado | changes_requested |
+| Acción actual | Corrección publicada 85faad6. Bloqueantes resueltos: B-1 hook condicional, B-2 executeSave antes de declaración, B-3 react-refresh. Pendiente revisión independiente. |
+| Rama / PR | codex/t-013-version-save, PR #18
 
 T-012: conciliada como MERGED (dc6dcbd). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. Client gate OK: 304 tests, 83.41% statements, 77.71% branches, typecheck OK, build OK. CI verify-required SUCCESS. Squash merge dc6dcbd, 2026-10-25.
+
+T-013: revisión con CAMBIOS REQUERIDOS. PR #18, HEAD 3cfd494, base main afe7ccd. Junie reviewer, Qwen3.6-27B-FP8. 3 bloqueantes: B-1 hook condicional en DailyNotesPage, B-2 executeSave antes de declaración en SaveDailyVersion, B-3 react-refresh only-export-components. Gate client falló (lint errors). docs-check OK.
+Corrección publicada 85faad6. Bloqueantes resueltos: hook movido antes de early return, executeSave declarado antes de checkExisting, hook y tipos extraídos a useSaveDailyVersion.ts. Gate client OK: 316 tests, typecheck OK, lint sin errores T-013. Pendiente revisión independiente.
 
 T-011: conciliada como MERGED (397798e). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. DailyVersionApiIT 23/23 OK (PostgreSQL Testcontainers, OIDC real), docs-check OK, CI verify-required SUCCESS. Squash merge 397798e, 2026-10-25.
 
@@ -26,6 +29,8 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie implementer para T-013: guardar versión manual (frontend).
-Leer contrato T-013, spec S-104 v2, y client/AGENTS.md.
-T-012 conciliada como MERGED (dc6dcbd), dependencia satisfecha.
+Sesión nueva Junie implementer para T-013: corregir bloqueantes de revisión.
+Leer PR #18 comentarios y .junie/review-comment-t013.md.
+3 bloqueantes: B-1 hook condicional (DailyNotesPage), B-2 executeSave antes de declaración (SaveDailyVersion), B-3 react-refresh (separar hook de componente).
+Corregir, pasar gate client (lint/typecheck/tests), y publicar corrección.
+```

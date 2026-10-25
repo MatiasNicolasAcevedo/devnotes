@@ -19,3 +19,12 @@ export function isValidIsoDate(s: string): boolean {
   const dt = new Date(Date.UTC(year, month - 1, day))
   return dt.getUTCFullYear() === year && dt.getUTCMonth() === month - 1 && dt.getUTCDate() === day
 }
+
+/** Formatea una fecha ISO YYYY-MM-DD como dd/MM/yyyy (local). */
+export function formatDateLocal(isoDate: string): string {
+  const parts = isoDate.split('-')
+  const day = parts[2]
+  const month = parts[1]
+  const year = parts[0]
+  return `${day}/${month}/${year}`
+}
