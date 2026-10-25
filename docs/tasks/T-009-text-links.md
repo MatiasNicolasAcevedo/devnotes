@@ -1,6 +1,6 @@
 ---
 id: T-009
-status: in_progress
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-102
 spec_version: 1
 branch: codex/t-009-text-links
-pr: null
+pr: 14
 depends_on: [T-008]
 ---
 # T-009 · Enlaces sobre texto seleccionado
