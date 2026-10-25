@@ -1,6 +1,6 @@
 ---
 id: T-007
-status: changes_requested
+status: in_progress
 pr: 12
 priority: P1
 size: S
@@ -85,7 +85,7 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-changes_requested — segunda revisión independiente HEAD 374f08d contra main 4499962. La corrección useEffect de loadList(0) es correcta y el test cubre el caso (10/10 tests, typecheck OK). Sin embargo, CI falla por inconsistencias documentales: (1) frontmatter T-007 dice `in_progress` pero STATUS.md dice `in_review` — docs-check exige coincidencia; (2) docs-check reporta T-016 como mergeable pero no figura en BACKLOG. Se requiere alinear frontmatter con STATUS.md (ambos `in_review`) y resolver la referencia a T-016 en BACKLOG antes de que CI pase.
+in_progress — corrección documental tras segunda revisión HEAD 374f08d contra main 4499962. Código APROBADO. Correcciones aplicadas: (1) T-016 frontmatter cambiado de mergeable a done; (2) T-016 añadido en BACKLOG "Hechas" con SHA 4499962; (3) T-007 frontmatter alineado a in_progress, STATUS.md actualizado. docs-check OK, 10/10 tests DailyNotesPage OK, typecheck OK. Tras publicar, volver a in_review para revisión independiente.
 
 ## Correcciones significativas
 
