@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-009](tasks/T-009-text-links.md) |
-| Estado | in_progress |
+| Estado | in_review |
 | Acción actual | Implementación T-009: diálogo de enlaces Mod-k con validación URL. PR #14 creado, pendiente CI y revisión. |
 | Rama / PR | codex/t-009-text-links, PR #14
 
