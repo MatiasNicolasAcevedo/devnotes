@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-010](tasks/T-010-version-storage.md) |
-| Estado | draft |
-| Acción actual | T-009 conciliada como MERGED. T-010 en draft, dependencia satisfecha. |
-| Rama / PR | —
+| Estado | in_progress |
+| Acción actual | Código publicado a576283. Pendiente revisión independiente y PR. |
+| Rama / PR | codex/t-010-version-storage (a576283)
 
 T-009: conciliada como MERGED (596e385). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. Client gate OK: 23 tests (14 LinkDialog + 9 DailyEditor), 274 tests total, 83.21% statements, 77.01% branches, typecheck OK, docs-check OK. CI verify-required SUCCESS. Squash merge 596e385, 2026-10-25.
 
@@ -20,7 +20,8 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie implementer para T-010 — versionado y almacenamiento de notas diarias.
-Dependencia T-009 MERGED (596e385). Leer contrato T-010, specs pertinentes, y AGENTS client/server.
-Crear rama codex/t-010-version-storage desde main actualizado.
+Sesión nueva Junie reviewer para T-010 — revisión independiente de codex/t-010-version-storage.
+HEAD a576283, base main 8cf58b9. DailyVersionServiceIT 16/16 OK. Gate FULL bloqueado por
+SecurityConfigTest preexistente en main (9 errores OIDC). Revisar arquitectura, propiedad,
+locks, constraints, negativos y cobertura. Publicar veredicto y squash merge si APROBADA.
 ```
