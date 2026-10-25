@@ -1,6 +1,6 @@
 ---
 id: T-012
-status: in_review
+status: done
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-104
 spec_version: 2
 branch: codex/t-012-version-history
-pr: null
+pr: 17
 depends_on: [T-011]
 ---
 # T-012 · Historial privado de solo lectura
@@ -84,7 +84,7 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Corrección de bloqueantes commitada b34004c por Junie implementer, Qwen3.6-27B-FP8, 2026-10-25. Revisión independiente rechazó la implementación original con 2 bloqueantes: (1) no usaba TanStack Query y (2) datos no se limpiaban al logout. Resolución: creado `useDailyVersionQuery.ts` con `useDailyVersionListQuery` y `useDailyVersionDetailQuery` siguiendo el patrón de `useDailyNoteQuery.ts`; `DailyHistoryPage.tsx` migrada para usar hooks de Query con `enabled` condicional a sesión activa. Test ajustado para esperar datos asíncronos de Query. Client gate OK: 304 tests, typecheck OK. Rama codex/t-012-version-history publicada, pendiente revisión independiente.
+T-012 conciliada como MERGED (dc6dcbd). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. PR #17, CI verify-required SUCCESS. Squash merge dc6dcbd, 2026-10-25.
 
 ## Correcciones significativas
 
