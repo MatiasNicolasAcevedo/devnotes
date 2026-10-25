@@ -1,6 +1,6 @@
 ---
 id: T-010
-status: in_progress
+status: done
 priority: P1
 size: S
 executor: junie
