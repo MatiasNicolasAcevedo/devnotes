@@ -4,19 +4,19 @@
 |---|---|
 | Tarea y contrato | [T-007](tasks/T-007-daily-workspace.md) |
 | Estado | in_review |
-| Acción actual | Corrección documental publicada 5b08a16. Pendiente revisión independiente y CI verify-required |
-| Rama / PR | codex/t-007-daily-workspace, PR #12
+| Acción actual | Revisión independiente APROBADA, merge squash 1702fd9. Pendiente conciliación done en próxima rama. |
+| Rama / PR | codex/t-007-daily-workspace, PR #12 (MERGED 1702fd9)
 
 T-006: conciliada como MERGED (6eb2c42). Junie reviewer + merger, Qwen3.6-27B-FP8. Client gate 218 tests OK, 100% líneas daily, 90.47% branches. Revisión APROBADA sin observaciones, CI verify-required pass.
 
 T-016: conciliada como MERGED (4499962). Junie merger, Qwen3.6-27B-FP8. Corrección de revisión publicada (f392d98). Bloqueantes resueltos: debounce se reinicia en cada edición, `flush({ force })` implementado. Tests añadidos: debounce timing, error de red + 409, desmontar/remontar. Client gate OK: 232 tests, 91.24% statements, 86.25% branches. Segunda revisión independiente APROBADA (HEAD 2240566, base main e6ec7a6). CI verify-required SUCCESS. Merge squash 4499962, 2026-10-24.
 
-T-007: in_review. Corrección documental publicada 5b08a16 en PR #12. Código APROBADO (HEAD 374f08d, base main 4499962). Correcciones: T-016 frontmatter a done, BACKLOG actualizado con T-016 MERGED 4499962, T-007 frontmatter alineado a in_review. docs-check OK, 10/10 tests DailyNotesPage OK, typecheck OK. Pendiente: revisión independiente y CI verify-required SUCCESS.
+T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP8. Corrección documental publicada 5b08a16. Revisión independiente APROBADA (HEAD 741ce7c, base main 4499962). docs-check OK, 242 tests, 87.96% statements, 81.96% branches. CI verify-required SUCCESS. Merge squash 1702fd9, 2026-10-25.
 
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie reviewer para T-007 — revisión independiente tras corrección documental.
-Contexto: PR #12 (codex/t-007-daily-workspace) publicó corrección de inconsistencias documentales. T-016 frontmatter cambiado a done, BACKLOG actualizado con T-016 MERGED 4499962, T-007 frontmatter alineado a in_progress.
-Tarea: Revisar HEAD/base del PR #12, verificar que CI verify-required pasa (incluyendo docs-check OK), comprobar gate client (tests + typecheck) y confirmar que las correcciones documentales son correctas. Si todo pasa, aprobar y proceder a merge por AUTONOMY.
+Sesión nueva Junie implementer para T-007 — conciliación done tras merge.
+T-007 MERGED 1702fd9 en PR #12. Cambiar frontmatter T-007 a done, actualizar STATUS con siguiente tarea T-008, y dejar prompt para implementación T-008.
+Verificar docs-check OK antes de publicar.
 ```
