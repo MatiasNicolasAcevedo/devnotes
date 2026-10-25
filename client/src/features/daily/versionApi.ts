@@ -77,3 +77,36 @@ export async function getDailyVersion(
 ): Promise<DailyVersionDetail> {
   return http.request(`${BASE}/${date}`, dailyVersionDetailSchema, { signal, sessionIsCurrent })
 }
+
+// ——— Schema de solicitud POST ———
+
+/** Body de `POST /api/v1/daily-notes/{date}/version`. Solo expectedRevision; campos extra rechazados. */
+export const saveDailyVersionRequestSchema = z.strictObject({
+  expectedRevision: z.number().int().min(0),
+})
+
+export type SaveDailyVersionRequest = z.infer<typeof saveDailyVersionRequestSchema>
+
+/**
+ * Crea o reemplaza la versión manual de una fecha.
+ * POST con CSRF y revisión exacta del trabajo confirmado.
+ * 400/401/403/409 se propagan sin éxito ni reenvío automático.
+ * `owner` solo identifica las query keys; nunca se envía al backend.
+ */
+export async function saveDailyVersion(
+  _owner: string,
+  date: string,
+  expectedRevision: number,
+  signal?: AbortSignal,
+): Promise<DailyVersionDetail> {
+  const body = { expectedRevision }
+  const parsed = saveDailyVersionRequestSchema.safeParse(body)
+  if (!parsed.success) {
+    throw new Error('Solicitud inválida: ' + parsed.error.issues.map((i) => i.message).join('; '))
+  }
+  return http.request(`/api/v1/daily-notes/${date}/version`, dailyVersionDetailSchema, {
+    method: 'POST',
+    body: parsed.data,
+    signal,
+  })
+}

@@ -25,6 +25,7 @@ import { listDailyNotes, type DailyNoteListItem } from '../../features/daily/api
 import { DailyEditor } from '../../features/daily/editor/DailyEditor'
 import { emptyDocument } from '../../features/daily/editor/dailyDocument'
 import type { DailyContent } from '../../features/daily/editor/dailyDocument'
+import { SaveDailyVersion, useSaveDailyVersion } from '../../features/daily/SaveDailyVersion'
 import { isValidIsoDate, todayLocal } from './dateUtils'
 
 // ——— Fallbacks sin provider ———
@@ -65,7 +66,7 @@ function DailyNotesLoginRequired() {
 
 function DailyNotesInner() {
   const { date: paramDate } = useParams<{ date?: string }>()
-  const { status: sessionStatus } = useSession()
+  const { status: sessionStatus, user: sessionUser } = useSession()
 
   // Hook del provider — siempre disponible aquí porque solo se monta dentro de DailyDraftProvider
   const ctx = useDailyDraftContext()
@@ -179,6 +180,14 @@ function DailyNotesInner() {
 
   const targetDate = paramDate ?? todayLocal()
 
+  // Hook de guardar versión manual — comparte isLocked con el editor
+  const saveVersion = useSaveDailyVersion({
+    owner: sessionUser!.id,
+    date: targetDate,
+    note: { flush: ctx.flush, revision: ctx.revision },
+    sessionIsCurrent: () => sessionStatus === 'authenticated',
+  })
+
   // Indicador de guardado
   let saveIndicator: React.ReactNode
   if (status === 'saving') {
@@ -260,8 +269,15 @@ function DailyNotesInner() {
 
       {/* Editor */}
       <Paper variant="outlined" sx={{ p: 2 }}>
-        <DailyEditor initialContent={content ?? emptyDocument()} onChange={handleEditorChange} />
+        <DailyEditor
+          initialContent={content ?? emptyDocument()}
+          onChange={handleEditorChange}
+          readOnly={saveVersion.isLocked}
+        />
       </Paper>
+
+      {/* Guardar versión manual */}
+      <SaveDailyVersion save={saveVersion} date={targetDate} />
 
       {/* Lista de notas existentes */}
       <Stack spacing={1}>
