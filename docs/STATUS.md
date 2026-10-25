@@ -3,13 +3,13 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-013](tasks/T-013-version-save.md) |
-| Estado | in_progress |
-| Acción actual | Implementación: saveDailyVersion API, hook + componente SaveDailyVersion, integración en DailyNotesPage. 12 tests, typecheck OK. |
-| Rama / PR | codex/t-013-version-save (pushed, sin PR todavía)
+| Estado | in_review |
+| Acción actual | Revisión: PR #18, HEAD 7f4cbdb, base main afe7ccd. Gate FULL en progreso. |
+| Rama / PR | codex/t-013-version-save, PR #18
 
 T-012: conciliada como MERGED (dc6dcbd). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. Client gate OK: 304 tests, 83.41% statements, 77.71% branches, typecheck OK, build OK. CI verify-required SUCCESS. Squash merge dc6dcbd, 2026-10-25.
 
-T-013: implementación en progreso. Rama codex/t-013-version-save push 8946257. Archivos: versionApi.ts (saveDailyVersion POST), SaveDailyVersion.tsx (hook useSaveDailyVersion + componente), SaveDailyVersion.test.tsx (12 tests), DailyNotesPage.tsx (integración con bloqueo del editor), dateUtils.ts (formatDateLocal). 316 tests OK, typecheck OK. Pendiente: gate FULL y PR/revisión.
+T-013: en revisión. PR #18, HEAD 7f4cbdb, base main afe7ccd. Junie reviewer, Qwen3.6-27B-FP8. Archivos: versionApi.ts (saveDailyVersion POST), SaveDailyVersion.tsx (hook useSaveDailyVersion + componente), SaveDailyVersion.test.tsx (12 tests), DailyNotesPage.tsx (integración con bloqueo del editor), dateUtils.ts (formatDateLocal).
 
 T-011: conciliada como MERGED (397798e). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. DailyVersionApiIT 23/23 OK (PostgreSQL Testcontainers, OIDC real), docs-check OK, CI verify-required SUCCESS. Squash merge 397798e, 2026-10-25.
 
@@ -28,6 +28,8 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie implementer para T-013: guardar versión manual (frontend).
-Leer contrato T-013, spec S-104 v2, y client/AGENTS.md.
+Sesión nueva Junie reviewer para T-013: guardar versión manual (frontend).
+Leer contrato T-013, spec S-104 v2, client/AGENTS.md, y docs/agents/reviewer.md.
 T-012 conciliada como MERGED (dc6dcbd), dependencia satisfecha.
+La rama codex/t-013-version-save está publicada en origin con PR #18.
+Continuar con gate FULL y veredicto.

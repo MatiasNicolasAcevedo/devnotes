@@ -1,6 +1,6 @@
 ---
 id: T-013
-status: in_progress
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-104
 spec_version: 2
 branch: codex/t-013-version-save
-pr: null
+pr: 18
 depends_on: [T-012]
 ---
 # T-013 · Guardar versión del trabajo confirmado
