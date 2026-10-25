@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-014](tasks/T-014-mvp-journey.md) |
-| Estado | in_progress |
-| Acción actual | Iniciar MVP journey: E2E daily-notes.spec.ts y daily-versions.spec.ts (CA-01…06). |
-| Rama / PR | codex/t-014-mvp-journey / -
+| Estado | in_review |
+| Acción actual | PR #19 abierto, pendiente revisión independiente. Gates E2E y FULL OK, docs-check OK. |
+| Rama / PR | codex/t-014-mvp-journey / [#19](https://github.com/MatiasNicolasAcevedo/devnotes/pull/19)
 
 T-012: conciliada como MERGED (dc6dcbd). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. Client gate OK: 304 tests, 83.41% statements, 77.71% branches, typecheck OK, build OK. CI verify-required SUCCESS. Squash merge dc6dcbd, 2026-10-25.
 
