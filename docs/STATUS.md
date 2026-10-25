@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-010](tasks/T-010-version-storage.md) |
-| Estado | draft |
-| Acción actual | T-009 conciliada como MERGED. T-010 en draft, dependencia satisfecha. |
-| Rama / PR | —
+| Estado | in_progress |
+| Acción actual | Implementando V4, entidad, repository y servicio de versiones. |
+| Rama / PR | codex/t-010-version-storage
 
 T-009: conciliada como MERGED (596e385). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. Client gate OK: 23 tests (14 LinkDialog + 9 DailyEditor), 274 tests total, 83.21% statements, 77.01% branches, typecheck OK, docs-check OK. CI verify-required SUCCESS. Squash merge 596e385, 2026-10-25.
 
