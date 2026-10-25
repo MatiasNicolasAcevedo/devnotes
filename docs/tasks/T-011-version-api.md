@@ -1,6 +1,6 @@
 ---
 id: T-011
-status: ready
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-104
 spec_version: 2
 branch: codex/t-011-version-api
-pr: null
+pr: 16
 depends_on: [T-010]
 ---
 # T-011 · API de versiones por fecha

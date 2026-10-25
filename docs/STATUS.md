@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-011](tasks/T-011-version-api.md) |
-| Estado | in_progress |
-| Acción actual | Código publicado af29a73. Pendiente revisión independiente. |
-| Rama / PR | codex/t-011-version-api (af29a73)
+| Estado | in_review |
+| Acción actual | Revisión independiente en curso. PR #16, HEAD af29a73, base main 46d9d9e. |
+| Rama / PR | codex/t-011-version-api (#16)
 
 T-010: conciliada como MERGED (46d9d9e). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. DailyVersionServiceIT 16/16 OK (PostgreSQL Testcontainers), docs-check OK, CI verify-required SUCCESS. Squash merge 46d9d9e, 2026-10-25.
 
