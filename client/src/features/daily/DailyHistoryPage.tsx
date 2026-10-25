@@ -11,11 +11,11 @@ import ListItemText from '@mui/material/ListItemText'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import { useCallback, useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link as RouterLink, useParams } from 'react-router'
 import { useSession } from '../../features/auth/sessionContext'
 import { DailyEditor } from '../../features/daily/editor/DailyEditor'
-import { listDailyVersions, getDailyVersion, type DailyVersionListItem, type DailyVersionDetail } from './versionApi'
+import { useDailyVersionListQuery, useDailyVersionDetailQuery } from './useDailyVersionQuery'
 
 /** Formatea una fecha ISO YYYY-MM-DD como dd/MM/yyyy (local). */
 function formatDateLocal(isoDate: string): string {
@@ -56,33 +56,8 @@ function HistoryLoginRequired() {
 
 // ——— Vista de detalle readonly ———
 
-function HistoryDetailInner({ date }: { date: string }) {
-  const [detail, setDetail] = useState<DailyVersionDetail | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<Error | null>(null)
-
-  // Cargar detalle al montar (llamada directa para evitar setState síncrono en efecto)
-  useEffect(() => {
-    let cancelled = false
-    getDailyVersion(date)
-      .then((result) => {
-        if (!cancelled) {
-          setDetail(result)
-          setError(null)
-        }
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(err instanceof Error ? err : new Error('Error al cargar la versión'))
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [date])
+function HistoryDetailInner({ date, owner, sessionIsCurrent }: { date: string; owner: string; sessionIsCurrent?: () => boolean }) {
+  const query = useDailyVersionDetailQuery(owner, date, sessionIsCurrent)
 
   return (
     <Stack spacing={3}>
@@ -95,16 +70,16 @@ function HistoryDetailInner({ date }: { date: string }) {
         </Link>
       </Stack>
 
-      {loading ? (
+      {query.isLoading ? (
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
           <CircularProgress size={20} aria-hidden />
           <Typography>Cargando versión…</Typography>
         </Stack>
-      ) : error ? (
+      ) : query.isError ? (
         <Alert severity="error" role="alert">
           <AlertTitle>Error al cargar la versión</AlertTitle>
           No se pudo obtener la versión guardada.{' '}
-          <Link component="button" onClick={() => window.location.reload()}>
+          <Link component="button" onClick={() => query.refetch()}>
             Reintentar
           </Link>
         </Alert>
@@ -112,15 +87,15 @@ function HistoryDetailInner({ date }: { date: string }) {
         <>
           <Stack direction="row" spacing={2} sx={{ flexWrap: 'wrap' }}>
             <Typography variant="body2" color="text.secondary">
-              Guardada: {formatSavedAt(detail!.savedAt)}
+              Guardada: {formatSavedAt(query.data!.savedAt)}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Revisión: {detail!.sourceRevision}
+              Revisión: {query.data!.sourceRevision}
             </Typography>
           </Stack>
           <Paper variant="outlined" sx={{ p: 2 }}>
             <DailyEditor
-              initialContent={detail!.content}
+              initialContent={query.data!.content}
               readOnly={true}
               aria-label="Versión de solo lectura"
             />
@@ -138,43 +113,10 @@ function HistoryDetailInner({ date }: { date: string }) {
 
 // ——— Vista de lista paginada ———
 
-function HistoryListInner() {
-  const [versionsList, setVersionsList] = useState<DailyVersionListItem[]>([])
-  const [listLoading, setListLoading] = useState(true)
-  const [listError, setListError] = useState<Error | null>(null)
+function HistoryListInner({ owner, sessionIsCurrent }: { owner: string; sessionIsCurrent?: () => boolean }) {
   const [listPage, setListPage] = useState(0)
-  const [listTotalPages, setListTotalPages] = useState(1)
 
-  const loadList = useCallback(async (page: number) => {
-    setListError(null)
-    try {
-      const result = await listDailyVersions(page)
-      setVersionsList(result.content)
-      setListTotalPages(result.totalPages)
-      setListPage(result.page)
-    } catch (err) {
-      setListError(err instanceof Error ? err : new Error('Error al cargar el historial'))
-    } finally {
-      setListLoading(false)
-    }
-  }, [])
-
-  // Cargar lista al montar
-  useEffect(() => {
-    listDailyVersions(0)
-      .then((result) => {
-        setVersionsList(result.content)
-        setListTotalPages(result.totalPages)
-        setListPage(result.page)
-        setListError(null)
-      })
-      .catch((err) => {
-        setListError(err instanceof Error ? err : new Error('Error al cargar el historial'))
-      })
-      .finally(() => {
-        setListLoading(false)
-      })
-  }, [])
+  const query = useDailyVersionListQuery(owner, listPage, sessionIsCurrent)
 
   return (
     <Stack spacing={3}>
@@ -182,27 +124,27 @@ function HistoryListInner() {
         Historial de versiones
       </Typography>
 
-      {listLoading ? (
+      {query.isLoading ? (
         <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
           <CircularProgress size={20} aria-hidden />
           <Typography>Cargando historial…</Typography>
         </Stack>
-      ) : listError ? (
+      ) : query.isError ? (
         <Alert severity="error" role="alert">
           <AlertTitle>Error al cargar el historial</AlertTitle>
           No se pudieron obtener las versiones guardadas.{' '}
-          <Link component="button" onClick={() => loadList(listPage)}>
+          <Link component="button" onClick={() => query.refetch()}>
             Reintentar
           </Link>
         </Alert>
-      ) : versionsList.length === 0 ? (
+      ) : query.data!.content.length === 0 ? (
         <Alert severity="info">
           Aún no tenés versiones guardadas. Guardá una versión desde tu nota para verla aquí.
         </Alert>
       ) : (
         <>
           <List dense>
-            {versionsList.map((item) => (
+            {query.data!.content.map((item) => (
               <ListItem key={item.date} disablePadding>
                 <ListItemButton component={RouterLink} to={`/history/${item.date}`}>
                   <ListItemText
@@ -214,18 +156,18 @@ function HistoryListInner() {
             ))}
           </List>
           {/* Paginación simple */}
-          {listTotalPages > 1 && (
+          {query.data!.totalPages > 1 && (
             <Stack direction="row" spacing={1} sx={{ justifyContent: 'center' }}>
               {listPage > 0 && (
-                <Button size="small" onClick={() => loadList(listPage - 1)}>
+                <Button size="small" onClick={() => setListPage(listPage - 1)}>
                   Anterior
                 </Button>
               )}
               <Typography variant="caption">
-                Página {listPage + 1} de {listTotalPages}
+                Página {listPage + 1} de {query.data!.totalPages}
               </Typography>
-              {listPage < listTotalPages - 1 && (
-                <Button size="small" onClick={() => loadList(listPage + 1)}>
+              {listPage < query.data!.totalPages - 1 && (
+                <Button size="small" onClick={() => setListPage(listPage + 1)}>
                   Siguiente
                 </Button>
               )}
@@ -250,8 +192,8 @@ export function DailyHistoryPage() {
 
   // Si hay fecha en la URL, mostrar detalle; si no, lista
   if (paramDate) {
-    return <HistoryDetailInner date={paramDate} />
+    return <HistoryDetailInner date={paramDate} owner={user.id} sessionIsCurrent={() => true} />
   }
 
-  return <HistoryListInner />
+  return <HistoryListInner owner={user.id} sessionIsCurrent={() => true} />
 }

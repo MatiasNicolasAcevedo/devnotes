@@ -143,7 +143,8 @@ describe('DailyHistoryPage — detalle readonly', () => {
 
     renderWithProviders(<AppRoutes />, { route: '/history/2024-01-15' })
 
-    expect(await screen.findByText('Versión del 15/01/2024')).toBeInTheDocument()
+    // Esperar a que la Query cargue el contenido del editor (evidencia de que los datos llegaron)
+    expect(await screen.findByText('Versión de prueba')).toBeInTheDocument()
     expect(screen.getByText(/Revisión: 3/)).toBeInTheDocument()
     expect(screen.getByText('Volver al historial')).toBeInTheDocument()
     expect(screen.getByText(/Volver a mi nota del 15\/01\/2024/)).toBeInTheDocument()
