@@ -1,6 +1,6 @@
 ---
 id: T-008
-status: draft
+status: in_progress
 priority: P1
 size: S
 executor: junie
@@ -84,7 +84,7 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-007. El prompt vigente está solo en STATUS.
+Implementación en progreso. Rama codex/t-008-separator-editing desde main 1702fd9. Shortcuts Enter/Backspace implementados en separator.ts con funciones extraíbles tryConvertToSeparator/tryDeletePreviousSeparator. CSS actualizado con ancho relativo porcentual. 18 tests separator.test.ts OK, 9 tests DailyEditor.test.ts OK, typecheck OK. T-007 MERGED 1702fd9, dependencia satisfecha.
 
 ## Correcciones significativas
 

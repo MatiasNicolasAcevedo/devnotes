@@ -70,13 +70,31 @@
   pointer-events: none;
 }
 
-/* Separador renderizado como línea horizontal */
+/* Separador renderizado como línea horizontal con ancho relativo */
 .daily-editor-content > hr[data-type='separator'] {
   border: none;
   border-top: 2px solid #3c3c3c;
   margin: 8px 0;
   counter-increment: daily-line;
   position: relative;
+  width: var(--separator-width, 50%);
+}
+
+/* Anchos relativos según data-width */
+.daily-editor-content > hr[data-type='separator'][data-width='25'] {
+  width: 25%;
+}
+
+.daily-editor-content > hr[data-type='separator'][data-width='50'] {
+  width: 50%;
+}
+
+.daily-editor-content > hr[data-type='separator'][data-width='75'] {
+  width: 75%;
+}
+
+.daily-editor-content > hr[data-type='separator'][data-width='100'] {
+  width: 100%;
 }
 
 .daily-editor-content > hr[data-type='separator']::before {
