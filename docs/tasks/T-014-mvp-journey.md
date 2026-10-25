@@ -1,6 +1,6 @@
 ---
 id: T-014
-status: draft
+status: in_progress
 priority: P1
 size: S
 executor: junie
@@ -95,7 +95,9 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-013. El prompt vigente está solo en STATUS.
+2026-10-25, sesión propia Junie implementer. Raíz/checkout `C:\D\matias\proyectos-ia\devnotes`, rama `codex/t-014-mvp-journey`. Instrucciones efectivamente leídas: `AGENTS.md`, `client/AGENTS.md`, `docs/STATUS.md`, esta tarea, `docs/AUTONOMY.md`, `docs/TESTING.md`, `docs/agents/implementer.md`, `docs/specs/S-104-daily-versions.md` (v2), `docs/specs/S-101-daily-notes.md` (v2). Superficie IDE IntelliJ IDEA/AIR (plugin Junie), terminal PowerShell. Modelo expuesto por entorno: Qwen/Qwen3.6-27B-FP8. Esfuerzo no expuesto. Impacto: dos archivos E2E nuevos (daily-notes.spec.ts y daily-versions.spec.ts) con recorridos CA-01…06; sin cambios de comportamiento, API, permisos o datos.
+
+Dependencia T-013 conciliada como MERGED (dafaecf). T-000 MERGED (cbbe1c9), E-01 aceptado. HEAD base `dafaecf`, sin PR abiertos. Pendiente: implementar daily-notes.spec.ts y daily-versions.spec.ts, ejecutar gate FULL y documentar evidencia.
 
 ## Correcciones significativas
 

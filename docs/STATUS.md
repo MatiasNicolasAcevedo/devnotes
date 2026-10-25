@@ -2,15 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-013](tasks/T-013-version-save.md) |
-| Estado | changes_requested |
-| Acción actual | Corrección publicada 85faad6. Bloqueantes resueltos: B-1 hook condicional, B-2 executeSave antes de declaración, B-3 react-refresh. Pendiente revisión independiente. |
-| Rama / PR | codex/t-013-version-save, PR #18
+| Tarea y contrato | [T-014](tasks/T-014-mvp-journey.md) |
+| Estado | in_progress |
+| Acción actual | Iniciar MVP journey: E2E daily-notes.spec.ts y daily-versions.spec.ts (CA-01…06). |
+| Rama / PR | codex/t-014-mvp-journey / -
 
 T-012: conciliada como MERGED (dc6dcbd). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. Client gate OK: 304 tests, 83.41% statements, 77.71% branches, typecheck OK, build OK. CI verify-required SUCCESS. Squash merge dc6dcbd, 2026-10-25.
 
-T-013: revisión con CAMBIOS REQUERIDOS. PR #18, HEAD 3cfd494, base main afe7ccd. Junie reviewer, Qwen3.6-27B-FP8. 3 bloqueantes: B-1 hook condicional en DailyNotesPage, B-2 executeSave antes de declaración en SaveDailyVersion, B-3 react-refresh only-export-components. Gate client falló (lint errors). docs-check OK.
-Corrección publicada 85faad6. Bloqueantes resueltos: hook movido antes de early return, executeSave declarado antes de checkExisting, hook y tipos extraídos a useSaveDailyVersion.ts. Gate client OK: 316 tests, typecheck OK, lint sin errores T-013. Pendiente revisión independiente.
+T-013: conciliada como MERGED (dafaecf). Junie reviewer + merger, Qwen3.6-27B-FP8. Corrección documental B-4 publicada (6342c86). Bloqueantes resueltos: B-1 hook condicional, B-2 executeSave antes de declaración, B-3 react-refresh, B-4 STATUS.md alineado. Segunda revisión independiente APROBADA sin bloqueantes (HEAD 6342c86, base main afe7ccd). Client gate OK: 316 tests, typecheck OK, lint sin errores T-013. CI verify-required SUCCESS. Squash merge dafaecf, 2026-10-25.
 
 T-011: conciliada como MERGED (397798e). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. DailyVersionApiIT 23/23 OK (PostgreSQL Testcontainers, OIDC real), docs-check OK, CI verify-required SUCCESS. Squash merge 397798e, 2026-10-25.
 
@@ -29,8 +28,7 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie implementer para T-013: corregir bloqueantes de revisión.
-Leer PR #18 comentarios y .junie/review-comment-t013.md.
-3 bloqueantes: B-1 hook condicional (DailyNotesPage), B-2 executeSave antes de declaración (SaveDailyVersion), B-3 react-refresh (separar hook de componente).
-Corregir, pasar gate client (lint/typecheck/tests), y publicar corrección.
+Sesión nueva Junie implementer para T-014: iniciar MVP journey.
+Dependencia T-013 MERGED (dafaecf). Leer docs/tasks/T-014-mvp-journey.md y specs referenciadas.
+Verificar adopción T-000 y evidencia Junie antes de comenzar negocio.
 ```
