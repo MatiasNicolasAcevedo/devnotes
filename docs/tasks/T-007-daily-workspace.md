@@ -1,7 +1,6 @@
 ---
 id: T-007
-status: in_review
-pr: 12
+status: done
 priority: P1
 size: S
 executor: junie
@@ -11,7 +10,7 @@ product_cycle: I1
 spec: S-101
 spec_version: 2
 branch: codex/t-007-daily-workspace
-pr: null
+pr: 12
 depends_on: [T-016]
 ---
 # T-007 · Espacio de notas por fecha
