@@ -45,6 +45,9 @@ export function AppShell() {
             <Link component={RouterLink} to="/">
               Inicio
             </Link>
+            <Link component={RouterLink} to="/notes">
+              Notas
+            </Link>
             <Link component={RouterLink} to="/reference">
               Referencia
             </Link>

@@ -1,6 +1,7 @@
 ---
 id: T-007
-status: draft
+status: in_review
+pr: 12
 priority: P1
 size: S
 executor: junie
@@ -84,12 +85,22 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, ajustada el 2026-10-21 a S-101 v2 y dependencia T-016. No ejecutada por Junie. Registra rol/modelo/herramienta/esfuerzo al tomarla; sin PR ni pruebas. El prompt vigente está solo en STATUS.
+in_review — corrección documental publicada 5b08a16. Código APROBADO (HEAD 374f08d, base main 4499962). Correcciones: T-016 frontmatter a done, BACKLOG actualizado con T-016 MERGED 4499962, T-007 frontmatter alineado. docs-check OK, 10/10 tests DailyNotesPage OK, typecheck OK. Pendiente: revisión independiente y CI verify-required SUCCESS.
 
 ## Correcciones significativas
 
-Sin correcciones ni resultados de implementación acreditados.
+1. **loadList(0) no se invocaba** — Primera revisión (e3ddb39). Corrección 8fdbe17: useEffect con .then()/.catch()/.finally() invoca listDailyNotes(0) al montar. Test añadido. Verificado: 10/10 tests OK, typecheck OK.
+2. **Inconsistencia documental CI** — Segunda revisión (374f08d). docs-check falla porque frontmatter T-007 (`in_progress`) ≠ STATUS.md (`in_review`). Condición de cierre: ambos deben decir `in_review` y T-016 debe figurar en BACKLOG si docs-check lo espera como mergeable.
 
 ## Cierre y siguiente tarea
 
 Publicar PR y evidencia según TESTING; pasar a in_review con prompt reviewer en sesión nueva. Reviewer comprueba HEAD/base, gate, CI y arquitectura/propiedad, publica veredicto del SHA final y puede squash merge por AUTONOMY. Sin done hasta MERGED comprobado. El siguiente implementer concilia done al primer avance de su rama nueva; no editar la rama ya mergeada. Próxima: [T-008](T-008-separator-editing.md).
+
+### Prompt de la siguiente sesión
+
+```text
+Sesión nueva Junie implementer para T-007 — corrección de revisión.
+Bloqueante: loadList(0) nunca se invoca en DailyNotesPage.tsx. La lista "Notas guardadas" no se carga al montar ni al cambiar de fecha.
+Corrección: Añadir useEffect que llame loadList(0) al montar y al cambiar activeDate/targetDate. Añadir test que verifique la lista se carga con notas existentes.
+Repetir gate client (tests + typecheck) y publicar corrección en PR #12.
+```

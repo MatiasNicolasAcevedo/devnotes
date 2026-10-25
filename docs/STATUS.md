@@ -2,21 +2,21 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-016](tasks/T-016-daily-draft-coordinator.md) |
-| Estado | mergeable |
-| Acción actual | Revisión independiente APROBADA (segunda revisión confirmatoria) |
-| Rama / PR | codex/t-016-daily-draft-coordinator, PR #11
+| Tarea y contrato | [T-007](tasks/T-007-daily-workspace.md) |
+| Estado | in_review |
+| Acción actual | Corrección documental publicada 5b08a16. Pendiente revisión independiente y CI verify-required |
+| Rama / PR | codex/t-007-daily-workspace, PR #12
 
 T-006: conciliada como MERGED (6eb2c42). Junie reviewer + merger, Qwen3.6-27B-FP8. Client gate 218 tests OK, 100% líneas daily, 90.47% branches. Revisión APROBADA sin observaciones, CI verify-required pass.
 
-T-016: corrección de revisión publicada (f392d98). Bloqueantes resueltos: debounce se reinicia en cada edición (`timerRef.current === null` eliminado de la condición en `edit()`). `flush({ force })` implementado para saltar validación. Tests añadidos: debounce timing (3 ediciones → 1 PUT a t=1500), error de red + 409 conserva borrador, desmontar/remontar. Se fixearon 3 errores de lint preexistentes (react-refresh, react-hooks/refs, useCallback self-reference). Client gate OK: 232 tests, 91.24% statements, 86.25% branches. Segunda revisión independiente APROBADA (Junie reviewer, Qwen3.6-27B-FP8, HEAD 2240566, base main e6ec7a6): debounce verificado, flush force verificado, 14 tests useDailyNote pasan, 99 tests daily pasan, gate completo OK. Observaciones menores no bloqueantes: `forceRef` no consumido por `flushQueue` (código muerto), `useEffect` vacío en `query.error` (sin impacto).
+T-016: conciliada como MERGED (4499962). Junie merger, Qwen3.6-27B-FP8. Corrección de revisión publicada (f392d98). Bloqueantes resueltos: debounce se reinicia en cada edición, `flush({ force })` implementado. Tests añadidos: debounce timing, error de red + 409, desmontar/remontar. Client gate OK: 232 tests, 91.24% statements, 86.25% branches. Segunda revisión independiente APROBADA (HEAD 2240566, base main e6ec7a6). CI verify-required SUCCESS. Merge squash 4499962, 2026-10-24.
 
-### Checkpoint vigente
-
-2026-10-24, segunda revisión independiente completada y APROBADA. HEAD 2240566, base main e6ec7a6. Client gate completo OK: typecheck, lint (0 warnings), format, 232 tests, 91.24% statements, 86.25% branches, build. Pendiente: merge según AUTONOMY.md.
+T-007: in_review. Corrección documental publicada 5b08a16 en PR #12. Código APROBADO (HEAD 374f08d, base main 4499962). Correcciones: T-016 frontmatter a done, BACKLOG actualizado con T-016 MERGED 4499962, T-007 frontmatter alineado a in_review. docs-check OK, 10/10 tests DailyNotesPage OK, typecheck OK. Pendiente: revisión independiente y CI verify-required SUCCESS.
 
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie merger para T-016. PR #11 (HEAD 2240566) revisión APROBADA, merge squash según AUTONOMY.md. Verificar CI verify-required success, borrar rama mergeada, registrar MERGED.
+Sesión nueva Junie reviewer para T-007 — revisión independiente tras corrección documental.
+Contexto: PR #12 (codex/t-007-daily-workspace) publicó corrección de inconsistencias documentales. T-016 frontmatter cambiado a done, BACKLOG actualizado con T-016 MERGED 4499962, T-007 frontmatter alineado a in_progress.
+Tarea: Revisar HEAD/base del PR #12, verificar que CI verify-required pasa (incluyendo docs-check OK), comprobar gate client (tests + typecheck) y confirmar que las correcciones documentales son correctas. Si todo pasa, aprobar y proceder a merge por AUTONOMY.
 ```
