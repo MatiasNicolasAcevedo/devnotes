@@ -28,8 +28,7 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie reviewer para T-013: guardar versión manual (frontend).
-Leer contrato T-013, spec S-104 v2, client/AGENTS.md, y docs/agents/reviewer.md.
-T-012 conciliada como MERGED (dc6dcbd), dependencia satisfecha.
-La rama codex/t-013-version-save está publicada en origin con PR #18.
-Continuar con gate FULL y veredicto.
+Sesión nueva Junie implementer para T-014: MVP journey (e2e).
+Leer contrato T-014, spec S-104 v2, y docs/TESTING.md.
+T-013 pendiente de MERGED; comprobar dependencia antes de comenzar.
+```
