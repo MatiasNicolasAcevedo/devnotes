@@ -1,6 +1,6 @@
 ---
 id: T-007
-status: in_review
+status: done
 pr: 12
 priority: P1
 size: S
