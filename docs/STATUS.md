@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-012](tasks/T-012-version-history.md) |
-| Estado | pending |
-| Acción actual | T-011 mergeada. Siguiente sesión toma T-012. |
-| Rama / PR | —
+| Estado | in_progress |
+| Acción actual | Implementación completada. Pendiente revisión independiente. |
+| Rama / PR | codex/t-012-version-history (68fbd94)
 
 T-011: conciliada como MERGED (397798e). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. DailyVersionApiIT 23/23 OK (PostgreSQL Testcontainers, OIDC real), docs-check OK, CI verify-required SUCCESS. Squash merge 397798e, 2026-10-25.
 

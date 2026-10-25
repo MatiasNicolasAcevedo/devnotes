@@ -1,6 +1,6 @@
 ---
 id: T-012
-status: draft
+status: ready
 priority: P1
 size: S
 executor: junie
@@ -84,11 +84,11 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-011. El prompt vigente está solo en STATUS.
+Implementación completada por Junie implementer, Qwen3.6-27B-FP8, 2026-10-24. Rama codex/t-012-version-history publicada (68fbd94, base main e15abf0). Client gate OK: 304 tests (30 nuevos: 16 versionApi + 14 DailyHistoryPage), 84.03% statements, 77.19% branches, typecheck OK, lint OK (5 errores pre-existentes en DailyEditor/separator, sin nuevos). T-011 conciliada como MERGED (397798e). Pendiente revisión independiente y PR.
 
 ## Correcciones significativas
 
-Sin correcciones ni resultados de implementación acreditados.
+- Lint `react-hooks/set-state-in-effect`: `setLoading(true)`/`setError(null)` dentro de useEffect causaban cascading renders. Arreglo: eliminado setState síncrono, loading inicia `true` por defecto y la carga se hace directa en useEffect sin setState previo. Verificado con lint limpio.
 
 ## Cierre y siguiente tarea
 
