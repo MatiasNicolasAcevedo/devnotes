@@ -3,15 +3,15 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-007](tasks/T-007-daily-workspace.md) |
-| Estado | in_progress |
-| Acción actual | Corrección documental: T-016 frontmatter a done, BACKLOG actualizado, T-007 frontmatter alineado |
+| Estado | in_review |
+| Acción actual | Corrección documental publicada 5b08a16. Pendiente revisión independiente y CI verify-required |
 | Rama / PR | codex/t-007-daily-workspace, PR #12
 
 T-006: conciliada como MERGED (6eb2c42). Junie reviewer + merger, Qwen3.6-27B-FP8. Client gate 218 tests OK, 100% líneas daily, 90.47% branches. Revisión APROBADA sin observaciones, CI verify-required pass.
 
 T-016: conciliada como MERGED (4499962). Junie merger, Qwen3.6-27B-FP8. Corrección de revisión publicada (f392d98). Bloqueantes resueltos: debounce se reinicia en cada edición, `flush({ force })` implementado. Tests añadidos: debounce timing, error de red + 409, desmontar/remontar. Client gate OK: 232 tests, 91.24% statements, 86.25% branches. Segunda revisión independiente APROBADA (HEAD 2240566, base main e6ec7a6). CI verify-required SUCCESS. Merge squash 4499962, 2026-10-24.
 
-T-007: in_progress. Corrección documental en curso tras segunda revisión (HEAD 374f08d, base main 4499962). Código APROBADO. Se corrigen: T-016 frontmatter a done, BACKLOG actualizado con T-016, T-007 frontmatter alineado a in_progress. Tras publicar, volver a in_review para revisión independiente.
+T-007: in_review. Corrección documental publicada 5b08a16 en PR #12. Código APROBADO (HEAD 374f08d, base main 4499962). Correcciones: T-016 frontmatter a done, BACKLOG actualizado con T-016 MERGED 4499962, T-007 frontmatter alineado a in_review. docs-check OK, 10/10 tests DailyNotesPage OK, typecheck OK. Pendiente: revisión independiente y CI verify-required SUCCESS.
 
 ### Prompt de la siguiente sesión
 

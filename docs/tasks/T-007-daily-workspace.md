@@ -1,6 +1,6 @@
 ---
 id: T-007
-status: in_progress
+status: in_review
 pr: 12
 priority: P1
 size: S
@@ -85,7 +85,7 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-in_progress — corrección documental tras segunda revisión HEAD 374f08d contra main 4499962. Código APROBADO. Correcciones aplicadas: (1) T-016 frontmatter cambiado de mergeable a done; (2) T-016 añadido en BACKLOG "Hechas" con SHA 4499962; (3) T-007 frontmatter alineado a in_progress, STATUS.md actualizado. docs-check OK, 10/10 tests DailyNotesPage OK, typecheck OK. Tras publicar, volver a in_review para revisión independiente.
+in_review — corrección documental publicada 5b08a16. Código APROBADO (HEAD 374f08d, base main 4499962). Correcciones: T-016 frontmatter a done, BACKLOG actualizado con T-016 MERGED 4499962, T-007 frontmatter alineado. docs-check OK, 10/10 tests DailyNotesPage OK, typecheck OK. Pendiente: revisión independiente y CI verify-required SUCCESS.
 
 ## Correcciones significativas
 
