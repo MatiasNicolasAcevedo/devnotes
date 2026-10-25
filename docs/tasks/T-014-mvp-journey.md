@@ -1,6 +1,6 @@
 ---
 id: T-014
-status: draft
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-104
 spec_version: 2
 branch: codex/t-014-mvp-journey
-pr: null
+pr: 19
 depends_on: [T-013]
 ---
 # T-014 · Recorrido completo y salida I1
@@ -95,7 +95,17 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-013. El prompt vigente está solo en STATUS.
+2026-10-25, sesión propia Junie implementer. Raíz/checkout `C:\D\matias\proyectos-ia\devnotes`, rama `codex/t-014-mvp-journey`. Instrucciones efectivamente leídas: `AGENTS.md`, `client/AGENTS.md`, `docs/STATUS.md`, esta tarea, `docs/AUTONOMY.md`, `docs/TESTING.md`, `docs/agents/implementer.md`, `docs/specs/S-104-daily-versions.md` (v2), `docs/specs/S-101-daily-notes.md` (v2). Superficie IDE IntelliJ IDEA/AIR (plugin Junie), terminal PowerShell. Modelo expuesto por entorno: Qwen/Qwen3.6-27B-FP8. Esfuerzo no expuesto. Impacto: dos archivos E2E nuevos (daily-notes.spec.ts y daily-versions.spec.ts) con recorridos CA-01…06; sin cambios de comportamiento, API, permisos o datos.
+
+Dependencia T-013 conciliada como MERGED (dafaecf). T-000 MERGED (cbbe1c9), E-01 aceptado. HEAD `9c66a93`, base `dafaecf`. PR #19 abierto, estado in_review.
+
+Evidencia de gates ejecutados:
+- Gate E2E: exit code 0 (namespaces propios con timestamp)
+- Gate FULL: exit code 0 (backend + client + E2E)
+- docs-check: OK (65 Markdown, 19 tareas, HANDOFF 22/22 verificados)
+- Perfil diff: APPLICATION (e2e/tests + docs permitidos)
+
+Pendiente: revisión independiente en sesión nueva, squash merge tras aprobación, y conciliación como MERGED.
 
 ## Correcciones significativas
 
