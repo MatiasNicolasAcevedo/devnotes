@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-013](tasks/T-013-version-save.md) |
-| Estado | in_review |
+| Estado | changes_requested |
 | Acción actual | Corrección publicada 85faad6. Bloqueantes resueltos: B-1 hook condicional, B-2 executeSave antes de declaración, B-3 react-refresh. Pendiente revisión independiente. |
 | Rama / PR | codex/t-013-version-save, PR #18
 
