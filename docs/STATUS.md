@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-009](tasks/T-009-text-links.md) |
-| Estado | in_review |
+| Estado | mergeable |
 | Acción actual | Revisión T-009: APROBADA sin bloqueantes. Gate client OK, docs-check OK, pendiente CI y merge. |
 | Rama / PR | codex/t-009-text-links, PR #14
 
