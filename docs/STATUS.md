@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-010](tasks/T-010-version-storage.md) (habilitada tras T-009 MERGED) |
-| Estado | — |
-| Acción actual | T-009 conciliada como MERGED. Siguiente tarea T-010 habilitada. |
+| Tarea y contrato | [T-010](tasks/T-010-version-storage.md) |
+| Estado | draft |
+| Acción actual | T-009 conciliada como MERGED. T-010 en draft, dependencia satisfecha. |
 | Rama / PR | —
 
 T-009: conciliada como MERGED (596e385). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. Client gate OK: 23 tests (14 LinkDialog + 9 DailyEditor), 274 tests total, 83.21% statements, 77.01% branches, typecheck OK, docs-check OK. CI verify-required SUCCESS. Squash merge 596e385, 2026-10-25.
