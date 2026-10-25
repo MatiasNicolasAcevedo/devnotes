@@ -70,6 +70,10 @@ public class SecurityConfig {
                             .authenticated()
                             .requestMatchers(HttpMethod.PUT, "/api/v1/daily-notes/{date}")
                             .authenticated()
+                            .requestMatchers(HttpMethod.POST, "/api/v1/daily-notes/{date}/version")
+                            .authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/v1/daily-versions", "/api/v1/daily-versions/{date}")
+                            .authenticated()
                             .anyRequest()
                             .denyAll();
                 })

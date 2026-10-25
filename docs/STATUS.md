@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-010](tasks/T-010-version-storage.md) |
+| Tarea y contrato | [T-011](tasks/T-011-version-api.md) |
 | Estado | in_progress |
-| Acción actual | Código publicado a576283. Pendiente revisión independiente y PR. |
-| Rama / PR | codex/t-010-version-storage (a576283)
+| Acción actual | Implementando endpoints de versiones. DailyVersionApiIT 23/23 OK. |
+| Rama / PR | codex/t-011-version-api
+
+T-010: conciliada como MERGED (46d9d9e). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. DailyVersionServiceIT 16/16 OK (PostgreSQL Testcontainers), docs-check OK, CI verify-required SUCCESS. Squash merge 46d9d9e, 2026-10-25.
 
 T-009: conciliada como MERGED (596e385). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. Client gate OK: 23 tests (14 LinkDialog + 9 DailyEditor), 274 tests total, 83.21% statements, 77.01% branches, typecheck OK, docs-check OK. CI verify-required SUCCESS. Squash merge 596e385, 2026-10-25.
 
@@ -20,8 +22,8 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie reviewer para T-010 — revisión independiente de codex/t-010-version-storage.
-HEAD a576283, base main 8cf58b9. DailyVersionServiceIT 16/16 OK. Gate FULL bloqueado por
-SecurityConfigTest preexistente en main (9 errores OIDC). Revisar arquitectura, propiedad,
-locks, constraints, negativos y cobertura. Publicar veredicto y squash merge si APROBADA.
+Sesión nueva Junie implementer para T-011 — API de versiones (S-104 v2).
+Dependencia T-010 MERGED (46d9d9e). Leer contrato T-011, spec S-104 v2, y server/AGENTS.md.
+Implementar endpoints POST /api/v1/daily-notes/{date}/version y GET /api/v1/daily-versions
+con seguridad, validación, y DailyVersionApiIT.
 ```

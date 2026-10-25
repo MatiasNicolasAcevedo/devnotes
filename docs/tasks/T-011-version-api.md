@@ -1,6 +1,6 @@
 ---
 id: T-011
-status: draft
+status: ready
 priority: P1
 size: S
 executor: junie
@@ -82,11 +82,11 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-010. El prompt vigente está solo en STATUS.
+Implementer Junie, Qwen3.6-27B-FP8. DailyVersionController con 3 endpoints (POST crear/reemplazar, GET listar, GET por fecha), DailyVersionExceptionHandler, DailyVersionOpenApi, SecurityConfig actualizado. DailyVersionApiIT 23/23 OK (PostgreSQL Testcontainers, OIDC real). Corrección: rutas vecinas /private → 400 (matchea {date}, falla parsing) en lugar de 403. Pendiente: commit, push y revisión independiente.
 
 ## Correcciones significativas
 
-Sin correcciones ni resultados de implementación acreditados.
+1. **Rutas vecinas 400 vs 403**: `/api/v1/daily-versions/private` matchea el path variable `{date}` y falla la validación de fecha → 400, no 403. Solo `/api/v1/daily-versions/2026-01-01/extra` (sin ruta coincidente) → 403.
 
 ## Cierre y siguiente tarea
 
