@@ -2,10 +2,10 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-007](tasks/T-007-daily-workspace.md) |
-| Estado | in_review |
-| Acción actual | Revisión independiente APROBADA, merge squash 1702fd9. Pendiente conciliación done en próxima rama. |
-| Rama / PR | codex/t-007-daily-workspace, PR #12 (MERGED 1702fd9)
+| Tarea y contrato | [T-008](tasks/T-008-separator-editing.md) |
+| Estado | in_progress |
+| Acción actual | Implementación T-008: shortcuts de teclado para separadores. Código y tests publicados, pendiente PR y revisión. |
+| Rama / PR | codex/t-008-separator-editing, 2386358
 
 T-006: conciliada como MERGED (6eb2c42). Junie reviewer + merger, Qwen3.6-27B-FP8. Client gate 218 tests OK, 100% líneas daily, 90.47% branches. Revisión APROBADA sin observaciones, CI verify-required pass.
 
@@ -16,7 +16,9 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie implementer para T-007 — conciliación done tras merge.
-T-007 MERGED 1702fd9 en PR #12. Cambiar frontmatter T-007 a done, actualizar STATUS con siguiente tarea T-008, y dejar prompt para implementación T-008.
-Verificar docs-check OK antes de publicar.
+Sesión nueva Junie reviewer para T-008 — separadores con teclado.
+Rama codex/t-008-separator-editing, HEAD 2386358, base main 1702fd9.
+Revisar implementación S-103: shortcuts --25/--50/--75/--- Enter producen separadores.
+Verificar gate client: separator.test.ts (18 tests), DailyEditor.test.ts (9 tests), typecheck OK.
+Comprobar HEAD/base, arquitectura, negativos y docs-check. Publicar veredicto del SHA final.
 ```
