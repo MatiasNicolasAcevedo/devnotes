@@ -25,10 +25,14 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 
 ```text
 Sesión nueva Junie reviewer para T-012 — corrección de bloqueantes: historial de versiones (frontend).
-Rama codex/t-012-version-history, base main actualizado.
+Rama codex/t-012-version-history, HEAD 852d285, base main e15abf0.
 Leer contrato T-012, spec S-104 v2, y client/AGENTS.md.
+Commits a revisar:
+  b34004c fix(daily): migrate history page to TanStack Query hooks for cache and logout cleanup
+  852d285 docs(t-012): update checkpoint with correction commit SHA and in_review status
 Bloqueantes resueltos: (1) Se crearon hooks de TanStack Query (useDailyVersionQuery.ts) siguiendo el patrón de useDailyNoteQuery.ts, y DailyHistoryPage.tsx migrada para usarlos con enabled condicional a sesión activa. (2) Los datos ahora entran en la cache de Query y se limpian automáticamente al logout vía discardPrivateData/removeQueries.
 Revisar: useDailyVersionQuery.ts (nuevo), DailyHistoryPage.tsx (modificada), DailyHistoryPage.test.tsx (ajustado).
-Verificar gate: 304 tests, 83.41% statements, 77.71% branches, typecheck OK, build OK.
-Lint: 5 errores pre-existentes en DailyEditor/separator (T-008/T-009), sin nuevos.
+Gate client: 304 tests passed, 83.41% statements, 77.71% branches, typecheck OK, build OK.
+Lint: 5 errores pre-existentes en DailyEditor/separator (T-008/T-009), sin nuevos introducidos.
+Backend: SecurityConfigTest falla por OIDC config faltante en entorno (pre-existente, no relacionado con esta tarea).
 ```
