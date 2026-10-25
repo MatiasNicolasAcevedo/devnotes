@@ -1,6 +1,6 @@
 ---
 id: T-012
-status: draft
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -84,11 +84,12 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-011. El prompt vigente está solo en STATUS.
+Corrección de bloqueantes commitada b34004c por Junie implementer, Qwen3.6-27B-FP8, 2026-10-25. Revisión independiente rechazó la implementación original con 2 bloqueantes: (1) no usaba TanStack Query y (2) datos no se limpiaban al logout. Resolución: creado `useDailyVersionQuery.ts` con `useDailyVersionListQuery` y `useDailyVersionDetailQuery` siguiendo el patrón de `useDailyNoteQuery.ts`; `DailyHistoryPage.tsx` migrada para usar hooks de Query con `enabled` condicional a sesión activa. Test ajustado para esperar datos asíncronos de Query. Client gate OK: 304 tests, typecheck OK. Rama codex/t-012-version-history publicada, pendiente revisión independiente.
 
 ## Correcciones significativas
 
-Sin correcciones ni resultados de implementación acreditados.
+- Lint `react-hooks/set-state-in-effect`: `setLoading(true)`/`setError(null)` dentro de useEffect causaban cascading renders. Arreglo: eliminado setState síncrono, loading inicia `true` por defecto y la carga se hace directa en useEffect sin setState previo. Verificado con lint limpio.
+- Bloqueante revisión: no usaba TanStack Query ni limpiaba datos al logout. Arreglo: creado `useDailyVersionQuery.ts` con hooks de Query (keys privadas por owner, `enabled` condicional, `retry: false`, `staleTime: 0`); migrado `DailyHistoryPage` para usarlos. Los datos entran en la cache de Query y se limpian automáticamente al logout vía `discardPrivateData`/`removeQueries`. Test de detalle ajustado para esperar contenido cargado (`findByText`) en lugar de título estático.
 
 ## Cierre y siguiente tarea
 

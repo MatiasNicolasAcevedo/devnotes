@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-012](tasks/T-012-version-history.md) |
-| Estado | pending |
-| Acción actual | T-011 mergeada. Siguiente sesión toma T-012. |
-| Rama / PR | —
+| Estado | in_review |
+| Acción actual | Corrección de bloqueantes commitada y publicada. Pendiente revisión independiente. |
+| Rama / PR | codex/t-012-version-history (b34004c)
 
 T-011: conciliada como MERGED (397798e). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. DailyVersionApiIT 23/23 OK (PostgreSQL Testcontainers, OIDC real), docs-check OK, CI verify-required SUCCESS. Squash merge 397798e, 2026-10-25.
 
@@ -24,7 +24,15 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie implementer para T-012 — historial de versiones (frontend).
-Dependencia T-011 MERGED (397798e). Leer contrato T-012, spec S-104 v2, y client/AGENTS.md.
-Implementar /history y /history/YYYY-MM-DD con listado paginado y vista readonly.
+Sesión nueva Junie reviewer para T-012 — corrección de bloqueantes: historial de versiones (frontend).
+Rama codex/t-012-version-history, HEAD 852d285, base main e15abf0.
+Leer contrato T-012, spec S-104 v2, y client/AGENTS.md.
+Commits a revisar:
+  b34004c fix(daily): migrate history page to TanStack Query hooks for cache and logout cleanup
+  852d285 docs(t-012): update checkpoint with correction commit SHA and in_review status
+Bloqueantes resueltos: (1) Se crearon hooks de TanStack Query (useDailyVersionQuery.ts) siguiendo el patrón de useDailyNoteQuery.ts, y DailyHistoryPage.tsx migrada para usarlos con enabled condicional a sesión activa. (2) Los datos ahora entran en la cache de Query y se limpian automáticamente al logout vía discardPrivateData/removeQueries.
+Revisar: useDailyVersionQuery.ts (nuevo), DailyHistoryPage.tsx (modificada), DailyHistoryPage.test.tsx (ajustado).
+Gate client: 304 tests passed, 83.41% statements, 77.71% branches, typecheck OK, build OK.
+Lint: 5 errores pre-existentes en DailyEditor/separator (T-008/T-009), sin nuevos introducidos.
+Backend: SecurityConfigTest falla por OIDC config faltante en entorno (pre-existente, no relacionado con esta tarea).
 ```

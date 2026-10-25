@@ -41,6 +41,19 @@ export function HomePage() {
           </Stack>
         </CardContent>
       </Card>
+      <Card variant="outlined">
+        <CardContent>
+          <Stack spacing={1.5}>
+            <Typography variant="h6" component="h2">
+              Historial de versiones
+            </Typography>
+            <Typography>Consultá las copias de seguridad de tus notas.</Typography>
+            <Link component={RouterLink} to="/history">
+              Ir al Historial
+            </Link>
+          </Stack>
+        </CardContent>
+      </Card>
     </Stack>
   )
 }
