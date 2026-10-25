@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-012](tasks/T-012-version-history.md) |
-| Estado | in_progress |
-| Acción actual | Implementación completada y verificada. Pendiente revisión independiente. |
-| Rama / PR | codex/t-012-version-history (0e8285f)
+| Estado | in_review |
+| Acción actual | Corrección de bloqueantes commitada y publicada. Pendiente revisión independiente. |
+| Rama / PR | codex/t-012-version-history (b34004c)
 
 T-011: conciliada como MERGED (397798e). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. DailyVersionApiIT 23/23 OK (PostgreSQL Testcontainers, OIDC real), docs-check OK, CI verify-required SUCCESS. Squash merge 397798e, 2026-10-25.
 
@@ -24,10 +24,11 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie reviewer para T-012 — historial de versiones (frontend).
-Rama codex/t-012-version-history (0e8285f), base main actualizado.
+Sesión nueva Junie reviewer para T-012 — corrección de bloqueantes: historial de versiones (frontend).
+Rama codex/t-012-version-history, base main actualizado.
 Leer contrato T-012, spec S-104 v2, y client/AGENTS.md.
-Revisar implementación: versionApi.ts, DailyHistoryPage.tsx, tests asociados.
-Verificar gate: 304 tests, 84.03% statements, 77.19% branches, typecheck OK, build OK.
+Bloqueantes resueltos: (1) Se crearon hooks de TanStack Query (useDailyVersionQuery.ts) siguiendo el patrón de useDailyNoteQuery.ts, y DailyHistoryPage.tsx migrada para usarlos con enabled condicional a sesión activa. (2) Los datos ahora entran en la cache de Query y se limpian automáticamente al logout vía discardPrivateData/removeQueries.
+Revisar: useDailyVersionQuery.ts (nuevo), DailyHistoryPage.tsx (modificada), DailyHistoryPage.test.tsx (ajustado).
+Verificar gate: 304 tests, 83.41% statements, 77.71% branches, typecheck OK, build OK.
 Lint: 5 errores pre-existentes en DailyEditor/separator (T-008/T-009), sin nuevos.
 ```
