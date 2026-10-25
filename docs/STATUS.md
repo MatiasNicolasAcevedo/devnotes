@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-008](tasks/T-008-separator-editing.md) |
-| Estado | in_review |
-| Acción actual | Revisión T-008: APROBADO sin bloqueantes. HEAD 87e5e02, base main 1702fd9. CI verify-required SUCCESS. Pendiente squash merge. |
-| Rama / PR | codex/t-008-separator-editing, PR #13, HEAD 87e5e02, base main 1702fd9
+| Tarea y contrato | [T-009](tasks/T-009-text-links.md) (habilitada tras T-008 MERGED) |
+| Estado | ready |
+| Acción actual | T-008 conciliada como MERGED. Siguiente tarea T-009 habilitada. |
+| Rama / PR | —
+
+T-008: conciliada como MERGED (5d2a70f). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. Client gate OK: 27 tests (18 separator + 9 DailyEditor), typecheck OK, docs-check OK. CI verify-required SUCCESS. Squash merge 5d2a70f, 2026-10-25.
 
 T-006: conciliada como MERGED (6eb2c42). Junie reviewer + merger, Qwen3.6-27B-FP8. Client gate 218 tests OK, 100% líneas daily, 90.47% branches. Revisión APROBADA sin observaciones, CI verify-required pass.
 
@@ -16,9 +18,7 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva Junie reviewer para T-008 — separadores con teclado.
-Rama codex/t-008-separator-editing, HEAD 2386358, base main 1702fd9.
-Revisar implementación S-103: shortcuts --25/--50/--75/--- Enter producen separadores.
-Verificar gate client: separator.test.ts (18 tests), DailyEditor.test.ts (9 tests), typecheck OK.
-Comprobar HEAD/base, arquitectura, negativos y docs-check. Publicar veredicto del SHA final.
+Sesión nueva Junie implementer para T-009 — links de texto en notas diarias.
+Dependencia T-008 MERGED (5d2a70f). Leer contrato T-009, specs S-103/S-101, y AGENTS client.
+Crear rama codex/t-009-text-links desde main actualizado.
 ```

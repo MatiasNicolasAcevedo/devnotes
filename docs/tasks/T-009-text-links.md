@@ -1,6 +1,6 @@
 ---
 id: T-009
-status: draft
+status: ready
 priority: P1
 size: S
 executor: junie
