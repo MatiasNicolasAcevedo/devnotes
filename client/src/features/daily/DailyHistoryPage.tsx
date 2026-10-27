@@ -16,6 +16,7 @@ import { Link as RouterLink, useParams } from 'react-router'
 import { useSession } from '../../features/auth/sessionContext'
 import { DailyEditor } from '../../features/daily/editor/DailyEditor'
 import { useDailyVersionListQuery, useDailyVersionDetailQuery } from './useDailyVersionQuery'
+import { ApiError } from '../../services/http'
 
 /** Formatea una fecha ISO YYYY-MM-DD como dd/MM/yyyy (local). */
 function formatDateLocal(isoDate: string): string {
@@ -56,12 +57,24 @@ function HistoryLoginRequired() {
 
 // ——— Vista de detalle readonly ———
 
-function HistoryDetailInner({ date, owner, sessionIsCurrent }: { date: string; owner: string; sessionIsCurrent?: () => boolean }) {
+function HistoryDetailInner({
+  date,
+  owner,
+  sessionIsCurrent,
+}: {
+  date: string
+  owner: string
+  sessionIsCurrent?: () => boolean
+}) {
   const query = useDailyVersionDetailQuery(owner, date, sessionIsCurrent)
 
   return (
     <Stack spacing={3}>
-      <Stack direction="row" spacing={2} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{ alignItems: 'center', justifyContent: 'space-between' }}
+      >
         <Typography variant="h5" component="h1">
           Versión del {formatDateLocal(date)}
         </Typography>
@@ -75,6 +88,18 @@ function HistoryDetailInner({ date, owner, sessionIsCurrent }: { date: string; o
           <CircularProgress size={20} aria-hidden />
           <Typography>Cargando versión…</Typography>
         </Stack>
+      ) : query.error instanceof ApiError && query.error.status === 404 ? (
+        <Alert severity="info">
+          <AlertTitle>Sin versión guardada</AlertTitle>
+          No hay una versión guardada para esta fecha.{' '}
+          <Link component={RouterLink} to={`/notes/${date}`}>
+            Volver a mi nota
+          </Link>
+          {' · '}
+          <Link component="button" onClick={() => query.refetch()}>
+            Reintentar
+          </Link>
+        </Alert>
       ) : query.isError ? (
         <Alert severity="error" role="alert">
           <AlertTitle>Error al cargar la versión</AlertTitle>
@@ -113,7 +138,13 @@ function HistoryDetailInner({ date, owner, sessionIsCurrent }: { date: string; o
 
 // ——— Vista de lista paginada ———
 
-function HistoryListInner({ owner, sessionIsCurrent }: { owner: string; sessionIsCurrent?: () => boolean }) {
+function HistoryListInner({
+  owner,
+  sessionIsCurrent,
+}: {
+  owner: string
+  sessionIsCurrent?: () => boolean
+}) {
   const [listPage, setListPage] = useState(0)
 
   const query = useDailyVersionListQuery(owner, listPage, sessionIsCurrent)

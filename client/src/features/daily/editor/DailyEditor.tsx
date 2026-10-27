@@ -1,7 +1,8 @@
 import '@fontsource/roboto-mono'
 import './dailyEditor.css'
 
-import { EditorContent, useEditor } from '@tiptap/react'
+import { EditorContent, useEditor, useEditorState } from '@tiptap/react'
+import Button from '@mui/material/Button'
 import Document from '@tiptap/extension-document'
 import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
@@ -39,6 +40,7 @@ export function DailyEditor({
 }: DailyEditorProps) {
   const onChangeRef = useRef(onChange)
   const editorRef = useRef<ReturnType<typeof useEditor>>(null)
+  const linkSelectionRef = useRef<{ from: number; to: number } | null>(null)
 
   const [linkDialogOpen, setLinkDialogOpen] = useState(false)
   const [selectedText, setSelectedText] = useState('')
@@ -65,6 +67,10 @@ export function DailyEditor({
       attributes: {
         class: 'daily-editor-content',
         spellcheck: 'false',
+        role: 'textbox',
+        'aria-multiline': 'true',
+        'aria-label': ariaLabel,
+        'aria-readonly': String(readOnly),
       },
       handlePaste: (view, event) => {
         // Pegar como texto plano: HTML se trata como texto
@@ -99,15 +105,6 @@ export function DailyEditor({
       },
     },
     editable: !readOnly,
-    onCreate: ({ editor }) => {
-      // Hidratar con contenido inicial si existe
-      if (initialContent) {
-        const result = validateDailyContent(initialContent)
-        if (result.valid && result.data) {
-          editor.commands.setContent(result.data)
-        }
-      }
-    },
     onUpdate: ({ editor }) => {
       const json = editor.getJSON()
       const result = validateDailyContent(json)
@@ -117,10 +114,37 @@ export function DailyEditor({
     },
   })
 
+  const linkState = useEditorState({
+    editor,
+    selector: ({ editor: ed }) => {
+      if (!ed) return { canLink: false, isLink: false }
+      const { empty, $from, $to } = ed.state.selection
+      const isLink = ed.isActive('link')
+      return {
+        isLink,
+        canLink: isLink || (!empty && $from.sameParent($to)),
+      }
+    },
+  })
+
+  // La nota remota puede llegar después del montaje. Hidratar no es una edición
+  // y no debe programar un PUT ni cambiar la selección en cada pulsación.
+  useEffect(() => {
+    if (!editor || !initialContent) return
+    const result = validateDailyContent(initialContent)
+    if (
+      result.valid &&
+      result.data &&
+      !editor.state.doc.eq(editor.schema.nodeFromJSON(result.data))
+    ) {
+      editor.commands.setContent(result.data, { emitUpdate: false })
+    }
+  }, [editor, initialContent])
+
   // Actualizar editable cuando cambia readOnly
   useEffect(() => {
     if (editor && editor.isEditable !== !readOnly) {
-      editor.setEditable(!readOnly)
+      editor.setEditable(!readOnly, false)
     }
   }, [editor, readOnly])
 
@@ -133,75 +157,35 @@ export function DailyEditor({
     const ed = editorRef.current
     if (!ed || !ed.isEditable) return
 
-    const { selection } = ed.state
-    const { empty, from, to } = selection
+    const initialSelection = ed.state.selection
+    if (!initialSelection.$from.sameParent(initialSelection.$to)) return
+    if (initialSelection.empty && !ed.isActive('link')) return
 
-    // Si la selección cruza bloques, se rechaza
-    if (!empty) {
-      const $from = ed.state.doc.resolve(from)
-      const $to = ed.state.doc.resolve(to)
-      if (!$from.sameParent($to)) {
-        return
-      }
-    }
-
-    let text = ''
-    let href: string | undefined
-
-    if (empty) {
-      // Cursor sin selección: verificar si está dentro de un link
-      const mark = ed.state.storedMarks?.find((m) => m.type.name === 'link')
-      if (mark) {
-        href = mark.attrs.href
-        const { $from } = ed.state.selection
-        $from.parent.content.forEach((node: any) => {
-          if (node.type.name === 'text' && node.marks) {
-            for (const m of node.marks) {
-              if (m.type.name === 'link' && m.attrs.href === href) {
-                text = node.text ?? ''
-                break
-              }
-            }
-          }
-        })
-      } else {
-        return
-      }
-    } else {
-      text = ed.state.doc.textBetween(from, to, '')
-      if (!text) return
-
-      const linkMark = ed.state.schema.marks.link
-      const hasLink = ed.state.doc.rangeHasMark(from, to, linkMark)
-      if (hasLink) {
-        ed.state.doc.nodesBetween(from, to, (node: any) => {
-          if (node.type.name === 'text' && node.marks) {
-            for (const m of node.marks) {
-              if (m.type.name === 'link') {
-                href = m.attrs.href
-                return false
-              }
-            }
-          }
-        })
-      }
-    }
+    // Expandir el enlace existente también cuando solo hay un cursor dentro de él.
+    if (ed.isActive('link')) ed.commands.extendMarkRange('link')
+    const { from, to } = ed.state.selection
+    const text = ed.state.doc.textBetween(from, to, '')
+    if (!text) return
+    const href: unknown = ed.getAttributes('link').href
+    linkSelectionRef.current = { from, to }
 
     setSelectedText(text)
-    setExistingHref(href)
+    setExistingHref(typeof href === 'string' ? href : undefined)
     setLinkDialogOpen(true)
   }, [])
 
   const handleSaveLink = useCallback((href: string) => {
     const ed = editorRef.current
-    if (!ed) return
-    ed.chain().focus().setMark('link', { href }).run()
+    const selection = linkSelectionRef.current
+    if (!ed?.isEditable || !selection) return
+    ed.chain().focus().setTextSelection(selection).setMark('link', { href }).run()
   }, [])
 
   const handleRemoveLink = useCallback(() => {
     const ed = editorRef.current
-    if (!ed) return
-    ed.chain().focus().unsetMark('link').run()
+    const selection = linkSelectionRef.current
+    if (!ed?.isEditable || !selection) return
+    ed.chain().focus().setTextSelection(selection).unsetMark('link').run()
   }, [])
 
   const handleOpenLink = useCallback((href: string) => {
@@ -212,6 +196,9 @@ export function DailyEditor({
     setLinkDialogOpen(false)
     setSelectedText('')
     setExistingHref(undefined)
+  }, [])
+
+  const handleDialogExited = useCallback(() => {
     editorRef.current?.commands.focus()
   }, [])
 
@@ -237,25 +224,48 @@ export function DailyEditor({
   }
 
   return (
-    <div className="daily-editor-wrapper">
-      <div className="daily-editor-gutter" aria-hidden="true">
-        {/* Los números se generan por CSS counter */}
+    <div className="daily-editor-wrapper" data-readonly={readOnly}>
+      {!readOnly && (
+        <div className="daily-editor-toolbar" role="group" aria-label="Herramientas del editor">
+          <Button
+            size="small"
+            variant="outlined"
+            disabled={!linkState?.canLink}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={openLinkDialog}
+          >
+            {linkState?.isLink ? 'Editar enlace' : 'Agregar enlace'}
+          </Button>
+          <span className="daily-editor-help">Seleccioná texto y agregá un enlace (Ctrl+K).</span>
+        </div>
+      )}
+      <div className="daily-editor-viewport" aria-label="Área de escritura redimensionable">
+        <div
+          className="daily-editor-main"
+          onClick={(event) => {
+            const anchor = event.target instanceof Element ? event.target.closest('a') : null
+            if (anchor) {
+              event.preventDefault()
+              const href = anchor.getAttribute('href')
+              if (href) handleOpenLink(href)
+            }
+          }}
+        >
+          <EditorContent editor={editor} />
+        </div>
       </div>
-      <div className="daily-editor-main">
-        <label className="daily-editor-label visually-hidden">{ariaLabel}</label>
-        <EditorContent
-          editor={editor}
-          role="textbox"
-          aria-multiline="true"
-          aria-label={ariaLabel}
-        />
-      </div>
+      {!readOnly && (
+        <div className="daily-editor-footer">
+          Arrastrá la esquina inferior derecha para cambiar la altura.
+        </div>
+      )}
       {children}
       <LinkDialog
         open={linkDialogOpen}
         selectedText={selectedText}
         existingHref={existingHref}
         onClose={handleCloseDialog}
+        onExited={handleDialogExited}
         onSave={handleSaveLink}
         onRemove={handleRemoveLink}
         onOpen={handleOpenLink}

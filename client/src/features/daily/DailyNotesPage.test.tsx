@@ -1,4 +1,5 @@
-import { screen, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { useLocation } from 'react-router'
 import { http as mock, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 import { buildAuthUser } from '../../test/factories'
@@ -27,6 +28,63 @@ function buildDetail(date: string, revision: number) {
 }
 
 describe('DailyNotesPage', () => {
+  it('selector, ruta y contenido cambian juntos; Hoy y la lista vuelven a su propia nota sin escribir', async () => {
+    installAuthBackend({ user: buildAuthUser() })
+    const today = todayLocal()
+    let writes = 0
+    const content = (text: string) => ({
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text }] }],
+    })
+    server.use(
+      mock.get('/api/v1/daily-notes/:date', ({ params }) =>
+        HttpResponse.json({
+          ...buildDetail(String(params.date), params.date === today ? 7 : 2),
+          content: content(params.date === today ? 'nota hoy' : 'nota anterior'),
+        }),
+      ),
+      mock.put('/api/v1/daily-notes/:date', () => {
+        writes++
+        return HttpResponse.error()
+      }),
+      mock.get(LIST, () =>
+        HttpResponse.json({
+          ...emptyList(),
+          content: [{ date: '2024-06-15', updatedAt: '2024-06-15T10:00:00Z', revision: 2 }],
+          totalElements: 1,
+        }),
+      ),
+    )
+    function Location() {
+      return <output data-testid="route">{useLocation().pathname}</output>
+    }
+    const { user } = renderWithProviders(
+      <>
+        <AppRoutes />
+        <Location />
+      </>,
+      { route: '/notes' },
+    )
+    const dateInput = await screen.findByLabelText('Fecha')
+    await waitFor(() =>
+      expect(screen.getByLabelText('Editor de nota diaria')).toHaveTextContent('nota hoy'),
+    )
+    fireEvent.change(dateInput, { target: { value: '2024-06-15' } })
+    await waitFor(() => expect(screen.getByTestId('route')).toHaveTextContent('/notes/2024-06-15'))
+    await waitFor(() => expect(screen.getByLabelText('Fecha')).toHaveValue('2024-06-15'))
+    await waitFor(() =>
+      expect(screen.getByLabelText('Editor de nota diaria')).toHaveTextContent('nota anterior'),
+    )
+    await user.click(screen.getByRole('link', { name: 'Hoy' }))
+    await waitFor(() => expect(screen.getByLabelText('Fecha')).toHaveValue(today))
+    await waitFor(() =>
+      expect(screen.getByLabelText('Editor de nota diaria')).toHaveTextContent('nota hoy'),
+    )
+    await user.click(await screen.findByRole('button', { name: /2024-06-15/ }))
+    await waitFor(() => expect(screen.getByLabelText('Fecha')).toHaveValue('2024-06-15'))
+    expect(writes).toBe(0)
+  })
+
   it('la ruta /notes muestra la página de notas', async () => {
     installAuthBackend({ user: buildAuthUser() })
     const today = todayLocal()

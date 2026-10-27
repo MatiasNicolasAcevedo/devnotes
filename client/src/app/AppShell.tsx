@@ -8,16 +8,27 @@ import Stack from '@mui/material/Stack'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import { Fragment } from 'react'
-import { Link as RouterLink, Outlet } from 'react-router'
+import { Link as RouterLink } from 'react-router'
 import { SessionAlerts } from '../features/auth/SessionAlerts'
 import { SessionControls } from '../features/auth/SessionControls'
 import { useSession } from '../features/auth/sessionContext'
+import { DailyDraftWorkspace } from '../features/daily/DailyDraftNavigation'
+import type { ReactNode } from 'react'
 
 /**
  * Estructura común: barra superior con la sesión y contenido. Las rutas se remontan al cambiar la identidad, así que
  * el estado local de una pantalla nunca pasa de un usuario a otro.
  */
 export function AppShell() {
+  const { user } = useSession()
+  return (
+    <DailyDraftWorkspace owner={user?.id ?? ''}>
+      {(outlet) => <AppShellContent outlet={outlet} />}
+    </DailyDraftWorkspace>
+  )
+}
+
+function AppShellContent({ outlet }: { outlet: ReactNode }) {
   const { status, user } = useSession()
 
   return (
@@ -39,8 +50,8 @@ export function AppShell() {
           </Box>
         </Toolbar>
       </AppBar>
-      <Container component="main" maxWidth="md" sx={{ flexGrow: 1, py: { xs: 3, sm: 5 } }}>
-        <Stack spacing={3}>
+      <Container component="main" maxWidth="lg" sx={{ flexGrow: 1, py: { xs: 2, sm: 3 } }}>
+        <Stack spacing={2}>
           <Stack component="nav" aria-label="Navegación principal" direction="row" spacing={2}>
             <Link component={RouterLink} to="/">
               Inicio
@@ -62,9 +73,7 @@ export function AppShell() {
               <Typography>Verificando sesión…</Typography>
             </Stack>
           ) : (
-            <Fragment key={user?.id ?? 'visitor'}>
-              <Outlet />
-            </Fragment>
+            <Fragment key={user?.id ?? 'visitor'}>{outlet}</Fragment>
           )}
         </Stack>
       </Container>

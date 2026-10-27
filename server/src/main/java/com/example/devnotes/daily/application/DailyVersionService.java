@@ -117,12 +117,10 @@ public class DailyVersionService {
         List<DailyVersionListItem> items = rows.stream()
                 .map(row -> {
                     Object dateObj = row[0];
-                    LocalDate date = dateObj instanceof LocalDate ? (LocalDate) dateObj
+                    LocalDate date = dateObj instanceof LocalDate
+                            ? (LocalDate) dateObj
                             : ((java.sql.Date) dateObj).toLocalDate();
-                    return new DailyVersionListItem(
-                            date,
-                            (Instant) row[1],
-                            ((Number) row[2]).longValue());
+                    return new DailyVersionListItem(date, (Instant) row[1], ((Number) row[2]).longValue());
                 })
                 .toList();
         long totalElements = versionRepository.countByOwnerId(ownerId);
@@ -145,8 +143,7 @@ public class DailyVersionService {
 
     // ── DTO records de proyección ──
 
-    public record DailyVersionView(
-            UUID id, LocalDate date, JsonNode content, long sourceRevision, Instant savedAt) {}
+    public record DailyVersionView(UUID id, LocalDate date, JsonNode content, long sourceRevision, Instant savedAt) {}
 
     public record DailyVersionListItem(LocalDate date, Instant savedAt, long sourceRevision) {}
 

@@ -2,10 +2,10 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-019](tasks/T-019-agent-operating-rules.md) |
+| Tarea y contrato | [T-020](tasks/T-020-editor-usability.md) |
 | Estado | in_review |
-| Acción actual | T-019 MERGED (16f6d53). Siguiente: T-020 editor usability (rama codex/t-020-editor-usability, PR20). |
-| Rama / PR | — |
+| Acción actual | PR20 abierto contra main. Gate client OK (331 tests, 89.92% coverage). Backend tests IT pasando. Pendiente revisión independiente y CI. |
+| Rama / PR | codex/t-020-editor-usability · [PR20](https://github.com/MatiasNicolasAcevedo/devnotes/pull/20) contra main |
 
 T-019: conciliada como MERGED (16f6d53). Junie reviewer + merger, Qwen3.6-27B-FP8. Tercera revisión independiente autorizada por el dueño tras dos rondas, APROBADA sin bloqueantes. HEAD 2d72cca, base main 9da4ab4, CI verify-required SUCCESS, docs-check OK, diff-check OK, policy DOCS_ONLY/DOCUMENTATION. Squash merge 16f6d53, 2026-10-27.
 

@@ -3,11 +3,6 @@ import AlertTitle from '@mui/material/AlertTitle'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
-import Dialog from '@mui/material/Dialog'
-import DialogActions from '@mui/material/DialogActions'
-import DialogContent from '@mui/material/DialogContent'
-import DialogContentText from '@mui/material/DialogContentText'
-import DialogTitle from '@mui/material/DialogTitle'
 import Link from '@mui/material/Link'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
@@ -18,16 +13,16 @@ import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link as RouterLink, useParams } from 'react-router'
+import { Link as RouterLink, useNavigate, useParams } from 'react-router'
 import { useSession } from '../../features/auth/sessionContext'
-import { DailyDraftProvider, useDailyDraftContext } from '../../features/daily/DailyDraftProvider'
+import { useDailyDraftContext } from '../../features/daily/DailyDraftProvider'
 import { listDailyNotes, type DailyNoteListItem } from '../../features/daily/api'
 import { DailyEditor } from '../../features/daily/editor/DailyEditor'
 import { emptyDocument } from '../../features/daily/editor/dailyDocument'
 import type { DailyContent } from '../../features/daily/editor/dailyDocument'
 import { SaveDailyVersion } from '../../features/daily/SaveDailyVersion'
 import { useSaveDailyVersion } from '../../features/daily/useSaveDailyVersion'
-import { isValidIsoDate, todayLocal } from './dateUtils'
+import { isValidIsoDate } from './dateUtils'
 
 // ——— Fallbacks sin provider ———
 
@@ -66,13 +61,12 @@ function DailyNotesLoginRequired() {
 // ——— Interior de la página, dentro del provider ———
 
 function DailyNotesInner() {
-  const { date: paramDate } = useParams<{ date?: string }>()
+  const navigate = useNavigate()
   const { status: sessionStatus, user: sessionUser } = useSession()
 
   // Hook del provider — siempre disponible aquí porque solo se monta dentro de DailyDraftProvider
   const ctx = useDailyDraftContext()
-  const { isDirty, isSaving, status, error, content, retry, navigateToDate, activeDate, discard } =
-    ctx
+  const { isDirty, status, error, content, retry, navigateToDate, activeDate } = ctx
 
   // Estado de la lista paginada (listLoading inicia true para cargar al montar sin setState en efecto)
   const [notesList, setNotesList] = useState<DailyNoteListItem[]>([])
@@ -81,31 +75,12 @@ function DailyNotesInner() {
   const [listPage, setListPage] = useState(0)
   const [listTotalPages, setListTotalPages] = useState(1)
 
-  // Diálogo de descarte
-  const [showDiscardDialog, setShowDiscardDialog] = useState(false)
-  const [pendingDate, setPendingDate] = useState<string | null>(null)
-
   // Refs para evitar closures stale en callbacks
   const navigateToDateRef = useRef(navigateToDate)
-  const discardRef = useRef(discard)
+  const navigatingRef = useRef(false)
   useEffect(() => {
     navigateToDateRef.current = navigateToDate
   }, [navigateToDate])
-  useEffect(() => {
-    discardRef.current = discard
-  }, [discard])
-
-  // beforeunload: advierte si hay cambios sin guardar o escritura en vuelo
-  useEffect(() => {
-    const handler = (e: BeforeUnloadEvent) => {
-      if (isDirty || isSaving) {
-        e.preventDefault()
-        e.returnValue = ''
-      }
-    }
-    window.addEventListener('beforeunload', handler)
-    return () => window.removeEventListener('beforeunload', handler)
-  }, [isDirty, isSaving])
 
   // Cargar lista de notas
   const loadList = useCallback(async (page: number) => {
@@ -142,29 +117,19 @@ function DailyNotesInner() {
   // Navegar a otra fecha, con flush si hay dirty
   const handleNavigateToDate = useCallback(
     async (newDate: string) => {
-      if ((isDirty || isSaving) && newDate !== activeDate) {
-        setPendingDate(newDate)
-        setShowDiscardDialog(true)
-        return
+      if (navigatingRef.current || ctx.navigationLocked || newDate === activeDate) return
+      navigatingRef.current = true
+      try {
+        await navigateToDateRef.current(newDate)
+        await navigate(`/notes/${newDate}`)
+      } catch {
+        // Error visible desde el coordinador; conservar fecha y borrador.
+      } finally {
+        navigatingRef.current = false
       }
-      navigateToDateRef.current(newDate)
     },
-    [isDirty, isSaving, activeDate],
+    [activeDate, ctx.navigationLocked, navigate],
   )
-
-  const handleConfirmDiscard = useCallback(async () => {
-    setShowDiscardDialog(false)
-    if (pendingDate) {
-      await discardRef.current()
-      navigateToDateRef.current(pendingDate)
-      setPendingDate(null)
-    }
-  }, [pendingDate])
-
-  const handleCancelDiscard = useCallback(() => {
-    setShowDiscardDialog(false)
-    setPendingDate(null)
-  }, [])
 
   // Editor onChange → envía al provider
   const handleEditorChange = useCallback(
@@ -175,12 +140,12 @@ function DailyNotesInner() {
   )
 
   // Hook de guardar versión manual — debe estar antes de cualquier early return
-  const targetDateForHook = paramDate ?? todayLocal()
   const saveVersion = useSaveDailyVersion({
     owner: sessionUser?.id ?? '',
-    date: targetDateForHook,
-    note: { flush: ctx.flush, revision: ctx.revision },
+    date: activeDate,
+    note: { flush: ctx.flush, revision: ctx.revision, getRevision: ctx.getRevision },
     sessionIsCurrent: () => sessionStatus === 'authenticated',
+    onLockChange: ctx.setNavigationLocked,
   })
 
   // Sin sesión no debería llegar aquí, pero por seguridad
@@ -188,7 +153,7 @@ function DailyNotesInner() {
     return <DailyNotesLoginRequired />
   }
 
-  const targetDate = paramDate ?? todayLocal()
+  const targetDate = activeDate
 
   // Indicador de guardado
   let saveIndicator: React.ReactNode
@@ -228,7 +193,7 @@ function DailyNotesInner() {
   }
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={2}>
       <Stack
         direction="row"
         spacing={2}
@@ -246,6 +211,7 @@ function DailyNotesInner() {
           label="Fecha"
           type="date"
           value={targetDate}
+          disabled={saveVersion.isLocked}
           onChange={(e) => {
             if (isValidIsoDate(e.target.value)) {
               handleNavigateToDate(e.target.value)
@@ -270,16 +236,16 @@ function DailyNotesInner() {
       )}
 
       {/* Editor */}
-      <Paper variant="outlined" sx={{ p: 2 }}>
+      <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
         <DailyEditor
           initialContent={content ?? emptyDocument()}
           onChange={handleEditorChange}
-          readOnly={saveVersion.isLocked}
+          readOnly={saveVersion.isLocked || ctx.isLoading}
         />
       </Paper>
 
       {/* Guardar versión manual */}
-      <SaveDailyVersion save={saveVersion} date={targetDate} />
+      {!ctx.isLoading && <SaveDailyVersion save={saveVersion} date={targetDate} />}
 
       {/* Lista de notas existentes */}
       <Stack spacing={1}>
@@ -336,22 +302,6 @@ function DailyNotesInner() {
           </>
         )}
       </Stack>
-
-      {/* Diálogo de confirmación de descarte */}
-      <Dialog open={showDiscardDialog} onClose={handleCancelDiscard}>
-        <DialogTitle>Hay cambios sin guardar</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            ¿Querés descartar los cambios y navegar a {pendingDate}?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancelDiscard}>Quedarme</Button>
-          <Button onClick={handleConfirmDiscard} variant="contained">
-            Descartar y continuar
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Stack>
   )
 }
@@ -373,10 +323,5 @@ export function DailyNotesPage() {
   }
 
   // Autenticado y fecha válida: provider + interior
-  const initialDate = paramDate ?? todayLocal()
-  return (
-    <DailyDraftProvider owner={user.id} initialDate={initialDate} sessionIsCurrent={() => true}>
-      <DailyNotesInner />
-    </DailyDraftProvider>
-  )
+  return <DailyNotesInner />
 }

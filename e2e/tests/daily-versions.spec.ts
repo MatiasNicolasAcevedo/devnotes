@@ -1,264 +1,172 @@
 import { randomUUID } from 'node:crypto';
-import { test, expect, control, login, label, layout } from './fixtures';
+import { test, expect, control, login, interactiveLogin, readiness, csrfHeaders, layout } from './fixtures';
+import { chooseDate, writeWork, saveVersion, readVersion } from './daily-helpers';
 
 test.describe.configure({ timeout: 90_000 });
 
-/**
- * T-014 · CA-04: Fechas 19/10 y 20/10 independientes; crear/reemplazar una sola copia; edición posterior no altera historial.
- * CA-05 (partial): javascript rechazado sin cambios; texto literal HTML no ejecuta; recarga y logout/login recuperan trabajo/copia.
- * CA-06 (partial): Dos identidades en la misma fecha solo ven su espacio; IDs/URL no acceden a datos ajenos.
- */
+const day19 = '2026-10-19';
+const day20 = '2026-10-20';
+
+test('T-020: direct URL, reload, Hoy and empty dates keep route and editor coherent without writes', async ({ page, identity }) => {
+  await login(page, identity);
+  const writes: string[] = [];
+  page.on('request', request => {
+    if (['PUT', 'POST'].includes(request.method()) && new URL(request.url()).pathname.startsWith('/api/v1/daily-')) writes.push(request.url());
+  });
+  await page.goto(`/notes/${day19}`);
+  await expect(page.getByLabel('Fecha', { exact: true })).toHaveValue(day19);
+  const editor = page.getByRole('textbox', { name: 'Editor de nota diaria' });
+  await expect(editor).toHaveAttribute('contenteditable', 'true');
+  await expect(editor).toHaveText('');
+  await chooseDate(page, day20);
+  await expect(editor).toHaveText('');
+  await page.reload();
+  await expect(page).toHaveURL(`http://localhost/notes/${day20}`);
+  await expect(page.getByLabel('Fecha', { exact: true })).toHaveValue(day20);
+  await expect(editor).toHaveAttribute('contenteditable', 'true');
+  await expect(editor).toHaveText('');
+  await page.getByRole('link', { name: 'Hoy', exact: true }).click();
+  const today = await page.evaluate(() => {
+    const value = new Date();
+    return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
+  });
+  await expect(page).toHaveURL(`http://localhost/notes/${today}`);
+  await expect(page.getByLabel('Fecha', { exact: true })).toHaveValue(today);
+  await expect(editor).toHaveAttribute('contenteditable', 'true');
+  // Completar un debounce real prueba que montar/hidratar no programa una escritura.
+  await page.waitForTimeout(800);
+  expect(writes).toEqual([]);
+  const listResponse = await page.request.get('/api/v1/daily-notes');
+  expect(listResponse.status()).toBe(200);
+  expect((await listResponse.json()).totalElements).toBe(0);
+  await layout(page);
+});
 
 test('CA-04: dates 19/10 and 20/10 are independent; create/replace one version; editing note does not alter history', async ({ page, identity }) => {
   await login(page, identity);
-
-  // Navigate to 2026-10-19
   await page.getByRole('link', { name: 'Notas', exact: true }).click();
-  const editor = page.locator('.daily-editor-content[role="textbox"]');
-  await expect(editor).toBeVisible();
+  await chooseDate(page, day19);
+  await writeWork(page, day19, 'Nota del 19 de octubre');
+  const original = await saveVersion(page, day19);
 
-  // Use date picker or direct navigation to 2026-10-19
-  const dateInput = page.getByRole('textbox', { name: /fecha/i });
-  if (await dateInput.isVisible()) {
-    await dateInput.click();
-    await dateInput.fill('2026-10-19');
-    await page.keyboard.press('Enter');
-  } else {
-    // Direct URL navigation
-    await page.goto('/notes/2026-10-19');
-    await expect(editor).toBeVisible({ timeout: 10000 });
-  }
+  await chooseDate(page, day20);
+  await expect(page.getByRole('textbox', { name: 'Editor de nota diaria' })).toHaveText('');
+  await writeWork(page, day20, 'Nota del 20 de octubre');
+  const version20 = await saveVersion(page, day20);
+  expect(version20.id).not.toBe(original.id);
+  await readVersion(page, day19, 'Nota del 19 de octubre');
+  await readVersion(page, day20, 'Nota del 20 de octubre');
 
-  // Type content for Oct 19
-  await editor.click();
-  await page.keyboard.type('Nota del 19 de octubre');
-  // Wait for autosave debounce (700ms) plus margin
-  await page.waitForTimeout(1500);
+  await page.getByRole('link', { name: /Volver a mi nota/ }).click();
+  await chooseDate(page, day19);
+  await expect(page.getByRole('textbox', { name: 'Editor de nota diaria' })).toHaveText('Nota del 19 de octubre');
+  const edited = await writeWork(page, day19, 'Nota editada del 19');
+  await readVersion(page, day19, 'Nota del 19 de octubre');
+  await page.getByRole('link', { name: /Volver a mi nota/ }).click();
+  await expect(page.getByRole('textbox', { name: 'Editor de nota diaria' })).toHaveText('Nota editada del 19');
 
-  // Save a version using API directly (more reliable than UI button)
-  const saveButton = page.getByRole('button', { name: 'Guardar versión' });
-  if (await saveButton.isVisible() && await saveButton.isEnabled()) {
-    await saveButton.click();
-    const successAlert = page.getByRole('alert').filter({ hasText: 'Versión guardada correctamente' });
-    if (!await successAlert.isVisible({ timeout: 15000 })) {
-      // Fallback: save version via API
-      await page.request.post('/api/v1/daily-notes/2026-10-19/version', { data: { expectedRevision: 1 } });
-    }
-  } else {
-    // Fallback: save version via API
-    await page.request.post('/api/v1/daily-notes/2026-10-19/version', { data: { expectedRevision: 1 } });
-  }
-
-  // Navigate to 2026-10-20
-  if (await dateInput.isVisible()) {
-    await dateInput.click();
-    await dateInput.fill('2026-10-20');
-    await page.keyboard.press('Enter');
-  } else {
-    await page.goto('/notes/2026-10-20');
-    await expect(editor).toBeVisible({ timeout: 10000 });
-  }
-
-  // Type different content for Oct 20
-  await editor.click();
-  await page.keyboard.type('Nota del 20 de octubre');
-  // Wait for autosave debounce (700ms) plus margin
-  await page.waitForTimeout(1500);
-
-  // Save a version for Oct 20
-  const saveButton20 = page.getByRole('button', { name: 'Guardar versión' });
-  if (await saveButton20.isVisible() && await saveButton20.isEnabled()) {
-    await saveButton20.click();
-    const successAlert = page.getByRole('alert').filter({ hasText: 'Versión guardada correctamente' });
-    if (!await successAlert.isVisible({ timeout: 15000 })) {
-      await page.request.post('/api/v1/daily-notes/2026-10-20/version', { data: { expectedRevision: 1 } });
-    }
-  } else {
-    await page.request.post('/api/v1/daily-notes/2026-10-20/version', { data: { expectedRevision: 1 } });
-  }
-
-  // Navigate to history
-  await page.getByRole('link', { name: 'Historial', exact: true }).click();
-  await expect(page).toHaveURL(/\/history/);
-
-  // Both dates should appear in history
-  await expect(page.locator('.daily-editor-content, [role="listitem"]')).toBeVisible({ timeout: 10000 });
-
-  // Navigate to Oct 19's version in history
-  await page.goto('/history/2026-10-19');
-  await expect(page.locator('.daily-editor-content')).toBeVisible({ timeout: 10000 });
-  await expect(page.locator('.daily-editor-content')).toContainText('Nota del 19 de octubre');
-
-  // Navigate to Oct 20's version in history
-  await page.goto('/history/2026-10-20');
-  await expect(page.locator('.daily-editor-content')).toBeVisible({ timeout: 10000 });
-  await expect(page.locator('.daily-editor-content')).toContainText('Nota del 20 de octubre');
-
-  // Verify independence: editing Oct 19 note does not change its version
-  await page.goto('/notes/2026-10-19');
-  await expect(editor).toBeVisible({ timeout: 10000 });
-
-  // Edit the note
-  await page.keyboard.press('Control+a');
-  await page.keyboard.press('Backspace');
-  await page.keyboard.type('Nota editada del 19');
-  await page.waitForTimeout(1000);
-
-  // Check that the version is unchanged
-  await page.goto('/history/2026-10-19');
-  await expect(page.locator('.daily-editor-content')).toBeVisible({ timeout: 10000 });
-  await expect(page.locator('.daily-editor-content')).toContainText('Nota del 19 de octubre');
-  await expect(page.locator('.daily-editor-content')).not.toContainText('Nota editada del 19');
-
-  // Replace version: edit note, save version again
-  await page.goto('/notes/2026-10-19');
-  await expect(editor).toBeVisible({ timeout: 10000 });
-  await page.waitForTimeout(500);
-
-  // Replace version via API (more reliable)
-  try {
-    await page.request.post('/api/v1/daily-notes/2026-10-19/version', { data: { expectedRevision: 1 } });
-  } catch {
-    // May be 409 if revision changed, that's ok for this test
-  }
-
-  // Verify only one version exists for this date
-  await page.goto('/history/2026-10-19');
-  await expect(page.locator('.daily-editor-content')).toBeVisible({ timeout: 10000 });
-
+  // Cancelar un reemplazo deja la copia anterior intacta.
+  await page.getByRole('button', { name: 'Guardar versión', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: 'Cancelar', exact: true }).click();
+  const afterCancel = await page.request.get(`/api/v1/daily-versions/${day19}`);
+  expect(afterCancel.status()).toBe(200);
+  expect(await afterCancel.json()).toEqual(original);
+  const replacement = await saveVersion(page, day19, true);
+  expect(replacement.id).toBe(original.id);
+  expect(replacement.sourceRevision).toBe(edited.revision);
+  expect(JSON.stringify(replacement.content)).toContain('Nota editada del 19');
+  await readVersion(page, day19, 'Nota editada del 19');
+  await readVersion(page, day20, 'Nota del 20 de octubre');
+  const listResponse = await page.request.get('/api/v1/daily-versions');
+  expect(listResponse.status()).toBe(200);
+  const list = await listResponse.json();
+  expect(list.totalElements).toBe(2);
+  expect(list.content.map((item: { date: string }) => item.date)).toEqual([day20, day19]);
+  const unchanged20 = await page.request.get(`/api/v1/daily-versions/${day20}`);
+  expect(unchanged20.status()).toBe(200);
+  expect(await unchanged20.json()).toEqual(version20);
   await layout(page);
 });
 
 test('CA-05: reload and logout/login recover work and version copy', async ({ page, identity }) => {
   await login(page, identity);
   await page.getByRole('link', { name: 'Notas', exact: true }).click();
-  const editor = page.locator('.daily-editor-content[role="textbox"]');
-  await expect(editor).toBeVisible();
-
-  // Type content
-  await editor.click();
-  await page.keyboard.type('Trabajo que se recupera');
-  // Wait for autosave debounce (700ms) plus margin
-  await page.waitForTimeout(1500);
-
-  // Reload and verify content is recovered
+  const date = await page.getByLabel('Fecha', { exact: true }).inputValue();
+  expect(date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  await writeWork(page, date, 'Copia guardada que se recupera');
+  const version = await saveVersion(page, date);
+  await writeWork(page, date, 'Trabajo posterior que se recupera');
   await page.reload();
-  await expect(editor).toBeVisible({ timeout: 10000 });
-  await expect(page.locator('.daily-editor-content')).toContainText('Trabajo que se recupera');
-
-  // Save a version via API (more reliable)
-  try {
-    const today = new URL(page.url()).pathname.split('/').pop() ?? '';
-    await page.request.post(`/api/v1/daily-notes/${today}/version`, { data: { expectedRevision: 1 } });
-  } catch {
-    // May fail if revision changed, continue with test
-  }
-
-  // Logout and login again
+  await expect(page).toHaveURL(`http://localhost/notes/${date}`);
+  await expect(page.getByLabel('Fecha', { exact: true })).toHaveValue(date);
+  await expect(page.getByRole('textbox', { name: 'Editor de nota diaria' })).toHaveText('Trabajo posterior que se recupera');
+  await readVersion(page, date, 'Copia guardada que se recupera');
+  await page.reload();
+  await expect(page.getByRole('textbox', { name: 'Versión de solo lectura' })).toHaveText('Copia guardada que se recupera');
   await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
   await expect(page).toHaveURL('http://localhost/login');
-
-  // Login again with the same identity
+  await expect(page.locator('.daily-editor-content')).toHaveCount(0);
+  expect((await page.request.get('/api/v1/daily-versions')).status()).toBe(401);
   await login(page, identity);
-
-  // Verify note is recovered
   await page.getByRole('link', { name: 'Notas', exact: true }).click();
-  await expect(editor).toBeVisible({ timeout: 10000 });
-  await expect(page.locator('.daily-editor-content')).toContainText('Trabajo que se recupera');
-
-  // Verify version is recovered
-  await page.getByRole('link', { name: 'Historial', exact: true }).click();
-  await expect(page).toHaveURL(/\/history/);
-  await expect(page.locator('[role="listitem"], .daily-editor-content')).toBeVisible({ timeout: 10000 });
-
+  await expect(page.getByRole('textbox', { name: 'Editor de nota diaria' })).toHaveText('Trabajo posterior que se recupera');
+  await readVersion(page, date, 'Copia guardada que se recupera');
+  const recovered = await page.request.get(`/api/v1/daily-versions/${date}`);
+  expect(recovered.status()).toBe(200);
+  expect(await recovered.json()).toEqual(version);
   await layout(page);
 });
 
 test('CA-06: two identities on the same date only see their own versions; change identity clears data', async ({ page, browser, identity }) => {
-  const identityA = identity;
-  const identityB = randomUUID();
-
-  // Register identityB with the OIDC provider before using it
-  await control('reset', identityB);
-
-  // Actor A writes and saves a version
-  await login(page, identityA);
+  await control('reference-login');
+  await readiness(page);
+  const actorA = await interactiveLogin(page, identity);
   await page.getByRole('link', { name: 'Notas', exact: true }).click();
-  const editorA = page.locator('.daily-editor-content[role="textbox"]');
-  await expect(editorA).toBeVisible();
-
-  await editorA.click();
-  await page.keyboard.type('Version secreta de A');
-  // Wait for autosave debounce (700ms) plus margin
-  await page.waitForTimeout(1500);
-
-  // Save version via API (more reliable)
-  const today = (() => {
-    const u = new URL(page.url());
-    return u.pathname.split('/').pop() ?? '';
-  })();
+  await chooseDate(page, day19);
+  await writeWork(page, day19, 'Version secreta de A');
+  const versionA = await saveVersion(page, day19);
+  const second = await browser.newContext({ baseURL: 'http://localhost', viewport: page.viewportSize()! });
   try {
-    await page.request.post(`/api/v1/daily-notes/${today}/version`, { data: { expectedRevision: 1 } });
-  } catch {
-    // May fail if revision changed, continue with test
-  }
-
-  // Actor B logs in with a new context
-  const contextB = await browser.newContext({ baseURL: 'http://localhost', viewport: page.viewportSize()! });
-  try {
-    const pageB = await contextB.newPage();
-    await login(pageB, identityB);
-
-    // Navigate to the same date
-    await pageB.goto(`/notes/${today}`);
-    const editorB = pageB.locator('.daily-editor-content[role="textbox"]');
-    await expect(editorB).toBeVisible({ timeout: 10000 });
-
-    // Actor B should NOT see A's version
-    await expect(pageB.locator('.daily-editor-content')).not.toContainText('Version secreta de A');
-
-    // Actor B writes and saves their own version
-    await editorB.click();
-    await pageB.keyboard.type('Version de B');
-    // Wait for autosave debounce (700ms) plus margin
-    await pageB.waitForTimeout(1500);
-
-    // Save version for B via API (more reliable)
-    try {
-      await pageB.request.post(`/api/v1/daily-notes/${today}/version`, { data: { expectedRevision: 1 } });
-    } catch {
-      // May fail if revision changed, continue with test
-    }
-
-    // Verify A's history doesn't show B's version
-    await page.goto('/history');
-    await expect(page).toHaveURL(/\/history/);
-    await expect(page.locator('.daily-editor-content')).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('.daily-editor-content')).not.toContainText('Version de B');
-
-    // Verify B's history doesn't show A's version
-    await pageB.goto('/history');
-    await expect(pageB.locator('.daily-editor-content')).toBeVisible({ timeout: 10000 });
-    await expect(pageB.locator('.daily-editor-content')).not.toContainText('Version secreta de A');
-
-    // Verify via API: B cannot access A's version by date
-    const versionFromB = await pageB.request.get(`/api/v1/daily-versions/${today}`);
-    if (versionFromB.status() === 200) {
-      const bodyB = await versionFromB.json();
-      const textInB = JSON.stringify(bodyB.content);
-      expect(textInB).not.toContain('Version secreta de A');
-    }
-
-    // Changing identity clears data
+    const pageB = await second.newPage();
+    const actorB = await interactiveLogin(pageB, randomUUID());
+    expect(actorB).not.toBe(actorA);
+    expect((await (await page.request.get('/api/v1/auth/me')).json()).id).toBe(actorA);
+    await pageB.goto(`/history/${day19}`);
+    await expect(pageB.getByText('Sin versión guardada', { exact: false })).toBeVisible();
+    const absent = await pageB.request.get(`/api/v1/daily-versions/${day19}`);
+    expect(absent.status()).toBe(404);
+    expect(JSON.stringify(await absent.json())).not.toContain('Version secreta de A');
+    const byForeignId = await pageB.request.get(`/api/v1/daily-versions/${versionA.id}`);
+    expect(byForeignId.status()).toBe(400);
+    const byMissingId = await pageB.request.get(`/api/v1/daily-versions/${randomUUID()}`);
+    expect(byMissingId.status()).toBe(400);
+    expect((await byForeignId.json()).detail).toBe((await byMissingId.json()).detail);
+    const csrf = await csrfHeaders(pageB);
+    expect((await pageB.request.post(`/api/v1/daily-notes/${day19}/version`, { headers: csrf, data: { expectedRevision: versionA.sourceRevision } })).status()).toBe(404);
+    expect((await pageB.request.post(`/api/v1/daily-notes/${day19}/version`, { headers: csrf, data: { expectedRevision: versionA.sourceRevision, ownerId: actorA } })).status()).toBe(400);
+    await pageB.getByRole('link', { name: 'Notas', exact: true }).click();
+    await chooseDate(pageB, day19);
+    await writeWork(pageB, day19, 'Version de B');
+    const versionB = await saveVersion(pageB, day19);
+    expect(versionB.id).not.toBe(versionA.id);
+    await readVersion(page, day19, 'Version secreta de A');
+    await readVersion(pageB, day19, 'Version de B');
+    await page.reload();
+    await expect(page.getByRole('textbox', { name: 'Versión de solo lectura' })).toHaveText('Version secreta de A');
+    const stillA = await page.request.get(`/api/v1/daily-versions/${day19}`);
+    expect(stillA.status()).toBe(200);
+    expect(await stillA.json()).toEqual(versionA);
     await pageB.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
     await expect(pageB).toHaveURL('http://localhost/login');
+    await expect(pageB.locator('.daily-editor-content')).toHaveCount(0);
     expect((await pageB.request.get('/api/v1/auth/me')).status()).toBe(401);
     expect((await pageB.request.get('/api/v1/daily-versions')).status()).toBe(401);
-
+    // El mismo navegador cambia de B a A sin conservar la vista privada anterior.
+    expect(await interactiveLogin(pageB, identity)).toBe(actorA);
+    await readVersion(pageB, day19, 'Version secreta de A');
+    await expect(pageB.getByRole('main')).not.toContainText('Version de B');
+    expect((await (await page.request.get('/api/v1/auth/me')).json()).id).toBe(actorA);
     await layout(pageB);
-  } finally {
-    await contextB.close();
-  }
-
+  } finally { await second.close(); }
   await layout(page);
 });

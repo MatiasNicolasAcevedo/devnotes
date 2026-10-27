@@ -1,10 +1,23 @@
-import { describe, expect, it, vi } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { DailyEditor } from './DailyEditor'
 import { type DailyContent } from './dailyDocument'
 
 // Evitar warnings de Tiptap en tests
 vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+// jsdom no calcula geometría de Range. Las medidas reales se comprueban con Playwright.
+beforeAll(() => {
+  Object.defineProperties(Range.prototype, {
+    getClientRects: { configurable: true, value: () => [] },
+    getBoundingClientRect: { configurable: true, value: () => new DOMRect() },
+  })
+})
+afterAll(() => {
+  Reflect.deleteProperty(Range.prototype, 'getClientRects')
+  Reflect.deleteProperty(Range.prototype, 'getBoundingClientRect')
+})
 
 function renderEditor(props?: React.ComponentProps<typeof DailyEditor>) {
   const onChange = vi.fn()
@@ -13,6 +26,142 @@ function renderEditor(props?: React.ComponentProps<typeof DailyEditor>) {
 }
 
 describe('DailyEditor', () => {
+  it('un ACK con el mismo documento enlazado conserva los nodos y la selección', async () => {
+    const content: DailyContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: '1279',
+              marks: [{ type: 'link', attrs: { href: 'https://ejemplo.test/1279' } }],
+            },
+          ],
+        },
+      ],
+    }
+    const { rerender } = render(<DailyEditor initialContent={content} />)
+    const link = await screen.findByRole('link', { name: '1279' })
+    screen.getByRole('textbox', { name: 'Editor de nota diaria' }).focus()
+    const text = link.firstChild!
+    const selection = window.getSelection()!
+    const range = document.createRange()
+    range.setStart(text, 1)
+    range.setEnd(text, 3)
+    selection.removeAllRanges()
+    selection.addRange(range)
+    document.dispatchEvent(new Event('selectionchange'))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Editar enlace' })).toBeEnabled())
+    rerender(<DailyEditor initialContent={structuredClone(content)} />)
+    expect(screen.getByRole('link', { name: '1279' })).toBe(link)
+    expect(selection.toString()).toBe('27')
+  })
+
+  it('bloquear y desbloquear durante carga o guardado no emite una edición', async () => {
+    const onChange = vi.fn()
+    const content: DailyContent = {
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Nota remota' }] }],
+    }
+    const { rerender } = render(<DailyEditor initialContent={content} onChange={onChange} />)
+    await screen.findByText('Nota remota')
+    rerender(<DailyEditor initialContent={content} onChange={onChange} readOnly />)
+    rerender(<DailyEditor initialContent={content} onChange={onChange} />)
+    expect(onChange).not.toHaveBeenCalled()
+  })
+  it('carga el contenido recibido después del montaje sin emitir cambios ni guardar al hidratar', async () => {
+    const { rerender, onChange } = renderEditor()
+    await screen.findByRole('textbox', { name: 'Editor de nota diaria' })
+    rerender(
+      <DailyEditor
+        initialContent={{
+          type: 'doc',
+          content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Nota recuperada' }] }],
+        }}
+        onChange={onChange}
+      />,
+    )
+    expect(await screen.findByText('Nota recuperada')).toBeVisible()
+    expect(onChange).not.toHaveBeenCalled()
+  })
+
+  it('ofrece un botón de enlace con instrucciones visibles y no edita sin selección', async () => {
+    renderEditor()
+    expect(await screen.findByRole('button', { name: 'Agregar enlace' })).toBeDisabled()
+    expect(screen.getByText(/Seleccioná texto/)).toBeVisible()
+  })
+
+  it('el clic en un enlace abre su URL de forma segura, incluso en solo lectura', async () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    renderEditor({
+      readOnly: true,
+      initialContent: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: '1279',
+                marks: [{ type: 'link', attrs: { href: 'https://ejemplo.test/1279' } }],
+              },
+            ],
+          },
+        ],
+      },
+    })
+    fireEvent.click(await screen.findByRole('link', { name: '1279' }))
+    expect(open).toHaveBeenCalledWith('https://ejemplo.test/1279', '_blank', 'noopener,noreferrer')
+    expect(screen.queryByRole('button', { name: /enlace/i })).not.toBeInTheDocument()
+    open.mockRestore()
+  })
+
+  it('el botón conserva la selección al enlazar texto y permite editar desde el cursor', async () => {
+    const user = userEvent.setup()
+    const { container, onChange } = renderEditor({
+      initialContent: {
+        type: 'doc',
+        content: [
+          { type: 'paragraph', content: [{ type: 'text', text: 'Ticket 1279 pendiente' }] },
+        ],
+      },
+    })
+    await screen.findByText('Ticket 1279 pendiente')
+    const paragraph = container.querySelector('.daily-editor-content > p')!
+    const text = paragraph.firstChild!
+    const selection = window.getSelection()!
+    const editable = container.querySelector<HTMLElement>('.daily-editor-content')!
+    editable.focus()
+    const range = document.createRange()
+    range.setStart(text, 7)
+    range.setEnd(text, 11)
+    selection.removeAllRanges()
+    selection.addRange(range)
+    document.dispatchEvent(new Event('selectionchange'))
+    const button = screen.getByRole('button', { name: 'Agregar enlace' })
+    await waitFor(() => expect(button).toBeEnabled())
+    await user.click(button)
+    await user.type(screen.getByRole('textbox', { name: 'URL' }), 'https://ejemplo.test/1279')
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+    const link = await screen.findByRole('link', { name: '1279' })
+    expect(link).toHaveAttribute('href', 'https://ejemplo.test/1279')
+    expect(paragraph).toHaveTextContent('Ticket 1279 pendiente')
+    expect(onChange).toHaveBeenCalled()
+    range.setStart(link.firstChild!, 2)
+    range.collapse(true)
+    selection.removeAllRanges()
+    selection.addRange(range)
+    document.dispatchEvent(new Event('selectionchange'))
+    await user.click(await screen.findByRole('button', { name: 'Editar enlace' }))
+    expect(screen.getByRole('textbox', { name: 'URL' })).toHaveValue('https://ejemplo.test/1279')
+    await user.click(screen.getByRole('button', { name: 'Quitar enlace' }))
+    expect(paragraph.querySelector('a')).toBeNull()
+    expect(paragraph).toHaveTextContent('Ticket 1279 pendiente')
+  })
+
   it('muestra el editor con label accesible', async () => {
     renderEditor()
     await waitFor(() => {

@@ -6,7 +6,6 @@ import com.example.devnotes.TestcontainersConfiguration;
 import com.example.devnotes.security.OidcHttpBrowser;
 import com.example.devnotes.security.OidcHttpProvider;
 import java.net.http.HttpResponse;
-import java.time.LocalDate;
 import java.util.Map;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -34,7 +33,8 @@ class DailyNoteApiIT {
     private static final OidcHttpProvider PROVIDER = new OidcHttpProvider();
     private static final JsonMapper JSON = JsonMapper.builder().build();
     private static final String EMPTY_DOC = "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\"}]}";
-    private static final String VALID_DOC = "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"hola\"}]}]}";
+    private static final String VALID_DOC =
+            "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"hola\"}]}]}";
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
@@ -55,8 +55,7 @@ class DailyNoteApiIT {
     @AfterEach
     void cleanupOwnHttpWrites() {
         jdbc.update(
-                "DELETE FROM daily_note WHERE owner_id IN (SELECT id FROM app_user WHERE issuer=?)",
-                PROVIDER.issuer());
+                "DELETE FROM daily_note WHERE owner_id IN (SELECT id FROM app_user WHERE issuer=?)", PROVIDER.issuer());
         jdbc.update("DELETE FROM app_user WHERE issuer=?", PROVIDER.issuer());
     }
 
@@ -92,8 +91,7 @@ class DailyNoteApiIT {
         // A creates a note
         String date = "2026-01-15";
         var created = checked(
-                mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"),
-                200);
+                mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"), 200);
         assertThat(created.get("date").asString()).isEqualTo(date);
         assertThat(created.get("revision").asLong()).isEqualTo(1);
         assertThat(created.get("content")).isEqualTo(JSON.readTree(VALID_DOC));
@@ -111,12 +109,12 @@ class DailyNoteApiIT {
         // B gets 404 for A's date (foreign/absent indistinguishable)
         var foreign = checked(mutate(b, PATH + "/" + date, "GET", ""), 404);
         var absent = checked(mutate(b, PATH + "/2026-06-01", "GET", ""), 404);
-        assertThat(foreign.get("detail").asString()).isEqualTo(absent.get("detail").asString());
+        assertThat(foreign.get("detail").asString())
+                .isEqualTo(absent.get("detail").asString());
 
         // B creates own note for same date
         var bCreated = checked(
-                mutate(b, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"),
-                200);
+                mutate(b, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"), 200);
         assertThat(bCreated.get("revision").asLong()).isEqualTo(1);
         assertThat(bCreated.get("id").asString()).isNotEqualTo(created.get("id").asString());
 
@@ -129,15 +127,12 @@ class DailyNoteApiIT {
 
         // A updates with correct revision
         var updated = checked(
-                mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + EMPTY_DOC + ",\"expectedRevision\":1}"),
-                200);
+                mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + EMPTY_DOC + ",\"expectedRevision\":1}"), 200);
         assertThat(updated.get("revision").asLong()).isEqualTo(2);
         assertThat(updated.get("content")).isEqualTo(JSON.readTree(EMPTY_DOC));
 
         // A updates with wrong revision → 409
-        checked(
-                mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"),
-                409);
+        checked(mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"), 409);
 
         // DB is preserved after 409
         var afterConflict = checked(a.get(PATH + "/" + date), 200);
@@ -145,7 +140,8 @@ class DailyNoteApiIT {
         assertThat(afterConflict.get("content")).isEqualTo(JSON.readTree(EMPTY_DOC));
 
         // B cannot read A's note by date
-        checked(mutate(b, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"),
+        checked(
+                mutate(b, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"),
                 409); // B's own note exists, revision is 1, not 0
     }
 
@@ -156,14 +152,13 @@ class DailyNoteApiIT {
         checked(visitor.get(PATH + "/2026-01-01"), 401);
 
         assertThat(visitor.get("/api/v1/auth/csrf").statusCode()).isEqualTo(204);
-        checked(mutate(visitor, PATH + "/2026-01-01", "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"),
+        checked(
+                mutate(visitor, PATH + "/2026-01-01", "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"),
                 401);
 
         var a = login();
         String date = "2026-03-10";
-        checked(
-                mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"),
-                200);
+        checked(mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"), 200);
 
         // Missing CSRF → 403
         a.request(
@@ -191,16 +186,15 @@ class DailyNoteApiIT {
         }
 
         // Neighbour routes denied
-        for (String neighbour : new String[] {
-            "/api/v1/daily/private",
-            PATH + "/2026-01-01/extra",
-            PATH + "/extra/child"
-        }) checked(a.get(neighbour), 403);
+        for (String neighbour :
+                new String[] {"/api/v1/daily/private", PATH + "/2026-01-01/extra", PATH + "/extra/child"})
+            checked(a.get(neighbour), 403);
         // /extra matches {date} path var and fails date parsing → 400
         checked(a.get(PATH + "/extra"), 400);
 
         // Note is preserved
-        assertThat(checked(a.get(PATH + "/" + date), 200).get("revision").asLong()).isEqualTo(1);
+        assertThat(checked(a.get(PATH + "/" + date), 200).get("revision").asLong())
+                .isEqualTo(1);
     }
 
     @Test
@@ -219,9 +213,7 @@ class DailyNoteApiIT {
         checked(mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + "}"), 400);
 
         // Invalid body: negative revision
-        checked(
-                mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":-1}"),
-                400);
+        checked(mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":-1}"), 400);
 
         // Invalid body: extra keys
         checked(
@@ -265,11 +257,7 @@ class DailyNoteApiIT {
 
         // Invalid content: not a valid document
         checked(
-                mutate(
-                        a,
-                        PATH + "/" + date,
-                        "PUT",
-                        "{\"content\":{\"type\":\"unknown\"},\"expectedRevision\":0}"),
+                mutate(a, PATH + "/" + date, "PUT", "{\"content\":{\"type\":\"unknown\"},\"expectedRevision\":0}"),
                 400);
 
         // DB is empty
@@ -297,15 +285,9 @@ class DailyNoteApiIT {
     void paginationDefaultsAndOrder() throws Exception {
         var a = login();
         // Create 3 notes
-        checked(
-                mutate(a, PATH + "/2026-01-01", "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"),
-                200);
-        checked(
-                mutate(a, PATH + "/2026-01-02", "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"),
-                200);
-        checked(
-                mutate(a, PATH + "/2026-01-03", "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"),
-                200);
+        checked(mutate(a, PATH + "/2026-01-01", "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"), 200);
+        checked(mutate(a, PATH + "/2026-01-02", "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"), 200);
+        checked(mutate(a, PATH + "/2026-01-03", "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"), 200);
 
         var page = checked(a.get(PATH), 200);
         assertThat(page.get("page").asInt()).isZero();
@@ -338,28 +320,18 @@ class DailyNoteApiIT {
         String date = "2026-09-01";
 
         // expectedRevision=0 creates
-        checked(
-                mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"),
-                200);
+        checked(mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":0}"), 200);
 
         // expectedRevision=1 updates
-        checked(
-                mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + EMPTY_DOC + ",\"expectedRevision\":1}"),
-                200);
+        checked(mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + EMPTY_DOC + ",\"expectedRevision\":1}"), 200);
 
         // Fractional revision → 400 (long type mismatch)
-        checked(
-                mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":1.5}"),
-                400);
+        checked(mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":1.5}"), 400);
 
         // String revision → 400
-        checked(
-                mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":\"1\"}"),
-                400);
+        checked(mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":\"1\"}"), 400);
 
         // Boolean revision → 400
-        checked(
-                mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":true}"),
-                400);
+        checked(mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":true}"), 400);
     }
 }

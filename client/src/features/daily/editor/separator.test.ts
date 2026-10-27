@@ -28,7 +28,11 @@ describe('Separator keyboard shortcuts', () => {
       // End of text is at pos 6 (1 + 1 + 4 = 6), but we need to place cursor at end
       editor.commands.setTextSelection(editor.state.doc.content.child(0).content.size + 1)
 
-      const result = tryConvertToSeparator(editor.state, editor.view.dispatch.bind(editor.view), editor.isEditable)
+      const result = tryConvertToSeparator(
+        editor.state,
+        editor.view.dispatch.bind(editor.view),
+        editor.isEditable,
+      )
       expect(result).toBe(true)
 
       expect(editor.state.doc.content.childCount).toBe(2)
@@ -150,10 +154,15 @@ describe('Separator keyboard shortcuts', () => {
       })
       // Position cursor at start of last paragraph (child 2)
       // child 0: empty paragraph, child 1: separator, child 2: empty paragraph
-      const lastParaPos = editor.state.doc.content.child(0).nodeSize + editor.state.doc.content.child(1).nodeSize
+      const lastParaPos =
+        editor.state.doc.content.child(0).nodeSize + editor.state.doc.content.child(1).nodeSize
       editor.commands.setTextSelection(lastParaPos + 1)
 
-      const result = tryDeletePreviousSeparator(editor.state, editor.view.dispatch.bind(editor.view), editor.isEditable)
+      const result = tryDeletePreviousSeparator(
+        editor.state,
+        editor.view.dispatch.bind(editor.view),
+        editor.isEditable,
+      )
       expect(result).toBe(true)
 
       const children = editor.state.doc.content
@@ -166,7 +175,8 @@ describe('Separator keyboard shortcuts', () => {
       const editor = createEditor({
         content: '<p></p><hr data-type="separator" data-width="50" /><p>text</p>',
       })
-      const lastParaPos = editor.state.doc.content.child(0).nodeSize + editor.state.doc.content.child(1).nodeSize
+      const lastParaPos =
+        editor.state.doc.content.child(0).nodeSize + editor.state.doc.content.child(1).nodeSize
       editor.commands.setTextSelection(lastParaPos + 1)
 
       const result = tryDeletePreviousSeparator(editor.state, () => {}, editor.isEditable)
@@ -178,7 +188,8 @@ describe('Separator keyboard shortcuts', () => {
         content: '<p></p><hr data-type="separator" data-width="50" /><p></p>',
         editable: false,
       })
-      const lastParaPos = editor.state.doc.content.child(0).nodeSize + editor.state.doc.content.child(1).nodeSize
+      const lastParaPos =
+        editor.state.doc.content.child(0).nodeSize + editor.state.doc.content.child(1).nodeSize
       editor.commands.setTextSelection(lastParaPos + 1)
 
       const result = tryDeletePreviousSeparator(editor.state, () => {}, false)

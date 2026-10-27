@@ -102,6 +102,7 @@ class DailyVersionApiIT {
         assertThat(created.get("sourceRevision").asLong()).isEqualTo(1);
         assertThat(created.has("id")).isTrue();
         assertThat(created.has("content")).isTrue();
+        assertThat(created.get("content")).isEqualTo(JSON.readTree(VALID_DOC));
         assertThat(created.has("savedAt")).isTrue();
     }
 
@@ -285,6 +286,7 @@ class DailyVersionApiIT {
         assertThat(got.get("sourceRevision").asLong()).isEqualTo(1);
         assertThat(got.has("id")).isTrue();
         assertThat(got.has("content")).isTrue();
+        assertThat(got.get("content")).isEqualTo(JSON.readTree(VALID_DOC));
         assertThat(got.has("savedAt")).isTrue();
     }
 

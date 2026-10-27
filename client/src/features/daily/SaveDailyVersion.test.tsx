@@ -9,10 +9,12 @@ import { ThemeProvider, createTheme } from '@mui/material/styles'
 import { buildAuthUser, problemResponse } from '../../test/factories'
 import { installAuthBackend } from '../../test/msw/authBackend'
 import { server } from '../../test/msw/server'
+import { renderWithProviders } from '../../test/render'
 import { emptyDocument, type DailyContent } from './editor/dailyDocument'
 import { setTestDebounce } from './useDailyNote'
 import { SaveDailyVersion } from './SaveDailyVersion'
 import { useSaveDailyVersion } from './useSaveDailyVersion'
+import { DailyDraftProvider, useDailyDraftContext } from './DailyDraftProvider'
 
 const OWNER = '01900000-0000-7000-8000-000000000001'
 const DATE = '2024-01-15'
@@ -95,7 +97,7 @@ function TestConsumer({
   const save = useSaveDailyVersion({
     owner: OWNER,
     date: DATE,
-    note: { flush, revision },
+    note: { flush, revision, getRevision: () => revision },
     sessionIsCurrent,
   })
 
@@ -138,9 +140,7 @@ function renderHarness(opts?: {
 
   // Mock note detail (siempre, para DailyDraftProvider)
   if (revision > 0) {
-    server.use(
-      mock.get(DETAIL_PATH, () => HttpResponse.json(buildNoteDetail(revision, content))),
-    )
+    server.use(mock.get(DETAIL_PATH, () => HttpResponse.json(buildNoteDetail(revision, content))))
   } else {
     server.use(mock.get(DETAIL_PATH, () => problemResponse(404, { title: 'Not Found' })))
   }
@@ -169,6 +169,44 @@ function renderHarness(opts?: {
 }
 
 describe('SaveDailyVersion', () => {
+  it('usa la revisión del ACK de flush, aunque el clic capturó la revisión anterior', async () => {
+    setTestDebounce(10_000)
+    const content: DailyContent = {
+      type: 'doc',
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: 'última edición' }] }],
+    }
+    let receivedRevision: unknown
+    server.use(
+      mock.get(DETAIL_PATH, () => HttpResponse.json(buildNoteDetail(4))),
+      mock.get(VERSION_CHECK_PATH, () => problemResponse(404)),
+      mock.put(DETAIL_PATH, () => HttpResponse.json(buildNoteDetail(5, content))),
+      mock.post(VERSION_SAVE_PATH, async ({ request }) => {
+        receivedRevision = ((await request.json()) as { expectedRevision: number }).expectedRevision
+        return HttpResponse.json({ ...buildVersionSaveResponse(), sourceRevision: 5, content })
+      }),
+    )
+    function DraftVersion() {
+      const note = useDailyDraftContext()
+      const save = useSaveDailyVersion({ owner: OWNER, date: DATE, note })
+      return (
+        <>
+          <span data-testid="rev">{note.revision}</span>
+          <button onClick={() => note.edit(content)}>Editar</button>
+          <SaveDailyVersion save={save} date={DATE} />
+        </>
+      )
+    }
+    const { user } = renderWithProviders(
+      <DailyDraftProvider owner={OWNER} initialDate={DATE}>
+        <DraftVersion />
+      </DailyDraftProvider>,
+    )
+    await waitFor(() => expect(screen.getByTestId('rev')).toHaveTextContent('4'))
+    await user.click(screen.getByRole('button', { name: 'Editar' }))
+    await user.click(screen.getByRole('button', { name: 'Guardar versión' }))
+    await screen.findByText('Versión guardada correctamente.')
+    expect(receivedRevision).toBe(5)
+  })
   beforeEach(() => {
     setTestDebounce(50)
     installAuthBackend({ user: buildAuthUser() })
@@ -180,9 +218,7 @@ describe('SaveDailyVersion', () => {
 
   it('consulta 404 → crea versión directamente sin diálogo', async () => {
     server.use(mock.get(VERSION_CHECK_PATH, () => problemResponse(404, { title: 'Not Found' })))
-    server.use(
-      mock.post(VERSION_SAVE_PATH, () => HttpResponse.json(buildVersionSaveResponse())),
-    )
+    server.use(mock.post(VERSION_SAVE_PATH, () => HttpResponse.json(buildVersionSaveResponse())))
 
     const { hooksRef, flushControl } = renderHarness({ initialRevision: 3 })
 
@@ -248,9 +284,7 @@ describe('SaveDailyVersion', () => {
 
   it('confirmar diálogo → flush + POST con revisión correcta', async () => {
     server.use(mock.get(VERSION_CHECK_PATH, () => HttpResponse.json(buildVersionDetail())))
-    server.use(
-      mock.post(VERSION_SAVE_PATH, () => HttpResponse.json(buildVersionSaveResponse())),
-    )
+    server.use(mock.post(VERSION_SAVE_PATH, () => HttpResponse.json(buildVersionSaveResponse())))
 
     const { hooksRef, flushControl } = renderHarness({ initialRevision: 5 })
 
@@ -343,9 +377,7 @@ describe('SaveDailyVersion', () => {
 
   it('deshabilita botón durante saving', async () => {
     server.use(mock.get(VERSION_CHECK_PATH, () => problemResponse(404, { title: 'Not Found' })))
-    server.use(
-      mock.post(VERSION_SAVE_PATH, () => HttpResponse.json(buildVersionSaveResponse())),
-    )
+    server.use(mock.post(VERSION_SAVE_PATH, () => HttpResponse.json(buildVersionSaveResponse())))
 
     renderHarness({ initialRevision: 3 })
 
@@ -379,9 +411,7 @@ describe('SaveDailyVersion', () => {
 
   it('respuesta tardía tras logout no marca éxito', async () => {
     server.use(mock.get(VERSION_CHECK_PATH, () => problemResponse(404, { title: 'Not Found' })))
-    server.use(
-      mock.post(VERSION_SAVE_PATH, () => HttpResponse.json(buildVersionSaveResponse())),
-    )
+    server.use(mock.post(VERSION_SAVE_PATH, () => HttpResponse.json(buildVersionSaveResponse())))
 
     let sessionCurrent = true
     const { flushControl } = renderHarness({
@@ -407,9 +437,7 @@ describe('SaveDailyVersion', () => {
 
   it('vacío explícito (revision 0) permite crear versión', async () => {
     server.use(mock.get(VERSION_CHECK_PATH, () => problemResponse(404, { title: 'Not Found' })))
-    server.use(
-      mock.post(VERSION_SAVE_PATH, () => HttpResponse.json(buildVersionSaveResponse())),
-    )
+    server.use(mock.post(VERSION_SAVE_PATH, () => HttpResponse.json(buildVersionSaveResponse())))
 
     const { flushControl } = renderHarness({ initialRevision: 0 })
 
@@ -428,9 +456,7 @@ describe('SaveDailyVersion', () => {
 
   it('click durante debounce espera la última generación', async () => {
     server.use(mock.get(VERSION_CHECK_PATH, () => problemResponse(404, { title: 'Not Found' })))
-    server.use(
-      mock.post(VERSION_SAVE_PATH, () => HttpResponse.json(buildVersionSaveResponse())),
-    )
+    server.use(mock.post(VERSION_SAVE_PATH, () => HttpResponse.json(buildVersionSaveResponse())))
 
     const { hooksRef, flushControl } = renderHarness({ initialRevision: 3 })
 

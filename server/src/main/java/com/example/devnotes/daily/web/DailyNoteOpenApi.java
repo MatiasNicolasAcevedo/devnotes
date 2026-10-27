@@ -15,9 +15,10 @@ public class DailyNoteOpenApi {
             var item = api.getPaths().get("/api/v1/daily-notes/{date}");
             if (item != null && item.getPut() != null) {
                 // Both protections are required together, never alternative authentication schemes.
-                item.getPut().setSecurity(List.of(new SecurityRequirement()
-                        .addList(AuthOpenApi.SESSION_COOKIE)
-                        .addList(AuthOpenApi.CSRF_HEADER)));
+                item.getPut()
+                        .setSecurity(List.of(new SecurityRequirement()
+                                .addList(AuthOpenApi.SESSION_COOKIE)
+                                .addList(AuthOpenApi.CSRF_HEADER)));
             }
         };
     }

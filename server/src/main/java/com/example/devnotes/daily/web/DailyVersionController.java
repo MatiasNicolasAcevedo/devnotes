@@ -69,6 +69,7 @@ public class DailyVersionController {
 
     private final DailyVersionService service;
     private final ObjectMapper mapper = new ObjectMapper();
+    private final tools.jackson.databind.ObjectMapper toolsMapper = new tools.jackson.databind.ObjectMapper();
 
     public DailyVersionController(DailyVersionService service) {
         this.service = service;
@@ -94,7 +95,7 @@ public class DailyVersionController {
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(new DailyVersionResponse(
-                        view.id(), view.date(), view.content(), view.sourceRevision(), view.savedAt()));
+                        view.id(), view.date(), toToolsNode(view.content()), view.sourceRevision(), view.savedAt()));
     }
 
     @GetMapping("/daily-versions")
@@ -133,7 +134,15 @@ public class DailyVersionController {
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(new DailyVersionResponse(
-                        view.id(), view.date(), view.content(), view.sourceRevision(), view.savedAt()));
+                        view.id(), view.date(), toToolsNode(view.content()), view.sourceRevision(), view.savedAt()));
+    }
+
+    private tools.jackson.databind.JsonNode toToolsNode(JsonNode node) {
+        try {
+            return toolsMapper.readTree(mapper.writeValueAsString(node));
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("No se puede convertir el contenido.", e);
+        }
     }
 
     private UUID owner(Authentication authentication) {
@@ -144,7 +153,11 @@ public class DailyVersionController {
     }
 
     public record DailyVersionResponse(
-            UUID id, LocalDate date, JsonNode content, long sourceRevision, java.time.Instant savedAt) {}
+            UUID id,
+            LocalDate date,
+            tools.jackson.databind.JsonNode content,
+            long sourceRevision,
+            java.time.Instant savedAt) {}
 
     public record DailyVersionPageResponse(
             java.util.List<DailyVersionPageItem> content, int page, int size, long totalElements, int totalPages) {}

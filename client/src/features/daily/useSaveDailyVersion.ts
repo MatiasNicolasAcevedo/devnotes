@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { ApiError } from '../../services/http'
 import { getDailyVersion, saveDailyVersion, dailyVersionKeys } from './versionApi'
@@ -7,14 +7,7 @@ import type { UseDailyNoteReturn } from './useDailyNote'
 // ——— Tipos ———
 
 export type SaveVersionPhase =
-  | 'idle'
-  | 'checking'
-  | 'confirming'
-  | 'saving'
-  | 'success'
-  | 'error'
-  | 'conflict'
-  | 'unknown'
+  'idle' | 'checking' | 'confirming' | 'saving' | 'success' | 'error' | 'conflict' | 'unknown'
 
 export interface UseSaveDailyVersionReturn {
   /** true mientras se consulta/confirmación/flush+POST; el editor debe bloquearse. */
@@ -50,11 +43,13 @@ export function useSaveDailyVersion({
   date,
   note,
   sessionIsCurrent,
+  onLockChange,
 }: {
   owner: string
   date: string
-  note: Pick<UseDailyNoteReturn, 'flush' | 'revision'>
+  note: Pick<UseDailyNoteReturn, 'flush' | 'revision' | 'getRevision'>
   sessionIsCurrent?: () => boolean
+  onLockChange?: (locked: boolean) => void
 }): UseSaveDailyVersionReturn {
   const queryClient = useQueryClient()
 
@@ -62,17 +57,28 @@ export function useSaveDailyVersion({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const [confirmDate, setConfirmDate] = useState<string | null>(null)
   const [error, setError] = useState<ApiError | null>(null)
+  const mountedRef = useRef(true)
+  const savingRef = useRef(false)
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      if (!savingRef.current) onLockChange?.(false)
+    }
+  }, [onLockChange])
 
   const isLocked = phase === 'checking' || phase === 'confirming' || phase === 'saving'
 
   // ——— Ejecutar flush + POST ———
   const executeSave = useCallback(async () => {
+    savingRef.current = true
     setPhase('saving')
     setError(null)
 
     try {
       await note.flush({ force: true })
-      await saveDailyVersion(owner, date, note.revision)
+      await saveDailyVersion(owner, date, note.getRevision())
 
       const keys = dailyVersionKeys(owner)
       await queryClient.invalidateQueries({ queryKey: keys.detail(date) })
@@ -100,30 +106,37 @@ export function useSaveDailyVersion({
         setError(apiErr)
       }
       setPhase('unknown')
+    } finally {
+      savingRef.current = false
+      onLockChange?.(false)
     }
-  }, [owner, date, note, queryClient, sessionIsCurrent])
+  }, [owner, date, note, queryClient, sessionIsCurrent, onLockChange])
 
   // ——— Consultar versión existente ———
   const checkExisting = useCallback(async () => {
+    onLockChange?.(true)
     setPhase('checking')
     setError(null)
     try {
       await getDailyVersion(date, undefined, sessionIsCurrent)
+      if (!mountedRef.current) return
       setConfirmDate(date)
       setPhase('confirming')
       setShowConfirmDialog(true)
     } catch (err) {
+      if (!mountedRef.current) return
       const apiErr = err as ApiError | null
       if (apiErr && apiErr.status === 404) {
         setConfirmDate(null)
         setPhase('idle')
         executeSave()
       } else {
+        onLockChange?.(false)
         setError(apiErr ?? null)
         setPhase('error')
       }
     }
-  }, [date, sessionIsCurrent, executeSave])
+  }, [date, sessionIsCurrent, executeSave, onLockChange])
 
   const handleClick = useCallback(() => {
     if (isLocked) return
@@ -136,10 +149,11 @@ export function useSaveDailyVersion({
   }, [executeSave])
 
   const handleCancel = useCallback(() => {
+    onLockChange?.(false)
     setShowConfirmDialog(false)
     setPhase('idle')
     setError(null)
-  }, [])
+  }, [onLockChange])
 
   const handleRetry = useCallback(() => {
     setError(null)

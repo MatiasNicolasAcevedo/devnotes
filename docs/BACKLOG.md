@@ -4,7 +4,9 @@ Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este í
 
 ## Actual · Usabilidad posterior a I1
 
-T-020 editor usability: rama codex/t-020-editor-usability, PR20 abierto. Contrato en la rama (archivo no en main hasta merge).
+- [T-020](tasks/T-020-editor-usability.md): oscuro global, editor ampliable/compacto, números legibles y enlaces con botón/clic. Solicitud directa del dueño; prioridad anterior a I2 voz. Depende de T-014 MERGED, conciliada en esta rama.
+
+El dueño amplió T-020 el 2026-10-26 para resolver navegación por fecha, preparación OIDC de dos actores y recorridos de versiones dentro de la misma entrega. La reparación pertenece a T-020; I2 continúa sin habilitar.
 
 ## Hechas
 

@@ -125,8 +125,7 @@ class DailyVersionServiceIT {
     @Test
     void getVersionThrowsWhenNoteMissing() {
         LocalDate date = LocalDate.of(2026, 1, 1);
-        assertThatThrownBy(() -> versionService.getVersion(owner, date))
-                .isInstanceOf(DailyNoteNotFoundException.class);
+        assertThatThrownBy(() -> versionService.getVersion(owner, date)).isInstanceOf(DailyNoteNotFoundException.class);
     }
 
     // ── Replace: preserves UUID, updates content ──
@@ -144,7 +143,9 @@ class DailyVersionServiceIT {
         assertThat(second.id()).isEqualTo(first.id());
         assertThat(second.sourceRevision()).isEqualTo(2);
         // Only one row in DB
-        Long count = jdbc.queryForObject("SELECT COUNT(*) FROM daily_version WHERE note_id = ?", Long.class,
+        Long count = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM daily_version WHERE note_id = ?",
+                Long.class,
                 noteService.open(owner, date).id());
         assertThat(count).isEqualTo(1);
     }
@@ -227,8 +228,7 @@ class DailyVersionServiceIT {
                 java.sql.Timestamp.from(FIXED_NOW));
 
         // Other owner has no note on that date
-        assertThatThrownBy(() -> versionService.getVersion(other, date))
-                .isInstanceOf(DailyNoteNotFoundException.class);
+        assertThatThrownBy(() -> versionService.getVersion(other, date)).isInstanceOf(DailyNoteNotFoundException.class);
     }
 
     // ── Concurrency: two concurrent saves do not duplicate or mix content ──
@@ -277,7 +277,9 @@ class DailyVersionServiceIT {
         assertThat(successes.get()).isGreaterThan(0);
 
         // Only one version row
-        Long count = jdbc.queryForObject("SELECT COUNT(*) FROM daily_version WHERE note_id = ?", Long.class,
+        Long count = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM daily_version WHERE note_id = ?",
+                Long.class,
                 noteService.open(owner, date).id());
         assertThat(count).isEqualTo(1);
     }
@@ -323,7 +325,6 @@ class DailyVersionServiceIT {
 
     @Test
     void listVersionsRejectsNegativePage() {
-        assertThatThrownBy(() -> versionService.listVersions(owner, -1))
-                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> versionService.listVersions(owner, -1)).isInstanceOf(IllegalArgumentException.class);
     }
 }

@@ -1,13 +1,24 @@
 import { createTheme } from '@mui/material/styles'
 import { esES } from '@mui/material/locale'
 
-/** Tema único de Starter. Textos internos de MUI en español (paginación, etiquetas por defecto). */
+/** Tema oscuro único de DevNotes. Textos internos de MUI en español. */
 export const theme = createTheme(
   {
     palette: {
-      primary: { main: '#1f5f8b' },
-      secondary: { main: '#2e7d5b' },
-      background: { default: '#f5f7fa' },
+      mode: 'dark',
+      primary: { main: '#8ab4f8' },
+      secondary: { main: '#91c9b0' },
+      background: { default: '#181a1b', paper: '#212324' },
+      text: { primary: '#e1e3e6', secondary: '#a6adb7' },
+      divider: '#393d42',
+    },
+    components: {
+      MuiCssBaseline: { styleOverrides: { html: { colorScheme: 'dark' } } },
+      MuiAppBar: {
+        styleOverrides: { root: { backgroundImage: 'none', backgroundColor: '#212324' } },
+      },
+      MuiButton: { styleOverrides: { root: { textTransform: 'none' } } },
+      MuiPaper: { styleOverrides: { root: { backgroundImage: 'none' } } },
     },
     shape: { borderRadius: 8 },
     typography: {

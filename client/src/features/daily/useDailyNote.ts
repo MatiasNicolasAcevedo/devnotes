@@ -24,6 +24,9 @@ interface DraftEntry {
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'conflict'
 
 export interface UseDailyNoteReturn {
+  isLoading: boolean
+  /** Revisión síncrona del último ACK, disponible al resolver flush. */
+  getRevision: () => number
   /** Documento actual (borrador dirty o remoto confirmado). */
   content: DailyContent
   /** Revisión confirmada por el servidor (0 si no hay nota remota). */
@@ -182,11 +185,13 @@ export function useDailyNote(
       }
 
       const rev = revisionRef.current
+      queueRef.current = 'flushing'
       setQueueState('flushing')
 
       saveDailyNote(owner, date, entry.content, rev)
         .then((response) => {
           // ACK: actualizar revisión confirmada.
+          revisionRef.current = response.revision
           setConfirmedRevision(response.revision)
           setConfirmedContent(response.content)
           setError(null)
@@ -200,6 +205,8 @@ export function useDailyNote(
             // Hay ediciones posteriores; no limpiar draft, enviar la más reciente.
             setTimeout(() => flushQueueRef.current?.(), 0)
           } else {
+            draftRef.current = null
+            queueRef.current = 'idle'
             setDraft(null)
             setQueueState('idle')
             // Resolver flushers pendientes.
@@ -211,6 +218,7 @@ export function useDailyNote(
           }
         })
         .catch((err: unknown) => {
+          queueRef.current = 'idle'
           const apiErr = err as ApiError | null
           if (apiErr && 'status' in apiErr && (apiErr as ApiError).status === 409) {
             setError(apiErr)
@@ -265,6 +273,7 @@ export function useDailyNote(
       generationRef.current++
       const gen = generationRef.current
       const entry: DraftEntry = { content: validation.data!, generation: gen }
+      draftRef.current = entry
       setDraft(entry)
 
       // Si hay un PUT en vuelo, no interrumpir; la cola enviará la nueva
@@ -290,6 +299,17 @@ export function useDailyNote(
     (options?: { force?: boolean }) => {
       const force = options?.force ?? false
       return new Promise<void>((resolve, reject) => {
+        // La acción manual puede crear un documento vacío, pero cargarlo nunca escribe.
+        if (force && !draftRef.current && revisionRef.current === 0) {
+          const entry = { content: emptyDocument(), generation: ++generationRef.current }
+          draftRef.current = entry
+          setDraft(entry)
+        }
+        if (!draftRef.current && queueRef.current === 'idle') {
+          resolve()
+          return
+        }
+        flushersRef.current.push({ resolve, reject })
         // Si hay timer pendiente, lo ejecuta inmediatamente.
         if (timerRef.current !== null) {
           clearTimeout(timerRef.current)
@@ -306,7 +326,6 @@ export function useDailyNote(
           // Nada pendiente.
           resolve()
         }
-        flushersRef.current.push({ resolve, reject })
       })
     },
     [flushQueue],
@@ -326,6 +345,8 @@ export function useDailyNote(
       timerRef.current = null
     }
     setDraft(null)
+    draftRef.current = null
+    queueRef.current = 'idle'
     setError(null)
     setQueueState('idle')
     // Recargar estado remoto.
@@ -355,6 +376,8 @@ export function useDailyNote(
   const content = isDirty && draft !== null ? draft.content : confirmedContent
 
   return {
+    isLoading: query.isPending,
+    getRevision: () => revisionRef.current,
     content,
     revision: confirmedRevision,
     status,

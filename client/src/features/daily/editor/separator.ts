@@ -1,5 +1,5 @@
 import { mergeAttributes, Node } from '@tiptap/core'
-import type { EditorState } from '@tiptap/pm/state'
+import type { EditorState, Transaction } from '@tiptap/pm/state'
 
 /** Comandos de teclado que producen separadores y su ancho correspondiente. */
 export const SEPARATOR_COMMANDS: Record<string, 25 | 50 | 75 | 100> = {
@@ -15,7 +15,7 @@ export const SEPARATOR_COMMANDS: Record<string, 25 | 50 | 75 | 100> = {
  */
 export function tryConvertToSeparator(
   state: EditorState,
-  dispatch: (tr: any) => void,
+  dispatch: (tr: Transaction) => void,
   isEditable: boolean,
 ): boolean {
   const { selection } = state
@@ -36,7 +36,7 @@ export function tryConvertToSeparator(
 
   // No convertir si hay marcas
   if (paragraph.content.size > 0) {
-    const hasMarks = paragraph.content.content.some((node: any) => {
+    const hasMarks = paragraph.content.content.some((node) => {
       return node.type.name === 'text' && node.marks && node.marks.length > 0
     })
     if (hasMarks) return false
@@ -57,7 +57,7 @@ export function tryConvertToSeparator(
  */
 export function tryDeletePreviousSeparator(
   state: EditorState,
-  dispatch: (tr: any) => void,
+  dispatch: (tr: Transaction) => void,
   isEditable: boolean,
 ): boolean {
   const { selection } = state
