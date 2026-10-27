@@ -53,7 +53,16 @@ Comparación con la referencia Git seleccionada: coordenadas/versiones/scopes, p
 | @emotion/styled | 11.14.1 | 11.14.1 | dependencies | Runtime UI · client/package.json + package-lock.json |
 | @hookform/resolvers | 5.9.1 | 5.9.1 | dependencies | Runtime UI · client/package.json + package-lock.json |
 | @mui/material | 9.5.0 | 9.5.0 | dependencies | Runtime UI · client/package.json + package-lock.json |
+| @fontsource/roboto-mono | 5.3.0 | 5.3.0 | dependencies | Fuente local editor · client/package.json + package-lock.json |
 | @tanstack/react-query | 5.104.2 | 5.104.2 | dependencies | Runtime UI · client/package.json + package-lock.json |
+| @tiptap/core | 3.32.0 | 3.32.0 | dependencies | Editor ProseMirror · client/package.json + package-lock.json |
+| @tiptap/extension-document | 3.32.0 | 3.32.0 | dependencies | Nodo Document · client/package.json + package-lock.json |
+| @tiptap/extension-link | 3.32.0 | 3.32.0 | dependencies | Mark Link · client/package.json + package-lock.json |
+| @tiptap/extension-paragraph | 3.32.0 | 3.32.0 | dependencies | Nodo Paragraph · client/package.json + package-lock.json |
+| @tiptap/extension-text | 3.32.0 | 3.32.0 | dependencies | Nodo Text · client/package.json + package-lock.json |
+| @tiptap/extensions | 3.32.0 | 3.32.0 | dependencies | Extensiones UndoRedo · client/package.json + package-lock.json |
+| @tiptap/pm | 3.32.0 | 3.32.0 | dependencies | ProseMirror core · client/package.json + package-lock.json |
+| @tiptap/react | 3.32.0 | 3.32.0 | dependencies | Binding React · client/package.json + package-lock.json |
 | react | ^19.2.8 | 19.3.0 | dependencies | Runtime UI · client/package.json + package-lock.json |
 | react-dom | ^19.2.8 | 19.3.0 | dependencies | Runtime UI · client/package.json + package-lock.json |
 | react-hook-form | 7.90.0 | 7.90.0 | dependencies | Runtime UI · client/package.json + package-lock.json |
@@ -107,7 +116,7 @@ Comparación con la referencia Git seleccionada: coordenadas/versiones/scopes, p
 | Acción CI | `actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6` | .github/workflows/ci.yml |
 | Acción CI | `actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9` | .github/workflows/ci.yml |
 
-Inventario: backend 20 directas; client 32 directas; E2E 1 directa; siete plugins Maven declarados más formateador y annotation processor. JUnit/Mockito/AssertJ transitivas continúan en el BOM; no duplicadas.
+Inventario: backend 20 directas; client 41 directas; E2E 1 directa; siete plugins Maven declarados más formateador y annotation processor. JUnit/Mockito/AssertJ transitivas continúan en el BOM; no duplicadas.
 Los rangos del scaffold se conservan junto a sus versiones exactas de lockfile. Imágenes sin digest se conservan tal como estaban; Playwright mantiene tag + digest. Java 21 y Node 24.21.0 se conservan también en CI.
 
 Reproducir: resolver un POM efectivo y ejecutar `python scripts/dependency-inventory.py --effective-pom RUTA --write`. El script falla ante diferencias de dependencias/lockfiles/wrappers. Revisar cualquier diferencia antes de aceptarla.

@@ -1,6 +1,6 @@
 ---
 id: T-012
-status: draft
+status: done
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-104
 spec_version: 2
 branch: codex/t-012-version-history
-pr: null
+pr: 17
 depends_on: [T-011]
 ---
 # T-012 · Historial privado de solo lectura
@@ -84,11 +84,12 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-011. El prompt vigente está solo en STATUS.
+T-012 conciliada como MERGED (dc6dcbd). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. PR #17, CI verify-required SUCCESS. Squash merge dc6dcbd, 2026-10-25.
 
 ## Correcciones significativas
 
-Sin correcciones ni resultados de implementación acreditados.
+- Lint `react-hooks/set-state-in-effect`: `setLoading(true)`/`setError(null)` dentro de useEffect causaban cascading renders. Arreglo: eliminado setState síncrono, loading inicia `true` por defecto y la carga se hace directa en useEffect sin setState previo. Verificado con lint limpio.
+- Bloqueante revisión: no usaba TanStack Query ni limpiaba datos al logout. Arreglo: creado `useDailyVersionQuery.ts` con hooks de Query (keys privadas por owner, `enabled` condicional, `retry: false`, `staleTime: 0`); migrado `DailyHistoryPage` para usarlos. Los datos entran en la cache de Query y se limpian automáticamente al logout vía `discardPrivateData`/`removeQueries`. Test de detalle ajustado para esperar contenido cargado (`findByText`) en lugar de título estático.
 
 ## Cierre y siguiente tarea
 

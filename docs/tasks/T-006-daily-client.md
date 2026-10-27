@@ -1,6 +1,6 @@
 ---
 id: T-006
-status: draft
+status: done
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-101
 spec_version: 2
 branch: codex/t-006-daily-client
-pr: null
+pr: 10
 depends_on: [T-005]
 ---
 # T-006 · Cliente HTTP y consultas privadas
@@ -86,7 +86,26 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-005. El prompt vigente está solo en STATUS.
+Revisión independiente el 2026-10-24. Junie reviewer, Qwen3.6-27B-FP8. Rama codex/t-006-daily-client, HEAD c49b894, base main 5e6c247. 3 commits (implementación + formato + checkpoint).
+
+Evidencia de revisión:
+- HEAD/base: c49b894 / 5e6c247, 3 commits, 8 archivos (2 nuevos de código, 2 nuevos de tests, 1 config, 3 docs).
+- Tests dirigidos: 39 tests en api.test.ts y useDailyNoteQuery.test.tsx, todos OK.
+- Gate client completo: 218 tests OK, cobertura daily 100% líneas, 94.44% statements, 90.47% branches (muy por encima de 80/70).
+- Typecheck: tsc -b OK sin errores.
+- Propiedad: owner solo en query keys, nunca en body de solicitud. Verificado en saveDailyNote y dailyNoteKeys.
+- Pruebas negativas: 404, 403, 409, 400, 401, 500, campos extra, revisión no segura (fracción/negativa/string/boolean), AbortSignal, cancelación A/B, identidad separada, invalidación sin setQueryData.
+- Diff de docs: T-005→done/MERGED (5e6c247), T-006→in_review, STATUS actualizado correctamente.
+- Sin DailyDraftProvider.tsx: tarea especifica patrón de hooks daily/useDaily*.ts y daily/DailyDraftProvider.tsx en cobertura, pero el provider no existe ni se crea aquí (pertenece a T-016). El globo de cobertura en vite.config.ts usa `{api,useDailyNoteQuery}.ts` sin incluir provider. Correcto.
+
+Hallazgos de revisión:
+- api.ts: Schemas Zod estrictos (strictObject) rechazan campos extra. SafeRevision valida entero no negativo. IsoDate valida formato y valores de mes/día. Transporte correcto: GET distingue 404, PUT con CSRF y revisión. saveDailyNote valida antes de enviar y no envía owner.
+- useDailyNoteQuery.ts: Hook de solo lectura, enabled con sessionIsCurrent, retry false, staleTime 0. Cancelación automática al cambiar queryKey. invalidateDailyNote invalida sin setQueryData.
+- api.test.ts: Cobertura completa de casos positivos y negativos. Propagación de errores sin conversión incorrecta. Validación de schemas con safeParse.
+- useDailyNoteQuery.test.tsx: QueryResultConsumer auxiliar correcto. Tests de cancelación con promesas retenidas. Separación de identidades A/B verificada. Invalidación marca stale sin escribir cache.
+- vite.config.ts: Threshold 80/70 añadido correctamente para daily. Sin rebajar referencia de reference.
+
+MERGED 2026-10-24. Junie merger, Qwen3.6-27B-FP8. Squash merge PR#10 → main, merge SHA 6eb2c42. Rama codex/t-006-daily-client eliminada.
 
 ## Correcciones significativas
 

@@ -1,5 +1,7 @@
 import { Route, Routes } from 'react-router'
 import { AuthSessionProvider } from '../features/auth/AuthSessionProvider'
+import { DailyNotesPage } from '../features/daily/DailyNotesPage'
+import { DailyHistoryPage } from '../features/daily/DailyHistoryPage'
 import { LoginPage } from '../features/auth/LoginPage'
 import { HomePage } from '../features/system/HomePage'
 import { ReferencePage } from '../features/reference/ReferencePage'
@@ -14,6 +16,10 @@ export function AppRoutes() {
         <Route element={<AppShell />}>
           <Route index element={<HomePage />} />
           <Route path="login" element={<LoginPage />} />
+          <Route path="notes" element={<DailyNotesPage />} />
+          <Route path="notes/:date" element={<DailyNotesPage />} />
+          <Route path="history" element={<DailyHistoryPage />} />
+          <Route path="history/:date" element={<DailyHistoryPage />} />
           <Route path="reference" element={<ReferencePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

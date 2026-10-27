@@ -22,6 +22,20 @@ node scripts/docs-check.mjs
 git diff --check
 ```
 
+Para el gate FULL de aplicación cuando corresponda, desde la raíz y tras preparar namespaces y checkpoint según la tarea, conservar su salida antes de restaurar PATH. La clasificación anterior solo informa el perfil; STARTER requiere `--starter` o FULL más `--tooling` sobre las mismas fuentes y base.
+
+```powershell
+$taskBash = Join-Path $env:ProgramFiles 'Git\bin\bash.exe'
+$taskNodeDirectory = Split-Path (Get-Command node -CommandType Application -ErrorAction Stop).Source
+$taskOriginalPath = $env:PATH
+try {
+  $env:PATH = "$taskNodeDirectory;$taskOriginalPath"
+  & $taskBash scripts/verify.sh
+  $taskGateExit = $LASTEXITCODE
+} finally { $env:PATH = $taskOriginalPath }
+if ($taskGateExit -ne 0) { throw "Gate FULL falló: $taskGateExit" }
+```
+
 La sonda no inicia stacks ni acredita FULL. Para un gate DOCUMENTATION/DOCS_ONLY, ejecutar `node scripts/docs-check.mjs` y `git diff --check` sobre el diff final. No ejecutar scripts con otro shell ni modificar configuración global.
 
 ## Primer uso local sin Google

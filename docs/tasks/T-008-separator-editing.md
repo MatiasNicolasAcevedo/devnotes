@@ -1,6 +1,6 @@
 ---
 id: T-008
-status: draft
+status: done
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-103
 spec_version: 1
 branch: codex/t-008-separator-editing
-pr: null
+pr: 13
 depends_on: [T-007]
 ---
 # T-008 · Separadores con teclado
@@ -84,11 +84,11 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-007. El prompt vigente está solo en STATUS.
+T-008 conciliada como MERGED (5d2a70f). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. Client gate OK: 27 tests (18 separator + 9 DailyEditor), typecheck OK, docs-check OK. CI verify-required SUCCESS. Squash merge 5d2a70f, 2026-10-25.
 
 ## Correcciones significativas
 
-Sin correcciones ni resultados de implementación acreditados.
+Corrección documental: T-007 estaba in_review pero ya MERGED (1702fd9). Se corrigió a done para que docs-check pasara (una sola tarea en vuelo). Commit 4ee15d6.
 
 ## Cierre y siguiente tarea
 

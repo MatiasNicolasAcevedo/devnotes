@@ -1,6 +1,6 @@
 ---
 id: T-010
-status: draft
+status: done
 priority: P1
 size: S
 executor: junie
@@ -82,11 +82,13 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-009. El prompt vigente está solo en STATUS.
+Implementer Junie, Qwen3.6-27B-FP8. Dependencia T-009 MERGED (596e385) conciliada. Código publicado a576283 en codex/t-010-version-storage. DailyVersionServiceIT: 16/16 tests OK (PostgreSQL Testcontainers). docs-check OK. Gate FULL bloqueado por SecurityConfigTest preexistente en main (9 errores OIDC, fuera de alcance T-010). Pendiente: revisión independiente, PR y merge.
 
 ## Correcciones significativas
 
-Sin correcciones ni resultados de implementación acreditados.
+- ClassCastException en listVersions: PostgreSQL devuelve LocalDate, no java.sql.Date en native query. Arreglo: instanceof check en DailyVersionService.listVersions().
+- Variables no effectively final en test concurrente: AtomicInteger en lugar de int para successes/conflicts en lambda.
+- Data isolation en IT: tests compartían tabla daily_version. Arreglo: DELETE FROM daily_version en @BeforeEach.
 
 ## Cierre y siguiente tarea
 

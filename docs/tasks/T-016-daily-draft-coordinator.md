@@ -1,6 +1,6 @@
 ---
 id: T-016
-status: draft
+status: done
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-101
 spec_version: 2
 branch: codex/t-016-daily-draft-coordinator
-pr: null
+pr: 11
 depends_on: [T-006]
 ---
 # T-016 · Borrador y cola de guardado por identidad

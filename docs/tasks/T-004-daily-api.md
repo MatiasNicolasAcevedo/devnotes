@@ -1,16 +1,16 @@
 ---
 id: T-004
-status: draft
+status: done
 priority: P1
 size: S
 executor: junie
-role: implementer
+role: merger
 milestone: M1
 product_cycle: I1
 spec: S-101
 spec_version: 2
 branch: codex/t-004-daily-api
-pr: null
+pr: 8
 depends_on: [T-003]
 ---
 # T-004 · API privada de notas diarias
@@ -23,7 +23,7 @@ API privada de notas diarias, capacidad S-101 de I1. Resultado comprobable descr
 
 Adaptar servicio T-003 al HTTP exacto de S-101 y principal LocalOidcUser.identity().id(). DTOs record anidados en controller si reduce archivos; rechazo de claves desconocidas explícito sin cambiar Jackson global. Advice 400/404/409 ProblemDetail seguro. Abrir solo GET colección/recurso y PUT recurso; metadata OpenAPI y negativos incluidos.
 
-Impacto previsto: API de notas privada, nuevos matchers limitados; sin auth nueva. Contrato completo; estado draft **únicamente por dependencia T-003 no mergeada/conciliada**. Al comprobarla, Junie puede habilitar ready sin otra planificación. En T-001 comprobar además la evidencia Junie y adopción T-000; si no existen, no comenzar negocio.
+Impacto previsto: API de notas privada, nuevos matchers limitados; sin auth nueva. Contrato completo; dependencia T-003 MERGED (f87f0cf, 2026-10-24). Estado cambiado a ready el 2026-10-24. En T-001 comprobar además la evidencia Junie y adopción T-000; si no existen, no comenzar negocio.
 
 ## Leer antes
 
@@ -82,12 +82,14 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-003. El prompt vigente está solo en STATUS.
+MERGED el 2026-10-24. Squash merge de PR8 (HEAD 640c474) a main, commit 595050ae979604368e3ae4d19310230abf2fb76c. Revisión APROBADA por Junie reviewer. Corrección durante revisión: T-003 status `MERGED` → `done`. T-005 habilitada.
 
 ## Correcciones significativas
 
-Sin correcciones ni resultados de implementación acreditados.
+1. **JsonNode abstracto en @RequestBody** — Spring Boot 4 no deserializa `com.fasterxml.jackson.databind.JsonNode` directamente. Solución: aceptar `@RequestBody String`, parsear con `ObjectMapper` propio y validar manualmente claves permitidas en `DailyNoteInput.fromJson()`.
+2. **Serialización de content en respuesta** — `com.fasterxml.jackson.databind.JsonNode` se serializa como metadata por `tools.jackson.ObjectMapper`. Solución: `DailyNoteResponse` usa `tools.jackson.databind.JsonNode` convertido vía `toToolsNode()`.
+3. **DailyContentException no manejada** — Contenido inválido (`{"type":"unknown"}`) lanzaba 500. Solución: handler `@ExceptionHandler(DailyContentException.class)` devuelve 400.
 
 ## Cierre y siguiente tarea
 
-Publicar PR y evidencia según TESTING; pasar a in_review con prompt reviewer en sesión nueva. Reviewer comprueba HEAD/base, gate, CI y arquitectura/propiedad, publica veredicto del SHA final y puede squash merge por AUTONOMY. Sin done hasta MERGED comprobado. El siguiente implementer concilia done al primer avance de su rama nueva; no editar la rama ya mergeada. Próxima: [T-005](T-005-editor-foundation.md).
+MERGED. El siguiente implementer concilia done al primer avance de su rama nueva; no editar la rama ya mergeada. Próxima: [T-005](T-005-editor-foundation.md).

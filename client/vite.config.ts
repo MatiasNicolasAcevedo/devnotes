@@ -138,6 +138,7 @@ export default defineConfig(({ command, mode }) => {
         reportsDirectory: 'coverage',
         thresholds: {
           'src/features/reference/{api,useReferenceItems}.ts': { lines: 80, branches: 70 },
+          'src/features/daily/{api,useDailyNoteQuery,useDailyNote}.ts': { lines: 80, branches: 70 },
         },
       },
     },

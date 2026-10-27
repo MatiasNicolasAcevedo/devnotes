@@ -1,10 +1,12 @@
 package com.example.devnotes.daily.persistence;
 
+import jakarta.persistence.LockModeType;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -34,4 +36,9 @@ public interface DailyNoteRepository extends JpaRepository<DailyNote, UUID> {
             @Param("expectedRevision") long expectedRevision,
             @Param("newRevision") long newRevision,
             @Param("now") java.sql.Timestamp now);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT dn FROM DailyNote dn WHERE dn.ownerId = :ownerId AND dn.noteDate = :noteDate")
+    Optional<DailyNote> findByOwnerIdAndNoteDateForUpdate(
+            @Param("ownerId") UUID ownerId, @Param("noteDate") LocalDate noteDate);
 }

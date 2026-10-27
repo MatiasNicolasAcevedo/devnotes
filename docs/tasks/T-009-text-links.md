@@ -1,6 +1,6 @@
 ---
 id: T-009
-status: draft
+status: done
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-102
 spec_version: 1
 branch: codex/t-009-text-links
-pr: null
+pr: 14
 depends_on: [T-008]
 ---
 # T-009 · Enlaces sobre texto seleccionado
@@ -84,11 +84,11 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-008. El prompt vigente está solo en STATUS.
+Implementación en progreso. Rama codex/t-009-text-links desde main fcd3b12. LinkDialog.tsx con validación Zod (HTTP/HTTPS absoluto, sin credenciales, host no vacío, máx 2048 chars). DailyEditor.tsx integrado con shortcut Mod-k y callbacks onSave/onRemove/onOpen. link.ts simplificado (sin addCommands, usa setMark/unsetMark nativos de TipTap). 14 tests LinkDialog.test.tsx OK, 9 tests DailyEditor.test.tsx OK, typecheck OK. T-008 MERGED 5d2a70f, dependencia satisfecha.
 
 ## Correcciones significativas
 
-Sin correcciones ni resultados de implementación acreditados.
+Corrección durante implementación: editorRef usaba editor antes de su declaración en DailyEditor.tsx. Se reordenó: ref tipada con ReturnType<typeof useEditor>(null) antes de useEditor, sincronizada en useEffect después. Los commands setLink/unsetLink personalizados en link.ts causaban errores de tipo; se eliminaron y se usa chain().setMark/unsetMark nativo de TipTap.
 
 ## Cierre y siguiente tarea
 

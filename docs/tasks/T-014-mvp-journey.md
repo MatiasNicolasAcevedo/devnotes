@@ -1,6 +1,6 @@
 ---
 id: T-014
-status: draft
+status: done
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-104
 spec_version: 2
 branch: codex/t-014-mvp-journey
-pr: null
+pr: 19
 depends_on: [T-013]
 ---
 # T-014 · Recorrido completo y salida I1
@@ -95,13 +95,25 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-013. El prompt vigente está solo en STATUS.
+2026-10-25, sesión propia Junie implementer. Raíz/checkout `C:\D\matias\proyectos-ia\devnotes`, rama `codex/t-014-mvp-journey`. Instrucciones efectivamente leídas: `AGENTS.md`, `client/AGENTS.md`, `docs/STATUS.md`, esta tarea, `docs/AUTONOMY.md`, `docs/TESTING.md`, `docs/agents/implementer.md`, `docs/specs/S-104-daily-versions.md` (v2), `docs/specs/S-101-daily-notes.md` (v2). Superficie IDE IntelliJ IDEA/AIR (plugin Junie), terminal PowerShell. Modelo expuesto por entorno: Qwen/Qwen3.6-27B-FP8. Esfuerzo no expuesto. Impacto: dos archivos E2E nuevos (daily-notes.spec.ts y daily-versions.spec.ts) con recorridos CA-01…06; sin cambios de comportamiento, API, permisos o datos.
+
+Dependencia T-013 conciliada como MERGED (dafaecf). T-000 MERGED (cbbe1c9), E-01 aceptado. HEAD `9c66a93`, base `dafaecf`. PR #19 abierto, estado in_review.
+
+Evidencia de gates ejecutados:
+- Gate E2E: exit code 0 (namespaces propios con timestamp)
+- Gate FULL: exit code 0 (backend + client + E2E)
+- docs-check: OK (65 Markdown, 19 tareas, HANDOFF 22/22 verificados)
+- Perfil diff: APPLICATION (e2e/tests + docs permitidos)
+
+Pendiente: revisión independiente en sesión nueva, squash merge tras aprobación, y conciliación como MERGED.
 
 ## Correcciones significativas
 
 Sin correcciones ni resultados de implementación acreditados.
 
 ## Cierre y siguiente tarea
+
+Conciliación 2026-10-25 en sesión nueva de frontera T-020: GitHub confirma PR #19 MERGED, squash `9da4ab4f138bd28753e61d1538003acceb615691`, fecha 2026-10-25T22:37:44Z; verify-required SUCCESS. Main/origin/main coinciden tras fetch. Se conserva arriba la evidencia histórica del implementer; la solicitud nueva del dueño prioriza usabilidad del editor en T-020, sin habilitar implementación de voz.
 
 Publicar PR y evidencia según TESTING; pasar a in_review con prompt reviewer en sesión nueva. Reviewer comprueba HEAD/base, gate, CI y arquitectura/propiedad, publica veredicto del SHA final y puede squash merge por AUTONOMY. Sin done hasta MERGED comprobado. El siguiente implementer concilia done al primer avance de su rama nueva; no editar la rama ya mergeada. Próxima: frontera para revisar salida I1.
 

@@ -1,6 +1,6 @@
 ---
 id: T-003
-status: draft
+status: done
 priority: P1
 size: S
 executor: junie
@@ -10,8 +10,10 @@ product_cycle: I1
 spec: S-101
 spec_version: 2
 branch: codex/t-003-daily-service
-pr: null
-depends_on: [T-002, T-019]
+pr: 7
+depends_on: [T-002]
+merged_sha: f87f0cf7c756d852da370d2a61fe40077033c09d
+merged_date: 2026-10-24
 ---
 # T-003 · Guardado concurrente del trabajo
 
@@ -23,7 +25,7 @@ Guardado concurrente del trabajo, capacidad S-101 de I1. Resultado comprobable d
 
 Servicio con Clock, UUIDv7 y timestamp micros. Implementar abrir/listar/guardar por owner+fecha y revisión esperada, usando primitivas T-002 sin transacción abortada reutilizada. Dos escritores/carrera de creación probados en transacciones reales. Agregar regla de cobertura daily/domain y daily/application con mínimos 80/70; conservar referencia y resto del POM.
 
-Impacto previsto: Reglas transaccionales/cobertura; aún sin rutas públicas nuevas. Contrato completo; estado draft **únicamente por el mantenimiento previo T-019 solicitado por el dueño**. T-002 ya fue conciliada; volver a comprobar su MERGED remoto al adoptar. Tras MERGED/conciliación de T-019, Junie puede habilitar ready sin otra planificación. En T-001 comprobar además la evidencia Junie y adopción T-000; si no existen, no comenzar negocio.
+Impacto previsto: Reglas transaccionales/cobertura; aún sin rutas públicas nuevas. Contrato implementado y MERGED; el checkpoint de cierre conserva la evidencia.
 
 ## Leer antes
 
@@ -82,11 +84,11 @@ Conservar exit original del gate si se ejecuta cleanup después; si falla cleanu
 
 ## Checkpoint vigente
 
-Preparada por frontera/Codex el 2026-10-20, no ejecutada por Junie. Junie registra una vez rol/modelo/herramienta/esfuerzo realmente expuestos al tomarla; inventario heredado no acredita capacidades. Sin PR ni pruebas de esta tarea todavía. Dependencia pendiente: T-002. El prompt vigente está solo en STATUS.
+MERGED el 2026-10-24. Squash merge de PR7 (HEAD e3871d0) a main, commit f87f0cf7c756d852da370d2a61fe40077033c09d. Revisión APROBADA por Junie reviewer el 2026-10-23. Rama codex/t-003-daily-service borrada. T-004 habilitada.
 
 ## Correcciones significativas
 
-Sin correcciones ni resultados de implementación acreditados.
+Sin correcciones durante implementación ni revisión.
 
 ## Cierre y siguiente tarea
 
