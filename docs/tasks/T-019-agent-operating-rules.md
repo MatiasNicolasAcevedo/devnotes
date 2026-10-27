@@ -1,6 +1,6 @@
 ---
 id: T-019
-status: in_review
+status: changes_requested
 priority: P1
 size: S
 executor: junie
@@ -93,3 +93,14 @@ Merge local `728124bcb97646ec6497adc5aeb66603afe6dee5`, padres T-019 `f497a3cce9
 ## Revisión independiente anterior
 
 2026-10-27, Codex reviewer, GPT-6 expuesto, esfuerzo no expuesto, PowerShell/Git/gh. HEAD `06be5364cd6059bf4f1d9e66e8f4dda5dd660036`, base `9da4ab4f138bd28753e61d1538003acceb615691`: tres hallazgos de continuidad/conflictos, evidencia Windows Junie y entrada FULL incompleta; PR6 no aprobada ni fusionada. docs-check exit 0, diff-check exit 0, policy `DOCS_ONLY`/`DOCUMENTATION`; preflight Codex fuera de sandbox exit 0. No acredita Junie ni FULL.
+
+
+## Segunda revisión independiente · 2026-10-27
+
+Codex desktop, reviewer independiente, modelo GPT-6 expuesto; variante y esfuerzo no expuestos. PowerShell, Git, gh, Node y Git Bash; revisión del commit publicado en checkout aislado. Impacto de esta transición: documentación operativa; sin cambios de API, permisos, datos ni UI.
+
+**CAMBIOS REQUERIDOS — criterio Windows Junie pendiente.** Revisado HEAD `fa221939c8dafae19c720e0121d4406985283b91` sobre base `9da4ab4f138bd28753e61d1538003acceb615691`. PR6 OPEN, mergeable, única PR abierta; `verify-required` SUCCESS en ese HEAD ([run](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/40447291608/job/122001485292)). `git ls-remote` confirmó ambos SHA; main es ancestro de HEAD. En checkout aislado, `bash scripts/verify.sh --policy 9da4ab4f138bd28753e61d1538003acceb615691` exit 0, DOCS_ONLY/DOCUMENTATION, 12 Markdown; `node scripts/docs-check.mjs` exit 0 (67 Markdown, 20 tareas); `git diff --check 9da4ab4f138bd28753e61d1538003acceb615691...HEAD` exit 0. No se ejecutó FULL ni se le atribuye la sonda de Codex a Junie.
+
+De los tres hallazgos anteriores, la integración incorpora main y actualiza la continuidad de T-003/T-014 y el bloqueo de T-020; SETUP añade la invocación FULL y captura su exit. El diagnóstico de Codex registra su error y alternativa, pero no muestra error ni salida en una sesión propia Junie: la aceptación exige específicamente que Junie compruebe Bash/Node/Docker y el mismo verificador `--policy origin/main`. Condición observable: sesión propia Junie ejecuta el bloque de la tarea y publica salida y exits saneados; si esa superficie lo impide, registra su error exacto y alternativa, y devuelve al dueño la decisión sobre el criterio, sin afirmar cumplimiento.
+
+Esta es la segunda ronda de revisión. Según AGENTS/AUTONOMY no se programa otra ronda automáticamente: el dueño debe autorizar expresamente cualquier revisión adicional necesaria tras la evidencia. La solicitud de esta sesión prevé una sonda propia Junie; el dueño puede abrir esa sesión para registrar el resultado en T-019 y decidir después la revisión independiente de cierre sobre HEAD/base publicados. Si falla o exige ampliar scripts/permisos, volver al dueño con diagnóstico, sin cambiar el contrato ni degradar el gate. PR6 sigue sin aprobación ni merge; T-020 sigue bloqueada sin PR.
