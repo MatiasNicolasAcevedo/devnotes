@@ -2,12 +2,13 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
-## Actual · mantenimiento operativo
+## Actual · Usabilidad posterior a I1
 
-- [T-019](tasks/T-019-agent-operating-rules.md): aplicar las tres observaciones operativas; no cuenta para el ciclo de producto.
+T-020 editor usability: rama codex/t-020-editor-usability, PR20 abierto. Contrato en la rama (archivo no en main hasta merge).
 
 ## Hechas
 
+- [T-019](tasks/T-019-agent-operating-rules.md): observaciones operativas aplicadas, PR6 MERGED 16f6d53; no cuenta para ciclo de producto.
 - [T-001](tasks/T-001-document-contract.md): contrato de contenido; MERGED/conciliada en PR4.
 - [T-002](tasks/T-002-daily-persistence.md): persistencia privada por fecha; MERGED/conciliada en PR5.
 
@@ -18,7 +19,7 @@ Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este í
 
 ## Siguientes · I1
 
-Quince contratos de producto I1; T-003 y T-014 ya fueron mergeadas. T-020 está bloqueada sin PR mientras PR6 siga OPEN; su contrato está en su rama publicada. Las dependencias históricas se muestran para trazabilidad. Estados canónicos en tareas. Los IDs no fijan el orden: T-016 se inserta entre T-006/T-007 para separar cola y transporte; no es una capacidad adicional.
+Quince contratos de producto I1 completados (T-003 y T-014 mergeadas). T-020 avanza en usabilidad posterior a I1 (rama codex/t-020-editor-usability, PR20). Las dependencias históricas se muestran para trazabilidad. Estados canónicos en tareas. Los IDs no fijan el orden: T-016 se inserta entre T-006/T-007 para separar cola y transporte; no es una capacidad adicional.
 
 | Orden | Contrato / resultado | Dependencia |
 |---|---|---|

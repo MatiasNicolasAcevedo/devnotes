@@ -4,10 +4,10 @@
 |---|---|
 | Tarea y contrato | [T-019](tasks/T-019-agent-operating-rules.md) |
 | Estado | in_review |
-| Acción actual | Tercera revisión independiente autorizada por el dueño; Junie reviewer emite veredicto APROBADO sin bloqueantes. |
-| Rama / PR | codex/t-019-agent-operating-rules · [PR6](https://github.com/MatiasNicolasAcevedo/devnotes/pull/6) contra main |
+| Acción actual | T-019 MERGED (16f6d53). Siguiente: T-020 editor usability (rama codex/t-020-editor-usability, PR20). |
+| Rama / PR | — |
 
-T-014: PR19 MERGED en `9da4ab4f138bd28753e61d1538003acceb615691`. T-020 está bloqueada sin PR mientras PR6 siga OPEN; su rama publicada es `codex/t-020-editor-usability`.
+T-019: conciliada como MERGED (16f6d53). Junie reviewer + merger, Qwen3.6-27B-FP8. Tercera revisión independiente autorizada por el dueño tras dos rondas, APROBADA sin bloqueantes. HEAD 2d72cca, base main 9da4ab4, CI verify-required SUCCESS, docs-check OK, diff-check OK, policy DOCS_ONLY/DOCUMENTATION. Squash merge 16f6d53, 2026-10-27.
 
 T-012: conciliada como MERGED (dc6dcbd). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión APROBADA sin bloqueantes. Client gate OK: 304 tests, 83.41% statements, 77.71% branches, typecheck OK, build OK. CI verify-required SUCCESS. Squash merge dc6dcbd, 2026-10-25.
 
@@ -30,5 +30,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie merger, en sesión nueva e independiente: PR6 de T-019 fue aprobado por reviewer independiente (Junie, Qwen3.6-27B-FP8) sin bloqueantes. HEAD revisado 2d72ccab28ced19640dff8234bb0b2e40f5f2b4d, base main 9da4ab4f138bd28753e61d1538003acceb615691. CI verify-required SUCCESS, docs-check OK, diff-check OK, policy DOCS_ONLY/DOCUMENTATION. Reconsultar hechos remotos, verificar que HEAD no cambió desde el veredicto, y proceder con squash merge ligado al SHA revisado. Confirmar MERGED en GitHub con gh pr view. T-020 sigue bloqueada sin PR hasta confirmar MERGED de PR6. Preservar scripts/e2e.sh ajeno y plantilla/; no iniciar otra implementación ni voz.
+Junie implementer, en sesión nueva e independiente: T-019 MERGED (16f6d53, PR6). Retomar T-020 editor usability. Leer docs/tasks/T-020-editor-usability.md y specs referenciadas. Verificar MERGED de T-019 con gh pr view 6, conciliar done en el primer avance de la rama nueva. Abrir PR cuando el gate esté verde. Preservar scripts/e2e.sh ajeno y plantilla/; no iniciar otra implementación ni voz.
 ```
