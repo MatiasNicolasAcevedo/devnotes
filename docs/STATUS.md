@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-019](tasks/T-019-agent-operating-rules.md) |
 | Estado | changes_requested |
-| Acción actual | Segunda revisión: falta sonda propia Junie; revisión adicional requiere autorización del dueño. |
+| Acción actual | Sonda Codex realizada por excepción del dueño; decisión pendiente sobre autorizar otra revisión independiente. |
 | Rama / PR | codex/t-019-agent-operating-rules · [PR6](https://github.com/MatiasNicolasAcevedo/devnotes/pull/6) contra main |
 
 T-014: PR19 MERGED en `9da4ab4f138bd28753e61d1538003acceb615691`. T-020 está bloqueada sin PR mientras PR6 siga OPEN; su rama publicada es `codex/t-020-editor-usability`.
@@ -30,5 +30,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión propia Junie para la sonda acotada de T-019 en codex/t-019-agent-operating-rules y PR6: leer AGENTS, STATUS, T-019 y su checkpoint; comprobar HEAD/base remotos y ejecutar desde PowerShell el bloque de T-019 con Node existente y el verificador canónico. Registrar salida y códigos de salida saneados en T-019; si la superficie lo impide, registrar error exacto y alternativa y devolver al dueño la decisión. No atribuir resultados de Codex a Junie ni anunciar FULL. Las dos rondas de revisión están agotadas: no programar otra sin autorización explícita del dueño. Preservar scripts/e2e.sh ajeno y plantilla/; PR6 no se aprueba ni mergea sin el criterio y revisión elegible. T-020 permanece bloqueada sin PR hasta MERGED confirmado; no iniciar otra implementación ni voz.
+Dueño: decidir si autoriza expresamente una revisión independiente adicional de T-019 y PR6, una vez agotadas las dos rondas. La excepción ya concedida permite la sonda Windows en Codex y su evidencia está registrada en T-019; no acredita Junie ni FULL. Si se autoriza, abrir una sesión nueva de reviewer elegible para comprobar PR6, HEAD/base publicados, CI y el cierre de los hallazgos, y emitir su veredicto ligado a esos SHA. Solo después, un merger elegible puede actuar si todos los criterios vigentes se cumplen y confirmar MERGED en GitHub. Sin autorización no programar revisión; no aprobar ni mergear. T-020 sigue bloqueada sin PR hasta confirmar MERGED de PR6. Preservar scripts/e2e.sh ajeno y plantilla/; no iniciar otra implementación ni voz.
 ```
