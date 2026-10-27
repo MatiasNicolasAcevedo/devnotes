@@ -1,6 +1,6 @@
 ---
 id: T-019
-status: in_review
+status: changes_requested
 priority: P1
 size: S
 executor: junie
@@ -72,4 +72,14 @@ La sonda no inicia stacks ni acredita FULL. En esta preparación frontera compro
 
 ## Checkpoint vigente
 
-Implementer Junie, sesión 2026-10-23. PR6 publicado en codex/t-019-agent-operating-rules, SHA 54edcc1 contra main 89cbb87. docs-check OK, diff-check OK. Las tres reglas incorporadas y enlazadas desde AGENTS.md. T-002 conciliada done tras confirmación remota de PR5 MERGED (89cbb87). Pendiente: revisión independiente y merge. Impacto: instrucciones de agentes y operación de pruebas; sin API/permisos/datos/UI de aplicación.
+Implementer Junie, sesión 2026-10-23. Entrega: PR6; evidencia declarada docs-check y diff-check OK; impacto en instrucciones de agentes y operación de pruebas, sin API/permisos/datos/UI. Revisión independiente 2026-10-27: Codex, modelo GPT-6 expuesto, esfuerzo no expuesto, PowerShell/Git/gh; sesión distinta de la autora. No acredita ejecución en Junie.
+
+Revisión de HEAD `06be5364cd6059bf4f1d9e66e8f4dda5dd660036`, base remota `9da4ab4f138bd28753e61d1538003acceb615691` y merge-base `89cbb878dc10c1fd5452ac37c7eba7d58c89af7b`. PR6 OPEN, único PR abierto; `verify-required` SUCCESS para ese HEAD, sin reviews ni conversaciones inline. GitHub indica `mergeable=false`, `mergeable_state=dirty`. `git merge-tree origin/main HEAD` identifica conflictos en `docs/STATUS.md` y `docs/tasks/T-003-daily-service.md`. La fusión automática de BACKLOG también conserva el estado previo a T-003 pese al avance posterior de main. No aprobar ni fusionar.
+
+Hallazgos y salida para una sesión implementer nueva:
+
+1. **Base desactualizada y continuidad obsoleta.** Integrar main vigente en la misma rama sin force push; resolver ambos conflictos y revisar también BACKLOG, STATUS y T-019 para conservar los hechos actuales, incluida T-003 ya mergeada y T-020 bloqueada por PR6. No restaurar una dependencia histórica ni habilitar otra tarea. Cierre: diff y documentos coherentes con main vigente, merge sin conflictos y prompt que retome T-020 solo tras MERGED confirmado.
+2. **Evidencia de aceptación incompleta.** Este checkpoint no registra salida, exit ni diagnóstico de la sonda Windows ejecutada en la superficie Junie que exige el contrato. Registrar evidencia saneada verificable de Bash/Node/Docker y `--policy origin/main` en esa superficie, o el error concreto y alternativa necesaria. El ensayo de Codex no acredita Junie. Cierre: evidencia propia y resultado observable, sin presentar la sonda como FULL.
+3. **Entrada de gate incompleta.** El bloque añadido a SETUP ejecuta `--policy` y docs-check, pero no muestra la invocación canónica del FULL ni captura su exit como requiere el objetivo. Documentar la invocación desde PowerShell con PATH temporal y conservación del exit real, distinguiendo policy y gate. Cierre: comando reproducible revisado y resultado sano de la sonda exigida; no sustituir FULL por pasos manuales.
+
+Comprobaciones reviewer en checkout aislado del HEAD: `node scripts/docs-check.mjs` exit 0 (67 Markdown, 20 tareas); `git diff --check origin/main...HEAD` exit 0; `bash scripts/verify.sh --policy origin/main` exit 0, `DOCS_ONLY` / `DOCUMENTATION`, 12 archivos regulares Markdown. Preflight PowerShell desde Codex, fuera del sandbox por fallo de arranque Bash `-1073741502` en sandbox: Bash/Node 24.21.0/Docker Compose 2.40.2 resueltos, exit 0; no acredita Junie ni FULL. Gate documental corresponde al diff revisado; repetir clasificación y docs-check sobre la integración y base vigentes. No se ejecutó FULL por tratarse de DOCS_ONLY.
