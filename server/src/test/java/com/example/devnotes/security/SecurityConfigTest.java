@@ -35,6 +35,12 @@ class SecurityConfigTest {
     private com.example.devnotes.reference.application.ReferenceItemService referenceItems;
 
     @MockitoBean
+    private com.example.devnotes.daily.application.DailyNoteService dailyNotes;
+
+    @MockitoBean
+    private com.example.devnotes.daily.application.DailyVersionService dailyVersions;
+
+    @MockitoBean
     private IdentityService identityService;
 
     @Autowired

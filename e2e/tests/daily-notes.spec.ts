@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { test, expect, control, login, label, layout } from './fixtures';
+import { test, expect, control, login, interactiveLogin, readiness, csrfHeaders, layout } from './fixtures';
+
+import { writeWork, saveVersion, readVersion } from './daily-helpers';
 
 test.describe.configure({ timeout: 90_000 });
 
@@ -11,7 +13,7 @@ test.describe.configure({ timeout: 90_000 });
  * CA-06 (partial): Dos identidades en la misma fecha solo ven su espacio.
  */
 
-test('CA-01: text blocks, separator, empty lines are numbered consecutively; wrap does not add extra number', async ({ page, browser, identity }) => {
+test('CA-01: text blocks, separator, empty lines are numbered consecutively; wrap does not add extra number', async ({ page, browser, identity }, testInfo) => {
   await login(page, identity);
 
   // Navigate to today's note
@@ -45,6 +47,46 @@ test('CA-01: text blocks, separator, empty lines are numbered consecutively; wra
   const paraCount = await paragraphs.count();
   expect(paraCount).toBeGreaterThanOrEqual(3);
 
+  // Regresión T-020: márgenes compactos, numeración dentro del área visible y tema global oscuro.
+  const metrics = await paragraphs.first().evaluate(element => {
+    const style = getComputedStyle(element);
+    const number = getComputedStyle(element, '::before');
+    const content = element.parentElement!;
+    const contentBox = content.getBoundingClientRect();
+    const box = element.getBoundingClientRect();
+    return {
+      marginTop: style.marginTop, marginBottom: style.marginBottom,
+      lineHeight: parseFloat(style.lineHeight),
+      numberLeft: box.left + parseFloat(number.left),
+      numberRight: box.left + parseFloat(number.left) + parseFloat(number.width),
+      contentLeft: contentBox.left,
+      numberColor: number.color, background: getComputedStyle(document.body).backgroundColor,
+    };
+  });
+  expect(metrics.marginTop).toBe('0px');
+  expect(metrics.marginBottom).toBe('0px');
+  expect(metrics.lineHeight).toBeLessThan(22);
+  expect(metrics.numberLeft).toBeGreaterThanOrEqual(metrics.contentLeft);
+  expect(metrics.numberRight).toBeLessThan((await paragraphs.first().boundingBox())!.x);
+  expect(metrics.numberColor).toBe('rgb(166, 173, 183)');
+  expect(metrics.background).toBe('rgb(24, 26, 27)');
+  const firstBox = (await paragraphs.nth(0).boundingBox())!;
+  const secondBox = (await paragraphs.nth(1).boundingBox())!;
+  expect(secondBox.y - firstBox.y).toBeCloseTo(metrics.lineHeight, 0);
+  const viewport = page.locator('.daily-editor-viewport');
+  await expect(viewport).toHaveCSS('resize', 'vertical');
+  const beforeResize = (await viewport.boundingBox())!;
+  expect(beforeResize.height).toBeGreaterThanOrEqual(360);
+  if (testInfo.project.name === 'desktop') {
+    await viewport.scrollIntoViewIfNeeded();
+    const box = (await viewport.boundingBox())!;
+    await page.mouse.move(box.x + box.width - 3, box.y + box.height - 3);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width - 3, box.y + box.height + 77, { steps: 10 });
+    await page.mouse.up();
+    expect((await viewport.boundingBox())!.height).toBeGreaterThan(beforeResize.height + 40);
+  }
+
   // Verify wrap: type a long text that wraps visually but stays on one line number
   await page.keyboard.press('End');
   await page.keyboard.press('Enter');
@@ -67,6 +109,54 @@ test('CA-01: text blocks, separator, empty lines are numbered consecutively; wra
     await mobileContext.close();
   }
 
+  await layout(page);
+  await page.getByRole('main').screenshot({ path: testInfo.outputPath('editor-dark.png') });
+});
+
+test('T-020: visible link button keeps selection, opens safely, edits and clears a reused dialog', async ({ page, context, identity }) => {
+  await login(page, identity);
+  await page.getByRole('link', { name: 'Notas', exact: true }).click();
+  const editor = page.getByRole('textbox', { name: 'Editor de nota diaria' });
+  const add = page.getByRole('button', { name: 'Agregar enlace', exact: true });
+  await expect(add).toBeDisabled();
+  await editor.click();
+  await page.keyboard.type('Ticket 1279');
+  await page.keyboard.down('Shift');
+  for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowLeft');
+  await page.keyboard.up('Shift');
+  await add.click();
+  const dialog = page.getByRole('dialog');
+  const input = dialog.getByRole('textbox', { name: 'URL', exact: true });
+  await expect(dialog).toContainText('«1279»');
+  await input.fill('https://jira.ejemplo.test/browse/ABC-1279');
+  await dialog.getByRole('button', { name: 'Guardar', exact: true }).click();
+  const link = editor.getByRole('link', { name: '1279' });
+  await expect(link).toHaveAttribute('href', 'https://jira.ejemplo.test/browse/ABC-1279');
+  await expect(link).toHaveAttribute('target', '_blank');
+  await expect(link).toHaveAttribute('rel', /noopener noreferrer/);
+  await expect(editor).toHaveText('Ticket 1279');
+  // Solo el destino externo ficticio se intercepta; la API propia y el login son reales.
+  await context.route('https://jira.ejemplo.test/**', route => route.fulfill({ body: 'Destino ficticio' }));
+  const popupPromise = page.waitForEvent('popup');
+  await link.click();
+  const popup = await popupPromise;
+  await expect(popup).toHaveURL('https://jira.ejemplo.test/browse/ABC-1279');
+  expect(await popup.evaluate(() => window.opener === null)).toBe(true);
+  await popup.close();
+  // El cursor dentro del enlace, sin seleccionar texto, permite editarlo completo.
+  await page.keyboard.press('ArrowLeft');
+  await page.getByRole('button', { name: 'Editar enlace', exact: true }).click();
+  await expect(input).toHaveValue('https://jira.ejemplo.test/browse/ABC-1279');
+  await input.fill('https://jira.ejemplo.test/browse/ABC-9999');
+  await dialog.getByRole('button', { name: 'Guardar', exact: true }).click();
+  await expect(link).toHaveAttribute('href', 'https://jira.ejemplo.test/browse/ABC-9999');
+  await page.getByRole('button', { name: 'Editar enlace', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Quitar enlace', exact: true }).click();
+  await expect(editor.locator('a')).toHaveCount(0);
+  await expect(editor).toHaveText('Ticket 1279');
+  await add.click();
+  await expect(input).toHaveValue('');
+  await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
   await layout(page);
 });
 
@@ -138,37 +228,14 @@ test('CA-02: select text, Mod-k link dialog, create/edit/remove link; readonly o
   // Wait for autosave
   await page.waitForTimeout(1000);
 
-  // Verify readonly mode: navigate to history
-  // The save version button may not be visible if there's no saved note yet
-  // We skip the version save step and go directly to history to test readonly
-  const saveButton = page.getByRole('button', { name: 'Guardar versión' });
-  if (await saveButton.isVisible() && await saveButton.isEnabled()) {
-    await saveButton.click();
-    // Wait for success alert with longer timeout
-    const successAlert = page.getByRole('alert').filter({ hasText: 'Versión guardada correctamente' });
-    if (await successAlert.isVisible({ timeout: 15000 })) {
-      // Version was saved, proceed to history
-    } else {
-      // Version save may have failed, skip to history test
-    }
-  }
-
-  // Navigate to history
-  await page.getByRole('link', { name: 'Historial', exact: true }).click();
-  await expect(page).toHaveURL(/\/history/);
-
-  // Readonly editor should not have link controls
-  const readOnlyEditor = page.locator('.daily-editor-content');
-  if (await readOnlyEditor.isVisible()) {
-    // In readonly, Ctrl+K should not open dialog
-    await readOnlyEditor.click();
-    await page.keyboard.down('Control');
-    await page.keyboard.press('k');
-    await page.keyboard.up('Control');
-    // Dialog should not appear in readonly
-    await expect(dialog).not.toBeVisible();
-  }
-
+  const date = await page.getByLabel('Fecha', { exact: true }).inputValue();
+  await saveVersion(page, date);
+  await readVersion(page, date, 'ABC-1279');
+  const readOnlyEditor = page.getByRole('textbox', { name: 'Versión de solo lectura' });
+  await readOnlyEditor.click();
+  await page.keyboard.press('Control+k');
+  await expect(dialog).not.toBeVisible();
+  await expect(readOnlyEditor).toHaveText('ABC-1279');
   await layout(page);
 });
 
@@ -253,17 +320,30 @@ test('CA-05: javascript: URL rejected; literal HTML text does not execute; reloa
   const badLink = page.locator('.daily-editor-content a[href*="javascript:"]');
   await expect(badLink).not.toBeVisible();
 
-  // Close dialog if still open
-  if (await dialog.isVisible()) {
-    await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
-  }
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByText('Ingresá una URL válida (http:// o https://).', { exact: true })).toBeVisible();
+  await expect(editor).toHaveText('No ejecutar');
+  await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect(editor).toBeFocused();
 
   // Type literal HTML text
+  // Cancelar conserva la selección usada para enlazar. Elegir un cursor en el
+  // párrafo antes de agregar texto evita que Enter reemplace esa selección.
+  await editor.locator('p').last().click();
+  expect(await editor.evaluate(element => element.ownerDocument.getSelection()?.isCollapsed)).toBe(true);
+  const saved = page.waitForResponse(response => new URL(response.url()).pathname.startsWith('/api/v1/daily-notes/') && response.request().method() === 'PUT');
+  await page.keyboard.press('End');
   await page.keyboard.press('Enter');
+  await expect(editor.locator('p')).toHaveCount(2);
+  await expect(editor.locator('p').first()).toHaveText('No ejecutar');
   await page.keyboard.type('<script>alert(1)</script>');
 
-  // Wait for autosave debounce (700ms) plus margin
-  await page.waitForTimeout(1500);
+  const savedResponse = await saved;
+  expect(savedResponse.status()).toBe(200);
+  const savedNote = await savedResponse.json();
+  expect(JSON.stringify(savedNote.content)).toContain('No ejecutar');
+  expect(JSON.stringify(savedNote.content)).toContain('<script>alert(1)</script>');
 
   // Verify the text is displayed as literal text, not executed
   await expect(page.locator('.daily-editor-content')).toContainText('<script>alert(1)</script>');
@@ -280,74 +360,52 @@ test('CA-05: javascript: URL rejected; literal HTML text does not execute; reloa
   await layout(page);
 });
 
-test('CA-06: two identities on the same date only see their own space; IDs/URLs do not access foreign data', async ({ page, browser, identity }, testInfo) => {
-  const identityA = identity;
-  const identityB = randomUUID();
-
-  // Register identityB with the OIDC provider before using it
-  await control('reset', identityB);
-
-  // Actor A logs in and writes a note
-  await login(page, identityA);
+test('CA-06: two identities on the same date only see their own space; IDs/URLs do not access foreign data', async ({ page, browser, identity }) => {
+  await control('reference-login');
+  await readiness(page);
+  const actorA = await interactiveLogin(page, identity);
   await page.getByRole('link', { name: 'Notas', exact: true }).click();
-  const editorA = page.locator('.daily-editor-content[role="textbox"]');
-  await expect(editorA).toBeVisible();
-
-  await editorA.click();
-  await page.keyboard.type('Nota secreta de A');
-  // Wait for autosave debounce (700ms) plus margin
-  await page.waitForTimeout(1500);
-
-  // Get today's date from URL
-  const urlA = new URL(page.url());
-  const today = urlA.pathname.split('/').pop() ?? '';
-
-  // Actor B logs in with a new context
-  const contextB = await browser.newContext({ baseURL: 'http://localhost', viewport: page.viewportSize()! });
+  const date = await page.getByLabel('Fecha', { exact: true }).inputValue();
+  expect(date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  const noteA = await writeWork(page, date, 'Nota secreta de A');
+  const second = await browser.newContext({ baseURL: 'http://localhost', viewport: page.viewportSize()! });
   try {
-    const pageB = await contextB.newPage();
-    await login(pageB, identityB);
-
-    // Navigate to the same date
-    await pageB.getByRole('link', { name: 'Notas', exact: true }).click();
-    const editorB = pageB.locator('.daily-editor-content[role="textbox"]');
-    await expect(editorB).toBeVisible();
-
-    // Actor B should NOT see A's note
-    await expect(pageB.locator('.daily-editor-content')).not.toContainText('Nota secreta de A');
-
-    // Actor B writes their own note
-    await editorB.click();
-    await pageB.keyboard.type('Nota de B');
-    await pageB.waitForTimeout(1000);
-
-    // Verify A still doesn't see B's note
-    await expect(page.locator('.daily-editor-content')).not.toContainText('Nota de B');
-    await expect(page.locator('.daily-editor-content')).toContainText('Nota secreta de A');
-
-    // Verify via API: B cannot access A's note by date
-    const meA = await page.request.get('/api/v1/auth/me');
-    const userA = await meA.json();
-    const csrfB = (await contextB.cookies()).find(c => c.name === 'XSRF-TOKEN');
-
-    // Try to GET A's note using B's session
-    const noteFromB = await pageB.request.get(`/api/v1/daily-notes/${today}`);
-    // B's note exists (or 404 if not saved yet), but it's B's own note, not A's
-    const bodyB = await noteFromB.json().catch(() => null);
-    if (bodyB && bodyB.content) {
-      const textInB = JSON.stringify(bodyB.content);
-      expect(textInB).not.toContain('Nota secreta de A');
-    }
-
-    // Changing identity clears data
+    const pageB = await second.newPage();
+    const actorB = await interactiveLogin(pageB, randomUUID());
+    expect(actorB).not.toBe(actorA);
+    expect((await (await page.request.get('/api/v1/auth/me')).json()).id).toBe(actorA);
+    const absent = await pageB.request.get(`/api/v1/daily-notes/${date}`);
+    expect(absent.status()).toBe(404);
+    expect(JSON.stringify(await absent.json())).not.toContain('Nota secreta de A');
+    const byForeignId = await pageB.request.get(`/api/v1/daily-notes/${noteA.id}`);
+    expect(byForeignId.status()).toBe(400);
+    const byMissingId = await pageB.request.get(`/api/v1/daily-notes/${randomUUID()}`);
+    expect(byMissingId.status()).toBe(400);
+    expect((await byForeignId.json()).detail).toBe((await byMissingId.json()).detail);
+    const csrf = await csrfHeaders(pageB);
+    expect((await pageB.request.put(`/api/v1/daily-notes/${date}`, { headers: csrf, data: { content: noteA.content, expectedRevision: noteA.revision } })).status()).toBe(409);
+    expect((await pageB.request.put(`/api/v1/daily-notes/${date}`, { headers: csrf, data: { content: noteA.content, expectedRevision: 0, ownerId: actorA } })).status()).toBe(400);
+    const stillA = await page.request.get(`/api/v1/daily-notes/${date}`);
+    expect(stillA.status()).toBe(200);
+    expect(await stillA.json()).toEqual(noteA);
+    await pageB.goto(`/notes/${date}`);
+    const editorB = pageB.getByRole('textbox', { name: 'Editor de nota diaria' });
+    await expect(editorB).toHaveText('');
+    const noteB = await writeWork(pageB, date, 'Nota de B');
+    expect(noteB.id).not.toBe(noteA.id);
+    await page.reload();
+    await expect(page.getByRole('textbox', { name: 'Editor de nota diaria' })).toHaveText('Nota secreta de A');
+    expect((await (await page.request.get('/api/v1/auth/me')).json()).id).toBe(actorA);
     await pageB.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
     await expect(pageB).toHaveURL('http://localhost/login');
+    await expect(pageB.locator('.daily-editor-content')).toHaveCount(0);
     expect((await pageB.request.get('/api/v1/auth/me')).status()).toBe(401);
-
+    expect((await pageB.request.get(`/api/v1/daily-notes/${date}`)).status()).toBe(401);
+    expect(await interactiveLogin(pageB, identity)).toBe(actorA);
+    await pageB.goto(`/notes/${date}`);
+    await expect(pageB.getByRole('textbox', { name: 'Editor de nota diaria' })).toHaveText('Nota secreta de A');
+    await expect(pageB.getByRole('main')).not.toContainText('Nota de B');
     await layout(pageB);
-  } finally {
-    await contextB.close();
-  }
-
+  } finally { await second.close(); }
   await layout(page);
 });

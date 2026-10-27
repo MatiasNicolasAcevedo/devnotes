@@ -1,32 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
-import type { Page } from '@playwright/test';
-import { test, expect, control, readiness, layout, label, keyboardActivate } from './fixtures';
+import { test, expect, control, readiness, layout, interactiveLogin, csrfHeaders as headers, keyboardActivate } from './fixtures';
 
 test.describe.configure({ timeout: 90_000 });
 const path = '/api/v1/reference-items';
-
-async function interactiveLogin(page: Page, identity: string) {
-  await page.goto('/login');
-  await keyboardActivate(page, 'link', 'Continuar con Google');
-  await page.getByPlaceholder('Enter any user/subject').fill(`e2e-${identity}`);
-  await page.locator('textarea[name="claims"]').fill(JSON.stringify({ aud: ['starter-test'], name: label(identity), email: `${identity}@example.invalid`, email_verified: true }));
-  await page.getByRole('button', { name: 'Sign-in', exact: true }).click();
-  await expect(page).toHaveURL('http://localhost/');
-  await expect(page.getByRole('button', { name: 'Cerrar sesión' })).toBeEnabled();
-  const me = await page.request.get('/api/v1/auth/me');
-  expect(me.status()).toBe(200);
-  const user = await me.json();
-  expect(user.displayName).toBe(label(identity));
-  return user.id as string;
-}
-
-async function headers(page: Page) {
-  expect((await page.request.get('/api/v1/auth/csrf')).status()).toBe(204);
-  const csrf = (await page.context().cookies()).find(cookie => cookie.name === 'XSRF-TOKEN');
-  expect(Boolean(csrf)).toBe(true);
-  return { 'X-XSRF-TOKEN': csrf!.value };
-}
 
 test('private reference CRUD persists, paginates and rejects a simultaneous second OIDC identity', async ({ page, browser, identity }, testInfo) => {
   await control('reference-login');

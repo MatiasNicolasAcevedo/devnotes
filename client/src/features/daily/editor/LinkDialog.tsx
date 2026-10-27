@@ -6,6 +6,7 @@ import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
 import { useForm } from 'react-hook-form'
+import { useEffect } from 'react'
 import { z } from 'zod'
 import { FormTextField } from '../../../shared/forms/FormTextField'
 
@@ -68,6 +69,8 @@ export interface LinkDialogProps {
   existingHref?: string
   /** Cierra el diálogo y restaura el foco al editor. */
   onClose: () => void
+  /** Restablece el foco cuando termina la transición y se libera el foco modal. */
+  onExited?: () => void
   /** Guarda el href en la selección actual. */
   onSave: (href: string) => void
   /** Quita el href de la selección actual, conservando el texto. */
@@ -81,6 +84,7 @@ export function LinkDialog({
   selectedText,
   existingHref,
   onClose,
+  onExited,
   onSave,
   onRemove,
   onOpen,
@@ -98,6 +102,10 @@ export function LinkDialog({
       href: existingHref ?? '',
     },
   })
+
+  useEffect(() => {
+    if (open) reset({ href: existingHref ?? '' })
+  }, [open, existingHref, reset])
 
   // Sincronizar href existente cuando se reabre el diálogo
   const handleOpenChange = (newOpen: boolean) => {
@@ -131,12 +139,14 @@ export function LinkDialog({
     <Dialog
       open={open}
       onClose={handleOpenChange}
-      aria-title="Enlace"
+      aria-labelledby="link-dialog-title"
       aria-describedby="link-dialog-description"
-      slotProps={{ backdrop: { timeout: 100 } }}
+      fullWidth
+      maxWidth="sm"
+      slotProps={{ backdrop: { timeout: 100 }, transition: { onExited } }}
     >
       <form onSubmit={onSubmit}>
-        <DialogTitle>
+        <DialogTitle id="link-dialog-title">
           {isEditing ? 'Editar enlace' : 'Agregar enlace'}
           {selectedText && (
             <Box
@@ -160,7 +170,7 @@ export function LinkDialog({
             />
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ flexWrap: 'wrap', gap: 1, p: 2 }}>
           {isEditing && onRemove ? (
             <Button onClick={handleRemove} disabled={isSubmitting}>
               Quitar enlace

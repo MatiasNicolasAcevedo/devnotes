@@ -9,6 +9,22 @@ import { AppRoutes } from '../../app/AppRoutes'
 
 const LIST_PATH = '/api/v1/daily-versions'
 
+it('una versión propia ausente muestra Sin versión guardada y permite volver sin renderizar contenido', async () => {
+  installAuthBackend({ user: buildAuthUser() })
+  server.use(
+    mock.get('/api/v1/daily-versions/2024-01-15', () =>
+      HttpResponse.json({ status: 404, title: 'Not Found' }, { status: 404 }),
+    ),
+  )
+  renderWithProviders(<AppRoutes />, { route: '/history/2024-01-15' })
+  expect(await screen.findByText('Sin versión guardada')).toBeVisible()
+  expect(screen.getByRole('link', { name: /Volver a mi nota/ })).toHaveAttribute(
+    'href',
+    '/notes/2024-01-15',
+  )
+  expect(screen.queryByLabelText('Versión de solo lectura')).not.toBeInTheDocument()
+})
+
 function buildPage(overrides = {}) {
   return {
     content: [

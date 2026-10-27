@@ -87,15 +87,12 @@ public class DailyNoteController {
         if (size != null && size != 20) {
             throw new IllegalArgumentException("size debe ser 20");
         }
-        return ResponseEntity.ok()
-                .cacheControl(CacheControl.noStore())
-                .body(service.list(owner(authentication), page));
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.list(owner(authentication), page));
     }
 
     @GetMapping("/{date}")
     @Operation(summary = "Consulta la nota propia de una fecha", description = "404 si no existe.")
-    public ResponseEntity<DailyNoteResponse> get(
-            Authentication authentication, @PathVariable LocalDate date) {
+    public ResponseEntity<DailyNoteResponse> get(Authentication authentication, @PathVariable LocalDate date) {
         DailyNoteService.DailyNoteView view = service.open(owner(authentication), date);
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
@@ -109,9 +106,7 @@ public class DailyNoteController {
             description = "expectedRevision=0 crea; >0 actualiza con CAS. 409 si la revisión no coincide.")
     @SecurityRequirement(name = AuthOpenApi.CSRF_HEADER)
     public ResponseEntity<DailyNoteResponse> put(
-            Authentication authentication,
-            @PathVariable LocalDate date,
-            @RequestBody String rawBody) {
+            Authentication authentication, @PathVariable LocalDate date, @RequestBody String rawBody) {
         JsonNode body;
         try {
             body = mapper.readTree(rawBody);
@@ -119,8 +114,8 @@ public class DailyNoteController {
             throw new IllegalArgumentException("Solicitud inválida.");
         }
         DailyNoteInput input = DailyNoteInput.fromJson(body);
-        DailyNoteService.DailyNoteView saved = service.save(
-                owner(authentication), date, input.content(), input.expectedRevision());
+        DailyNoteService.DailyNoteView saved =
+                service.save(owner(authentication), date, input.content(), input.expectedRevision());
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(new DailyNoteResponse(
@@ -161,7 +156,8 @@ public class DailyNoteController {
         public static DailyNoteInput fromJson(JsonNode body) {
             if (!body.isObject()
                     || body.propertyStream()
-                            .anyMatch(entry -> !Set.of("content", "expectedRevision").contains(entry.getKey()))) {
+                            .anyMatch(entry ->
+                                    !Set.of("content", "expectedRevision").contains(entry.getKey()))) {
                 throw new IllegalArgumentException("Solicitud inválida.");
             }
             JsonNode content = body.get("content");

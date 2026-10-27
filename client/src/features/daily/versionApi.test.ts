@@ -3,11 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { ApiError, NetworkError, UnexpectedResponseError } from '../../services/http'
 import { problemResponse } from '../../test/factories'
 import { server } from '../../test/msw/server'
-import {
-  dailyVersionKeys,
-  getDailyVersion,
-  listDailyVersions,
-} from './versionApi'
+import { dailyVersionKeys, getDailyVersion, listDailyVersions } from './versionApi'
 import { emptyDocument } from './editor/dailyDocument'
 
 const LIST_PATH = '/api/v1/daily-versions'
@@ -42,7 +38,13 @@ describe('dailyVersionKeys', () => {
   it('incluye la identidad en todas las keys para aislar entre cuentas', () => {
     const keys = dailyVersionKeys('owner-a')
     expect(keys.all).toEqual(['daily', 'owner-a', 'versions'])
-    expect(keys.detail('2024-01-01')).toEqual(['daily', 'owner-a', 'versions', 'detail', '2024-01-01'])
+    expect(keys.detail('2024-01-01')).toEqual([
+      'daily',
+      'owner-a',
+      'versions',
+      'detail',
+      '2024-01-01',
+    ])
     expect(keys.list()).toEqual(['daily', 'owner-a', 'versions', 'list'])
     expect(keys.list(2)).toEqual(['daily', 'owner-a', 'versions', 'list', 2])
   })

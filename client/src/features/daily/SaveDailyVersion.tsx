@@ -25,8 +25,16 @@ export function SaveDailyVersion({
   save: UseSaveDailyVersionReturn
   date: string
 }) {
-  const { phase, error, handleClick, handleConfirm, handleCancel, handleRetry, showConfirmDialog, confirmDate } =
-    save
+  const {
+    phase,
+    error,
+    handleClick,
+    handleConfirm,
+    handleCancel,
+    handleRetry,
+    showConfirmDialog,
+    confirmDate,
+  } = save
 
   const formattedDate = confirmDate ? formatDateLocal(confirmDate) : formatDateLocal(date)
 

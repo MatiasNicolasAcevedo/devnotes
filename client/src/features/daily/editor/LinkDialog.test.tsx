@@ -6,12 +6,7 @@ import { LinkDialog } from './LinkDialog'
 describe('LinkDialog', () => {
   it('muestra diálogo para agregar enlace con texto seleccionado', () => {
     renderWithProviders(
-      <LinkDialog
-        open={true}
-        selectedText="1279"
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <LinkDialog open={true} selectedText="1279" onClose={vi.fn()} onSave={vi.fn()} />,
     )
 
     expect(screen.getByRole('dialog')).toBeInTheDocument()
@@ -45,12 +40,7 @@ describe('LinkDialog', () => {
     const onSave = vi.fn()
     const onClose = vi.fn()
     const { user } = renderWithProviders(
-      <LinkDialog
-        open={true}
-        selectedText="1279"
-        onClose={onClose}
-        onSave={onSave}
-      />,
+      <LinkDialog open={true} selectedText="1279" onClose={onClose} onSave={onSave} />,
     )
 
     const urlInput = screen.getByRole('textbox', { name: /URL/ })
@@ -63,12 +53,7 @@ describe('LinkDialog', () => {
 
   it('valida que URL debe ser http:// o https://', async () => {
     const { user } = renderWithProviders(
-      <LinkDialog
-        open={true}
-        selectedText="1279"
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <LinkDialog open={true} selectedText="1279" onClose={vi.fn()} onSave={vi.fn()} />,
     )
 
     const urlInput = screen.getByRole('textbox', { name: /URL/ })
@@ -81,12 +66,7 @@ describe('LinkDialog', () => {
 
   it('rechaza URL javascript:', async () => {
     const { user } = renderWithProviders(
-      <LinkDialog
-        open={true}
-        selectedText="1279"
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <LinkDialog open={true} selectedText="1279" onClose={vi.fn()} onSave={vi.fn()} />,
     )
 
     const urlInput = screen.getByRole('textbox', { name: /URL/ })
@@ -99,12 +79,7 @@ describe('LinkDialog', () => {
 
   it('rechaza URL data:', async () => {
     const { user } = renderWithProviders(
-      <LinkDialog
-        open={true}
-        selectedText="1279"
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <LinkDialog open={true} selectedText="1279" onClose={vi.fn()} onSave={vi.fn()} />,
     )
 
     const urlInput = screen.getByRole('textbox', { name: /URL/ })
@@ -117,12 +92,7 @@ describe('LinkDialog', () => {
 
   it('rechaza URL relativa', async () => {
     const { user } = renderWithProviders(
-      <LinkDialog
-        open={true}
-        selectedText="1279"
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <LinkDialog open={true} selectedText="1279" onClose={vi.fn()} onSave={vi.fn()} />,
     )
 
     const urlInput = screen.getByRole('textbox', { name: /URL/ })
@@ -135,12 +105,7 @@ describe('LinkDialog', () => {
 
   it('rechaza URL mailto:', async () => {
     const { user } = renderWithProviders(
-      <LinkDialog
-        open={true}
-        selectedText="1279"
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <LinkDialog open={true} selectedText="1279" onClose={vi.fn()} onSave={vi.fn()} />,
     )
 
     const urlInput = screen.getByRole('textbox', { name: /URL/ })
@@ -153,12 +118,7 @@ describe('LinkDialog', () => {
 
   it('rechaza URL con credenciales', async () => {
     const { user } = renderWithProviders(
-      <LinkDialog
-        open={true}
-        selectedText="1279"
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <LinkDialog open={true} selectedText="1279" onClose={vi.fn()} onSave={vi.fn()} />,
     )
 
     const urlInput = screen.getByRole('textbox', { name: /URL/ })
@@ -225,12 +185,7 @@ describe('LinkDialog', () => {
     const onSave = vi.fn()
     const onClose = vi.fn()
     const { user } = renderWithProviders(
-      <LinkDialog
-        open={true}
-        selectedText="1279"
-        onClose={onClose}
-        onSave={onSave}
-      />,
+      <LinkDialog open={true} selectedText="1279" onClose={onClose} onSave={onSave} />,
     )
 
     const urlInput = screen.getByRole('textbox', { name: /URL/ })
@@ -243,12 +198,7 @@ describe('LinkDialog', () => {
 
   it('no muestra Quitar enlace ni Abrir enlace al crear nuevo', () => {
     renderWithProviders(
-      <LinkDialog
-        open={true}
-        selectedText="1279"
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <LinkDialog open={true} selectedText="1279" onClose={vi.fn()} onSave={vi.fn()} />,
     )
 
     expect(screen.queryByRole('button', { name: 'Quitar enlace' })).not.toBeInTheDocument()
@@ -257,12 +207,7 @@ describe('LinkDialog', () => {
 
   it('valida longitud máxima de URL', async () => {
     const { user } = renderWithProviders(
-      <LinkDialog
-        open={true}
-        selectedText="1279"
-        onClose={vi.fn()}
-        onSave={vi.fn()}
-      />,
+      <LinkDialog open={true} selectedText="1279" onClose={vi.fn()} onSave={vi.fn()} />,
     )
 
     const longUrl = 'https://' + 'a'.repeat(2050) + '.com'

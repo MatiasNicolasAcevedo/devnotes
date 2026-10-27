@@ -9,6 +9,8 @@ interface DailyDraftContextValue extends UseDailyNoteReturn {
   navigateToDate: (newDate: string) => Promise<void>
   /** Fecha actualmente activa en el provider. */
   activeDate: string
+  navigationLocked: boolean
+  setNavigationLocked: (locked: boolean) => void
 }
 
 const DailyDraftContext = createContext<DailyDraftContextValue | null>(null)
@@ -33,7 +35,33 @@ export function DailyDraftProvider({
   sessionIsCurrent?: () => boolean
 }) {
   const [activeDate, setActiveDate] = useState(initialDate)
+  return (
+    <DailyDraftDocument
+      key={`${owner}/${activeDate}`}
+      owner={owner}
+      activeDate={activeDate}
+      setActiveDate={setActiveDate}
+      sessionIsCurrent={sessionIsCurrent}
+    >
+      {children}
+    </DailyDraftDocument>
+  )
+}
 
+function DailyDraftDocument({
+  owner,
+  activeDate,
+  setActiveDate,
+  sessionIsCurrent,
+  children,
+}: {
+  owner: string
+  activeDate: string
+  setActiveDate: (date: string) => void
+  sessionIsCurrent?: () => boolean
+  children: ReactNode
+}) {
+  const [navigationLocked, setNavigationLocked] = useState(false)
   const note = useDailyNote(owner, activeDate, sessionIsCurrent)
 
   const navigateToDate = useCallback(
@@ -43,7 +71,7 @@ export function DailyDraftProvider({
       await note.flush()
       setActiveDate(newDate)
     },
-    [activeDate, note],
+    [activeDate, note, setActiveDate],
   )
 
   const value = useMemo<DailyDraftContextValue>(
@@ -51,8 +79,10 @@ export function DailyDraftProvider({
       ...note,
       activeDate,
       navigateToDate,
+      navigationLocked,
+      setNavigationLocked,
     }),
-    [note, activeDate, navigateToDate],
+    [note, activeDate, navigateToDate, navigationLocked],
   )
 
   return <DailyDraftContext.Provider value={value}>{children}</DailyDraftContext.Provider>

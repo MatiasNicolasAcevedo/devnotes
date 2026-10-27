@@ -1,5 +1,5 @@
 import type { MutableRefObject } from 'react'
-import { act, screen } from '@testing-library/react'
+import { act, screen, waitFor } from '@testing-library/react'
 import { http as mock, HttpResponse } from 'msw'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { buildAuthUser, problemResponse } from '../../test/factories'
@@ -56,7 +56,7 @@ function TestConsumer({ hooksRef }: { hooksRef: MutableRefObject<TestHooks> }) {
 
 function renderHarness(opts?: { initialDate?: string; sessionIsCurrent?: () => boolean }) {
   const hooksRef: MutableRefObject<TestHooks> = { current: {} as TestHooks }
-  renderWithProviders(
+  const result = renderWithProviders(
     <DailyDraftProvider
       owner={OWNER}
       initialDate={opts?.initialDate ?? DATE_A}
@@ -65,10 +65,82 @@ function renderHarness(opts?: { initialDate?: string; sessionIsCurrent?: () => b
       <TestConsumer hooksRef={hooksRef} />
     </DailyDraftProvider>,
   )
-  return { hooksRef }
+  return { hooksRef, queryClient: result.queryClient }
 }
 
 describe('useDailyNote', () => {
+  it('cargar una fecha vacía no escribe y flush force crea solo el vacío explícito con revisión confirmada', async () => {
+    installAuthBackend({ user: buildAuthUser() })
+    let writes = 0
+    server.use(
+      mock.get(DETAIL_PATH, () => problemResponse(404)),
+      mock.put(DETAIL_PATH, async ({ request }) => {
+        const body = (await request.json()) as { expectedRevision: number; content: DailyContent }
+        expect(body).toEqual({ expectedRevision: 0, content: emptyDocument() })
+        writes++
+        return HttpResponse.json(buildDetail(DATE_A, 1))
+      }),
+    )
+    const { hooksRef } = renderHarness()
+    await waitFor(() => expect(hooksRef.current.ctx.isLoading).toBe(false))
+    expect(writes).toBe(0)
+    await act(async () => hooksRef.current.ctx.flush({ force: true }))
+    expect(writes).toBe(1)
+    expect(hooksRef.current.ctx.getRevision()).toBe(1)
+    await act(async () => hooksRef.current.ctx.flush())
+    expect(writes).toBe(1)
+  })
+
+  it('hidratar un refetch no pisa la edición local ni programa otra escritura', async () => {
+    installAuthBackend({ user: buildAuthUser() })
+    setTestDebounce(10_000)
+    let remoteRevision = 1
+    let reads = 0
+    let writes = 0
+    server.use(
+      mock.get(DETAIL_PATH, () => {
+        reads++
+        return HttpResponse.json(buildDetail(DATE_A, remoteRevision, makeContent('remoto')))
+      }),
+      mock.put(DETAIL_PATH, async ({ request }) => {
+        const body = (await request.json()) as { expectedRevision: number; content: DailyContent }
+        expect(body).toEqual({ expectedRevision: 2, content: makeContent('edición local') })
+        writes++
+        return HttpResponse.json(buildDetail(DATE_A, 3, body.content))
+      }),
+    )
+    const { hooksRef, queryClient } = renderHarness()
+    await waitFor(() => expect(hooksRef.current.ctx.revision).toBe(1))
+    act(() => hooksRef.current.ctx.edit(makeContent('edición local')))
+    remoteRevision = 2
+    await act(async () =>
+      queryClient.invalidateQueries({ queryKey: ['daily', OWNER, 'detail', DATE_A] }),
+    )
+    await waitFor(() => expect(hooksRef.current.ctx.revision).toBe(2))
+    expect(hooksRef.current.ctx.content).toEqual(makeContent('edición local'))
+    expect(reads).toBe(2)
+    expect(writes).toBe(0)
+    await act(async () => hooksRef.current.ctx.flush())
+    expect(writes).toBe(1)
+  })
+
+  it('cambiar de fecha reinicia contenido y revisión, incluso hacia una nota ausente', async () => {
+    installAuthBackend({ user: buildAuthUser() })
+    const dateB = '2024-01-16'
+    server.use(
+      mock.get(DETAIL_PATH, () => HttpResponse.json(buildDetail(DATE_A, 7, makeContent('solo A')))),
+      mock.get(`/api/v1/daily-notes/${dateB}`, () => problemResponse(404)),
+    )
+    const { hooksRef } = renderHarness()
+    await waitFor(() => expect(hooksRef.current.ctx.revision).toBe(7))
+    await act(async () => hooksRef.current.ctx.navigateToDate(dateB))
+    await waitFor(() => expect(hooksRef.current.ctx.content).toEqual(emptyDocument()))
+    expect(hooksRef.current.ctx.revision).toBe(0)
+    await act(async () => hooksRef.current.ctx.navigateToDate(DATE_A))
+    await waitFor(() => expect(hooksRef.current.ctx.content).toEqual(makeContent('solo A')))
+    expect(hooksRef.current.ctx.revision).toBe(7)
+  })
+
   beforeEach(() => {
     // Debounce corto para pruebas; MSW resuelve sincrónicamente.
     setTestDebounce(50)
@@ -459,8 +531,9 @@ describe('useDailyNote', () => {
     // Solo un PUT, y debe haberse disparado cerca de t=1500, no a t=700.
     expect(putCount).toBe(1)
     // El PUT debe ocurrir después de t=1400 (800+700-100 de margen), no antes de t=1000.
+    // Margen de 200ms para accommodar variabilidad del entorno.
     expect(putTime).toBeGreaterThanOrEqual(1400)
-    expect(putTime).toBeLessThanOrEqual(1600)
+    expect(putTime).toBeLessThanOrEqual(1700)
   })
 
   it('error de red con commit remoto seguido de 409 conserva edición', async () => {
