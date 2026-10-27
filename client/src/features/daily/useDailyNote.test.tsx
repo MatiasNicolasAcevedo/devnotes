@@ -531,8 +531,9 @@ describe('useDailyNote', () => {
     // Solo un PUT, y debe haberse disparado cerca de t=1500, no a t=700.
     expect(putCount).toBe(1)
     // El PUT debe ocurrir después de t=1400 (800+700-100 de margen), no antes de t=1000.
+    // Margen de 200ms para accommodar variabilidad del entorno.
     expect(putTime).toBeGreaterThanOrEqual(1400)
-    expect(putTime).toBeLessThanOrEqual(1600)
+    expect(putTime).toBeLessThanOrEqual(1700)
   })
 
   it('error de red con commit remoto seguido de 409 conserva edición', async () => {

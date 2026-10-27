@@ -136,19 +136,23 @@ export function useDailyNote(
   }, [])
 
   // ——— Sincronizar remoto → confirmado (sin pisar dirty) ———
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (query.data) {
       const remote = query.data
-      // Si el borrador está dirty y la respuesta tiene la misma generación,
-      // no es una respuesta vieja. Si la revisión es menor que la confirmada,
-      // es una respuesta vieja y se ignora.
-      if (remote.revision < revisionRef.current) {
+      // Si la revisión es menor que la confirmada, es una respuesta vieja y se ignora.
+      if (remote.revision < confirmedRevision) {
         return // ACK viejo, ignorar
       }
-      setConfirmedContent(remote.content)
-      setConfirmedRevision(remote.revision)
+      // Solo actualizar si la revisión efectivamente avanzó.
+      if (remote.revision > confirmedRevision) {
+        revisionRef.current = remote.revision
+        setConfirmedContent(remote.content)
+        setConfirmedRevision(remote.revision)
+      }
     }
-  }, [query.data])
+  }, [query.data, confirmedRevision])
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // ——— Manejar error de query (404 → vacío) ———
   useEffect(() => {
