@@ -1,6 +1,6 @@
 ---
 id: T-014
-status: in_review
+status: done
 priority: P1
 size: S
 executor: junie
@@ -112,6 +112,8 @@ Pendiente: revisión independiente en sesión nueva, squash merge tras aprobaci�
 Sin correcciones ni resultados de implementación acreditados.
 
 ## Cierre y siguiente tarea
+
+Conciliación 2026-10-25 en sesión nueva de frontera T-020: GitHub confirma PR #19 MERGED, squash `9da4ab4f138bd28753e61d1538003acceb615691`, fecha 2026-10-25T22:37:44Z; verify-required SUCCESS. Main/origin/main coinciden tras fetch. Se conserva arriba la evidencia histórica del implementer; la solicitud nueva del dueño prioriza usabilidad del editor en T-020, sin habilitar implementación de voz.
 
 Publicar PR y evidencia según TESTING; pasar a in_review con prompt reviewer en sesión nueva. Reviewer comprueba HEAD/base, gate, CI y arquitectura/propiedad, publica veredicto del SHA final y puede squash merge por AUTONOMY. Sin done hasta MERGED comprobado. El siguiente implementer concilia done al primer avance de su rama nueva; no editar la rama ya mergeada. Próxima: frontera para revisar salida I1.
 

@@ -25,7 +25,7 @@ Guardado concurrente del trabajo, capacidad S-101 de I1. Resultado comprobable d
 
 Servicio con Clock, UUIDv7 y timestamp micros. Implementar abrir/listar/guardar por owner+fecha y revisión esperada, usando primitivas T-002 sin transacción abortada reutilizada. Dos escritores/carrera de creación probados en transacciones reales. Agregar regla de cobertura daily/domain y daily/application con mínimos 80/70; conservar referencia y resto del POM.
 
-Impacto previsto: Reglas transaccionales/cobertura; aún sin rutas públicas nuevas. Contrato completo; estado draft **únicamente por dependencia T-002 no mergeada/conciliada**. Al comprobarla, Junie puede habilitar ready sin otra planificación. En T-001 comprobar además la evidencia Junie y adopción T-000; si no existen, no comenzar negocio.
+Impacto previsto: Reglas transaccionales/cobertura; aún sin rutas públicas nuevas. Contrato implementado y MERGED; el checkpoint de cierre conserva la evidencia.
 
 ## Leer antes
 

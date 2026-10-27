@@ -2,11 +2,14 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
-## Actual · I1
+## Actual · mantenimiento operativo
 
-- [T-001](tasks/T-001-document-contract.md): contrato de contenido estructurado (DailyContent validador inmutable). Primera tarea de producto I1.
+- [T-019](tasks/T-019-agent-operating-rules.md): aplicar las tres observaciones operativas; no cuenta para el ciclo de producto.
 
 ## Hechas
+
+- [T-001](tasks/T-001-document-contract.md): contrato de contenido; MERGED/conciliada en PR4.
+- [T-002](tasks/T-002-daily-persistence.md): persistencia privada por fecha; MERGED/conciliada en PR5.
 
 - [T-000](tasks/T-000-adoption.md): adopción MERGED/conciliada; evidencia propia y aceptación E-01 conservadas en la tarea/PR1. No acredita implementación I1.
 - [T-015](tasks/T-015-adoption-checks.md): mantenimiento previo MERGED/conciliado, PR2/squashb52b1fd; no cuenta para ciclo I1.
@@ -15,7 +18,7 @@ Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este í
 
 ## Siguientes · I1
 
-Quince contratos completos de producto, draft solo por dependencias. T-001 espera MERGED/conciliación de T-018; adopción histórica T-000/T-015 cerrada. Cada fila posterior depende de MERGED/conciliación de la anterior. Estados canónicos en tareas. Los IDs no fijan el orden: T-016 se inserta entre T-006/T-007 para separar cola y transporte; no es una capacidad adicional.
+Quince contratos de producto I1; T-003 y T-014 ya fueron mergeadas. T-020 está bloqueada sin PR mientras PR6 siga OPEN; su contrato está en su rama publicada. Las dependencias históricas se muestran para trazabilidad. Estados canónicos en tareas. Los IDs no fijan el orden: T-016 se inserta entre T-006/T-007 para separar cola y transporte; no es una capacidad adicional.
 
 | Orden | Contrato / resultado | Dependencia |
 |---|---|---|
@@ -41,4 +44,4 @@ Quince contratos completos de producto, draft solo por dependencias. T-001 esper
 
 ## Fuera de I1
 
-Además de I2 registrada, los demás objetivos opcionales de PROJECT_CONTEXT/ROADMAP siguen sin contrato ni ejecución autorizada. No usar el microensayo genérico de errorMessage como otra tarea/PR de adopción; la primera implementación de producto es T-001. Conservar E-01 aceptado y comprobar solo capacidades pertinentes en la superficie propia; no atribuir a Junie pruebas de frontera.
+Además de I2 registrada, los demás objetivos opcionales de PROJECT_CONTEXT/ROADMAP siguen sin contrato ni ejecución autorizada. No usar el microensayo genérico de errorMessage como otra tarea/PR de adopción; T-001 fue la primera implementación de producto. Conservar E-01 aceptado y comprobar solo capacidades pertinentes en la superficie propia; no atribuir a Junie pruebas de frontera.
