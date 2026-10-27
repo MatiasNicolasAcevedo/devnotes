@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-019](tasks/T-019-agent-operating-rules.md) |
-| Estado | changes_requested |
-| Acción actual | Sonda Codex realizada por excepción del dueño; decisión pendiente sobre autorizar otra revisión independiente. |
+| Estado | in_review |
+| Acción actual | Tercera revisión independiente autorizada por el dueño; Junie reviewer emite veredicto APROBADO sin bloqueantes. |
 | Rama / PR | codex/t-019-agent-operating-rules · [PR6](https://github.com/MatiasNicolasAcevedo/devnotes/pull/6) contra main |
 
 T-014: PR19 MERGED en `9da4ab4f138bd28753e61d1538003acceb615691`. T-020 está bloqueada sin PR mientras PR6 siga OPEN; su rama publicada es `codex/t-020-editor-usability`.
@@ -30,5 +30,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Dueño: decidir si autoriza expresamente una revisión independiente adicional de T-019 y PR6, una vez agotadas las dos rondas. La excepción ya concedida permite la sonda Windows en Codex y su evidencia está registrada en T-019; no acredita Junie ni FULL. Si se autoriza, abrir una sesión nueva de reviewer elegible para comprobar PR6, HEAD/base publicados, CI y el cierre de los hallazgos, y emitir su veredicto ligado a esos SHA. Solo después, un merger elegible puede actuar si todos los criterios vigentes se cumplen y confirmar MERGED en GitHub. Sin autorización no programar revisión; no aprobar ni mergear. T-020 sigue bloqueada sin PR hasta confirmar MERGED de PR6. Preservar scripts/e2e.sh ajeno y plantilla/; no iniciar otra implementación ni voz.
+Junie merger, en sesión nueva e independiente: PR6 de T-019 fue aprobado por reviewer independiente (Junie, Qwen3.6-27B-FP8) sin bloqueantes. HEAD revisado 2d72ccab28ced19640dff8234bb0b2e40f5f2b4d, base main 9da4ab4f138bd28753e61d1538003acceb615691. CI verify-required SUCCESS, docs-check OK, diff-check OK, policy DOCS_ONLY/DOCUMENTATION. Reconsultar hechos remotos, verificar que HEAD no cambió desde el veredicto, y proceder con squash merge ligado al SHA revisado. Confirmar MERGED en GitHub con gh pr view. T-020 sigue bloqueada sin PR hasta confirmar MERGED de PR6. Preservar scripts/e2e.sh ajeno y plantilla/; no iniciar otra implementación ni voz.
 ```
