@@ -43,18 +43,21 @@ Retoma: implementer Codex desktop, modelo GPT-6 según identidad expuesta, esfue
 
 ## Checkpoint vigente
 
-2026-10-27 · selección corregida y recorrido dirigido real desktop/móvil **2/2 OK**, exit 0 (`t020-selection-e2e.log`), cleanup por labels completado. FULL 4 de cierre **verde**, exit 0; publicación de código en preparación, sin commit/push todavía. HEAD/base/main/origin/main `9da4ab4f138bd28753e61d1538003acceb615691`, fetch de retoma confirmado; PR #6 sigue OPEN. No modificarlo ni abrir otro PR.
+2026-10-27 · **implementación publicada** en `c640389c3e6b4ccf553b72c2e78f8e5fd0e97732`, rama `codex/t-020-editor-usability`, push normal y HEAD remoto coincidente. Base `main/origin/main` **`9da4ab4f138bd28753e61d1538003acceb615691`**, verificada tras fetch antes de publicar. `--policy origin/main`: policy FULL, profile APPLICATION, 41 rutas entregadas (37 técnicas + 4 Markdown). Sin PR de T-020: #6 continúa OPEN; estado blocked exclusivamente por WIP/apertura de PR, no por fallo técnico.
 
-Fuentes cerradas con huella técnica **`2564340fbca4de56a68cee6e8a19428d6f044673`** (`t020-full4-source-before.log`). Método: rutas únicas ordenadas de `git ls-files --cached --others --exclude-standard -- client/src server/src e2e/tests e2e/fixtures`; blobs con `git hash-object --stdin-paths`; pares ruta/blob con `git hash-object --stdin`. Incluye archivos nuevos. Huella antes/después idéntica, conservada en t020-full4-source-before.log y t020-full4-source-after.log. Desde FULL 3 solo cambió el paso/assertions de selección del caso E2E, comprobado en ambos tamaños. Fuentes congeladas durante el gate.
-
-Comando exacto, Git Bash Windows:
+**FULL final válido**, exit 0: docs, backend, frontend y Playwright completos. Resultado, tiempos y ensayos previos en la tabla de validación. Comando exacto ejecutado con Git Bash Windows:
 ```bash
 COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t020-final-1027 STARTER_E2E_PROJECT=starter-e2e-t020-final-1027 STARTER_SERVER_TESTS=container bash scripts/verify.sh > t020-full4-resume.log 2>&1
 ```
 
-Ambos namespaces nuevos estaban vacíos al inicio. Solo fixtures ficticias. Cleanup completado: trap E2E estricto y después `docker compose --env-file .env.example -p starter-verify-t020-final-1027 --profile verify down --volumes --remove-orphans`; contenedores/redes/volúmenes de ambos proyectos comprobados vacíos por labels exactos. Todos los namespaces previos y el dirigido selection-1027 quedaron vacíos; no operar recursos ajenos.
+Huella antes/después **`2564340fbca4de56a68cee6e8a19428d6f044673`** (`t020-full4-source-before.log`, `t020-full4-source-after.log`), idéntica y ligada a las fuentes publicadas. Método: rutas únicas ordenadas de `git ls-files --cached --others --exclude-standard -- client/src server/src e2e/tests e2e/fixtures`; blobs con `git hash-object --stdin-paths`; pares ruta/blob con `git hash-object --stdin`. Incluye archivos nuevos. No hubo ediciones técnicas durante FULL; el cierre posterior solo modifica Markdown y conserva esta evidencia sin repetir FULL.
 
-Siguiente paso: confirmar todas las fases/exit, huella y cleanup; docs-check/diff completo; staging explícito excluyendo scripts/e2e.sh y plantilla, guardas y footer Refs; publicar código y después cerrar documentación. Si vuelve un bloqueo no resuelto dentro de los límites, checkpoint sin publicar. Revisión/merge en sesión independiente y dependencia operativa #6.
+Ambos namespaces nuevos se comprobaron vacíos al iniciar. Cleanup completado: trap E2E estricto y `docker compose --env-file .env.example -p starter-verify-t020-final-1027 --profile verify down --volumes --remove-orphans`; contenedores/redes/volúmenes de ambos proyectos comprobados vacíos por labels exactos. Namespaces previos y dirigido selection-1027 limpios. Solo fixtures ficticias; stack persistente del dueño intacto. Reportes crudos y harness dirigido permanecen ignorados/locales.
+
+Staging explícito de 41 rutas, diff completo y guardas de plantilla verificados antes del commit. `scripts/e2e.sh` ajeno conservado y excluido; único cambio local ajeno pendiente. Sin cambios de dependencias, wrappers, locks, esquema o permisos. Docs-check de cierre OK (66 Markdown, 20 tareas, HANDOFF 22/22), comprobado antes del segundo push documental. No aprobación/merge propios ni done.
+
+Siguiente responsable: dueño/responsable de PR #6 para su flujo propio; cuando WIP permita abrir T-020, una sesión independiente prepara su PR contra main y revisa los HEAD/base publicados, evidencia local y CI propia. No cerrar/modificar #6 por esta tarea, no abrir segundo PR ni iniciar voz/otra tarea.
+
 ## Bitácora de correcciones significativas
 
 | Problema / causa | Corrección | Rojo/verde y evidencia |
@@ -63,7 +66,7 @@ Siguiente paso: confirmar todas las fases/exit, huella y cleanup; docs-check/dif
 | Botón ausente, cursor en link no reconocido y URL anterior al reabrir | Selección conservada, extendMarkRange, reset del diálogo y clic seguro | Componentes y T-020 real OK; `t020-final-directed.log` |
 | Contenido remoto tardío no aparecía; hidratar emitía cambios | Hidratar contenido validado con emitUpdate=false | Rojo previo (`t020-hydration-red.log`) y recuperación real OK |
 | Cambiar readonly emitía ediciones; ACK enlazado colapsaba selección por orden de claves JSON | setEditable sin update, igualdad estructural ProseMirror; foco tras transición modal | Rojos 2 callbacks y selección vacía (`t020-lock-red.log`, `t020-ack-focused-red.log`); 29 editor/diálogo OK (`t020-ack-focus-green.log`) |
-| Selector cambiaba provider sin ruta; contenido/revisión pasaban a otra fecha | Workspace por identidad sobre shell, coordinador reiniciado por fecha, ruta ISO local y flush previo | Rojo 2/26 (`t020-resume-red.log`); dirigidos y E2E vacío/URL/recarga/Hoy OK en ensayo parcial |
+| Selector cambiaba provider sin ruta; contenido/revisión pasaban a otra fecha | Workspace por identidad sobre shell, coordinador reiniciado por fecha, ruta ISO local y flush previo | Rojo 2/26 (`t020-resume-red.log`); dirigidos y E2E vacío/URL/recarga/Hoy OK, desktop/móvil en FULL final |
 | Guardar versión capturaba revisión anterior a flush | Getter síncrono del último ACK; vacío solo por acción manual | Rojo revisión 4 frente a 5 (`t020-version-revision-red.log`); integración verde; 17 cola/hidratación/vacío OK (`t020-hydration-force-green.log`) |
 | Historial 404 aparecía como error genérico | Sin versión guardada, volver y reintento conservado | Rojo (`t020-history-empty-red.log`); DailyHistoryPage verde |
 | JsonNode Jackson2 de versión serializado como bean por Jackson3 | Misma conversión de JSON nativo que DailyNoteController; contrato HTTP preservado | POST/GET: 2 fallos/21 OK (`t020-version-api-red.log`); 23/23 PostgreSQL OK (`t020-version-api-green.log`) |
@@ -102,4 +105,4 @@ Operación dirigida sobre HEAD/base 9da4ab4: `bash e2e/artifacts/t020-selection-
 
 ## Entrega y siguiente responsable
 
-Sin publicación ni veredicto propio todavía. Completar gate y cleanup; publicar rama por push normal si pasa. PR #6 es dependencia operativa: no cerrar/modificar ni abrir otro PR. El dueño/responsable de esa dependencia y una sesión independiente preparan el PR/revisión de T-020 cuando WIP lo permita. No marcar done ni iniciar voz u otra tarea en esta sesión.
+Código publicado, FULL verde y recursos propios limpios. Cierre documental sin cambios técnicos/base; revisión independiente y CI del futuro PR pendientes. La apertura del PR de T-020 queda bloqueada por el PR documental #6 OPEN. No se modificó #6 ni se abrió otro PR; no marcar done hasta MERGED confirmado. El prompt único de retoma está en STATUS.
