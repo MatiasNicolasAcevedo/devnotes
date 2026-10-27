@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-019](tasks/T-019-agent-operating-rules.md) |
-| Estado | in_progress |
-| Acción actual | Corrección de PR6 en curso; evidencia Windows de Junie pendiente. |
+| Estado | in_review |
+| Acción actual | Corrección documental de PR6 preparada para revisión independiente; sonda propia Junie pendiente. |
 | Rama / PR | codex/t-019-agent-operating-rules · [PR6](https://github.com/MatiasNicolasAcevedo/devnotes/pull/6) contra main |
 
 T-014: PR19 MERGED en `9da4ab4f138bd28753e61d1538003acceb615691`. T-020 está bloqueada sin PR mientras PR6 siga OPEN; su rama publicada es `codex/t-020-editor-usability`.
@@ -30,5 +30,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Continuar la corrección de T-019 en codex/t-019-agent-operating-rules: comprobar PR6 y main remotos, preservar scripts/e2e.sh ajeno y plantilla/, completar gate y checkpoint, publicar en el mismo PR y entregar a revisión independiente. T-020 permanece bloqueada sin PR mientras PR6 esté abierto. No aprobar ni mergear trabajo propio.
+Sesión nueva reviewer independiente para T-019 en codex/t-019-agent-operating-rules y PR6: leer AGENTS, STATUS, T-019, su checkpoint y protocolo reviewer. Comprobar HEAD y main remotos, CI, diff, integración y gate documental; evaluar los tres hallazgos y el diagnóstico de la sonda Windows pendiente en una superficie Junie propia, sin atribuirle pruebas de Codex. Publicar veredicto ligado a HEAD/base y actuar según AUTONOMY; no aprobar ni mergear si falta un criterio exigido. Preservar scripts/e2e.sh ajeno y plantilla/. T-020 permanece bloqueada sin PR mientras PR6 esté OPEN; solo tras MERGED confirmado retomar T-020 en sesión nueva desde su checkpoint publicado. No iniciar otra implementación ni voz.
 ```

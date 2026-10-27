@@ -1,6 +1,6 @@
 # Observaciones para integrar con frontera
 
-Notas del dueño del 2026-10-22. Inicialmente se acumularon para frontera. El dueño autorizó aplicarlas antes de T-003: contrato [T-019](tasks/T-019-agent-operating-rules.md), pendiente de ejecución Junie. Este archivo conserva las evidencias de origen; no acredita por sí solo la implementación de las reglas.
+Notas del dueño del 2026-10-22. Inicialmente se acumularon para frontera. El dueño autorizó aplicarlas antes de T-003: contrato [T-019](tasks/T-019-agent-operating-rules.md), originalmente pendiente de ejecución Junie. Este archivo conserva las evidencias de origen; no acredita por sí solo la implementación de las reglas.
 
 Registro: Codex, rol de recopilación para frontera, lectura local con PowerShell y edición documental. Modelo exacto y esfuerzo no expuestos. Impacto de este registro: solo documentación; sin cambios de comportamiento, API, permisos, datos o UI.
 
@@ -70,4 +70,4 @@ GitHub devolvió `headRefOid` `17a1876bbd71610e692b3c0385a2df7da59ab933` para PR
 
 ## Próxima integración
 
-Aplicar estas tres observaciones mediante T-019 antes de T-003; prompt vigente en STATUS. El trabajo genérico del Starter se realiza en su propio repositorio y no acredita ejecución Junie ni pruebas de DevNotes. Este registro no acredita el gate de T-002. La comprobación remota de PR4/PR5 acredita únicamente su merge y los metadatos indicados arriba.
+La prioridad original era aplicar estas tres observaciones mediante T-019 antes de T-003; consultar el estado actual y el prompt vigente en STATUS. El trabajo genérico del Starter se realiza en su propio repositorio y no acredita ejecución Junie ni pruebas de DevNotes. Este registro no acredita el gate de T-002. La comprobación remota de PR4/PR5 acredita únicamente su merge y los metadatos indicados arriba.

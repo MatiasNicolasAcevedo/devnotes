@@ -1,6 +1,6 @@
 ---
 id: T-019
-status: in_progress
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -36,7 +36,9 @@ Cambios de documentación en AGENTS, ORCHESTRATION, protocolos implementer/revie
 
 AGENTS, STATUS y protocolo implementer son la entrada común. Leer las guías a editar; no recorrer el resto de docs.
 
-## Pasos y pruebas
+## Pasos y pruebas originales
+
+Los pasos sobre T-003 describen la preparación histórica; la continuidad vigente está en el checkpoint.
 
 1. Preservar cambios locales de esta preparación. Comprobar PR5/T-002 remotamente y ausencia de otro PR en vuelo. Crear la rama exacta desde main publicado; llevar los cambios documentales preparados, sin reescribir ni force-pushear la rama de T-003. El HEAD local inicial `3bd31db` contiene solo conciliación de T-002/STATUS/T-003 sobre main; si main publicado aún no contiene T-002 done, conciliarla también en el primer avance de T-019 con la evidencia remota. No perder ese cierre ni arrastrar implementación de T-003. Conservar temporalmente los cambios por rutas explícitas si Git impide cambiar de rama con el árbol modificado; nunca descartar el trabajo preparado.
 2. Incorporar las tres reglas de forma canónica, con enlaces desde los protocolos y comandos sin rutas personales. Documentar salidas ante PR abierta, cerrada sin merge, inexistente o consulta fallida; no simular que esas situaciones se comprobaron en GitHub.
@@ -78,14 +80,14 @@ PR6 OPEN, único PR abierto; `gh pr view 6 --repo MatiasNicolasAcevedo/devnotes 
 
 Sonda de PowerShell en Codex: el preflight Bash/Node/Docker dentro del sandbox no arrancó (exit `-1073741502`); fuera del sandbox, la misma invocación resolvió `/usr/bin/bash`, Node `v24.21.0`, Docker Compose `v2.40.2-desktop.1`, exit 0. No hay una sesión o terminal Junie expuesta en este entorno: no se puede ejecutar ni atribuir la sonda exigida a Junie. Alternativa necesaria: ejecutar el bloque de esta tarea en una sesión propia Junie y registrar salida/exit saneados; el reviewer debe evaluar esta limitación explícita. Ninguna de estas sondas acredita FULL.
 
-Pendiente: terminar merge local de main, clasificar el diff publicado contra esa base, ejecutar gate documental y docs-check, publicar sin force push y entregar a revisión independiente. No se usan stacks ni recursos Docker para la sonda; cleanup de recursos no aplica, PATH se restaura en `finally`.
+Merge local `728124bcb97646ec6497adc5aeb66603afe6dee5`, padres T-019 `f497a3cce9f83a7e28103444018e850159ff8128` y main `9da4ab4f138bd28753e61d1538003acceb615691`. En Codex fuera del sandbox, `bash scripts/verify.sh --policy origin/main` exit 0: `DOCS_ONLY` / `DOCUMENTATION`, 12 archivos regulares Markdown; `node scripts/docs-check.mjs` exit 0 (67 Markdown, 20 tareas); `git diff --check origin/main...HEAD` exit 0. Gate documental sin FULL; el cambio ajeno sin commit en scripts/e2e.sh se excluye del diff y de la entrega. No se usaron stacks ni recursos Docker; cleanup de recursos no aplica, PATH se restaura en `finally`. Pendiente: publicación de este cierre, revisión independiente y sonda propia Junie o decisión del reviewer sobre el diagnóstico; no se afirma aceptación.
 
 ## Correcciones significativas
 
 | Hallazgo / causa | Corrección | Prueba |
 |---|---|---|
-| Main avanzó y el merge conservaba dependencias obsoletas | Resolver STATUS y T-003, conciliar T-014 desde T-020 y actualizar BACKLOG; T-020 sigue bloqueada | Consultas remotas PR7/PR19; docs-check pendiente final |
-| Entrada de SETUP omitía FULL y exit | Añadir invocación canónica con PATH temporal y captura de exit | Sonda preflight Codex exit 0 fuera del sandbox; FULL no ejecutado en sonda |
+| Main avanzó y el merge conservaba dependencias obsoletas | Resolver STATUS y T-003, conciliar T-014 desde T-020 y actualizar BACKLOG; T-020 sigue bloqueada | Consultas remotas PR7/PR19; docs-check exit 0 |
+| Entrada de SETUP omitía FULL y exit | Añadir invocación canónica con PATH temporal y captura de exit | Sonda preflight Codex exit 0 fuera del sandbox; policy DOCS_ONLY exit 0; FULL no ejecutado |
 | Falta evidencia propia Windows Junie | Registrar diagnóstico de superficie y alternativa concreta | Preflight Codex no se atribuye a Junie; comprobación propia Junie pendiente |
 
 ## Revisión independiente anterior
