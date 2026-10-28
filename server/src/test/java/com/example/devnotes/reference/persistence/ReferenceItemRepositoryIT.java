@@ -73,6 +73,79 @@ class ReferenceItemRepositoryIT {
     }
 
     @Test
+    void searchByTitleMatchesCaseInsensitiveAndFiltersByOwner() {
+        var a = owner();
+        var b = owner();
+        repository.saveAndFlush(new ReferenceItem(a, "Spring Boot", "", NOW));
+        repository.saveAndFlush(new ReferenceItem(a, "spring data", "", NOW));
+        repository.saveAndFlush(new ReferenceItem(a, "React", "", NOW));
+        repository.saveAndFlush(new ReferenceItem(b, "Spring Security", "", NOW));
+
+        // Search "spring" for owner A — 2 results
+        var aResults = repository.findPageByOwnerIdAndTitle(a, "%spring%", 0L, 20);
+        assertThat(repository.countByOwnerIdAndTitle(a, "%spring%")).isEqualTo(2);
+        assertThat(aResults).extracting(ReferenceItem::getTitle).contains("Spring Boot", "spring data");
+
+        // Search "spring" for owner B — 1 result
+        var bResults = repository.findPageByOwnerIdAndTitle(b, "%spring%", 0L, 20);
+        assertThat(repository.countByOwnerIdAndTitle(b, "%spring%")).isEqualTo(1);
+        assertThat(bResults).extracting(ReferenceItem::getTitle).contains("Spring Security");
+
+        // Search "nonexistent" — 0 results
+        assertThat(repository.findPageByOwnerIdAndTitle(a, "%nonexistent%", 0L, 20))
+                .isEmpty();
+        assertThat(repository.countByOwnerIdAndTitle(a, "%nonexistent%")).isZero();
+    }
+
+    @Test
+    void searchEscapesPercentUnderscoreAndExclamationAsLiterals() {
+        var owner = owner();
+        repository.saveAndFlush(new ReferenceItem(owner, "100% done", "", NOW));
+        repository.saveAndFlush(new ReferenceItem(owner, "test_item", "", NOW));
+        repository.saveAndFlush(new ReferenceItem(owner, "exclaim!", "", NOW));
+        repository.saveAndFlush(new ReferenceItem(owner, "normal", "", NOW));
+
+        // "%" literal — only "100% done"
+        var percent = repository.findPageByOwnerIdAndTitle(owner, "%!%%", 0L, 20);
+        assertThat(repository.countByOwnerIdAndTitle(owner, "%!%%")).isEqualTo(1);
+        assertThat(percent).extracting(ReferenceItem::getTitle).contains("100% done");
+
+        // "_" literal — only "test_item"
+        var underscore = repository.findPageByOwnerIdAndTitle(owner, "%!_%", 0L, 20);
+        assertThat(repository.countByOwnerIdAndTitle(owner, "%!_%")).isEqualTo(1);
+        assertThat(underscore).extracting(ReferenceItem::getTitle).contains("test_item");
+
+        // "!" literal — only "exclaim!"
+        var exclaim = repository.findPageByOwnerIdAndTitle(owner, "%!!%", 0L, 20);
+        assertThat(repository.countByOwnerIdAndTitle(owner, "%!!%")).isEqualTo(1);
+        assertThat(exclaim).extracting(ReferenceItem::getTitle).contains("exclaim!");
+    }
+
+    @Test
+    void searchWithPaginationAndOrder() {
+        var owner = owner();
+        for (int i = 0; i < 5; i++) {
+            repository.saveAndFlush(new ReferenceItem(owner, "Item " + i, "", NOW.plusSeconds(i)));
+        }
+        repository.saveAndFlush(new ReferenceItem(owner, "Otro", "", NOW));
+
+        var total = repository.countByOwnerIdAndTitle(owner, "%item%");
+        assertThat(total).isEqualTo(5);
+
+        var page = repository.findPageByOwnerIdAndTitle(owner, "%item%", 0L, 2);
+        assertThat(page).hasSize(2);
+
+        var page2 = repository.findPageByOwnerIdAndTitle(owner, "%item%", 2L, 2);
+        assertThat(page2).hasSize(2);
+
+        var page3 = repository.findPageByOwnerIdAndTitle(owner, "%item%", 4L, 2);
+        assertThat(page3).hasSize(1);
+
+        var page4 = repository.findPageByOwnerIdAndTitle(owner, "%item%", 10L, 2);
+        assertThat(page4).isEmpty();
+    }
+
+    @Test
     void databaseRejectsBlankUntrimmedAndOversizedValuesAndProtectsIdentity() {
         var owner = owner();
         var id = UUID.randomUUID();

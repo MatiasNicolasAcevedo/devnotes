@@ -136,4 +136,40 @@ class ReferenceItemControllerTest {
         }
         verifyNoInteractions(service);
     }
+
+    @Test
+    void rejectsExcessiveQueryWithoutEchoingContent() throws Exception {
+        String longQuery = "x".repeat(121);
+        var response = mvc.perform(
+                        get(PATH).queryParam("q", longQuery).with(oidcLogin().oidcUser(user())))
+                .andExpect(status().isBadRequest())
+                .andExpect(header().string("Cache-Control", "no-store"))
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        assertThat(response).doesNotContain(longQuery, "Exception", "SQL");
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void passesQueryToServiceAndReturnsNoStore() throws Exception {
+        when(service.list(eq(OWNER), eq(0), eq(20), eq("spring")))
+                .thenReturn(new ReferenceItemPage(List.of(), 0, 20, 0L, 0));
+        mvc.perform(get(PATH).queryParam("q", "spring").with(oidcLogin().oidcUser(user())))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", "no-store"))
+                .andExpect(jsonPath("$.content").isEmpty())
+                .andExpect(jsonPath("$.totalElements").value(0));
+        verify(service).list(OWNER, 0, 20, "spring");
+    }
+
+    @Test
+    void omitsQueryDelegatesToListAll() throws Exception {
+        when(service.list(eq(OWNER), eq(0), eq(20), isNull()))
+                .thenReturn(new ReferenceItemPage(List.of(), 0, 20, 0L, 0));
+        mvc.perform(get(PATH).with(oidcLogin().oidcUser(user())))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", "no-store"));
+        verify(service).list(OWNER, 0, 20, null);
+    }
 }

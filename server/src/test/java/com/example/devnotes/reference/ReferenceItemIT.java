@@ -235,6 +235,140 @@ class ReferenceItemIT {
         assertThat(checked(a.get(PATH), 200).get("totalElements").asInt()).isEqualTo(4);
     }
 
+    @Test
+    void searchByTitleMatchesCaseInsensitiveWithTwoOwnersAndPrivacy() throws Exception {
+        var a = login();
+        var b = login();
+        // A creates items with various cases
+        checked(mutate(a, PATH, "POST", "{\"title\":\"Spring Boot\",\"description\":\"Framework\"}"), 201);
+        checked(mutate(a, PATH, "POST", "{\"title\":\"spring data\",\"description\":\"JPA\"}"), 201);
+        checked(mutate(a, PATH, "POST", "{\"title\":\"React\",\"description\":\"UI\"}"), 201);
+        // B creates items
+        checked(mutate(b, PATH, "POST", "{\"title\":\"Spring Security\",\"description\":\"Auth\"}"), 201);
+        checked(mutate(b, PATH, "POST", "{\"title\":\"Vue\",\"description\":\"UI\"}"), 201);
+
+        // Verify all items are visible without search
+        var aAll = checked(a.get(PATH), 200);
+        assertThat(aAll.get("totalElements").asInt()).isEqualTo(3);
+
+        // A searches for "spring" — should match both of A's items, case-insensitive
+        var aResult = checked(a.get(PATH + "?q=spring"), 200);
+        assertThat(aResult.get("totalElements").asInt()).isEqualTo(2);
+        assertThat(aResult.get("content").size()).isEqualTo(2);
+        var titles = java.util.stream.IntStream.range(0, aResult.get("content").size())
+                .mapToObj(i -> aResult.get("content").get(i).get("title").asString())
+                .toList();
+        assertThat(titles).contains("Spring Boot", "spring data");
+
+        // B searches for "spring" — should only see B's own item
+        var bResult = checked(b.get(PATH + "?q=spring"), 200);
+        assertThat(bResult.get("totalElements").asInt()).isEqualTo(1);
+        assertThat(bResult.get("content").get(0).get("title").asString()).isEqualTo("Spring Security");
+
+        // A searches for "react" — 1 result
+        var reactResult = checked(a.get(PATH + "?q=react"), 200);
+        assertThat(reactResult.get("totalElements").asInt()).isEqualTo(1);
+        assertThat(reactResult.get("content").get(0).get("title").asString()).isEqualTo("React");
+
+        // A searches for "nonexistent" — 0 results
+        var emptyResult = checked(a.get(PATH + "?q=nonexistent"), 200);
+        assertThat(emptyResult.get("totalElements").asInt()).isZero();
+        assertThat(emptyResult.get("content").size()).isZero();
+
+        // B does not see A's items even with search
+        var bAll = checked(b.get(PATH), 200);
+        assertThat(bAll.get("totalElements").asInt()).isEqualTo(2);
+    }
+
+    @Test
+    void searchEscapesWildcardCharactersAsLiterals() throws Exception {
+        var a = login();
+        // Create items with wildcard characters in titles
+        checked(mutate(a, PATH, "POST", "{\"title\":\"100% done\",\"description\":\"\"}"), 201);
+        checked(mutate(a, PATH, "POST", "{\"title\":\"test_item\",\"description\":\"\"}"), 201);
+        checked(mutate(a, PATH, "POST", "{\"title\":\"exclaim!\",\"description\":\"\"}"), 201);
+        checked(mutate(a, PATH, "POST", "{\"title\":\"normal\",\"description\":\"\"}"), 201);
+
+        // Search for "%" should match "100% done" literally, not as wildcard
+        var percentResult = checked(a.get(PATH + "?q=%25"), 200);
+        assertThat(percentResult.get("totalElements").asInt()).isEqualTo(1);
+        assertThat(percentResult.get("content").get(0).get("title").asString()).isEqualTo("100% done");
+
+        // Search for "_" should match "test_item" literally, not as wildcard
+        var underscoreResult = checked(a.get(PATH + "?q=_"), 200);
+        assertThat(underscoreResult.get("totalElements").asInt()).isEqualTo(1);
+        assertThat(underscoreResult.get("content").get(0).get("title").asString())
+                .isEqualTo("test_item");
+
+        // Search for "!" should match "exclaim!" literally, not as escape char
+        var exclaimResult = checked(a.get(PATH + "?q=%21"), 200);
+        assertThat(exclaimResult.get("totalElements").asInt()).isEqualTo(1);
+        assertThat(exclaimResult.get("content").get(0).get("title").asString()).isEqualTo("exclaim!");
+    }
+
+    @Test
+    void searchDuplicatesAreDistinctResults() throws Exception {
+        var a = login();
+        checked(mutate(a, PATH, "POST", "{\"title\":\"Duplicado\",\"description\":\"Primero\"}"), 201);
+        checked(mutate(a, PATH, "POST", "{\"title\":\"Duplicado\",\"description\":\"Segundo\"}"), 201);
+        checked(mutate(a, PATH, "POST", "{\"title\":\"Otro\",\"description\":\"\"}"), 201);
+
+        var result = checked(a.get(PATH + "?q=duplicado"), 200);
+        assertThat(result.get("totalElements").asInt()).isEqualTo(2);
+        assertThat(result.get("content").size()).isEqualTo(2);
+    }
+
+    @Test
+    void searchWithPaginationRespectsPageAndSize() throws Exception {
+        var a = login();
+        for (int i = 0; i < 5; i++) {
+            checked(mutate(a, PATH, "POST", "{\"title\":\"Item " + i + "\",\"description\":\"\"}"), 201);
+        }
+        checked(mutate(a, PATH, "POST", "{\"title\":\"Otro\",\"description\":\"\"}"), 201);
+
+        var result = checked(a.get(PATH + "?q=item&page=0&size=2"), 200);
+        assertThat(result.get("totalElements").asInt()).isEqualTo(5);
+        assertThat(result.get("content").size()).isEqualTo(2);
+        assertThat(result.get("page").asInt()).isZero();
+        assertThat(result.get("size").asInt()).isEqualTo(2);
+        assertThat(result.get("totalPages").asInt()).isEqualTo(3);
+
+        var page2 = checked(a.get(PATH + "?q=item&page=2&size=2"), 200);
+        assertThat(page2.get("totalElements").asInt()).isEqualTo(5);
+        assertThat(page2.get("content").size()).isEqualTo(1);
+    }
+
+    @Test
+    void searchRejectsExcessiveQueryWithSafe400() throws Exception {
+        var a = login();
+        String longQuery = "x".repeat(121);
+        var response = checked(a.get(PATH + "?q=" + longQuery), 400);
+        assertThat(response.toString()).doesNotContain(longQuery, "Exception", "SQL");
+    }
+
+    @Test
+    void searchAllowsQueryAtExactLimit() throws Exception {
+        var a = login();
+        String exactQuery = "x".repeat(120);
+        checked(mutate(a, PATH, "POST", "{\"title\":\"" + exactQuery + "\",\"description\":\"\"}"), 201);
+        var result = checked(a.get(PATH + "?q=" + exactQuery), 200);
+        assertThat(result.get("totalElements").asInt()).isEqualTo(1);
+    }
+
+    @Test
+    void searchEmptyQueryReturnsAllItems() throws Exception {
+        var a = login();
+        checked(mutate(a, PATH, "POST", "{\"title\":\"Uno\",\"description\":\"\"}"), 201);
+        checked(mutate(a, PATH, "POST", "{\"title\":\"Dos\",\"description\":\"\"}"), 201);
+
+        // Empty q should behave like no q
+        var emptyQ = checked(a.get(PATH + "?q="), 200);
+        assertThat(emptyQ.get("totalElements").asInt()).isEqualTo(2);
+
+        var noQ = checked(a.get(PATH), 200);
+        assertThat(noQ.get("totalElements").asInt()).isEqualTo(2);
+    }
+
     @ParameterizedTest
     @CsvSource({"100,20", "107374182,20", "107374183,20", "2147483647,1", "2147483647,100"})
     void validPagesAcrossJpaOffsetLimitReturnEmptyWithRealOwnerCounts(int page, int size) throws Exception {

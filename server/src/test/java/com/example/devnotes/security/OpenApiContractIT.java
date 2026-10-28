@@ -135,7 +135,7 @@ class OpenApiContractIT {
         }
         assertThat(document.<List<Map<String, Object>>>read("$.paths['/api/v1/reference-items'].get.parameters"))
                 .extracting(parameter -> parameter.get("name"))
-                .containsExactlyInAnyOrder("page", "size");
+                .containsExactlyInAnyOrder("q", "page", "size");
         assertThat(document.<Map<String, Object>>read("$.paths['/api/v1/reference-items'].post.responses"))
                 .containsKey("201");
         assertThat(document.<Map<String, Object>>read("$.paths['/api/v1/reference-items/{id}'].delete.responses"))

@@ -16,7 +16,24 @@ public interface ReferenceItemRepository extends JpaRepository<ReferenceItem, UU
     List<ReferenceItem> findPageByOwnerId(
             @Param("ownerId") UUID ownerId, @Param("rowOffset") long offset, @Param("rowLimit") int size);
 
+    @Query(
+            value = "SELECT * FROM reference_item WHERE owner_id = :ownerId "
+                    + "AND lower(title) LIKE :pattern ESCAPE '!' "
+                    + "ORDER BY created_at DESC, id DESC LIMIT :rowLimit OFFSET :rowOffset",
+            nativeQuery = true)
+    List<ReferenceItem> findPageByOwnerIdAndTitle(
+            @Param("ownerId") UUID ownerId,
+            @Param("pattern") String pattern,
+            @Param("rowOffset") long offset,
+            @Param("rowLimit") int size);
+
     long countByOwnerId(UUID ownerId);
+
+    @Query(
+            value = "SELECT count(*) FROM reference_item WHERE owner_id = :ownerId "
+                    + "AND lower(title) LIKE :pattern ESCAPE '!' ",
+            nativeQuery = true)
+    long countByOwnerIdAndTitle(@Param("ownerId") UUID ownerId, @Param("pattern") String pattern);
 
     Optional<ReferenceItem> findByIdAndOwnerId(UUID id, UUID ownerId);
 }

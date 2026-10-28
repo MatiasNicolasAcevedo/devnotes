@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class ReferenceItemService {
+    private static final int QUERY_MAX = 120;
+
     private final ReferenceItemRepository repository;
     private final Clock clock;
 
@@ -23,9 +25,20 @@ public class ReferenceItemService {
     }
 
     @Transactional(readOnly = true)
-    public ReferenceItemPage list(UUID owner, int page, int size) {
+    public ReferenceItemPage list(UUID owner, int page, int size, String query) {
         Objects.requireNonNull(owner);
         if (page < 0 || size < 1 || size > 100) throw new IllegalArgumentException("Paginación inválida.");
+        if (query != null && query.length() > QUERY_MAX) {
+            throw new IllegalArgumentException("Consulta excesiva.");
+        }
+        String trimmed = query == null ? null : query.trim();
+        if (trimmed == null || trimmed.isEmpty()) {
+            return listAll(owner, page, size);
+        }
+        return listByTitle(owner, trimmed, page, size);
+    }
+
+    private ReferenceItemPage listAll(UUID owner, int page, int size) {
         var pageable = PageRequest.of(page, size);
         var result = new PageImpl<>(
                 repository.findPageByOwnerId(owner, pageable.getOffset(), size),
@@ -37,6 +50,25 @@ public class ReferenceItemService {
                 size,
                 result.getTotalElements(),
                 result.getTotalPages());
+    }
+
+    private ReferenceItemPage listByTitle(UUID owner, String pattern, int page, int size) {
+        String escaped = "%" + escapeLike(pattern.toLowerCase(java.util.Locale.ROOT)) + "%";
+        var pageable = PageRequest.of(page, size);
+        var items = repository.findPageByOwnerIdAndTitle(owner, escaped, pageable.getOffset(), size);
+        long total = repository.countByOwnerIdAndTitle(owner, escaped);
+        var result = new PageImpl<>(items, pageable, total);
+        return new ReferenceItemPage(
+                result.map(ReferenceItemView::from).getContent(),
+                page,
+                size,
+                result.getTotalElements(),
+                result.getTotalPages());
+    }
+
+    /** Escape %, _ and ! so they are treated as literals in a LIKE pattern (escape char is !). */
+    private static String escapeLike(String value) {
+        return value.replace("!", "!!").replace("%", "!%").replace("_", "!_");
     }
 
     @Transactional(readOnly = true)

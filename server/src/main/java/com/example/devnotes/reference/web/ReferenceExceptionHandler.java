@@ -22,6 +22,13 @@ public class ReferenceExceptionHandler extends ApiExceptionHandler {
                 .body(ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "No se encontró el elemento."));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    ResponseEntity<ProblemDetail> badRequest(IllegalArgumentException failure) {
+        var problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "La solicitud tiene datos inválidos.");
+        problem.setInstance(java.net.URI.create("/api/v1/reference-items"));
+        return ResponseEntity.badRequest().cacheControl(CacheControl.noStore()).body(problem);
+    }
+
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException failure, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
