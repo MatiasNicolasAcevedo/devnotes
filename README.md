@@ -84,7 +84,7 @@ bash scripts/dev.sh down --mode local --proxy nginx --project starter-dev-mi-app
 ```
 
 UI nginx http://127.0.0.1:5175; Vite usa `--proxy vite` y 5176. down conserva DB. Para coexistencia usar `--env-file` con puertos libres distintos en cada acción; aislamiento, login local y retoma en [SETUP](docs/SETUP.md#primer-uso-local-sin-google). Google real: [camino exclusivo del dueño](docs/SETUP.md#google-oidc-real).
-El login local usa el proveedor ficticio y `host.docker.internal`; si se abre un navegador host Windows, seguir la resolución por proceso de SETUP/TR-11. No modificar hosts globales. Los ensayos containerizados son el camino portable. `dev-auth.sh` es efímero y destruye sus datos al terminar: usar dev.sh para desarrollo persistente.
+El login local usa el proveedor ficticio y `host.docker.internal`; en Windows abrir la ventana de prueba con el [comando de Edge y resolución por proceso](docs/SETUP.md#prueba-manual-en-windows). No modificar hosts globales. Los ensayos containerizados son el camino portable. `dev-auth.sh` es efímero y destruye sus datos al terminar: usar dev.sh para desarrollo persistente.
 
 ## Validar, commitear y publicar
 

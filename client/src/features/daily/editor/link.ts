@@ -9,6 +9,7 @@ import { Mark } from '@tiptap/core'
  */
 export const Link = Mark.create({
   name: 'link',
+  inclusive: false,
 
   addAttributes() {
     return {

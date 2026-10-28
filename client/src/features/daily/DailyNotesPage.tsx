@@ -193,23 +193,15 @@ function DailyNotesInner() {
   }
 
   return (
-    <Stack spacing={2}>
-      <Stack
-        direction="row"
-        spacing={2}
-        sx={{ alignItems: 'center', justifyContent: 'space-between' }}
-      >
+    <Stack spacing={1}>
+      <Stack direction="row" sx={{ alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
         <Typography variant="h5" component="h1">
           Notas diarias
         </Typography>
-        {saveIndicator}
-      </Stack>
-
-      {/* Selector de fecha */}
-      <Stack direction="row" spacing={2} sx={{ alignItems: 'flex-end' }}>
         <TextField
           label="Fecha"
           type="date"
+          size="small"
           value={targetDate}
           disabled={saveVersion.isLocked}
           onChange={(e) => {
@@ -223,6 +215,7 @@ function DailyNotesInner() {
         <Link component={RouterLink} to="/notes">
           Hoy
         </Link>
+        <Box sx={{ ml: 'auto' }}>{saveIndicator}</Box>
       </Stack>
 
       {/* Error de query inicial */}
