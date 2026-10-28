@@ -21,6 +21,7 @@ public final class DailyContent {
     private static final int MAX_TEXT_PER_NODE = 100_000;
     private static final int MAX_HREF_LENGTH = 2048;
     private static final int MAX_HREF_TOTAL = 100_000;
+    private static final int MAX_REFERENCES = 100;
     private static final Set<Integer> VALID_WIDTHS = Set.of(25, 50, 75, 100);
 
     private static final ObjectMapper SHARED_MAPPER = new ObjectMapper();
@@ -46,6 +47,7 @@ public final class DailyContent {
         int textNodes = 0;
         int textTotal = 0;
         int hrefTotal = 0;
+        int referenceCount = 0;
 
         Iterator<JsonNode> blocks = content.elements();
         while (blocks.hasNext()) {
@@ -60,18 +62,27 @@ public final class DailyContent {
                         while (inlines.hasNext()) {
                             JsonNode node = inlines.next();
                             textNodes++;
-                            String text = node.path("text").asText(null);
-                            if (text != null) {
-                                int len = text.length();
-                                textTotal += len;
-                                if (textTotal > MAX_TEXT_TOTAL) {
-                                    throw new DailyContentException("Text content exceeds maximum length");
+                            String nodeType = node.path("type").asText(null);
+                            if ("reference".equals(nodeType)) {
+                                referenceCount++;
+                                if (referenceCount > MAX_REFERENCES) {
+                                    throw new DailyContentException("Too many reference atoms");
                                 }
-                            }
-                            int added = validateMarksAndReturnHrefLength(node);
-                            hrefTotal += added;
-                            if (hrefTotal > MAX_HREF_TOTAL) {
-                                throw new DailyContentException("Link URLs exceed maximum total length");
+                                validateReference(node);
+                            } else {
+                                String text = node.path("text").asText(null);
+                                if (text != null) {
+                                    int len = text.length();
+                                    textTotal += len;
+                                    if (textTotal > MAX_TEXT_TOTAL) {
+                                        throw new DailyContentException("Text content exceeds maximum length");
+                                    }
+                                }
+                                int added = validateMarksAndReturnHrefLength(node);
+                                hrefTotal += added;
+                                if (hrefTotal > MAX_HREF_TOTAL) {
+                                    throw new DailyContentException("Link URLs exceed maximum total length");
+                                }
                             }
                         }
                     }
@@ -145,8 +156,13 @@ public final class DailyContent {
                     throw new DailyContentException("Inline node must be an object");
                 }
                 String type = node.path("type").asText(null);
-                if (!"text".equals(type)) {
-                    throw new DailyContentException("Only text nodes allowed in paragraph");
+                if (!"text".equals(type) && !"reference".equals(type)) {
+                    throw new DailyContentException("Only text and reference nodes allowed in paragraph");
+                }
+                String nodeType = node.path("type").asText(null);
+                if ("reference".equals(nodeType)) {
+                    // Reference validation is done in the main validate() method
+                    continue;
                 }
                 // Validate text node fields
                 Iterator<String> nodeKeys = node.fieldNames();
@@ -248,6 +264,67 @@ public final class DailyContent {
                 throw new DailyContentException("Link URL must not contain spaces or control characters");
             }
         }
+    }
+
+    private static void validateReference(JsonNode node) {
+        // Only "type" and "attrs" allowed
+        Iterator<String> keys = node.fieldNames();
+        while (keys.hasNext()) {
+            String key = keys.next();
+            if (!"type".equals(key) && !"attrs".equals(key)) {
+                throw new DailyContentException("Unexpected field in reference atom");
+            }
+        }
+        // attrs must be present and an object
+        JsonNode attrs = node.get("attrs");
+        if (attrs == null || !attrs.isObject()) {
+            throw new DailyContentException("Reference must have attrs object");
+        }
+        // attrs must have exactly one key: "id"
+        Iterator<String> attrKeys = attrs.fieldNames();
+        while (attrKeys.hasNext()) {
+            String key = attrKeys.next();
+            if (!"id".equals(key)) {
+                throw new DailyContentException("Unexpected attribute in reference");
+            }
+        }
+        // id must be a canonical lowercase UUID
+        JsonNode idNode = attrs.get("id");
+        if (idNode == null || !idNode.isTextual()) {
+            throw new DailyContentException("Reference id must be a string");
+        }
+        String id = idNode.asText();
+        if (!isValidCanonicalUuid(id)) {
+            throw new DailyContentException("Reference id must be a valid UUID");
+        }
+        // Reference must not have content or marks
+        if (node.has("content")) {
+            throw new DailyContentException("Reference must not have content");
+        }
+        if (node.has("marks")) {
+            throw new DailyContentException("Reference must not have marks");
+        }
+    }
+
+    private static boolean isValidCanonicalUuid(String id) {
+        if (id.length() != 36) {
+            return false;
+        }
+        // Check format: 8-4-4-4-12 hex digits with dashes
+        if (id.charAt(8) != '-' || id.charAt(13) != '-' || id.charAt(18) != '-' || id.charAt(23) != '-') {
+            return false;
+        }
+        // Check all other chars are lowercase hex
+        for (int i = 0; i < id.length(); i++) {
+            if (i == 8 || i == 13 || i == 18 || i == 23) {
+                continue; // dashes are already checked
+            }
+            char c = id.charAt(i);
+            if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static void validateSeparator(JsonNode block) {

@@ -334,4 +334,95 @@ class DailyNoteApiIT {
         // Boolean revision → 400
         checked(mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + VALID_DOC + ",\"expectedRevision\":true}"), 400);
     }
+
+    // ── S-106: Reference atom validation via API ──
+
+    @Test
+    void acceptsNoteWithReferenceAtom() throws Exception {
+        var a = login();
+        String date = "2026-05-25";
+        String docWithRef =
+                "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"reference\",\"attrs\":{\"id\":\"01900000-0000-7000-8000-000000000101\"}}]}]}";
+
+        var created = checked(
+                mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + docWithRef + ",\"expectedRevision\":0}"), 200);
+        assertThat(created.get("revision").asLong()).isEqualTo(1);
+
+        // Read back and verify structure is preserved
+        var got = checked(a.get(PATH + "/" + date), 200);
+        JsonNode content = got.get("content");
+        assertThat(content.path("content")
+                        .get(0)
+                        .path("content")
+                        .get(0)
+                        .path("type")
+                        .asText(""))
+                .isEqualTo("reference");
+        assertThat(content.path("content")
+                        .get(0)
+                        .path("content")
+                        .get(0)
+                        .path("attrs")
+                        .path("id")
+                        .asText(""))
+                .isEqualTo("01900000-0000-7000-8000-000000000101");
+    }
+
+    @Test
+    void rejectsReferenceWithInvalidUuidViaApi() throws Exception {
+        var a = login();
+        String date = "2026-05-26";
+        String badRef =
+                "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"reference\",\"attrs\":{\"id\":\"not-a-uuid\"}}]}]}";
+
+        checked(mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + badRef + ",\"expectedRevision\":0}"), 400);
+
+        // DB is empty
+        assertThat(checked(a.get(PATH), 200).get("totalElements").asInt()).isZero();
+    }
+
+    @Test
+    void rejectsReferenceWithExtraFieldViaApi() throws Exception {
+        var a = login();
+        String date = "2026-05-27";
+        String badRef =
+                "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"reference\",\"attrs\":{\"id\":\"01900000-0000-7000-8000-000000000101\"},\"extra\":\"x\"}]}]}";
+
+        checked(mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + badRef + ",\"expectedRevision\":0}"), 400);
+
+        assertThat(checked(a.get(PATH), 200).get("totalElements").asInt()).isZero();
+    }
+
+    @Test
+    void rejects101ReferencesViaApi() throws Exception {
+        var a = login();
+        String date = "2026-05-28";
+        StringBuilder doc = new StringBuilder("{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[");
+        for (int i = 0; i < 101; i++) {
+            if (i > 0) doc.append(',');
+            doc.append("{\"type\":\"reference\",\"attrs\":{\"id\":\"01900000-0000-7000-8000-")
+                    .append(String.format("%012d", i))
+                    .append("\"}}");
+        }
+        doc.append("]}}]");
+
+        checked(mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + doc + ",\"expectedRevision\":0}"), 400);
+
+        assertThat(checked(a.get(PATH), 200).get("totalElements").asInt()).isZero();
+    }
+
+    @Test
+    void foreignOwnerCannotReadNoteWithReference() throws Exception {
+        var a = login();
+        var b = login();
+        String date = "2026-05-29";
+        String docWithRef =
+                "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"reference\",\"attrs\":{\"id\":\"01900000-0000-7000-8000-000000000101\"}}]}]}";
+
+        // A creates note with reference
+        checked(mutate(a, PATH + "/" + date, "PUT", "{\"content\":" + docWithRef + ",\"expectedRevision\":0}"), 200);
+
+        // B cannot read A's note
+        checked(b.get(PATH + "/" + date), 404);
+    }
 }

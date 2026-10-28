@@ -1080,4 +1080,412 @@ class DailyContentTest {
                         .asText(""))
                 .hasSize(100_000);
     }
+
+    // ── S-106: Reference atom validation ──
+
+    @Test
+    void acceptsReferenceAtomWithValidUuid() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode ref = MAPPER.createObjectNode();
+        ref.put("type", "reference");
+        ObjectNode attrs = MAPPER.createObjectNode();
+        attrs.put("id", "01900000-0000-7000-8000-000000000101");
+        ref.set("attrs", attrs);
+        inline.add(ref);
+        para.set("content", inline);
+
+        var result = DailyContent.validate(validDoc);
+
+        assertThat(result.getTree()).isNotSameAs(validDoc);
+        JsonNode savedRef =
+                result.getTree().path("content").get(0).path("content").get(0);
+        assertThat(savedRef.path("type").asText("")).isEqualTo("reference");
+        assertThat(savedRef.path("attrs").path("id").asText("")).isEqualTo("01900000-0000-7000-8000-000000000101");
+    }
+
+    @Test
+    void acceptsReferenceMixedWithText() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode text = MAPPER.createObjectNode();
+        text.put("type", "text");
+        text.put("text", "See ");
+        inline.add(text);
+        ObjectNode ref = MAPPER.createObjectNode();
+        ref.put("type", "reference");
+        ObjectNode attrs = MAPPER.createObjectNode();
+        attrs.put("id", "01900000-0000-7000-8000-000000000101");
+        ref.set("attrs", attrs);
+        inline.add(ref);
+        ObjectNode text2 = MAPPER.createObjectNode();
+        text2.put("type", "text");
+        text2.put("text", " for details");
+        inline.add(text2);
+        para.set("content", inline);
+
+        var result = DailyContent.validate(validDoc);
+
+        assertThat(result.getTree().path("content").get(0).path("content").size())
+                .isEqualTo(3);
+    }
+
+    @Test
+    void acceptsMultipleReferencesInDocument() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        for (int i = 0; i < 3; i++) {
+            ObjectNode ref = MAPPER.createObjectNode();
+            ref.put("type", "reference");
+            ObjectNode attrs = MAPPER.createObjectNode();
+            attrs.put("id", String.format("01900000-0000-7000-8000-00000000010%d", i));
+            ref.set("attrs", attrs);
+            inline.add(ref);
+        }
+        para.set("content", inline);
+
+        var result = DailyContent.validate(validDoc);
+
+        assertThat(result.getTree().path("content").get(0).path("content").size())
+                .isEqualTo(3);
+    }
+
+    @Test
+    void acceptsExactly100References() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        for (int i = 0; i < 100; i++) {
+            ObjectNode ref = MAPPER.createObjectNode();
+            ref.put("type", "reference");
+            ObjectNode attrs = MAPPER.createObjectNode();
+            attrs.put("id", String.format("01900000-0000-7000-8000-%012d", i));
+            ref.set("attrs", attrs);
+            inline.add(ref);
+        }
+        para.set("content", inline);
+
+        var result = DailyContent.validate(validDoc);
+
+        assertThat(result.getTree().path("content").get(0).path("content").size())
+                .isEqualTo(100);
+    }
+
+    @Test
+    void rejects101References() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        for (int i = 0; i < 101; i++) {
+            ObjectNode ref = MAPPER.createObjectNode();
+            ref.put("type", "reference");
+            ObjectNode attrs = MAPPER.createObjectNode();
+            attrs.put("id", String.format("01900000-0000-7000-8000-%012d", i));
+            ref.set("attrs", attrs);
+            inline.add(ref);
+        }
+        para.set("content", inline);
+
+        assertThatThrownBy(() -> DailyContent.validate(validDoc))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @Test
+    void rejectsReferenceWithUppercaseUuid() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode ref = MAPPER.createObjectNode();
+        ref.put("type", "reference");
+        ObjectNode attrs = MAPPER.createObjectNode();
+        attrs.put("id", "01900000-0000-7000-8000-0000000001A1");
+        ref.set("attrs", attrs);
+        inline.add(ref);
+        para.set("content", inline);
+
+        assertThatThrownBy(() -> DailyContent.validate(validDoc))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @Test
+    void rejectsReferenceWithMissingAttrs() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode ref = MAPPER.createObjectNode();
+        ref.put("type", "reference");
+        inline.add(ref);
+        para.set("content", inline);
+
+        assertThatThrownBy(() -> DailyContent.validate(validDoc))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @Test
+    void rejectsReferenceWithMissingId() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode ref = MAPPER.createObjectNode();
+        ref.put("type", "reference");
+        ObjectNode attrs = MAPPER.createObjectNode();
+        ref.set("attrs", attrs);
+        inline.add(ref);
+        para.set("content", inline);
+
+        assertThatThrownBy(() -> DailyContent.validate(validDoc))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @Test
+    void rejectsReferenceWithExtraField() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode ref = MAPPER.createObjectNode();
+        ref.put("type", "reference");
+        ObjectNode attrs = MAPPER.createObjectNode();
+        attrs.put("id", "01900000-0000-7000-8000-000000000101");
+        ref.set("attrs", attrs);
+        ref.put("extra", "field");
+        inline.add(ref);
+        para.set("content", inline);
+
+        assertThatThrownBy(() -> DailyContent.validate(validDoc))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @Test
+    void rejectsReferenceWithExtraAttr() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode ref = MAPPER.createObjectNode();
+        ref.put("type", "reference");
+        ObjectNode attrs = MAPPER.createObjectNode();
+        attrs.put("id", "01900000-0000-7000-8000-000000000101");
+        attrs.put("title", "extra");
+        ref.set("attrs", attrs);
+        inline.add(ref);
+        para.set("content", inline);
+
+        assertThatThrownBy(() -> DailyContent.validate(validDoc))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @Test
+    void rejectsReferenceWithContent() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode ref = MAPPER.createObjectNode();
+        ref.put("type", "reference");
+        ObjectNode attrs = MAPPER.createObjectNode();
+        attrs.put("id", "01900000-0000-7000-8000-000000000101");
+        ref.set("attrs", attrs);
+        ref.set("content", MAPPER.createArrayNode());
+        inline.add(ref);
+        para.set("content", inline);
+
+        assertThatThrownBy(() -> DailyContent.validate(validDoc))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @Test
+    void rejectsReferenceWithMarks() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode ref = MAPPER.createObjectNode();
+        ref.put("type", "reference");
+        ObjectNode attrs = MAPPER.createObjectNode();
+        attrs.put("id", "01900000-0000-7000-8000-000000000101");
+        ref.set("attrs", attrs);
+        ref.set("marks", MAPPER.createArrayNode());
+        inline.add(ref);
+        para.set("content", inline);
+
+        assertThatThrownBy(() -> DailyContent.validate(validDoc))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @Test
+    void rejectsReferenceWithInvalidUuidFormat() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode ref = MAPPER.createObjectNode();
+        ref.put("type", "reference");
+        ObjectNode attrs = MAPPER.createObjectNode();
+        attrs.put("id", "not-a-uuid");
+        ref.set("attrs", attrs);
+        inline.add(ref);
+        para.set("content", inline);
+
+        assertThatThrownBy(() -> DailyContent.validate(validDoc))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @Test
+    void rejectsReferenceWithUuidMissingDashes() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode ref = MAPPER.createObjectNode();
+        ref.put("type", "reference");
+        ObjectNode attrs = MAPPER.createObjectNode();
+        attrs.put("id", "01900000000070008000000000000101");
+        ref.set("attrs", attrs);
+        inline.add(ref);
+        para.set("content", inline);
+
+        assertThatThrownBy(() -> DailyContent.validate(validDoc))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @Test
+    void rejectsReferenceWithNonTextualId() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode ref = MAPPER.createObjectNode();
+        ref.put("type", "reference");
+        ObjectNode attrs = MAPPER.createObjectNode();
+        attrs.put("id", 12345);
+        ref.set("attrs", attrs);
+        inline.add(ref);
+        para.set("content", inline);
+
+        assertThatThrownBy(() -> DailyContent.validate(validDoc))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @Test
+    void rejectsReferenceWithNullId() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode ref = MAPPER.createObjectNode();
+        ref.put("type", "reference");
+        ObjectNode attrs = MAPPER.createObjectNode();
+        attrs.putNull("id");
+        ref.set("attrs", attrs);
+        inline.add(ref);
+        para.set("content", inline);
+
+        assertThatThrownBy(() -> DailyContent.validate(validDoc))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @Test
+    void referencesCountTowardsTextNodeLimit() {
+        // Create 3999 text nodes + 1 reference = 4000 total (OK)
+        // Create 3999 text nodes + 2 references = 4001 total (rejected)
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        for (int i = 0; i < 3999; i++) {
+            ObjectNode text = MAPPER.createObjectNode();
+            text.put("type", "text");
+            text.put("text", "x");
+            inline.add(text);
+        }
+        ObjectNode ref = MAPPER.createObjectNode();
+        ref.put("type", "reference");
+        ObjectNode attrs = MAPPER.createObjectNode();
+        attrs.put("id", "01900000-0000-7000-8000-000000000101");
+        ref.set("attrs", attrs);
+        inline.add(ref);
+        para.set("content", inline);
+
+        var result = DailyContent.validate(validDoc);
+
+        assertThat(result.getTree().path("content").get(0).path("content").size())
+                .isEqualTo(4000);
+    }
+
+    @Test
+    void rejects4001NodesWithReferences() {
+        // 3999 text + 2 references = 4001 nodes
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        for (int i = 0; i < 3999; i++) {
+            ObjectNode text = MAPPER.createObjectNode();
+            text.put("type", "text");
+            text.put("text", "x");
+            inline.add(text);
+        }
+        for (int i = 0; i < 2; i++) {
+            ObjectNode ref = MAPPER.createObjectNode();
+            ref.put("type", "reference");
+            ObjectNode attrs = MAPPER.createObjectNode();
+            attrs.put("id", String.format("01900000-0000-7000-8000-%012d", i));
+            ref.set("attrs", attrs);
+            inline.add(ref);
+        }
+        para.set("content", inline);
+
+        assertThatThrownBy(() -> DailyContent.validate(validDoc))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @Test
+    void preservesPreviousDocumentsWithoutReferences() {
+        // A document without references should still be valid
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode text = MAPPER.createObjectNode();
+        text.put("type", "text");
+        text.put("text", "No references here");
+        inline.add(text);
+        para.set("content", inline);
+
+        var result = DailyContent.validate(validDoc);
+
+        assertThat(result.getTree()).isNotNull();
+        assertThat(result.getTree().path("content").get(0).path("content").size())
+                .isEqualTo(1);
+    }
+
+    @Test
+    void roundtripPreservesReferenceStructure() {
+        ObjectNode para = firstPara();
+        ArrayNode inline = MAPPER.createArrayNode();
+        ObjectNode ref = MAPPER.createObjectNode();
+        ref.put("type", "reference");
+        ObjectNode attrs = MAPPER.createObjectNode();
+        attrs.put("id", "01900000-0000-7000-8000-000000000101");
+        ref.set("attrs", attrs);
+        inline.add(ref);
+        para.set("content", inline);
+
+        var result = DailyContent.validate(validDoc);
+
+        JsonNode saved = result.getTree().path("content").get(0).path("content").get(0);
+        assertThat(saved.path("type").asText("")).isEqualTo("reference");
+        assertThat(saved.path("attrs").path("id").asText("")).isEqualTo("01900000-0000-7000-8000-000000000101");
+        assertThat(saved.has("content")).isFalse();
+        assertThat(saved.has("marks")).isFalse();
+        assertThat(saved.size()).isEqualTo(2); // only type and attrs
+    }
+
+    @Test
+    void acceptsReferenceInMultipleParagraphs() {
+        ArrayNode content = content();
+        content.remove(0);
+
+        // First paragraph with reference
+        ObjectNode para1 = MAPPER.createObjectNode();
+        para1.put("type", "paragraph");
+        ArrayNode inline1 = MAPPER.createArrayNode();
+        ObjectNode ref1 = MAPPER.createObjectNode();
+        ref1.put("type", "reference");
+        ObjectNode attrs1 = MAPPER.createObjectNode();
+        attrs1.put("id", "01900000-0000-7000-8000-000000000101");
+        ref1.set("attrs", attrs1);
+        inline1.add(ref1);
+        para1.set("content", inline1);
+        content.add(para1);
+
+        // Second paragraph with text
+        ObjectNode para2 = MAPPER.createObjectNode();
+        para2.put("type", "paragraph");
+        ArrayNode inline2 = MAPPER.createArrayNode();
+        ObjectNode text = MAPPER.createObjectNode();
+        text.put("type", "text");
+        text.put("text", "Another paragraph");
+        inline2.add(text);
+        para2.set("content", inline2);
+        content.add(para2);
+
+        var result = DailyContent.validate(validDoc);
+
+        assertThat(result.getTree().path("content").size()).isEqualTo(2);
+    }
 }
