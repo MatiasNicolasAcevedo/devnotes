@@ -1,6 +1,6 @@
 ---
 id: T-024
-status: draft
+status: in_review
 priority: P1
 size: M
 milestone: M1
@@ -37,7 +37,13 @@ Gate desde raíz Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=
 
 ## Checkpoint vigente
 
-Contrato de frontera, sin implementación ni pruebas. Depende de T-023 MERGED. Decisión del dueño y límites en S-106.
+Validación de átomo reference implementada en DailyContent.java: estructura estricta `{"type":"reference","attrs":{"id":"UUID"}}`, UUID canónico minúsculo, máximo 100 por documento, cuenta para los 4000 nodos. Tests unitarios 83/83 OK (20 nuevos), verify completo 161/161 OK con PostgreSQL/Failsafe. Pendiente: publicar código, abrir PR y revisión independiente.
+
+### Correcciones significativas
+
+| Problema | Causa | Arreglo | Prueba |
+|---|---|---|---|
+| UUID con formato `%08d` no válido | Solo 8 dígitos en último grupo (necesita 12) | Cambiado a `%012d` en tests | acceptsExactly100References OK |
 
 ## Cierre y siguiente tarea
 

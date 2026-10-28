@@ -484,4 +484,60 @@ class DailyVersionApiIT {
         // Boolean → 400
         checked(mutate(a, VERSION_PATH + "/" + date + "/version", "POST", "{\"expectedRevision\":true}"), 400);
     }
+
+    // ── S-106: Reference atom in versions ──
+
+    @Test
+    void versionPreservesReferenceAtom() throws Exception {
+        var a = login();
+        String date = "2026-05-30";
+        String docWithRef =
+                "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"reference\",\"attrs\":{\"id\":\"01900000-0000-7000-8000-000000000101\"}}]}]}";
+
+        // Create note with reference
+        checked(
+                mutate(a, VERSION_PATH + "/" + date, "PUT", "{\"content\":" + docWithRef + ",\"expectedRevision\":0}"),
+                200);
+
+        // Create version
+        var version =
+                checked(mutate(a, VERSION_PATH + "/" + date + "/version", "POST", "{\"expectedRevision\":1}"), 200);
+        assertThat(version.get("sourceRevision").asLong()).isEqualTo(1);
+
+        // Verify version content preserves reference structure
+        JsonNode content = version.get("content");
+        assertThat(content.path("content")
+                        .get(0)
+                        .path("content")
+                        .get(0)
+                        .path("type")
+                        .asText(""))
+                .isEqualTo("reference");
+        assertThat(content.path("content")
+                        .get(0)
+                        .path("content")
+                        .get(0)
+                        .path("attrs")
+                        .path("id")
+                        .asText(""))
+                .isEqualTo("01900000-0000-7000-8000-000000000101");
+    }
+
+    @Test
+    void foreignOwnerCannotReadVersionWithReference() throws Exception {
+        var a = login();
+        var b = login();
+        String date = "2026-05-31";
+        String docWithRef =
+                "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"reference\",\"attrs\":{\"id\":\"01900000-0000-7000-8000-000000000101\"}}]}]}";
+
+        // A creates note with reference
+        checked(
+                mutate(a, VERSION_PATH + "/" + date, "PUT", "{\"content\":" + docWithRef + ",\"expectedRevision\":0}"),
+                200);
+        checked(mutate(a, VERSION_PATH + "/" + date + "/version", "POST", "{\"expectedRevision\":1}"), 200);
+
+        // B cannot read A's version
+        checked(b.get(LIST_PATH + "/" + date), 404);
+    }
 }
