@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-022](tasks/T-022-reference-search.md) |
-| Estado | mergeable |
-| Acción actual | Revisión técnica independiente sin bloqueantes; pendiente merge. HEAD c86692a, base main 8e09525. |
+| Estado | in_review |
+| Acción actual | Revisión técnica independiente sin bloqueantes; corrección documental publicada, pendiente CI verde y merge. |
 | Rama / PR | codex/t-022-reference-search · [PR23](https://github.com/MatiasNicolasAcevedo/devnotes/pull/23) |
 
 T-021: PR22 MERGED, squash `8e09525e2032ad81aec5e636547860646d97e8a0`, confirmado en GitHub el 2026-10-28.
