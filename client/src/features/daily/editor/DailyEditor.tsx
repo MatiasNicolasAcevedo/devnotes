@@ -13,7 +13,10 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { plainTextToDocument, validateDailyContent, type DailyContent } from './dailyDocument'
 import { LinkDialog } from './LinkDialog'
 import { Link } from './link'
+import { ReferencePicker } from './ReferencePicker'
+import { Reference } from './reference'
 import { Separator } from './separator'
+import type { ReferenceItem } from '../../reference/api'
 
 // Document extiende content a (paragraph|separator)+
 const DailyDocument = Document.extend({
@@ -50,6 +53,12 @@ export function DailyEditor({
   const [existingHref, setExistingHref] = useState<string | undefined>(undefined)
   const [pasteError, setPasteError] = useState(false)
 
+  // Reference picker state
+  const [refPickerOpen, setRefPickerOpen] = useState(false)
+  const [refQuery, setRefQuery] = useState('')
+  const [refAnchor, setRefAnchor] = useState<{ from: number; to: number } | null>(null)
+  const imeComposingRef = useRef(false)
+
   useEffect(() => {
     onChangeRef.current = onChange
   }, [onChange])
@@ -61,6 +70,7 @@ export function DailyEditor({
       Text,
       UndoRedo,
       Separator,
+      Reference,
       Link.configure({
         autolink: false,
         linkOnPaste: false,
@@ -202,7 +212,72 @@ export function DailyEditor({
     editorRef.current?.commands.focus()
   }, [])
 
-  // Shortcut Mod-k para abrir diálogo de enlace
+  // Detect @ trigger y actualizar consulta
+  const checkReferenceTrigger = useCallback(() => {
+    const ed = editorRef.current
+    if (!ed?.isEditable || refPickerOpen || imeComposingRef.current) return
+
+    const { selection } = ed.state
+    if (!selection.empty) return
+
+    const { $from } = selection
+    const paragraph = $from.parent
+    if (paragraph.type.name !== 'paragraph') return
+
+    // No activar dentro de enlace
+    if (ed.isActive('link')) return
+
+    const posInPara = $from.parentOffset
+    if (posInPara < 1) return
+
+    // Buscar @ al inicio o tras un espacio
+    const textBefore = paragraph.textBetween(0, posInPara, '', '')
+    const atIndex = textBefore.lastIndexOf('@')
+    if (atIndex === -1) return
+
+    // El @ debe estar al inicio o tras un espacio
+    if (atIndex > 0 && textBefore[atIndex - 1] !== ' ') return
+
+    const queryAfter = textBefore.slice(atIndex + 1)
+    const atAbsPos = $from.start() + atIndex
+    const queryEndPos = $from.pos
+
+    setRefQuery(queryAfter)
+    setRefAnchor({ from: atAbsPos, to: queryEndPos })
+    setRefPickerOpen(true)
+  }, [refPickerOpen])
+
+  // Insertar referencia seleccionada
+  const handleReferenceSelect = useCallback(
+    (item: ReferenceItem) => {
+      const ed = editorRef.current
+      if (!ed || !refAnchor) return
+
+      const { from, to } = refAnchor
+      // Reemplazar @consulta con el átomo reference
+      ed.chain()
+        .focus()
+        .deleteRange({ from, to })
+        .insertContentAt(to, {
+          type: 'reference',
+          attrs: { id: item.id },
+        })
+        .run()
+
+      setRefPickerOpen(false)
+      setRefQuery('')
+      setRefAnchor(null)
+    },
+    [refAnchor],
+  )
+
+  const handleReferenceClose = useCallback(() => {
+    setRefPickerOpen(false)
+    setRefQuery('')
+    setRefAnchor(null)
+  }, [])
+
+  // Shortcut Mod-k para abrir diálogo de enlace + detección de @
   useEffect(() => {
     if (!editor) return
 
@@ -211,13 +286,52 @@ export function DailyEditor({
         e.preventDefault()
         openLinkDialog()
       }
+      // Si el picker está abierto, dejar que lo maneje
+      if (refPickerOpen) return
+    }
+
+    const handleCompositionStart = () => {
+      imeComposingRef.current = true
+    }
+    const handleCompositionEnd = () => {
+      imeComposingRef.current = false
+      // Revisar trigger tras composición IME
+      setTimeout(() => checkReferenceTrigger(), 0)
     }
 
     editor.view.dom.addEventListener('keydown', handleKeyDown)
+    editor.view.dom.addEventListener('compositionstart', handleCompositionStart)
+    editor.view.dom.addEventListener('compositionend', handleCompositionEnd)
     return () => {
       editor.view.dom.removeEventListener('keydown', handleKeyDown)
+      editor.view.dom.removeEventListener('compositionstart', handleCompositionStart)
+      editor.view.dom.removeEventListener('compositionend', handleCompositionEnd)
     }
-  }, [editor, openLinkDialog])
+  }, [editor, openLinkDialog, refPickerOpen, checkReferenceTrigger])
+
+  const refPickerOpenRef = useRef(refPickerOpen)
+  const refAnchorRef = useRef(refAnchor)
+
+  useEffect(() => {
+    refPickerOpenRef.current = refPickerOpen
+    refAnchorRef.current = refAnchor
+  })
+
+  // Detectar @ tras cada actualización del editor
+  useEffect(() => {
+    if (!editor || refPickerOpenRef.current) return
+    const { selection } = editor.state
+    if (!selection.empty) {
+      // Selección activa: cerrar picker si estaba abierto
+      if (refAnchorRef.current) {
+        setRefPickerOpen(false)
+        setRefQuery('')
+        setRefAnchor(null)
+      }
+      return
+    }
+    checkReferenceTrigger()
+  }, [editor, checkReferenceTrigger])
 
   if (!editor) {
     return null
@@ -287,6 +401,14 @@ export function DailyEditor({
         onRemove={handleRemoveLink}
         onOpen={handleOpenLink}
       />
+      {refPickerOpen && refAnchor && (
+        <ReferencePicker
+          anchorPosition={refAnchor}
+          query={refQuery}
+          onSelect={handleReferenceSelect}
+          onClose={handleReferenceClose}
+        />
+      )}
     </div>
   )
 }

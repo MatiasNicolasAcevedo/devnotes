@@ -1,6 +1,6 @@
 ---
 id: T-025
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M1
@@ -37,7 +37,9 @@ Gate desde raíz Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=
 
 ## Checkpoint vigente
 
-Contrato de frontera, sin implementación ni pruebas. Depende de T-024 MERGED. Decisión del dueño y límites en S-106.
+Implementación en progreso: nodo Tiptap Reference, schema Zod con ReferenceAtomSchema, validación con conteo de referencias, ReferencePicker con búsqueda @, integración en DailyEditor, documentToPlainText con referencias. Typecheck OK. Pendiente: pruebas dirigidas y gate de aceptación.
+
+HEAD e049e3c (origin/main), rama codex/t-025-reference-insertion.
 
 ## Cierre y siguiente tarea
 
