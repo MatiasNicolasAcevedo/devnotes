@@ -4,14 +4,14 @@ Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este í
 
 ## Actual · Referencias y copiado
 
-- [T-022](tasks/T-022-reference-search.md): búsqueda privada de referencias; primera tarea de la iteración, antes de voz.
-- [T-023](tasks/T-023-copy-actions.md): copiar título, descripción y nota; depende de T-022.
+- [T-023](tasks/T-023-copy-actions.md): copiar título, descripción y nota; depende de T-022 (MERGED).
 - [T-024](tasks/T-024-reference-document.md) → [T-025](tasks/T-025-reference-insertion.md) → [T-026](tasks/T-026-reference-preview.md): contratos [S-106](specs/S-106-reference-links.md), draft por dependencia MERGED.
 
 El dueño amplió T-020 el 2026-10-26 para resolver navegación por fecha, preparación OIDC de dos actores y recorridos de versiones dentro de la misma entrega. La reparación pertenece a T-020; I2 continúa sin habilitar.
 
 ## Hechas
 
+- [T-022](tasks/T-022-reference-search.md): PR23 MERGED `ca9d44d`.
 - [T-021](tasks/T-021-editor-ergonomics.md): PR22 MERGED `8e09525`.
 
 - [T-020](tasks/T-020-editor-usability.md): editor, navegación por fecha y versiones; PR20 MERGED `cde66f4`.
