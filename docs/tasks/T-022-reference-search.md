@@ -1,6 +1,6 @@
 ---
 id: T-022
-status: in_progress
+status: in_review
 priority: P1
 size: S
 milestone: M1
@@ -36,7 +36,7 @@ Extender controlador/OpenAPI, servicio y repositorio de referencia; añadir prue
 
 ## Checkpoint vigente
 
-Implementación publicada: búsqueda privada por título con `q` opcional en GET /api/v1/reference-items. Escape literal de `%`, `_`, `!`; límite 120 unidades UTF-16; 400 si excede. Filtrado por `owner_id` en consulta y conteo. HEAD 79fb0bc, base main 8e09525. Backend `clean verify` 154/154 tests OK (Spotless, Surefire, Failsafe PostgreSQL, JaCoCo). PR23 abierto. Pendiente: revisión independiente y merge.
+Implementación publicada: búsqueda privada por título con `q` opcional en GET /api/v1/reference-items. Escape literal de `%`, `_`, `!`; límite 120 unidades UTF-16; 400 si excede. Filtrado por `owner_id` en consulta y conteo. HEAD 79fb0bc, base main 8e09525. Backend `clean verify` 154/154 tests OK (Spotless, Surefire, Failsafe PostgreSQL, JaCoCo). PR23 abierto. Revisión independiente sin bloqueantes; corrección documental B-1 (BACKLOG.md + STATUS.md + task status). Pendiente: CI verde sobre HEAD final y merge.
 
 ## Correcciones significativas
 

@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-022](tasks/T-022-reference-search.md) |
-| Estado | in_progress |
-| Acción actual | Implementación publicada; PR23 abierto, pendiente revisión independiente. |
+| Estado | mergeable |
+| Acción actual | Revisión técnica independiente sin bloqueantes; pendiente merge. HEAD c86692a, base main 8e09525. |
 | Rama / PR | codex/t-022-reference-search · [PR23](https://github.com/MatiasNicolasAcevedo/devnotes/pull/23) |
 
 T-021: PR22 MERGED, squash `8e09525e2032ad81aec5e636547860646d97e8a0`, confirmado en GitHub el 2026-10-28.
@@ -34,5 +34,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie reviewer, en sesión nueva: revisar PR23 (codex/t-022-reference-search) de T-022 contra HEAD 79fb0bc / base main 8e09525. Tras aprobación y MERGED, Junie implementer toma T-023 en codex/t-023-copy-actions desde main.
+Junie reviewer, en sesión nueva: PR23 de T-022 APROBADO sin bloqueantes, corrección documental B-1 publicada. Esperar CI verde sobre HEAD final y proceder a merge. Tras MERGED, Junie implementer toma T-023 en codex/t-023-copy-actions desde main.
 ```
