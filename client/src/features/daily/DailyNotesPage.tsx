@@ -18,9 +18,10 @@ import { useSession } from '../../features/auth/sessionContext'
 import { useDailyDraftContext } from '../../features/daily/DailyDraftProvider'
 import { listDailyNotes, type DailyNoteListItem } from '../../features/daily/api'
 import { DailyEditor } from '../../features/daily/editor/DailyEditor'
-import { emptyDocument } from '../../features/daily/editor/dailyDocument'
+import { documentToPlainText, emptyDocument } from '../../features/daily/editor/dailyDocument'
 import type { DailyContent } from '../../features/daily/editor/dailyDocument'
 import { SaveDailyVersion } from '../../features/daily/SaveDailyVersion'
+import { CopyButton } from '../../shared/ui/CopyButton'
 import { useSaveDailyVersion } from '../../features/daily/useSaveDailyVersion'
 import { isValidIsoDate } from './dateUtils'
 
@@ -192,6 +193,8 @@ function DailyNotesInner() {
     saveIndicator = null
   }
 
+  const notePlainText = content ? documentToPlainText(content) : ''
+
   return (
     <Stack spacing={1}>
       <Stack direction="row" sx={{ alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
@@ -215,7 +218,12 @@ function DailyNotesInner() {
         <Link component={RouterLink} to="/notes">
           Hoy
         </Link>
-        <Box sx={{ ml: 'auto' }}>{saveIndicator}</Box>
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', ml: 'auto' }}>
+          <CopyButton aria-label="Copiar nota" text={notePlainText}>
+            Copiar nota
+          </CopyButton>
+          {saveIndicator}
+        </Stack>
       </Stack>
 
       {/* Error de query inicial */}

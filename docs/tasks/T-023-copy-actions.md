@@ -1,6 +1,6 @@
 ---
 id: T-023
-status: draft
+status: in_progress
 priority: P1
 size: S
 milestone: M1
@@ -36,7 +36,7 @@ Editar ReferencePage y DailyNotesPage, compartir solo lo necesario para portapap
 
 ## Checkpoint vigente
 
-Contrato de frontera; no ejecutado. Depende de T-022 MERGED. T-025 extiende serialización para la referencia vigente conforme S-106.
+T-022 PR23 MERGED ca9d44d, dependencia satisfecha. Implementando: clipboard utility, botones en ReferencePage y DailyNotesPage. Base ca9d44d.
 
 ## Cierre y siguiente tarea
 

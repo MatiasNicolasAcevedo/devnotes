@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { useLocation } from 'react-router'
 import { http as mock, HttpResponse } from 'msw'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { buildAuthUser } from '../../test/factories'
 import { installAuthBackend } from '../../test/msw/authBackend'
 import { server } from '../../test/msw/server'
@@ -236,5 +236,119 @@ describe('DailyNotesPage notes list', () => {
     expect(screen.getByText('2024-06-14')).toBeVisible()
     // El mensaje "Aún no tenés notas guardadas" NO debe aparecer
     expect(screen.queryByText('Aún no tenés notas guardadas')).not.toBeInTheDocument()
+  })
+})
+
+describe('DailyNotesPage copy note', () => {
+  it('shows copy note button with accessible label', async () => {
+    installAuthBackend({ user: buildAuthUser() })
+    const today = todayLocal()
+    const detailPath = `/api/v1/daily-notes/${today}`
+    server.use(
+      mock.get(detailPath, () => HttpResponse.json(buildDetail(today, 0))),
+      mock.get(LIST, () => HttpResponse.json(emptyList())),
+    )
+    renderWithProviders(<AppRoutes />, { route: '/notes' })
+    await screen.findByRole('heading', { name: 'Notas diarias' })
+    const copyButton = screen.getByRole('button', { name: 'Copiar nota' })
+    expect(copyButton).toBeVisible()
+  })
+
+  it('copies note text using documentToPlainText with links and separators', async () => {
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
+    installAuthBackend({ user: buildAuthUser() })
+    const today = todayLocal()
+    const detailPath = `/api/v1/daily-notes/${today}`
+    const contentWithLink = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'Hola' },
+            {
+              type: 'text',
+              text: ' mundo',
+              marks: [{ type: 'link', attrs: { href: 'https://example.com' } }],
+            },
+          ],
+        },
+        { type: 'separator', attrs: { width: 50 } },
+        { type: 'paragraph', content: [{ type: 'text', text: 'línea después' }] },
+      ],
+    }
+    server.use(
+      mock.get(detailPath, () =>
+        HttpResponse.json({
+          id: '01900000-0000-7000-8000-000000000001',
+          date: today,
+          content: contentWithLink,
+          revision: 1,
+          updatedAt: `${today}T10:00:00Z`,
+        }),
+      ),
+      mock.get(LIST, () => HttpResponse.json(emptyList())),
+    )
+    const { user } = renderWithProviders(<AppRoutes />, { route: '/notes' })
+    await screen.findByRole('heading', { name: 'Notas diarias' })
+    await user.click(screen.getByRole('button', { name: 'Copiar nota' }))
+    // documentToPlainText: link text is visible text, separator is empty line
+    expect(writeText).toHaveBeenCalledWith('Hola mundo\n\nlínea después')
+    writeText.mockRestore()
+  })
+
+  it('copies empty string when note is empty document', async () => {
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
+    installAuthBackend({ user: buildAuthUser() })
+    const today = todayLocal()
+    const detailPath = `/api/v1/daily-notes/${today}`
+    server.use(
+      mock.get(detailPath, () => HttpResponse.json(buildDetail(today, 0))),
+      mock.get(LIST, () => HttpResponse.json(emptyList())),
+    )
+    const { user } = renderWithProviders(<AppRoutes />, { route: '/notes' })
+    await screen.findByRole('heading', { name: 'Notas diarias' })
+    await user.click(screen.getByRole('button', { name: 'Copiar nota' }))
+    // emptyDocument has one empty paragraph → ''
+    expect(writeText).toHaveBeenCalledWith('')
+    writeText.mockRestore()
+  })
+
+  it('shows error when clipboard API rejects permission', async () => {
+    const notAllowedError = new Error('Permission denied')
+    notAllowedError.name = 'NotAllowedError'
+    vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(notAllowedError)
+    installAuthBackend({ user: buildAuthUser() })
+    const today = todayLocal()
+    const detailPath = `/api/v1/daily-notes/${today}`
+    server.use(
+      mock.get(detailPath, () => HttpResponse.json(buildDetail(today, 0))),
+      mock.get(LIST, () => HttpResponse.json(emptyList())),
+    )
+    const { user } = renderWithProviders(<AppRoutes />, { route: '/notes' })
+    await screen.findByRole('heading', { name: 'Notas diarias' })
+    await user.click(screen.getByRole('button', { name: 'Copiar nota' }))
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('bloqueó')
+    })
+  })
+
+  it('supports keyboard navigation on copy note button', async () => {
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
+    installAuthBackend({ user: buildAuthUser() })
+    const today = todayLocal()
+    const detailPath = `/api/v1/daily-notes/${today}`
+    server.use(
+      mock.get(detailPath, () => HttpResponse.json(buildDetail(today, 0))),
+      mock.get(LIST, () => HttpResponse.json(emptyList())),
+    )
+    const { user } = renderWithProviders(<AppRoutes />, { route: '/notes' })
+    await screen.findByRole('heading', { name: 'Notas diarias' })
+    const copyButton = screen.getByRole('button', { name: 'Copiar nota' })
+    copyButton.focus()
+    expect(copyButton).toHaveFocus()
+    await user.keyboard('{Enter}')
+    expect(writeText).toHaveBeenCalled()
+    writeText.mockRestore()
   })
 })

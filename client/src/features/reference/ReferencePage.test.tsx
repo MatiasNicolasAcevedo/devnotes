@@ -1,6 +1,6 @@
 import { act, screen, waitFor, within } from '@testing-library/react'
 import { HttpResponse, http as mock } from 'msw'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { AppRoutes } from '../../app/AppRoutes'
 import { buildAuthUser, problemResponse, validationProblemResponse } from '../../test/factories'
 import { installAuthBackend } from '../../test/msw/authBackend'
@@ -159,5 +159,61 @@ describe('ReferencePage', () => {
     await user.click(screen.getByRole('button', { name: 'Volver al listado' }))
     expect(await screen.findByText('No tenés elementos en esta página.')).toBeVisible()
     expect(screen.queryByText('Elemento guardado.')).not.toBeInTheDocument()
+  })
+
+  it('shows copy buttons for title and description with accessible labels', async () => {
+    setup([referenceItem({ title: 'Elemento A', description: 'Descripción de prueba' })])
+    await screen.findByRole('heading', { name: 'Elemento A' })
+    const copyTitle = screen.getByRole('button', { name: 'Copiar título Elemento A' })
+    expect(copyTitle).toBeVisible()
+    const copyDesc = screen.getByRole('button', { name: 'Copiar descripción Elemento A' })
+    expect(copyDesc).toBeVisible()
+  })
+
+  it('copies exact title text including Unicode and spaces', async () => {
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
+    const { user } = setup([referenceItem({ title: 'Título 🌍', description: 'desc' })])
+    await screen.findByRole('heading', { name: 'Título 🌍' })
+    await user.click(screen.getByRole('button', { name: 'Copiar título Título 🌍' }))
+    expect(writeText).toHaveBeenCalledWith('Título 🌍')
+    await waitFor(() => expect(screen.getByText('Copiado')).toBeVisible())
+    writeText.mockRestore()
+  })
+
+  it('copies exact description text and hides button when description is empty', async () => {
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
+    const { user } = setup([
+      referenceItem({
+        id: '01900000-0000-7000-8000-000000000201',
+        title: 'SinDesc',
+        description: '',
+      }),
+      referenceItem({
+        id: '01900000-0000-7000-8000-000000000202',
+        title: 'ConDesc',
+        description: 'texto con saltos',
+      }),
+    ])
+    await screen.findByRole('heading', { name: 'SinDesc' })
+    // Sin descripción: no hay botón de copiar descripción
+    expect(
+      screen.queryByRole('button', { name: 'Copiar descripción SinDesc' }),
+    ).not.toBeInTheDocument()
+    // Con descripción: botón presente y copia texto exacto
+    await user.click(screen.getByRole('button', { name: 'Copiar descripción ConDesc' }))
+    expect(writeText).toHaveBeenCalledWith('texto con saltos')
+    writeText.mockRestore()
+  })
+
+  it('supports keyboard navigation on copy buttons', async () => {
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue()
+    const { user } = setup([referenceItem({ title: 'Item' })])
+    await screen.findByRole('heading', { name: 'Item' })
+    const copyButton = screen.getByRole('button', { name: 'Copiar título Item' })
+    copyButton.focus()
+    expect(copyButton).toHaveFocus()
+    await user.keyboard('{Enter}')
+    expect(writeText).toHaveBeenCalledWith('Item')
+    writeText.mockRestore()
   })
 })
