@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-021](tasks/T-021-editor-ergonomics.md) |
-| Estado | mergeable |
-| Acción actual | Revisión técnica independiente sin bloqueantes; pendiente publicación del veredicto sobre HEAD final y resolución del límite de AUTONOMY para merge. |
-| Rama / PR | codex/t-021-editor-ergonomics · [PR22](https://github.com/MatiasNicolasAcevedo/devnotes/pull/22) contra main |
+| Tarea y contrato | [T-022](tasks/T-022-reference-search.md) |
+| Estado | in_progress |
+| Acción actual | Implementación publicada; PR23 abierto, pendiente revisión independiente. |
+| Rama / PR | codex/t-022-reference-search · [PR23](https://github.com/MatiasNicolasAcevedo/devnotes/pull/23) |
+
+T-021: PR22 MERGED, squash `8e09525e2032ad81aec5e636547860646d97e8a0`, confirmado en GitHub el 2026-10-28.
 
 T-020: PR20 MERGED, merge `cde66f4`, confirmado por GitHub el 2026-10-27.
 
@@ -32,5 +34,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Reviewer independiente, en sesión nueva: revisar T-021 y PR22 contra main. Leer la tarea, S-101/S-102, AGENTS client y protocolo reviewer; verificar HEAD/base remotos, CI y evidencia FULL sobre las fuentes publicadas. Revisar copiado/pegado, enlace parcial, apertura por clic, foco y layout accesible, con pruebas dirigidas según riesgo. Conservar el stack persistente del dueño; publicar veredicto ligado al HEAD/base y proceder a merge solo si AUTONOMY lo permite. No iniciar voz ni otra tarea.
+Junie reviewer, en sesión nueva: revisar PR23 (codex/t-022-reference-search) de T-022 contra HEAD 79fb0bc / base main 8e09525. Tras aprobación y MERGED, Junie implementer toma T-023 en codex/t-023-copy-actions desde main.
 ```
