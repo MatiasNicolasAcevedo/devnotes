@@ -26,6 +26,125 @@ function renderEditor(props?: React.ComponentProps<typeof DailyEditor>) {
 }
 
 describe('DailyEditor', () => {
+  it('pega texto plano multilínea completo, incluso espacios, acentos y líneas vacías', async () => {
+    const { onChange } = renderEditor()
+    const editor = await screen.findByRole('textbox', { name: 'Editor de nota diaria' })
+    editor.focus()
+    fireEvent.paste(editor, {
+      clipboardData: {
+        getData: (type: string) => (type === 'text/plain' ? '  ñá <>\r\n\r\n-- fin  ' : ''),
+      },
+    })
+    await waitFor(() => expect(onChange).toHaveBeenCalled())
+    expect(onChange.mock.lastCall?.[0]).toEqual({
+      type: 'doc',
+      content: [
+        { type: 'paragraph', content: [{ type: 'text', text: '  ñá <>' }] },
+        { type: 'paragraph' },
+        { type: 'paragraph', content: [{ type: 'text', text: '-- fin  ' }] },
+      ],
+    })
+  })
+
+  it('inserta varias líneas en la selección conservando el texto anterior y posterior', async () => {
+    const { onChange } = renderEditor({
+      initialContent: {
+        type: 'doc',
+        content: [{ type: 'paragraph', content: [{ type: 'text', text: 'antes después' }] }],
+      },
+    })
+    const editor = await screen.findByRole('textbox', { name: 'Editor de nota diaria' })
+    editor.focus()
+    const range = document.createRange()
+    range.setStart(editor.querySelector('p')!.firstChild!, 6)
+    range.collapse(true)
+    const selection = window.getSelection()!
+    selection.removeAllRanges()
+    selection.addRange(range)
+    document.dispatchEvent(new Event('selectionchange'))
+    fireEvent.paste(editor, { clipboardData: { getData: () => 'uno\n\ndos\n' } })
+    await waitFor(() => expect(onChange).toHaveBeenCalled())
+    expect(onChange.mock.lastCall?.[0]).toEqual({
+      type: 'doc',
+      content: [
+        { type: 'paragraph', content: [{ type: 'text', text: 'antes uno' }] },
+        { type: 'paragraph' },
+        { type: 'paragraph', content: [{ type: 'text', text: 'dos' }] },
+        { type: 'paragraph', content: [{ type: 'text', text: 'después' }] },
+      ],
+    })
+  })
+
+  it('avisa y conserva el texto cuando el pegado supera el límite', async () => {
+    const { onChange } = renderEditor({
+      initialContent: {
+        type: 'doc',
+        content: [{ type: 'paragraph', content: [{ type: 'text', text: 'conservar' }] }],
+      },
+    })
+    const editor = await screen.findByRole('textbox', { name: 'Editor de nota diaria' })
+    editor.focus()
+    fireEvent.paste(editor, { clipboardData: { getData: () => 'x'.repeat(100_001) } })
+    expect(await screen.findByRole('alert')).toHaveTextContent('no se pegó')
+    expect(editor).toHaveTextContent('conservar')
+    expect(onChange).not.toHaveBeenCalled()
+  })
+
+  it('quita el enlace solo del fragmento seleccionado', async () => {
+    const user = userEvent.setup()
+    const { onChange } = renderEditor({
+      initialContent: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: 'ABC / XYZ',
+                marks: [{ type: 'link', attrs: { href: 'https://ejemplo.test' } }],
+              },
+            ],
+          },
+        ],
+      },
+    })
+    const link = await screen.findByRole('link', { name: 'ABC / XYZ' })
+    screen.getByRole('textbox', { name: 'Editor de nota diaria' }).focus()
+    const range = document.createRange()
+    range.setStart(link.firstChild!, 3)
+    range.setEnd(link.firstChild!, 6)
+    const selection = window.getSelection()!
+    selection.removeAllRanges()
+    selection.addRange(range)
+    document.dispatchEvent(new Event('selectionchange'))
+    const button = await screen.findByRole('button', { name: 'Editar enlace' })
+    await waitFor(() => expect(button).toBeEnabled())
+    await user.click(button)
+    await user.click(screen.getByRole('button', { name: 'Quitar enlace' }))
+    expect(onChange.mock.lastCall?.[0]).toEqual({
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'text',
+              text: 'ABC',
+              marks: [{ type: 'link', attrs: { href: 'https://ejemplo.test' } }],
+            },
+            { type: 'text', text: ' / ' },
+            {
+              type: 'text',
+              text: 'XYZ',
+              marks: [{ type: 'link', attrs: { href: 'https://ejemplo.test' } }],
+            },
+          ],
+        },
+      ],
+    })
+  })
+
   it('un ACK con el mismo documento enlazado conserva los nodos y la selección', async () => {
     const content: DailyContent = {
       type: 'doc',
@@ -116,6 +235,41 @@ describe('DailyEditor', () => {
     fireEvent.click(await screen.findByRole('link', { name: '1279' }))
     expect(open).toHaveBeenCalledWith('https://ejemplo.test/1279', '_blank', 'noopener,noreferrer')
     expect(screen.queryByRole('button', { name: /enlace/i })).not.toBeInTheDocument()
+    open.mockRestore()
+  })
+
+  it('abre un enlace con un clic aunque haya selección previa, pero no al arrastrar', async () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    renderEditor({
+      initialContent: {
+        type: 'doc',
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: '1279',
+                marks: [{ type: 'link', attrs: { href: 'https://ejemplo.test/1279' } }],
+              },
+            ],
+          },
+        ],
+      },
+    })
+    const link = await screen.findByRole('link', { name: '1279' })
+    const range = document.createRange()
+    range.selectNodeContents(link)
+    const selection = window.getSelection()!
+    selection.removeAllRanges()
+    selection.addRange(range)
+    const main = link.closest('.daily-editor-main')!
+    fireEvent.mouseDown(main, { clientX: 10, clientY: 10 })
+    fireEvent.click(link, { clientX: 10, clientY: 10 })
+    expect(open).toHaveBeenCalledTimes(1)
+    fireEvent.mouseDown(main, { clientX: 10, clientY: 10 })
+    fireEvent.click(link, { clientX: 30, clientY: 10 })
+    expect(open).toHaveBeenCalledTimes(1)
     open.mockRestore()
   })
 

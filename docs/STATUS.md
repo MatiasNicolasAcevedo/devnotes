@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-020](tasks/T-020-editor-usability.md) |
-| Estado | in_review |
-| Acción actual | PR20 abierto contra main. Gate client OK (331 tests, 89.92% coverage). Backend tests IT pasando. Pendiente revisión independiente y CI. |
-| Rama / PR | codex/t-020-editor-usability · [PR20](https://github.com/MatiasNicolasAcevedo/devnotes/pull/20) contra main |
+| Tarea y contrato | [T-021](tasks/T-021-editor-ergonomics.md) |
+| Estado | mergeable |
+| Acción actual | Revisión técnica independiente sin bloqueantes; pendiente publicación del veredicto sobre HEAD final y resolución del límite de AUTONOMY para merge. |
+| Rama / PR | codex/t-021-editor-ergonomics · [PR22](https://github.com/MatiasNicolasAcevedo/devnotes/pull/22) contra main |
+
+T-020: PR20 MERGED, merge `cde66f4`, confirmado por GitHub el 2026-10-27.
 
 T-019: conciliada como MERGED (16f6d53). Junie reviewer + merger, Qwen3.6-27B-FP8. Tercera revisión independiente autorizada por el dueño tras dos rondas, APROBADA sin bloqueantes. HEAD 2d72cca, base main 9da4ab4, CI verify-required SUCCESS, docs-check OK, diff-check OK, policy DOCS_ONLY/DOCUMENTATION. Squash merge 16f6d53, 2026-10-27.
 
@@ -30,5 +32,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie implementer, en sesión nueva e independiente: T-019 MERGED (16f6d53, PR6). Retomar T-020 editor usability. Leer docs/tasks/T-020-editor-usability.md y specs referenciadas. Verificar MERGED de T-019 con gh pr view 6, conciliar done en el primer avance de la rama nueva. Abrir PR cuando el gate esté verde. Preservar scripts/e2e.sh ajeno y plantilla/; no iniciar otra implementación ni voz.
+Reviewer independiente, en sesión nueva: revisar T-021 y PR22 contra main. Leer la tarea, S-101/S-102, AGENTS client y protocolo reviewer; verificar HEAD/base remotos, CI y evidencia FULL sobre las fuentes publicadas. Revisar copiado/pegado, enlace parcial, apertura por clic, foco y layout accesible, con pruebas dirigidas según riesgo. Conservar el stack persistente del dueño; publicar veredicto ligado al HEAD/base y proceder a merge solo si AUTONOMY lo permite. No iniciar voz ni otra tarea.
 ```

@@ -1,6 +1,6 @@
 ---
 id: T-020
-status: in_review
+status: done
 priority: P1
 size: M
 milestone: M1
@@ -42,6 +42,8 @@ Retoma: implementer Codex desktop, modelo GPT-6 según identidad expuesta, esfue
 | Cierre | FULL sin opciones; docs-check y huella/base iguales; cleanup por labels; publicación sin segundo PR |
 
 ## Checkpoint vigente
+
+2026-10-27 · PR [#20](https://github.com/MatiasNicolasAcevedo/devnotes/pull/20) verificado con `gh pr view`: MERGED, base main, merge `cde66f4693fad0ea6d2bb0c738e5138ef1ab3a00`, head `cc3c818a529f7d1d36ea9e0c6913a62d0e12c31f`. La continuación se registra en T-021.
 
 2026-10-27 · Retoma independiente de entrega, Codex desktop (GPT-6; esfuerzo no expuesto), PowerShell, git/gh y Docker; sin delegación. `gh pr list` y `gh pr view 6` confirman que [#6](https://github.com/MatiasNicolasAcevedo/devnotes/pull/6) sigue OPEN y es el único PR abierto. Su `verify-required` SUCCESS corresponde a #6, no a T-020. `git ls-remote` confirma HEAD T-020 `5c005091295d11cdc7f8e5a4a34e989ae8c76cbb` y main `9da4ab4f138bd28753e61d1538003acceb615691`. Desde `c640389c3e6b4ccf553b72c2e78f8e5fd0e97732` solo cambiaron estos dos documentos; no hay cambios locales en las fuentes técnicas de T-020. Los logs de huella antes/después coinciden y el log FULL confirma 153+144 backend, 331 client, 35 E2E y cuatro etapas OK. Consulta Docker por labels exactos: sin contenedores, redes ni volúmenes en ambos namespaces finales. El cambio ajeno de `scripts/e2e.sh` continúa local.
 

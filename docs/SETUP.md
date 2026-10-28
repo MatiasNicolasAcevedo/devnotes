@@ -67,6 +67,25 @@ up construye y espera el stack, o comprueba uno propio ya activo sin recrearlo; 
 
 OIDC local conserva http://host.docker.internal:PUERTO/default desde navegador y backend. Los runners usan DNS Docker y el origen público exacto, sin hosts globales ni desactivar validaciones. Un navegador host es opcional. En Windows, para login manual usar un perfil de navegador efímero propio y resolución por proceso --host-resolver-rules="MAP host.docker.internal 127.0.0.1" (TR-11); no afecta otros perfiles ni el sistema. Las sondas/navegador containerizados son el ensayo portable. No usar un navegador preexistente con cookies personales para automatización.
 
+### Prueba manual en Windows
+
+Desde la raíz, iniciar o retomar el proyecto propio con el comando de [README](../README.md#modo-local-explícito-sin-credenciales). El resultado `Local API/DB/OIDC check passed` verifica los servicios, pero no demuestra que el navegador pueda completar el login. Abrir Edge con un perfil separado y la resolución local en el mismo proceso; por ejemplo, en PowerShell, para el proxy nginx con puerto predeterminado:
+
+```powershell
+$taskEdge = Join-Path ${env:ProgramFiles(x86)} 'Microsoft\Edge\Application\msedge.exe'
+if (-not (Test-Path -LiteralPath $taskEdge)) { $taskEdge = Join-Path $env:ProgramFiles 'Microsoft\Edge\Application\msedge.exe' }
+if (-not (Test-Path -LiteralPath $taskEdge)) { throw 'Microsoft Edge no encontrado' }
+$taskProfile = Join-Path $env:TEMP 'devnotes-local-browser'
+$taskArguments = '--user-data-dir="' + $taskProfile + '" --host-resolver-rules="MAP host.docker.internal 127.0.0.1" --no-first-run --new-window http://127.0.0.1:5175/'
+Start-Process -FilePath $taskEdge -ArgumentList $taskArguments
+```
+
+Usar esa ventana para iniciar sesión con el proveedor ficticio; una ventana habitual de Edge puede abrir la UI pero fallar al redirigir a `host.docker.internal:8090` con `ERR_CONNECTION_REFUSED`. Si se usan puertos personalizados o Vite, adaptar la URL de la UI al puerto elegido. Si el comando se ejecuta desde una superficie restringida que no puede abrir correctamente el navegador, ejecutarlo en una PowerShell normal del usuario y verificar que se abrió el perfil separado. No cambiar el archivo hosts ni reutilizar un perfil personal para automatización.
+
+Si Docker informa `Acceso denegado`, comprobar que Docker Desktop está disponible y que la superficie de ejecución tiene acceso al motor; repetir desde una superficie autorizada. Si `dev.sh` informa `Local project ownership mismatch; no resources changed`, conservar el volumen existente: para retomarlo hacen falta la misma ruta de checkout, modo, proxy, origen y puerto OIDC de su huella. Para una prueba independiente se puede elegir otro nombre `starter-dev-...` y, si hace falta, puertos libres según la fixture; será una base separada, no una recuperación de los datos anteriores. No borrar ni modificar el volumen para evitar el rechazo.
+
+En la prueba manual del 2026-10-27 se usó `starter-dev-devnotes-preview-1027` con nginx y puertos predeterminados; el dueño confirmó el acceso desde la ventana aislada. `down` conserva los datos de ese proyecto y `up` con los mismos parámetros los retoma.
+
 El harness efímero es una entrada separada: bash scripts/dev-auth.sh nginx starter-dev-auth-local-nginx session (o vite con su namespace). Perfil e2e y fixtures ficticias explícitas; Ctrl-C/stop elimina su DB. Acciones status/restart/rebuild/stop conservan la sesión efímera y sus negativos. No editar scripts Bash mientras estén corriendo.
 
 ## Comandos de verificación aislada

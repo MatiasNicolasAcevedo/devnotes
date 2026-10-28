@@ -3,9 +3,11 @@ import './dailyEditor.css'
 
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react'
 import Button from '@mui/material/Button'
+import SvgIcon from '@mui/material/SvgIcon'
 import Document from '@tiptap/extension-document'
 import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
+import { Fragment, Slice } from '@tiptap/pm/model'
 import { UndoRedo } from '@tiptap/extensions'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { plainTextToDocument, validateDailyContent, type DailyContent } from './dailyDocument'
@@ -41,10 +43,12 @@ export function DailyEditor({
   const onChangeRef = useRef(onChange)
   const editorRef = useRef<ReturnType<typeof useEditor>>(null)
   const linkSelectionRef = useRef<{ from: number; to: number } | null>(null)
+  const pointerDownRef = useRef<{ x: number; y: number } | null>(null)
 
   const [linkDialogOpen, setLinkDialogOpen] = useState(false)
   const [selectedText, setSelectedText] = useState('')
   const [existingHref, setExistingHref] = useState<string | undefined>(undefined)
+  const [pasteError, setPasteError] = useState(false)
 
   useEffect(() => {
     onChangeRef.current = onChange
@@ -72,32 +76,28 @@ export function DailyEditor({
         'aria-label': ariaLabel,
         'aria-readonly': String(readOnly),
       },
+      clipboardTextSerializer: (slice) => {
+        const lines: string[] = []
+        slice.content.forEach((block) => lines.push(block.textContent))
+        return lines.join('\n')
+      },
       handlePaste: (view, event) => {
         // Pegar como texto plano: HTML se trata como texto
         const text = event.clipboardData?.getData('text/plain')
         if (text != null) {
           event.preventDefault()
-          const doc = plainTextToDocument(text)
-          const tr = view.state.tr
-          // Insertar los párrafos del documento pegado
-          for (const block of doc.content) {
-            if (block.type === 'paragraph') {
-              const schema = view.state.schema
-              const textNodes = (block.content ?? []).map((n) => {
-                if (n.marks && n.marks.length > 0) {
-                  const linkMark = schema.marks.link?.create({ href: n.marks[0].attrs.href })
-                  return schema.text(n.text ?? '', [linkMark])
-                }
-                return schema.text(n.text ?? '')
-              })
-              const para = schema.nodes.paragraph.create(
-                undefined,
-                textNodes.length > 0 ? textNodes[0] : undefined,
-              )
-              tr.replaceSelectionWith(para)
-              break // Solo el primer bloque se inserta en la selección
-            }
+          if (!text) return true
+          const blocks = plainTextToDocument(text).content.map((block) =>
+            view.state.schema.nodeFromJSON(block),
+          )
+          // Abrir los extremos permite unir la primera y última línea al texto alrededor.
+          const slice = new Slice(Fragment.fromArray(blocks), 1, 1)
+          const tr = view.state.tr.replaceSelection(slice)
+          if (!validateDailyContent(tr.doc.toJSON()).valid) {
+            setPasteError(true)
+            return true
           }
+          setPasteError(false)
           view.dispatch(tr)
           return true
         }
@@ -162,7 +162,7 @@ export function DailyEditor({
     if (initialSelection.empty && !ed.isActive('link')) return
 
     // Expandir el enlace existente también cuando solo hay un cursor dentro de él.
-    if (ed.isActive('link')) ed.commands.extendMarkRange('link')
+    if (initialSelection.empty && ed.isActive('link')) ed.commands.extendMarkRange('link')
     const { from, to } = ed.state.selection
     const text = ed.state.doc.textBetween(from, to, '')
     if (!text) return
@@ -233,21 +233,38 @@ export function DailyEditor({
             disabled={!linkState?.canLink}
             onMouseDown={(event) => event.preventDefault()}
             onClick={openLinkDialog}
+            startIcon={
+              <SvgIcon fontSize="small">
+                <path d="M3.9 12a5 5 0 0 1 5-5h3v2h-3a3 3 0 1 0 0 6h3v2h-3a5 5 0 0 1-5-5Zm4-1h8v2h-8v-2Zm4-4h3a5 5 0 0 1 0 10h-3v-2h3a3 3 0 1 0 0-6h-3V7Z" />
+              </SvgIcon>
+            }
           >
             {linkState?.isLink ? 'Editar enlace' : 'Agregar enlace'}
           </Button>
           <span className="daily-editor-help">Seleccioná texto y agregá un enlace (Ctrl+K).</span>
         </div>
       )}
+      {pasteError && (
+        <div role="alert" className="daily-editor-error">
+          El texto supera los límites de la nota y no se pegó.
+        </div>
+      )}
       <div className="daily-editor-viewport" aria-label="Área de escritura redimensionable">
         <div
           className="daily-editor-main"
+          onMouseDown={(event) => {
+            pointerDownRef.current = { x: event.clientX, y: event.clientY }
+          }}
           onClick={(event) => {
             const anchor = event.target instanceof Element ? event.target.closest('a') : null
+            const start = pointerDownRef.current
+            pointerDownRef.current = null
             if (anchor) {
               event.preventDefault()
               const href = anchor.getAttribute('href')
-              if (href) handleOpenLink(href)
+              const dragged =
+                start && Math.hypot(event.clientX - start.x, event.clientY - start.y) > 4
+              if (href && !dragged) handleOpenLink(href)
             }
           }}
         >

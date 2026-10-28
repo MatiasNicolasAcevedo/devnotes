@@ -4,12 +4,13 @@ Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este í
 
 ## Actual · Usabilidad posterior a I1
 
-- [T-020](tasks/T-020-editor-usability.md): oscuro global, editor ampliable/compacto, números legibles y enlaces con botón/clic. Solicitud directa del dueño; prioridad anterior a I2 voz. Depende de T-014 MERGED, conciliada en esta rama.
+- [T-021](tasks/T-021-editor-ergonomics.md): pegado multilínea, enlace parcial, foco al desplazar y pantalla compacta. Depende de T-020 MERGED; prioridad anterior a I2 voz.
 
 El dueño amplió T-020 el 2026-10-26 para resolver navegación por fecha, preparación OIDC de dos actores y recorridos de versiones dentro de la misma entrega. La reparación pertenece a T-020; I2 continúa sin habilitar.
 
 ## Hechas
 
+- [T-020](tasks/T-020-editor-usability.md): editor, navegación por fecha y versiones; PR20 MERGED `cde66f4`.
 - [T-019](tasks/T-019-agent-operating-rules.md): observaciones operativas aplicadas, PR6 MERGED 16f6d53; no cuenta para ciclo de producto.
 - [T-001](tasks/T-001-document-contract.md): contrato de contenido; MERGED/conciliada en PR4.
 - [T-002](tasks/T-002-daily-persistence.md): persistencia privada por fecha; MERGED/conciliada en PR5.
@@ -21,7 +22,7 @@ El dueño amplió T-020 el 2026-10-26 para resolver navegación por fecha, prepa
 
 ## Siguientes · I1
 
-Quince contratos de producto I1 completados (T-003 y T-014 mergeadas). T-020 avanza en usabilidad posterior a I1 (rama codex/t-020-editor-usability, PR20). Las dependencias históricas se muestran para trazabilidad. Estados canónicos en tareas. Los IDs no fijan el orden: T-016 se inserta entre T-006/T-007 para separar cola y transporte; no es una capacidad adicional.
+Quince contratos de producto I1 completados (T-003 y T-014 mergeadas). T-021 avanza en usabilidad posterior a I1. Las dependencias históricas se muestran para trazabilidad. Estados canónicos en tareas. Los IDs no fijan el orden: T-016 se inserta entre T-006/T-007 para separar cola y transporte; no es una capacidad adicional.
 
 | Orden | Contrato / resultado | Dependencia |
 |---|---|---|

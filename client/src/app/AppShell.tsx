@@ -34,7 +34,7 @@ function AppShellContent({ outlet }: { outlet: ReactNode }) {
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <AppBar position="static" elevation={0}>
-        <Toolbar sx={{ gap: 2 }}>
+        <Toolbar sx={{ gap: 2, flexWrap: 'wrap', py: 1, minHeight: { sm: 56 } }}>
           <Link
             component={RouterLink}
             to="/"
@@ -45,27 +45,33 @@ function AppShellContent({ outlet }: { outlet: ReactNode }) {
           >
             {projectIdentity.name}
           </Link>
+          <Stack
+            component="nav"
+            aria-label="Navegación principal"
+            direction="row"
+            spacing={2}
+            sx={{ flexWrap: 'wrap' }}
+          >
+            <Link component={RouterLink} to="/" color="inherit">
+              Inicio
+            </Link>
+            <Link component={RouterLink} to="/notes" color="inherit">
+              Notas
+            </Link>
+            <Link component={RouterLink} to="/history" color="inherit">
+              Historial
+            </Link>
+            <Link component={RouterLink} to="/reference" color="inherit">
+              Referencia
+            </Link>
+          </Stack>
           <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', justifyContent: 'flex-end' }}>
             <SessionControls />
           </Box>
         </Toolbar>
       </AppBar>
-      <Container component="main" maxWidth="lg" sx={{ flexGrow: 1, py: { xs: 2, sm: 3 } }}>
-        <Stack spacing={2}>
-          <Stack component="nav" aria-label="Navegación principal" direction="row" spacing={2}>
-            <Link component={RouterLink} to="/">
-              Inicio
-            </Link>
-            <Link component={RouterLink} to="/notes">
-              Notas
-            </Link>
-            <Link component={RouterLink} to="/history">
-              Historial
-            </Link>
-            <Link component={RouterLink} to="/reference">
-              Referencia
-            </Link>
-          </Stack>
+      <Container component="main" maxWidth="lg" sx={{ flexGrow: 1, py: { xs: 1, sm: 1.5 } }}>
+        <Stack spacing={1}>
           <SessionAlerts />
           {status === 'loading' ? (
             <Stack direction="row" spacing={1.5} role="status" sx={{ alignItems: 'center' }}>
