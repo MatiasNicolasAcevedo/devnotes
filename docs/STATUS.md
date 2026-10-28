@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-021](tasks/T-021-editor-ergonomics.md) |
-| Estado | in_review |
-| Acción actual | Implementación publicada y FULL de aplicación OK; pendiente revisión independiente y CI sobre HEAD/base vigentes. |
+| Estado | mergeable |
+| Acción actual | Revisión técnica independiente sin bloqueantes; pendiente publicación del veredicto sobre HEAD final y resolución del límite de AUTONOMY para merge. |
 | Rama / PR | codex/t-021-editor-ergonomics · [PR22](https://github.com/MatiasNicolasAcevedo/devnotes/pull/22) contra main |
 
 T-020: PR20 MERGED, merge `cde66f4`, confirmado por GitHub el 2026-10-27.

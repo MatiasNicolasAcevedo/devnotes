@@ -1,6 +1,6 @@
 ---
 id: T-021
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M1
@@ -20,6 +20,8 @@ Solicitud del dueño del 2026-10-27 tras prueba local: pegar y copiar texto mult
 Codex desktop, modelo GPT-6, esfuerzo no expuesto; PowerShell/Git Bash, Node, Docker y skill frontend-design; sin delegación. Impacto en UI y edición; sin cambios de API, permisos, dependencias ni esquema. Base inicial main `cde66f4693fad0ea6d2bb0c738e5138ef1ab3a00`, PR #20 MERGED verificado. Se conservan los cambios documentales de arranque solicitados en la sesión previa y el stack persistente del dueño.
 
 ## Checkpoint vigente
+
+Revisión independiente, Codex desktop / GPT-6, esfuerzo no expuesto; PowerShell, Git, gh, Node y Git Bash; sin delegación. HEAD revisado `10fad0f343750bec5e398fe5cad6cde019dfa1d8`, base remota `cde66f4693fad0ea6d2bb0c738e5138ef1ab3a00`. Diff completo APPLICATION; FULL del autor y huellas coincidentes comprobados, fuentes técnicas sin cambios posteriores. Dirigidos `npm test -- --run src/features/daily/editor/DailyEditor.test.tsx src/features/daily/editor/LinkDialog.test.tsx`: 34/34; `node scripts/docs-check.mjs` y `git diff --check` OK; CI verify-required SUCCESS y sin hilos de revisión. Sin hallazgos bloqueantes en el diff revisado. Falta publicar esta transición, comprobar su HEAD y CI, y comentar veredicto. AUTONOMY reserva el merge elegible a revisión de Junie; esta revisión Codex no habilita merge por sí sola. Se conservó el stack persistente y el BACKLOG local ajeno.
 
 Implementación publicada en `f288275db772d86d7d9931565196af06e9aa333c`, [PR22](https://github.com/MatiasNicolasAcevedo/devnotes/pull/22) contra main; pendiente revisión independiente y CI. FULL final **exit 0**, `t021-full-r4.log`: docs, backend (153 unitarias y 144 IT PostgreSQL), cliente (336 pruebas, cobertura statements 91.03 %, typecheck/lint/formato/build) y Playwright real (39/39 escritorio y móvil) OK. Huella antes/después de fuentes `0682065b0a29e7b1bfae33ba01d95527fe3397ae`; base local/remota `cde66f4693fad0ea6d2bb0c738e5138ef1ab3a00`. Los namespaces propios de verify y E2E se limpiaron y comprobaron sin contenedores, redes ni volúmenes. El cierre documental posterior no cambia las fuentes verificadas.
 
