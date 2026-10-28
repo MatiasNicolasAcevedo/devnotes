@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-024](tasks/T-024-reference-document.md) |
-| Estado | in_progress |
-| Acción actual | Implementando validación de átomo reference en DailyContent. Tests unitarios 83/83 OK, verify completo 161/161 OK. |
-| Rama / PR | codex/t-024-reference-document · — |
+| Estado | in_review |
+| Acción actual | PR27 publicado. Validación de átomo reference en DailyContent, 161/161 tests OK. Pendiente revisión independiente y CI verde. |
+| Rama / PR | codex/t-024-reference-document · [PR27](https://github.com/MatiasNicolasAcevedo/devnotes/pull/27) |
 
 T-023: PR24 MERGED, squash `b0ebaae34d58bc14708025c9cbcea0f1976bd2ad`, confirmado en GitHub el 2026-10-28.
 
@@ -38,5 +38,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie implementer, en sesión nueva: T-024 en progreso (codex/t-024-reference-document). Validación de átomo reference implementada y tests 161/161 OK. Publicar código, abrir PR, ejecutar docs-check y preparar revisión independiente.
+Junie reviewer, en sesión nueva: PR27 de T-024 (codex/t-024-reference-document) pendiente de revisión. Validación de átomo reference en DailyContent, 161/161 tests OK localmente. Revisar diff, esperar CI verify-required verde, y autorizar merge si sin bloqueantes. Tras MERGED, Junie implementer toma T-025 predefinida.
 ```
