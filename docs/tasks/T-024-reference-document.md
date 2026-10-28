@@ -1,6 +1,6 @@
 ---
 id: T-024
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M1
