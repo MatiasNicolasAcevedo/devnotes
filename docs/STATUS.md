@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-023](tasks/T-023-copy-actions.md) |
 | Estado | in_review |
-| Acción actual | Implementación publicada. Pendiente revisión independiente de PR24. |
+| Acción actual | Revisión APROBADA sin bloqueantes. CI verify-required falló por docs-check preexistente en main (T-022 in_review). Pendiente merge. |
 | Rama / PR | codex/t-023-copy-actions · [PR24](https://github.com/MatiasNicolasAcevedo/devnotes/pull/24) |
 
 T-022: PR23 MERGED, squash `ca9d44de47195c277d386ac5aa61e2a94b096d0e`, confirmado en GitHub el 2026-10-28.
@@ -36,5 +36,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie reviewer, en sesión nueva: revisar PR24 de T-023 en codex/t-023-copy-actions. Contrato: copiar título, descripción y nota con botones accesibles usando API Clipboard con manejo de errores. Base main ca9d44d, HEAD e5ae592. Client gate OK: 345 tests, 90.6% statements, 86.35% branches.
+Junie merger, en sesión nueva: PR24 de T-023 APROBADO sin bloqueantes. Revisar que CI verify-required esté verde (docs-check preexistente en main con T-022 in_review debe resolverse). Si CI verde, proceder a squash merge. Tras MERGED, Junie implementer toma T-024 predefinida.
 ```
