@@ -1,6 +1,6 @@
 ---
 id: T-023
-status: in_progress
+status: in_review
 priority: P1
 size: S
 milestone: M1
@@ -9,7 +9,7 @@ depends_on: [T-022]
 branch: codex/t-023-copy-actions
 role: implementer
 executor: junie
-pr: null
+pr: 24
 ---
 # T-023 · Copiar referencias y nota
 
@@ -36,7 +36,7 @@ Editar ReferencePage y DailyNotesPage, compartir solo lo necesario para portapap
 
 ## Checkpoint vigente
 
-T-022 PR23 MERGED ca9d44d, dependencia satisfecha. Implementando: clipboard utility, botones en ReferencePage y DailyNotesPage. Base ca9d44d.
+Implementación publicada PR24 (e5ae592). Base main ca9d44d. Client gate OK: 345 tests, 90.6% statements, 86.35% branches, typecheck/lint/format/build OK. Listo para revisión independiente.
 
 ## Cierre y siguiente tarea
 
