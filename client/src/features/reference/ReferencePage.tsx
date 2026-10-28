@@ -12,6 +12,7 @@ import Typography from '@mui/material/Typography'
 import { useEffect, useRef, useState } from 'react'
 import { Link as RouterLink } from 'react-router'
 import { ApiError } from '../../services/http'
+import { CopyButton } from '../../shared/ui/CopyButton'
 import { ErrorAlert } from '../../shared/ui/ErrorAlert'
 import { useSession } from '../auth/sessionContext'
 import { ReferenceItemForm } from './ReferenceItemForm'
@@ -202,12 +203,42 @@ function PrivateReference({ owner }: { owner: string }) {
                 <Card component="li" variant="outlined" key={item.id}>
                   <CardContent>
                     <Stack spacing={1} sx={{ overflowWrap: 'anywhere' }}>
-                      <Typography component="h2" variant="h6">
-                        {item.title}
-                      </Typography>
-                      <Typography sx={{ whiteSpace: 'pre-wrap' }}>
-                        {item.description || 'Sin descripción.'}
-                      </Typography>
+                      <Stack
+                        direction="row"
+                        sx={{ alignItems: 'center', flexWrap: 'wrap', gap: 1 }}
+                      >
+                        <Typography component="h2" variant="h6" sx={{ flex: '1 1 auto' }}>
+                          {item.title}
+                        </Typography>
+                        <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+                          <CopyButton aria-label={`Copiar título ${item.title}`} text={item.title}>
+                            Copiar título
+                          </CopyButton>
+                        </Stack>
+                      </Stack>
+                      <Stack
+                        direction="row"
+                        spacing={0.5}
+                        sx={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: 1 }}
+                      >
+                        <Typography sx={{ whiteSpace: 'pre-wrap', flex: '1 1 auto' }}>
+                          {item.description || 'Sin descripción.'}
+                        </Typography>
+                        {item.description && (
+                          <Stack
+                            direction="row"
+                            spacing={0.5}
+                            sx={{ alignItems: 'center', flexShrink: 0 }}
+                          >
+                            <CopyButton
+                              aria-label={`Copiar descripción ${item.title}`}
+                              text={item.description}
+                            >
+                              Copiar descripción
+                            </CopyButton>
+                          </Stack>
+                        )}
+                      </Stack>
                       <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
                         <Button
                           aria-label={`Editar ${item.title}`}

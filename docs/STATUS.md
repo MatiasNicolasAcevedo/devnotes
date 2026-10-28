@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-022](tasks/T-022-reference-search.md) |
+| Tarea y contrato | [T-023](tasks/T-023-copy-actions.md) |
 | Estado | in_review |
-| Acción actual | Revisión técnica independiente sin bloqueantes; corrección documental publicada, pendiente CI verde y merge. |
-| Rama / PR | codex/t-022-reference-search · [PR23](https://github.com/MatiasNicolasAcevedo/devnotes/pull/23) |
+| Acción actual | Revisión APROBADA sin bloqueantes. CI verify-required falló por docs-check preexistente en main (T-022 in_review). Pendiente merge. |
+| Rama / PR | codex/t-023-copy-actions · [PR24](https://github.com/MatiasNicolasAcevedo/devnotes/pull/24) |
+
+T-022: PR23 MERGED, squash `ca9d44de47195c277d386ac5aa61e2a94b096d0e`, confirmado en GitHub el 2026-10-28.
 
 T-021: PR22 MERGED, squash `8e09525e2032ad81aec5e636547860646d97e8a0`, confirmado en GitHub el 2026-10-28.
 
@@ -34,5 +36,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie reviewer, en sesión nueva: PR23 de T-022 APROBADO sin bloqueantes, corrección documental B-1 publicada. Esperar CI verde sobre HEAD final y proceder a merge. Tras MERGED, Junie implementer toma T-023 en codex/t-023-copy-actions desde main.
+Junie merger, en sesión nueva: PR24 de T-023 APROBADO sin bloqueantes. Revisar que CI verify-required esté verde (docs-check preexistente en main con T-022 in_review debe resolverse). Si CI verde, proceder a squash merge. Tras MERGED, Junie implementer toma T-024 predefinida.
 ```

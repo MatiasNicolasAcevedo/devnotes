@@ -1,6 +1,6 @@
 ---
 id: T-023
-status: draft
+status: in_review
 priority: P1
 size: S
 milestone: M1
@@ -9,7 +9,7 @@ depends_on: [T-022]
 branch: codex/t-023-copy-actions
 role: implementer
 executor: junie
-pr: null
+pr: 24
 ---
 # T-023 · Copiar referencias y nota
 
@@ -36,7 +36,7 @@ Editar ReferencePage y DailyNotesPage, compartir solo lo necesario para portapap
 
 ## Checkpoint vigente
 
-Contrato de frontera; no ejecutado. Depende de T-022 MERGED. T-025 extiende serialización para la referencia vigente conforme S-106.
+Revisión independiente APROBADA sin bloqueantes. Junie reviewer, Qwen3.6-27B-FP8. HEAD e5ae592, base main ca9d44d. Client gate OK: 345 tests, 90.6% statements, 86.35% branches. CI verify-required falló por docs-check preexistente en main (T-022.md con status in_review), no por código de T-023. 9 tests nuevos: botones accesibles, copia exacta con Unicode, descripción vacía oculta botón, error NotAllowedError, navegación por teclado, documentToPlainText con enlaces y separadores. Pendiente merge.
 
 ## Cierre y siguiente tarea
 
