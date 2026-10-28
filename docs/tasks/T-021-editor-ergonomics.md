@@ -1,6 +1,6 @@
 ---
 id: T-021
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M1

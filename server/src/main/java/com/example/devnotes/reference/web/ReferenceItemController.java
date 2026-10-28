@@ -69,9 +69,13 @@ public class ReferenceItemController {
     @GetMapping
     @Operation(
             summary = "Lista privada paginada",
-            description = "Orden fijo createdAt DESC, id DESC; páginas desde cero, defaults 0/20.")
+            description =
+                    "Opcional q para búsqueda por título (máximo 120 caracteres). Orden fijo createdAt DESC, id DESC; páginas desde cero, defaults 0/20.")
     public ResponseEntity<ReferenceItemPage> list(
             Authentication authentication,
+            @Parameter(description = "Consulta por título (opcional, máximo 120 caracteres)")
+                    @RequestParam(required = false)
+                    String q,
             @Parameter(description = "Página desde cero", schema = @Schema(defaultValue = "0", minimum = "0"))
                     @RequestParam(defaultValue = "0")
                     @Min(0) int page,
@@ -80,9 +84,12 @@ public class ReferenceItemController {
                             schema = @Schema(defaultValue = "20", minimum = "1", maximum = "100"))
                     @RequestParam(defaultValue = "20")
                     @Min(1) @Max(100) int size) {
+        if (q != null && q.length() > 120) {
+            throw new IllegalArgumentException("Consulta excesiva.");
+        }
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
-                .body(service.list(owner(authentication), page, size));
+                .body(service.list(owner(authentication), page, size, q));
     }
 
     @GetMapping("/{id}")

@@ -74,7 +74,7 @@ class ReferenceItemServiceTest {
     void pagingUsesOwnerForContentAndCountsAndRejectsInvalidBounds() {
         when(repository.findPageByOwnerId(OWNER, 20L, 20)).thenReturn(List.of());
         when(repository.countByOwnerId(OWNER)).thenReturn(2L);
-        var page = service.list(OWNER, 1, 20);
+        var page = service.list(OWNER, 1, 20, null);
         assertThat(page.content()).isEmpty();
         assertThat(page.totalElements()).isEqualTo(2);
         assertThat(page.totalPages()).isEqualTo(1);
@@ -82,10 +82,10 @@ class ReferenceItemServiceTest {
         verify(repository).countByOwnerId(OWNER);
         verify(repository, never()).count();
         for (int[] invalid : new int[][] {{-1, 20}, {0, 0}, {0, 101}}) {
-            assertThatThrownBy(() -> service.list(OWNER, invalid[0], invalid[1]))
+            assertThatThrownBy(() -> service.list(OWNER, invalid[0], invalid[1], null))
                     .isInstanceOf(IllegalArgumentException.class);
         }
-        assertThatThrownBy(() -> service.list(null, 0, 20)).isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> service.list(null, 0, 20, null)).isInstanceOf(NullPointerException.class);
         assertThatThrownBy(() -> service.get(null, ID)).isInstanceOf(NullPointerException.class);
         assertThatThrownBy(() -> service.create(null, new ReferenceItemInput("x", "")))
                 .isInstanceOf(NullPointerException.class);
@@ -99,7 +99,7 @@ class ReferenceItemServiceTest {
         var item = new ReferenceItem(OWNER, "Más allá de int", "", NOW);
         when(repository.findPageByOwnerId(OWNER, offset, size)).thenReturn(List.of(item));
         when(repository.countByOwnerId(OWNER)).thenReturn(offset + 1);
-        var result = service.list(OWNER, page, size);
+        var result = service.list(OWNER, page, size, null);
         assertThat(offset).isGreaterThan(Integer.MAX_VALUE);
         assertThat(result.content()).containsExactly(ReferenceItemView.from(item));
         assertThat(result.page()).isEqualTo(page);
@@ -108,6 +108,71 @@ class ReferenceItemServiceTest {
         assertThat(result.totalPages()).isEqualTo(page + 1);
         verify(repository).findPageByOwnerId(OWNER, offset, size);
         verify(repository).countByOwnerId(OWNER);
+    }
+
+    @Test
+    void searchByTitleMatchesCaseInsensitiveAndFiltersByOwner() {
+        var item = new ReferenceItem(OWNER, "Spring Boot", "", NOW);
+        when(repository.findPageByOwnerIdAndTitle(OWNER, "%spring%", 0L, 20)).thenReturn(List.of(item));
+        when(repository.countByOwnerIdAndTitle(OWNER, "%spring%")).thenReturn(1L);
+        var result = service.list(OWNER, 0, 20, "spring");
+        assertThat(result.content()).hasSize(1);
+        assertThat(result.content().get(0).title()).isEqualTo("Spring Boot");
+        assertThat(result.totalElements()).isEqualTo(1);
+        verify(repository).findPageByOwnerIdAndTitle(OWNER, "%spring%", 0L, 20);
+        verify(repository).countByOwnerIdAndTitle(OWNER, "%spring%");
+    }
+
+    @Test
+    void searchEscapesPercentUnderscoreAndExclamationLiterals() {
+        when(repository.findPageByOwnerIdAndTitle(OWNER, "%!%%", 0L, 20)).thenReturn(List.of());
+        when(repository.countByOwnerIdAndTitle(OWNER, "%!%%")).thenReturn(0L);
+        var result = service.list(OWNER, 0, 20, "%");
+        assertThat(result.content()).isEmpty();
+        assertThat(result.totalElements()).isZero();
+        verify(repository).findPageByOwnerIdAndTitle(OWNER, "%!%%", 0L, 20);
+        verify(repository).countByOwnerIdAndTitle(OWNER, "%!%%");
+    }
+
+    @Test
+    void searchEmptyOrWhitespaceQueryFallsBackToListAll() {
+        when(repository.findPageByOwnerId(OWNER, 0L, 20)).thenReturn(List.of());
+        when(repository.countByOwnerId(OWNER)).thenReturn(0L);
+        var result = service.list(OWNER, 0, 20, "  ");
+        assertThat(result.content()).isEmpty();
+        verify(repository).findPageByOwnerId(OWNER, 0L, 20);
+        verify(repository).countByOwnerId(OWNER);
+        verify(repository, never()).findPageByOwnerIdAndTitle(any(), any(), anyLong(), anyInt());
+    }
+
+    @Test
+    void searchRejectsQueryExceedingUtf16Limit() {
+        String longQuery = "x".repeat(121);
+        assertThatThrownBy(() -> service.list(OWNER, 0, 20, longQuery))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Consulta excesiva.");
+        verify(repository, never()).findPageByOwnerIdAndTitle(any(), any(), anyLong(), anyInt());
+    }
+
+    @Test
+    void searchAllowsQueryAtExactUtf16Limit() {
+        String exactQuery = "x".repeat(120);
+        when(repository.findPageByOwnerIdAndTitle(OWNER, "%" + exactQuery + "%", 0L, 20))
+                .thenReturn(List.of());
+        when(repository.countByOwnerIdAndTitle(OWNER, "%" + exactQuery + "%")).thenReturn(0L);
+        var result = service.list(OWNER, 0, 20, exactQuery);
+        assertThat(result.content()).isEmpty();
+        assertThat(result.totalElements()).isZero();
+        verify(repository).findPageByOwnerIdAndTitle(OWNER, "%" + exactQuery + "%", 0L, 20);
+    }
+
+    @Test
+    void searchRejectsQueryExceedingUtf16CodeUnitLimit() {
+        // Each 😀 is 2 UTF-16 code units; 61 emojis = 122 code units > 120
+        String longQuery = "😀".repeat(61);
+        assertThatThrownBy(() -> service.list(OWNER, 0, 20, longQuery))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Consulta excesiva.");
     }
 
     @Test
