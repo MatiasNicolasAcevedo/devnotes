@@ -1,6 +1,6 @@
 ---
 id: T-021
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M1
@@ -9,7 +9,7 @@ depends_on: [T-020]
 branch: codex/t-021-editor-ergonomics
 role: implementer
 executor: frontier
-pr: null
+pr: 22
 ---
 # T-021 · Correcciones de uso del editor
 
@@ -21,7 +21,7 @@ Codex desktop, modelo GPT-6, esfuerzo no expuesto; PowerShell/Git Bash, Node, Do
 
 ## Checkpoint vigente
 
-FULL final **exit 0**, `t021-full-r4.log`: docs, backend (153 unitarias y 144 IT PostgreSQL), cliente (336 pruebas, cobertura statements 91.03 %, typecheck/lint/formato/build) y Playwright real (39/39 escritorio y móvil) OK. Huella antes/después de fuentes `0682065b0a29e7b1bfae33ba01d95527fe3397ae`; base local/remota `cde66f4693fad0ea6d2bb0c738e5138ef1ab3a00`. Los namespaces propios de verify y E2E se limpiaron y comprobaron sin contenedores, redes ni volúmenes. Siguiente paso: docs-check, diff, publicar y solicitar revisión independiente.
+Implementación publicada en `f288275db772d86d7d9931565196af06e9aa333c`, [PR22](https://github.com/MatiasNicolasAcevedo/devnotes/pull/22) contra main; pendiente revisión independiente y CI. FULL final **exit 0**, `t021-full-r4.log`: docs, backend (153 unitarias y 144 IT PostgreSQL), cliente (336 pruebas, cobertura statements 91.03 %, typecheck/lint/formato/build) y Playwright real (39/39 escritorio y móvil) OK. Huella antes/después de fuentes `0682065b0a29e7b1bfae33ba01d95527fe3397ae`; base local/remota `cde66f4693fad0ea6d2bb0c738e5138ef1ab3a00`. Los namespaces propios de verify y E2E se limpiaron y comprobaron sin contenedores, redes ni volúmenes. El cierre documental posterior no cambia las fuentes verificadas.
 
 Comando FULL: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t021-r4 STARTER_E2E_PROJECT=starter-e2e-t021-r4 STARTER_SERVER_TESTS=container bash scripts/verify.sh > t021-full-r4.log 2>&1`. Solo fixtures ficticias; trap E2E y `docker compose --env-file .env.example -p starter-verify-t021-r4 --profile verify down --volumes --remove-orphans`. En la retoma se reconstruyó únicamente el cliente del stack persistente `starter-dev-devnotes-preview-1027`; backend/DB siguieron activos y la sonda local pasó. La aplicación actualizada está disponible para prueba manual.
 

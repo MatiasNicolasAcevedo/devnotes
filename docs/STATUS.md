@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-021](tasks/T-021-editor-ergonomics.md) |
-| Estado | in_progress |
-| Acción actual | Correcciones de editor y diseño compacto en curso; completar verificación de navegador y gate antes de publicar. |
-| Rama / PR | codex/t-021-editor-ergonomics · sin PR |
+| Estado | in_review |
+| Acción actual | Implementación publicada y FULL de aplicación OK; pendiente revisión independiente y CI sobre HEAD/base vigentes. |
+| Rama / PR | codex/t-021-editor-ergonomics · [PR22](https://github.com/MatiasNicolasAcevedo/devnotes/pull/22) contra main |
 
 T-020: PR20 MERGED, merge `cde66f4`, confirmado por GitHub el 2026-10-27.
 
@@ -32,5 +32,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Implementer, en sesión nueva: retomar T-021 en la rama codex/t-021-editor-ergonomics. Leer su checkpoint, verificar HEAD/base y preservar los cambios locales y el stack persistente del dueño. Completar las pruebas pendientes y el gate correspondiente; publicar solo con evidencia válida y continuar con revisión independiente. No iniciar voz ni otra tarea.
+Reviewer independiente, en sesión nueva: revisar T-021 y PR22 contra main. Leer la tarea, S-101/S-102, AGENTS client y protocolo reviewer; verificar HEAD/base remotos, CI y evidencia FULL sobre las fuentes publicadas. Revisar copiado/pegado, enlace parcial, apertura por clic, foco y layout accesible, con pruebas dirigidas según riesgo. Conservar el stack persistente del dueño; publicar veredicto ligado al HEAD/base y proceder a merge solo si AUTONOMY lo permite. No iniciar voz ni otra tarea.
 ```
