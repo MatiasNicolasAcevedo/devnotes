@@ -9,7 +9,7 @@ depends_on: [T-025]
 branch: codex/t-026-reference-preview
 role: implementer
 executor: junie
-pr: null
+pr: 29
 ---
 # T-026 · Vista previa accesible y recorrido completo
 
@@ -37,7 +37,7 @@ Gate desde raíz Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=
 
 ## Checkpoint vigente
 
-T-025 MERGED (9a14044), dependencia satisfecha. T-026 habilitada, rama `codex/t-026-reference-preview` creada desde main. Implementando ReferencePreview con hover, teclado y tacto.
+Código publicado, PR #29 abierto. Client gate OK: 364 tests, 83.11% statements, 79.29% branches. Pendiente: revisión independiente, CI verify-required y FULL E2E con stack real.
 
 ## Cierre y siguiente tarea
 

@@ -4,8 +4,8 @@
 |---|---|
 | Tarea y contrato | [T-026](tasks/T-026-reference-preview.md) (in_progress) |
 | Estado | in_progress |
-| Acción actual | Implementando ReferencePreview con hover, teclado y tacto en editor e historial. |
-| Rama / PR | codex/t-026-reference-preview / — |
+| Acción actual | Código publicado, PR #29 abierto. Pendiente: revisión independiente y CI verde. |
+| Rama / PR | codex/t-026-reference-preview / [#29](https://github.com/MatiasNicolasAcevedo/devnotes/pull/29) |
 
 T-025: PR28 MERGED, squash `9a1404490779e0462e326aefa015e2c4596a0e91`, confirmado en GitHub el 2026-10-29.
 
@@ -42,9 +42,9 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie implementer, en sesión nueva: T-025 MERGED (9a14044). T-026 in_progress, implementando ReferencePreview. Continuar con tests de componente, Playwright E2E, gate de cierre y publicación del PR.
+Junie reviewer, en sesión nueva: T-026 implementación publicada (PR #29). Revisión independiente de HEAD fc9eb59 contra base main 9a14044. Verificar diff, ejecutar CI verify-required y FULL E2E con stack real antes de merge.
 
-Contrato: [T-026](docs/tasks/T-026-reference-preview.md) — vista previa con hover, teclado y tacto en trabajo e historial, con cierre y foco conforme S-106.
+Contrato: [T-026](docs/tasks/T-026-reference-preview.md) — vista previa accesible con hover, teclado y tacto.
 
-Leer antes: S-106, S-101, S-104, client/AGENTS.md, TESTING.md, AGENTS raíz, STATUS y protocolo implementer.
+Leer antes: S-106, client/AGENTS.md, TESTING.md, AGENTS raíz, STATUS y protocolo reviewer.
 ```
