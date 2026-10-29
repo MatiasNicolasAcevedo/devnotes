@@ -1,6 +1,6 @@
 ---
 id: T-026
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M1
@@ -37,7 +37,7 @@ Gate desde raíz Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=
 
 ## Checkpoint vigente
 
-Contrato de frontera, sin implementación ni pruebas. Depende de T-025 MERGED. Decisión del dueño y límites en S-106.
+T-025 MERGED (9a14044), dependencia satisfecha. T-026 habilitada, rama `codex/t-026-reference-preview` creada desde main. Implementando ReferencePreview con hover, teclado y tacto.
 
 ## Cierre y siguiente tarea
 
