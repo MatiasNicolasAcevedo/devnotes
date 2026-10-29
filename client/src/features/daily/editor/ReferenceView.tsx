@@ -1,19 +1,25 @@
 import { NodeViewContent, NodeViewWrapper, type ReactNodeViewProps } from '@tiptap/react'
 import { Box, CircularProgress, Typography } from '@mui/material'
+import { useRef } from 'react'
 import { useReferenceItem } from '../../reference/useReferenceItems'
 import { useSession } from '../../auth/sessionContext'
+import { useReferencePreview } from './ReferencePreview'
 
 /**
  * Vista React del átomo reference.
- * Muestra @Título mientras carga, Cargando referencia durante consulta,
- * Referencia no disponible ante 404, y No se pudo cargar ante error.
+ * Muestra @Título vigente con vista previa accesible (hover, teclado, tacto).
+ * Cargando referencia durante consulta, Referencia no disponible ante 404,
+ * y No se pudo cargar ante error de red con reintento.
  */
-export function ReferenceView({ node, editor }: ReactNodeViewProps<HTMLElement>) {
+export function ReferenceView({ node }: ReactNodeViewProps<HTMLElement>) {
   const id = (node.attrs as { id: string }).id
   const { user } = useSession()
   const ownerId = user?.id ?? ''
 
   const { data, isLoading, isError, isFetching } = useReferenceItem(ownerId, id)
+
+  const anchorRef = useRef<HTMLSpanElement | null>(null)
+  const { anchorProps, preview } = useReferencePreview(id, anchorRef)
 
   const displayText =
     isLoading || isFetching
@@ -30,17 +36,24 @@ export function ReferenceView({ node, editor }: ReactNodeViewProps<HTMLElement>)
   return (
     <NodeViewWrapper as="span">
       <Box
+        ref={anchorRef as React.RefObject<HTMLSpanElement>}
         component="span"
         className="reference-atom"
         sx={{
           color: unavailable ? 'text.secondary' : 'primary.main',
-          cursor: editor.isEditable ? 'pointer' : 'default',
+          cursor: 'pointer',
           display: 'inline-flex',
           alignItems: 'center',
           gap: 0.5,
           whiteSpace: 'nowrap',
+          textDecoration: 'underline',
+          textUnderlineOffset: 2,
         }}
         data-reference-id={id}
+        tabIndex={0}
+        role="button"
+        aria-label={`Ver vista previa de ${data?.title ?? 'referencia'}`}
+        {...anchorProps}
       >
         {loading ? (
           <>
@@ -56,6 +69,7 @@ export function ReferenceView({ node, editor }: ReactNodeViewProps<HTMLElement>)
         )}
       </Box>
       <NodeViewContent />
+      {preview}
     </NodeViewWrapper>
   )
 }
