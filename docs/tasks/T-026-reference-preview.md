@@ -1,6 +1,6 @@
 ---
 id: T-026
-status: in_progress
+status: changes_requested
 priority: P1
 size: M
 milestone: M1
@@ -37,7 +37,15 @@ Gate desde raíz Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=
 
 ## Checkpoint vigente
 
-Código publicado, PR #29 abierto. Client gate OK: 364 tests, 83.11% statements, 79.29% branches. Pendiente: revisión independiente, CI verify-required y FULL E2E con stack real.
+Revisión independiente en curso. Junie reviewer, Qwen3.6-27B-FP8. HEAD de9c612 (incluye corrección documental T-025 → done), base main 9a14044.
+
+**Bloqueante B-1:** E2E `reference-preview.spec.ts` falla en paso 2 (línea 46): `page.keyboard.type('@Referencia')` envía todos los caracteres de una vez; el picker con debounce 250 ms no dispara la búsqueda a tiempo y `getByText('Referencia E2E')` no aparece en 10 s. El picker funciona correctamente en otros tests (reference.spec.ts pasa). Corrección: el test debe escribir `@` con `keyboard.type('@')`, esperar a que el picker se abra, luego escribir la consulta con pausa entre caracteres o usar `fill`/`pressSequentially` con delay. Verificar que el picker muestra resultados antes de continuar.
+
+**Observación O-1:** `ReferenceView.tsx` elimina el parámetro `editor` de `ReactNodeViewProps` (no se usaba). Cambio limpio.
+
+**Observación O-2:** `ReferencePreview.tsx` usa `e.preventDefault()` en `handleAnchorTouchStart` (línea 100). Esto puede interferir con el scroll táctil en móviles si el usuario toca el átomo sin intención de abrir la vista previa. Considerar verificar si el toque es único (no parte de un scroll) antes de prevenir el comportamiento predeterminado.
+
+**Observación O-3:** `ReferencePreview.tsx` declara `anchorProps` con `useMemo` y los pasa vía `useEffect` + callback (`onAnchorProps`). Este patrón de lift-state-down con callback es funcional pero añade un render extra. Evaluar si un `ref` para `setAnchorProps` simplificaría el flujo sin cambiar el comportamiento observable.
 
 ## Cierre y siguiente tarea
 

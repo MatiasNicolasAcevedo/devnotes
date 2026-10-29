@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-026](tasks/T-026-reference-preview.md) (in_progress) |
-| Estado | in_progress |
-| Acción actual | Código publicado, PR #29 abierto. Pendiente: revisión independiente y CI verde. |
+| Tarea y contrato | [T-026](tasks/T-026-reference-preview.md) (changes_requested) |
+| Estado | changes_requested |
+| Acción actual | Revisión independiente: B-1 E2E falla por timing del picker. Pendiente: corrección y nueva corrida. |
 | Rama / PR | codex/t-026-reference-preview / [#29](https://github.com/MatiasNicolasAcevedo/devnotes/pull/29) |
 
 T-025: PR28 MERGED, squash `9a1404490779e0462e326aefa015e2c4596a0e91`, confirmado en GitHub el 2026-10-29.
