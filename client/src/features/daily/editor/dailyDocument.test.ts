@@ -6,6 +6,7 @@ import {
   MAX_BLOCKS,
   MAX_HREF_LENGTH,
   MAX_HREF_TOTAL,
+  MAX_REFERENCES,
   MAX_TEXT_NODES,
   MAX_TEXT_TOTAL,
   plainTextToDocument,
@@ -466,5 +467,268 @@ describe('isValidSeparatorWidth', () => {
     expect(isValidSeparatorWidth(0)).toBe(false)
     expect(isValidSeparatorWidth('50')).toBe(false)
     expect(isValidSeparatorWidth(null)).toBe(false)
+  })
+})
+
+describe('validateDailyContent — reference atom', () => {
+  it('acepta reference con UUID canónico minúsculo', () => {
+    const doc = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'Ver ' },
+            {
+              type: 'reference',
+              attrs: { id: '01900000-0000-7000-8000-000000000101' },
+            },
+          ],
+        },
+      ],
+    }
+    const result = validateDailyContent(doc)
+    expect(result.valid).toBe(true)
+  })
+
+  it('acepta reference solo en paragraph', () => {
+    const doc = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'reference',
+              attrs: { id: '01900000-0000-7000-8000-000000000101' },
+            },
+          ],
+        },
+      ],
+    }
+    const result = validateDailyContent(doc)
+    expect(result.valid).toBe(true)
+  })
+
+  it('rechaza reference con UUID mayúsculas', () => {
+    const doc = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'reference',
+              attrs: { id: '01900000-0000-7000-8000-00000000010A' },
+            },
+          ],
+        },
+      ],
+    }
+    const result = validateDailyContent(doc)
+    expect(result.valid).toBe(false)
+  })
+
+  it('rechaza reference con UUID inválido', () => {
+    const doc = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'reference',
+              attrs: { id: 'not-a-uuid' },
+            },
+          ],
+        },
+      ],
+    }
+    const result = validateDailyContent(doc)
+    expect(result.valid).toBe(false)
+  })
+
+  it('rechaza reference sin attrs.id', () => {
+    const doc = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'reference',
+              attrs: {},
+            },
+          ],
+        },
+      ],
+    }
+    const result = validateDailyContent(doc)
+    expect(result.valid).toBe(false)
+  })
+
+  it('rechaza reference con campo extra', () => {
+    const doc = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'reference',
+              attrs: { id: '01900000-0000-7000-8000-000000000101' },
+              content: [],
+            },
+          ],
+        },
+      ],
+    }
+    const result = validateDailyContent(doc)
+    expect(result.valid).toBe(false)
+  })
+
+  it('rechaza reference con marks', () => {
+    const doc = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'reference',
+              attrs: { id: '01900000-0000-7000-8000-000000000101' },
+              marks: [{ type: 'link', attrs: { href: 'https://x.test' } }],
+            },
+          ],
+        },
+      ],
+    }
+    const result = validateDailyContent(doc)
+    expect(result.valid).toBe(false)
+  })
+
+  it('rechaza más de MAX_REFERENCES referencias', () => {
+    const refs = Array.from({ length: MAX_REFERENCES + 1 }, () => ({
+      type: 'reference',
+      attrs: { id: '01900000-0000-7000-8000-000000000101' },
+    }))
+    const doc = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: refs,
+        },
+      ],
+    }
+    const result = validateDailyContent(doc)
+    expect(result.valid).toBe(false)
+    expect(result.error).toContain('reference')
+  })
+
+  it('acepta exactamente MAX_REFERENCES referencias', () => {
+    const refs = Array.from({ length: MAX_REFERENCES }, () => ({
+      type: 'reference',
+      attrs: { id: '01900000-0000-7000-8000-000000000101' },
+    }))
+    const doc = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: refs,
+        },
+      ],
+    }
+    const result = validateDailyContent(doc)
+    expect(result.valid).toBe(true)
+  })
+
+  it('mezcla text y reference en mismo paragraph', () => {
+    const doc = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'A' },
+            {
+              type: 'reference',
+              attrs: { id: '01900000-0000-7000-8000-000000000101' },
+            },
+            { type: 'text', text: 'B' },
+          ],
+        },
+      ],
+    }
+    const result = validateDailyContent(doc)
+    expect(result.valid).toBe(true)
+  })
+})
+
+describe('documentToPlainText — reference atom', () => {
+  it('referencia disponible aporta @Título', () => {
+    const doc: DailyContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'Ver ' },
+            {
+              type: 'reference',
+              attrs: { id: '01900000-0000-7000-8000-000000000101' },
+            },
+          ],
+        },
+      ],
+    }
+    const titles = new Map<string, string>()
+    titles.set('01900000-0000-7000-8000-000000000101', 'Spring Boot')
+    expect(documentToPlainText(doc, { referenceTitles: titles })).toBe('Ver @Spring Boot')
+  })
+
+  it('referencia no disponible aporta placeholder', () => {
+    const doc: DailyContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            {
+              type: 'reference',
+              attrs: { id: '01900000-0000-7000-8000-000000000101' },
+            },
+          ],
+        },
+      ],
+    }
+    expect(documentToPlainText(doc)).toBe('[Referencia no disponible]')
+  })
+
+  it('mezcla texto, referencia y separador', () => {
+    const doc: DailyContent = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'text', text: 'A' },
+            {
+              type: 'reference',
+              attrs: { id: '01900000-0000-7000-8000-000000000101' },
+            },
+          ],
+        },
+        { type: 'separator', attrs: { width: 50 } },
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'B' }],
+        },
+      ],
+    }
+    const titles = new Map<string, string>()
+    titles.set('01900000-0000-7000-8000-000000000101', 'Ref')
+    expect(documentToPlainText(doc, { referenceTitles: titles })).toBe('A@Ref\n\nB')
   })
 })

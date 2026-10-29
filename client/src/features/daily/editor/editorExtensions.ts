@@ -4,6 +4,7 @@ import Text from '@tiptap/extension-text'
 import { UndoRedo } from '@tiptap/extensions'
 import { Link } from './link'
 import { Separator } from './separator'
+import { Reference } from './reference'
 
 // Document extiende content a (paragraph|separator)+
 const DailyDocument = Document.extend({
@@ -17,6 +18,7 @@ export const editorExtensions = [
   Text,
   UndoRedo,
   Separator,
+  Reference,
   Link.configure({
     autolink: false,
     linkOnPaste: false,

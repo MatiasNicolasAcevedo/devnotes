@@ -7,6 +7,7 @@ export const MAX_TEXT_TOTAL = 100_000
 export const MAX_TEXT_PER_NODE = 100_000
 export const MAX_HREF_LENGTH = 2048
 export const MAX_HREF_TOTAL = 100_000
+export const MAX_REFERENCES = 100
 
 // ——— Schema Zod ———
 
@@ -25,10 +26,21 @@ const TextNodeSchema = z
   })
   .strict()
 
+const ReferenceAtomSchema = z
+  .object({
+    type: z.literal('reference'),
+    attrs: z.object({
+      id: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/),
+    }),
+  })
+  .strict()
+
+const InlineNodeSchema = z.union([TextNodeSchema, ReferenceAtomSchema])
+
 const ParagraphSchema = z
   .object({
     type: z.literal('paragraph'),
-    content: z.array(TextNodeSchema).optional(),
+    content: z.array(InlineNodeSchema).optional(),
   })
   .strict()
 
@@ -57,6 +69,8 @@ export type DailyContentBlock = z.infer<typeof DailyContentBlockSchema>
 export type ParagraphBlock = z.infer<typeof ParagraphSchema>
 export type SeparatorBlock = z.infer<typeof SeparatorSchema>
 export type TextNode = z.infer<typeof TextNodeSchema>
+export type ReferenceAtom = z.infer<typeof ReferenceAtomSchema>
+export type InlineNode = z.infer<typeof InlineNodeSchema>
 
 // ——— Factory ———
 
@@ -88,28 +102,36 @@ export function validateDailyContent(input: unknown): ValidationResult {
   let textNodes = 0
   let textTotal = 0
   let hrefTotal = 0
+  let referenceCount = 0
 
   for (const block of doc.content) {
     if (block.type === 'paragraph') {
       const inlines = block.content ?? []
       for (const node of inlines) {
         textNodes++
-        if (node.text) {
-          textTotal += node.text.length
-          if (textTotal > MAX_TEXT_TOTAL) {
-            return {
-              valid: false,
-              error: 'Text content exceeds maximum length',
-            }
+        if (node.type === 'reference') {
+          referenceCount++
+          if (referenceCount > MAX_REFERENCES) {
+            return { valid: false, error: 'Too many reference atoms' }
           }
-        }
-        if (node.marks) {
-          for (const mark of node.marks) {
-            hrefTotal += mark.attrs.href.length
-            if (hrefTotal > MAX_HREF_TOTAL) {
+        } else {
+          if (node.text) {
+            textTotal += node.text.length
+            if (textTotal > MAX_TEXT_TOTAL) {
               return {
                 valid: false,
-                error: 'Link URLs exceed maximum total length',
+                error: 'Text content exceeds maximum length',
+              }
+            }
+          }
+          if (node.marks) {
+            for (const mark of node.marks) {
+              hrefTotal += mark.attrs.href.length
+              if (hrefTotal > MAX_HREF_TOTAL) {
+                return {
+                  valid: false,
+                  error: 'Link URLs exceed maximum total length',
+                }
               }
             }
           }
@@ -122,12 +144,12 @@ export function validateDailyContent(input: unknown): ValidationResult {
     return { valid: false, error: 'Too many text nodes' }
   }
 
-  // 2. Validación de href (HTTP/HTTPS, host, sin credenciales)
+  // 2. Validación de href (HTTP/HTTPS, host, sin credenciales) — solo text nodes
   for (const block of doc.content) {
     if (block.type === 'paragraph') {
       const inlines = block.content ?? []
       for (const node of inlines) {
-        if (node.marks) {
+        if (node.type === 'text' && node.marks) {
           for (const mark of node.marks) {
             const hrefErr = validateHref(mark.attrs.href)
             if (hrefErr) return { valid: false, error: hrefErr }
@@ -137,12 +159,16 @@ export function validateDailyContent(input: unknown): ValidationResult {
     }
   }
 
-  // 3. Text no debe contener CR/LF
+  // 3. Text no debe contener CR/LF — solo text nodes
   for (const block of doc.content) {
     if (block.type === 'paragraph') {
       const inlines = block.content ?? []
       for (const node of inlines) {
-        if (node.text && (node.text.includes('\r') || node.text.includes('\n'))) {
+        if (
+          node.type === 'text' &&
+          node.text &&
+          (node.text.includes('\r') || node.text.includes('\n'))
+        ) {
           return { valid: false, error: 'Text must not contain line breaks' }
         }
       }
@@ -207,14 +233,30 @@ export function plainTextToDocument(text: string): DailyContent {
  * Extrae texto plano del documento, conservando líneas vacías.
  * Cada bloque (paragraph o separator) produce una línea.
  * Los separadores se convierten en líneas vacías.
+ * Las referencias disponibles aportan @Título; las no disponibles, [Referencia no disponible].
  */
-export function documentToPlainText(doc: DailyContent): string {
+export function documentToPlainText(
+  doc: DailyContent,
+  options?: {
+    /** Mapa de ID → título resuelto. Si falta, se usa el placeholder de no disponible. */
+    referenceTitles?: Map<string, string>
+  },
+): string {
   const lines: string[] = []
+  const titles = options?.referenceTitles ?? new Map()
 
   for (const block of doc.content) {
     if (block.type === 'paragraph') {
       const inlines = block.content ?? []
-      const text = inlines.map((n) => n.text ?? '').join('')
+      const text = inlines
+        .map((n) => {
+          if (n.type === 'reference') {
+            const title = titles.get(n.attrs.id)
+            return title ? `@${title}` : '[Referencia no disponible]'
+          }
+          return n.text ?? ''
+        })
+        .join('')
       lines.push(text)
     } else {
       // separator → línea vacía

@@ -40,6 +40,17 @@ type Scope = Pick<RequestOptions, 'signal' | 'sessionIsCurrent'>
 export function fetchReferenceItems(page: number, size = 20, scope: Scope = {}) {
   return http.request(`${REFERENCE_PATH}?page=${page}&size=${size}`, referencePageSchema, scope)
 }
+
+/** Busca referencias por título (parámetro q). Máximo 120 caracteres tras trim. */
+export function searchReferenceItems(query: string, page: number, size = 20, scope: Scope = {}) {
+  const trimmed = query.trim()
+  const qParam = trimmed ? `&q=${encodeURIComponent(trimmed)}` : ''
+  return http.request(
+    `${REFERENCE_PATH}?page=${page}&size=${size}${qParam}`,
+    referencePageSchema,
+    scope,
+  )
+}
 export function fetchReferenceItem(id: string, scope: Scope = {}) {
   return http.request(`${REFERENCE_PATH}/${encodeURIComponent(id)}`, referenceItemSchema, scope)
 }
