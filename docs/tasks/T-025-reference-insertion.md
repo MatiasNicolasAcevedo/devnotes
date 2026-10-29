@@ -1,6 +1,6 @@
 ---
 id: T-025
-status: in_progress
+status: mergeable
 priority: P1
 size: M
 milestone: M1
@@ -37,9 +37,11 @@ Gate desde raíz Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=
 
 ## Checkpoint vigente
 
-Implementación en progreso: nodo Tiptap Reference, schema Zod con ReferenceAtomSchema, validación con conteo de referencias, ReferencePicker con búsqueda @, integración en DailyEditor, documentToPlainText con referencias. Typecheck OK. Pendiente: pruebas dirigidas y gate de aceptación.
-
-HEAD e049e3c (origin/main), rama codex/t-025-reference-insertion.
+Revisión independiente en curso. Junie reviewer, Qwen3.6-27B-FP8. HEAD 8195732, base main e049e3c.
+Bloqueante B-1: T-024 con `status: in_review` en la rama del PR (debería ser `done` tras merge e049e3c). docs-check rechaza dos tareas en vuelo. Corrección documental aplicada en este commit.
+Observación O-1: ReferenceView muestra "Referencia no disponible" para 404 y errores de red/403 indistintamente. S-106 exige "No se pudo cargar" con reintento para red/403. No bloquea el flujo principal; corregible en T-026 (vista previa completa).
+Observación O-2: `searchReferenceItems` sin prueba directa en api.test.ts. Función nueva no cubierta por tests unitarios de API.
+Observación O-3: `anchorPosition` declarado en ReferencePickerProps pero no usado en el componente.
 
 ## Cierre y siguiente tarea
 

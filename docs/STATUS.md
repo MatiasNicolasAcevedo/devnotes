@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-025](tasks/T-025-reference-insertion.md) (in_progress) |
-| Estado | in_progress |
-| Acción actual | Implementar búsqueda @, inserción y resolución de referencias en cliente. |
+| Tarea y contrato | [T-025](tasks/T-025-reference-insertion.md) (mergeable) |
+| Estado | mergeable |
+| Acción actual | Revisión independiente completada. B-1 corregido (T-024 → done). CI pendiente sobre HEAD final. |
 | Rama / PR | codex/t-025-reference-insertion / [#28](https://github.com/MatiasNicolasAcevedo/devnotes/pull/28) |
 
 T-024: PR27 MERGED, squash `e049e3c2aed6428c2c97153ba1cdee13a640844c`, confirmado en GitHub el 2026-10-28.
@@ -40,5 +40,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie reviewer, en sesión nueva: T-025 implementación publicada (PR #28, HEAD 1ac3669, base main e049e3c). Revisión independiente antes de merge.
+Junie reviewer, en sesión nueva: T-025 revisión completada (PR #28). B-1 corregido (T-024 → done). Esperar CI verde sobre HEAD final y proceder con merge squash si verify-required SUCCESS.
 ```

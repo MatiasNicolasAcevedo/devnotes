@@ -1,6 +1,6 @@
 ---
 id: T-024
-status: in_review
+status: done
 priority: P1
 size: M
 milestone: M1
@@ -9,7 +9,7 @@ depends_on: [T-023]
 branch: codex/t-024-reference-document
 role: implementer
 executor: junie
-pr: null
+pr: 27
 ---
 # T-024 · Contrato persistente de vinculación
 
@@ -37,7 +37,7 @@ Gate desde raíz Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=
 
 ## Checkpoint vigente
 
-Validación de átomo reference implementada en DailyContent.java: estructura estricta `{"type":"reference","attrs":{"id":"UUID"}}`, UUID canónico minúsculo, máximo 100 por documento, cuenta para los 4000 nodos. Tests unitarios 83/83 OK (20 nuevos), verify completo 161/161 OK con PostgreSQL/Failsafe. Pendiente: publicar código, abrir PR y revisión independiente.
+Conciliada como MERGED (e049e3c). Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD 01fbb63, base main b0ebaae. CI verify-required SUCCESS (run 40752153627), docs-check OK. 27 tests nuevos: 20 unitarios (DailyContentTest) + 5 IT (DailyNoteApiIT) + 2 IT (DailyVersionApiIT). Squash merge e049e3c, 2026-10-28.
 
 ### Correcciones significativas
 
