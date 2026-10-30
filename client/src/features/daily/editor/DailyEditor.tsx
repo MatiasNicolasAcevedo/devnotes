@@ -58,6 +58,8 @@ export function DailyEditor({
   const [refQuery, setRefQuery] = useState('')
   const [refAnchor, setRefAnchor] = useState<{ from: number; to: number } | null>(null)
   const imeComposingRef = useRef(false)
+  const refPickerOpenRef = useRef(refPickerOpen)
+  const refAnchorRef = useRef(refAnchor)
 
   useEffect(() => {
     onChangeRef.current = onChange
@@ -331,9 +333,6 @@ export function DailyEditor({
       editor.view.dom.removeEventListener('compositionend', handleCompositionEnd)
     }
   }, [editor, openLinkDialog, refPickerOpen, checkReferenceTrigger])
-
-  const refPickerOpenRef = useRef(refPickerOpen)
-  const refAnchorRef = useRef(refAnchor)
 
   useEffect(() => {
     refPickerOpenRef.current = refPickerOpen
