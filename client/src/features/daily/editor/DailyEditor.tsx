@@ -124,27 +124,30 @@ export function DailyEditor({
         onChangeRef.current?.(result.data)
       }
       // Detectar @ tras cada actualización del editor
-      if (!refPickerOpenRef.current) {
-        const { selection } = ed.state
-        if (selection.empty && !imeComposingRef.current) {
-          const { $from } = selection
-          const paragraph = $from.parent
-          if (paragraph.type.name === 'paragraph') {
-            const posInPara = $from.parentOffset
-            if (posInPara >= 1 && !ed.isActive('link')) {
-              const textBefore = paragraph.textBetween(0, posInPara, '', '')
-              const atIndex = textBefore.lastIndexOf('@')
-              if (atIndex !== -1 && (atIndex === 0 || textBefore[atIndex - 1] === ' ')) {
-                const queryAfter = textBefore.slice(atIndex + 1)
-                const atAbsPos = $from.start() + atIndex
-                const queryEndPos = $from.pos
-                setRefQuery(queryAfter)
-                setRefAnchor({ from: atAbsPos, to: queryEndPos })
-                setRefPickerOpen(true)
-              }
-            }
-          }
-        }
+      const { selection } = ed.state
+      if (!selection.empty || imeComposingRef.current) return
+      const { $from } = selection
+      const paragraph = $from.parent
+      if (paragraph.type.name !== 'paragraph') return
+      const posInPara = $from.parentOffset
+      if (posInPara < 1 || ed.isActive('link')) return
+      const textBefore = paragraph.textBetween(0, posInPara, '', '')
+      const atIndex = textBefore.lastIndexOf('@')
+      if (atIndex === -1 || (atIndex > 0 && textBefore[atIndex - 1] !== ' ')) return
+
+      const queryAfter = textBefore.slice(atIndex + 1)
+      const atAbsPos = $from.start() + atIndex
+      const queryEndPos = $from.pos
+
+      if (refPickerOpenRef.current) {
+        // Picker ya abierto: actualizar consulta y ancla
+        setRefQuery(queryAfter)
+        setRefAnchor({ from: atAbsPos, to: queryEndPos })
+      } else {
+        // Abrir picker
+        setRefQuery(queryAfter)
+        setRefAnchor({ from: atAbsPos, to: queryEndPos })
+        setRefPickerOpen(true)
       }
     },
   })
