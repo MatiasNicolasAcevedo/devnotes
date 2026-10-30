@@ -115,11 +115,34 @@ export function DailyEditor({
       },
     },
     editable: !readOnly,
-    onUpdate: ({ editor }) => {
-      const json = editor.getJSON()
+    onUpdate: ({ editor: ed }) => {
+      const json = ed.getJSON()
       const result = validateDailyContent(json)
       if (result.valid && result.data) {
         onChangeRef.current?.(result.data)
+      }
+      // Detectar @ tras cada actualización del editor
+      if (!refPickerOpenRef.current) {
+        const { selection } = ed.state
+        if (selection.empty && !imeComposingRef.current) {
+          const { $from } = selection
+          const paragraph = $from.parent
+          if (paragraph.type.name === 'paragraph') {
+            const posInPara = $from.parentOffset
+            if (posInPara >= 1 && !ed.isActive('link')) {
+              const textBefore = paragraph.textBetween(0, posInPara, '', '')
+              const atIndex = textBefore.lastIndexOf('@')
+              if (atIndex !== -1 && (atIndex === 0 || textBefore[atIndex - 1] === ' ')) {
+                const queryAfter = textBefore.slice(atIndex + 1)
+                const atAbsPos = $from.start() + atIndex
+                const queryEndPos = $from.pos
+                setRefQuery(queryAfter)
+                setRefAnchor({ from: atAbsPos, to: queryEndPos })
+                setRefPickerOpen(true)
+              }
+            }
+          }
+        }
       }
     },
   })
@@ -317,21 +340,17 @@ export function DailyEditor({
     refAnchorRef.current = refAnchor
   })
 
-  // Detectar @ tras cada actualización del editor
+  // Cerrar picker cuando hay una selección activa (no se usa checkReferenceTrigger aquí
+  // porque la detección de @ se hace en onUpdate del editor)
   useEffect(() => {
-    if (!editor || refPickerOpenRef.current) return
+    if (!editor) return
     const { selection } = editor.state
-    if (!selection.empty) {
-      // Selección activa: cerrar picker si estaba abierto
-      if (refAnchorRef.current) {
-        setRefPickerOpen(false)
-        setRefQuery('')
-        setRefAnchor(null)
-      }
-      return
+    if (!selection.empty && refPickerOpenRef.current && refAnchorRef.current) {
+      setRefPickerOpen(false)
+      setRefQuery('')
+      setRefAnchor(null)
     }
-    checkReferenceTrigger()
-  }, [editor, checkReferenceTrigger])
+  }, [editor])
 
   if (!editor) {
     return null

@@ -40,7 +40,7 @@ test('reference preview: insert, save, edit original, delete, and preview access
 
   // Escribir @ para abrir picker, esperar a que aparezca, luego escribir consulta con delay
   await editor.click();
-  await page.keyboard.press('At');
+  await page.keyboard.type('@');
   await expect(page.locator('[data-reference-picker]')).toBeVisible({ timeout: 5_000 });
 
   // Escribir la consulta con delay para respetar el debounce de 250 ms del picker
