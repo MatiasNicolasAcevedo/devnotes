@@ -38,11 +38,13 @@ test('reference preview: insert, save, edit original, delete, and preview access
   const editor = page.getByRole('textbox', { name: 'Editor de nota diaria' });
   await expect(editor).toHaveAttribute('contenteditable', 'true');
 
-  // Escribir @ para abrir picker y buscar la referencia
+  // Escribir @ para abrir picker, esperar, luego escribir consulta con delay
   await editor.click();
-  await page.keyboard.type('@Referencia');
+  await page.keyboard.type('@');
+  await expect(page.locator('[data-reference-picker]')).toBeVisible({ timeout: 5_000 });
 
-  // Esperar resultados del picker
+  // Escribir la consulta con delay para respetar el debounce de 250 ms del picker
+  await page.keyboard.type('Referencia', { delay: 50 });
   await expect(page.getByText('Referencia E2E')).toBeVisible({ timeout: 10_000 });
   await page.getByText('Referencia E2E').click();
 
