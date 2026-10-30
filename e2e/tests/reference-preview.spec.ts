@@ -38,9 +38,9 @@ test('reference preview: insert, save, edit original, delete, and preview access
   const editor = page.getByRole('textbox', { name: 'Editor de nota diaria' });
   await expect(editor).toHaveAttribute('contenteditable', 'true');
 
-  // Escribir @ para abrir picker, esperar, luego escribir consulta con delay
+  // Escribir @ para abrir picker, esperar a que aparezca, luego escribir consulta con delay
   await editor.click();
-  await page.keyboard.type('@');
+  await page.keyboard.press('At');
   await expect(page.locator('[data-reference-picker]')).toBeVisible({ timeout: 5_000 });
 
   // Escribir la consulta con delay para respetar el debounce de 250 ms del picker
