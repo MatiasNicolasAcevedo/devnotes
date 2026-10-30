@@ -46,7 +46,8 @@ test('reference preview: insert, save, edit original, delete, and preview access
   // Escribir la consulta con delay para respetar el debounce de 250 ms del picker
   await page.keyboard.type('Referencia', { delay: 50 });
   await expect(page.getByText('Referencia E2E')).toBeVisible({ timeout: 10_000 });
-  await page.getByText('Referencia E2E').click();
+  // Click en el botón del resultado del picker
+  await page.locator('[data-reference-picker] [role="button"]').first().click();
 
   // El átomo debe aparecer con @Título
   await expect(page.getByText('@Referencia E2E')).toBeVisible({ timeout: 5_000 });
