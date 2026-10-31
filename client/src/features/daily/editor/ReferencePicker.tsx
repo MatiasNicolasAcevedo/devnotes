@@ -149,6 +149,7 @@ export function ReferencePicker({ query, onSelect, onClose }: ReferencePickerPro
   return (
     <Paper
       elevation={2}
+      data-reference-picker
       sx={{
         position: 'absolute',
         zIndex: 2000,

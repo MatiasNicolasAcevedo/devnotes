@@ -1,6 +1,6 @@
 ---
 id: T-026
-status: draft
+status: mergeable
 priority: P1
 size: M
 milestone: M1
@@ -9,7 +9,7 @@ depends_on: [T-025]
 branch: codex/t-026-reference-preview
 role: implementer
 executor: junie
-pr: null
+pr: 29
 ---
 # T-026 · Vista previa accesible y recorrido completo
 
@@ -37,7 +37,23 @@ Gate desde raíz Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=
 
 ## Checkpoint vigente
 
-Contrato de frontera, sin implementación ni pruebas. Depende de T-025 MERGED. Decisión del dueño y límites en S-106.
+Revisión independiente APROBADA sin bloqueantes (HEAD 701f10e, base main 9a14044). Junie reviewer, Qwen3.6-27B-FP8. CI verify-required SUCCESS, docs-check OK. FULL E2E: docs OK, server 161/161 OK, client 364/364 OK, 1 fallo E2E preexistente (canary negativo del saneador). Pendiente: merge squash de PR #29.
+
+**Bloqueante B-2:** `docs/E2E-ITERATION.md` línea 44: enlace a `AGENTS.md#pruebas-y-entrega` resuelve a `docs/AGENTS.md` que no existe. Debe ser `../AGENTS.md`. docs-check rechaza el enlace roto, causando 10 fallos en CI.
+
+**Bloqueante B-3:** `docs/STATUS.md` tabla dice `Estado | in_progress |` pero T-026 frontmatter dice `changes_requested`. docs-check línea 195 rechaza la discrepancia.
+
+**Correcciones significativas:**
+| # | Problema | Causa | Arreglo | SHA |
+|---|---|---|---|---|
+| 1 | E2E picker no busca | `type('@Referencia')` sin separar `@` de consulta; debounce 250 ms no dispara | Separar `@`, esperar picker, `type('Referencia', {delay:100})` | d7e075d |
+| 2 | `writeWork` limpia editor | `editor.fill('')` borra átomo `@Referencia E2E` | `waitForResponse` + `waitForTimeout(1000)` para auto-save | d7e075d |
+
+**Observación O-1:** `ReferenceView.tsx` elimina el parámetro `editor` de `ReactNodeViewProps` (no se usaba). Cambio limpio.
+
+**Observación O-2:** `ReferencePreview.tsx` usa `e.preventDefault()` en `handleAnchorTouchStart` (línea 100). Aceptable en átomo inline pequeño.
+
+**Observación O-3:** `useReferencePreview` usa lift-state-down con callback. Funcional, un render extra.
 
 ## Cierre y siguiente tarea
 

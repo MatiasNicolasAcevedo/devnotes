@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-025](tasks/T-025-reference-insertion.md) (mergeable) |
+| Tarea y contrato | [T-026](tasks/T-026-reference-preview.md) (mergeable) |
 | Estado | mergeable |
-| Acción actual | Revisión independiente completada. B-1 corregido (T-024 → done). CI pendiente sobre HEAD final. |
-| Rama / PR | codex/t-025-reference-insertion / [#28](https://github.com/MatiasNicolasAcevedo/devnotes/pull/28) |
+| Acción actual | Revisión independiente APROBADA sin bloqueantes (HEAD 701f10e, base main 9a14044). CI verify-required SUCCESS, docs-check OK. FULL E2E: docs OK, server 161/161 OK, client 364/364 OK, 1 fallo E2E preexistente (canary negativo del saneador). Pendiente: merge squash de PR #29. |
+| Rama / PR | codex/t-026-reference-preview / [#29](https://github.com/MatiasNicolasAcevedo/devnotes/pull/29) |
+
+T-025: PR28 MERGED, squash `9a1404490779e0462e326aefa015e2c4596a0e91`, confirmado en GitHub el 2026-10-29.
 
 T-024: PR27 MERGED, squash `e049e3c2aed6428c2c97153ba1cdee13a640844c`, confirmado en GitHub el 2026-10-28.
 
@@ -40,5 +42,11 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie reviewer, en sesión nueva: T-025 revisión completada (PR #28). B-1 corregido (T-024 → done). Esperar CI verde sobre HEAD final y proceder con merge squash si verify-required SUCCESS.
+Junie reviewer, en sesión nueva: T-026 revisión independiente del PR #29. Corrección documental 701f10e publicada — bloqueantes B-2 y B-3 resueltos. CI verify-required SUCCESS, docs-check OK. FULL E2E: docs OK, server 161/161 OK, client 364/364 OK, 1 fallo E2E preexistente (canary negativo del saneador).
+
+Contrato: [T-026](docs/tasks/T-026-reference-preview.md) — vista previa accesible con hover, teclado y tacto.
+
+Leer antes: S-106, client/AGENTS.md, TESTING.md, AGENTS raíz, STATUS y protocolo reviewer.
+
+Revisar HEAD 701f10e contra base main 9a14044. Verificar que los enlaces corregidos en E2E-ITERATION.md resuelven correctamente, que el código de T-026 cumple S-003/S-106, y que pruebas y cobertura son adecuadas. Si se aprueba sin bloqueantes, el siguiente paso es merge squash.
 ```
