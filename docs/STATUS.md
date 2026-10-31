@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-026](tasks/T-026-reference-preview.md) (changes_requested) |
-| Estado | in_progress |
-| Acción actual | Corrección B-1 publicada (a897987): picker timing, writeWork, force click. Pendiente: revalidar E2E completa. |
+| Estado | changes_requested |
+| Acción actual | Revisión independiente: CAMBIOS REQUERIDOS. Bloqueantes B-2 (enlace roto E2E-ITERATION.md) y B-3 (STATUS.md inconsistente). Código aprobado. Pendiente: corrección documental y revalidar CI + FULL E2E. |
 | Rama / PR | codex/t-026-reference-preview / [#29](https://github.com/MatiasNicolasAcevedo/devnotes/pull/29) |
 
 T-025: PR28 MERGED, squash `9a1404490779e0462e326aefa015e2c4596a0e91`, confirmado en GitHub el 2026-10-29.
@@ -42,9 +42,9 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie reviewer, en sesión nueva: T-026 implementación publicada (PR #29). Revisión independiente de HEAD fc9eb59 contra base main 9a14044. Verificar diff, ejecutar CI verify-required y FULL E2E con stack real antes de merge.
+Junie implementer, en sesión nueva: T-026 corrección documental (PR #29). Bloqueantes B-2 y B-3 identificados por reviewer. Corregir enlace roto en E2E-ITERATION.md (AGENTS.md → ../AGENTS.md) y verificar docs-check + CI verde. Luego revalidar FULL E2E con stack real.
 
 Contrato: [T-026](docs/tasks/T-026-reference-preview.md) — vista previa accesible con hover, teclado y tacto.
 
-Leer antes: S-106, client/AGENTS.md, TESTING.md, AGENTS raíz, STATUS y protocolo reviewer.
+Leer antes: S-106, client/AGENTS.md, TESTING.md, AGENTS raíz, STATUS y protocolo implementer.
 ```

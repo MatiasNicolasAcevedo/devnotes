@@ -37,9 +37,11 @@ Gate desde raíz Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=
 
 ## Checkpoint vigente
 
-Corrección B-1 publicada d7e075d. Junie implementer, Qwen3.6-27B-FP8. HEAD d7e075d, base main 9a14044.
+Revisión independiente completada — CAMBIOS REQUERIDOS. Junie reviewer, Qwen3.6-27B-FP8. HEAD 37c9cc5, base main 9a14044. CI verify-required FAIL (10/98 tests). Bloqueantes B-2 (enlace roto E2E-ITERATION.md) y B-3 (STATUS.md inconsistente). Código aprobado sin bloqueantes; O-1, O-2, O-3 son observaciones no bloqueantes. Pendiente: corrección documental y revalidar CI.
 
-**Bloqueante B-1 (en corrección):** E2E `reference-preview.spec.ts` fallaba por dos causas: (1) `page.keyboard.type('@Referencia')` enviaba todos los caracteres de una vez; el picker con debounce 250 ms no disparaba la búsqueda a tiempo. (2) `writeWork(page, today, '')` llamaba a `editor.fill('')` que limpiaba el átomo `@Referencia E2E` antes de guardar. Corrección aplicada: escribir `@` primero, esperar a que el picker se abra (`[data-reference-picker]` visible), luego escribir la consulta con `delay: 100` entre caracteres, esperar resultados con timeout 10 s, seleccionar con `Enter`. Reemplazar `writeWork` por `waitForResponse` + `waitForTimeout(1000)` para el debounce automático de 700 ms. Pendiente: revalidar con E2E completa.
+**Bloqueante B-2:** `docs/E2E-ITERATION.md` línea 44: enlace a `AGENTS.md#pruebas-y-entrega` resuelve a `docs/AGENTS.md` que no existe. Debe ser `../AGENTS.md`. docs-check rechaza el enlace roto, causando 10 fallos en CI.
+
+**Bloqueante B-3:** `docs/STATUS.md` tabla dice `Estado | in_progress |` pero T-026 frontmatter dice `changes_requested`. docs-check línea 195 rechaza la discrepancia.
 
 **Correcciones significativas:**
 | # | Problema | Causa | Arreglo | SHA |
@@ -49,9 +51,9 @@ Corrección B-1 publicada d7e075d. Junie implementer, Qwen3.6-27B-FP8. HEAD d7e0
 
 **Observación O-1:** `ReferenceView.tsx` elimina el parámetro `editor` de `ReactNodeViewProps` (no se usaba). Cambio limpio.
 
-**Observación O-2:** `ReferencePreview.tsx` usa `e.preventDefault()` en `handleAnchorTouchStart` (línea 100). Esto puede interferir con el scroll táctil en móviles si el usuario toca el átomo sin intención de abrir la vista previa. Considerar verificar si el toque es único (no parte de un scroll) antes de prevenir el comportamiento predeterminado.
+**Observación O-2:** `ReferencePreview.tsx` usa `e.preventDefault()` en `handleAnchorTouchStart` (línea 100). Aceptable en átomo inline pequeño.
 
-**Observación O-3:** `ReferencePreview.tsx` declara `anchorProps` con `useMemo` y los pasa vía `useEffect` + callback (`onAnchorProps`). Este patrón de lift-state-down con callback es funcional pero añade un render extra. Evaluar si un `ref` para `setAnchorProps` simplificaría el flujo sin cambiar el comportamiento observable.
+**Observación O-3:** `useReferencePreview` usa lift-state-down con callback. Funcional, un render extra.
 
 ## Cierre y siguiente tarea
 
