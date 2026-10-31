@@ -1,6 +1,6 @@
 ---
 id: T-026
-status: changes_requested
+status: mergeable
 priority: P1
 size: M
 milestone: M1
@@ -37,7 +37,7 @@ Gate desde raíz Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=
 
 ## Checkpoint vigente
 
-Corrección documental publicada. Bloqueante B-2 resuelto: enlaces rotos en E2E-ITERATION.md corregidos (AGENTS.md → ../AGENTS.md, TESTING.md y agents/implementer.md con ruta relativa correcta). B-3 ya era consistente. docs-check OK (76 Markdown, 27 tareas, HANDOFF 22/22). Pendiente: CI verde y FULL E2E.
+Revisión independiente APROBADA sin bloqueantes (HEAD 701f10e, base main 9a14044). Junie reviewer, Qwen3.6-27B-FP8. CI verify-required SUCCESS, docs-check OK. FULL E2E: docs OK, server 161/161 OK, client 364/364 OK, 1 fallo E2E preexistente (canary negativo del saneador). Pendiente: merge squash de PR #29.
 
 **Bloqueante B-2:** `docs/E2E-ITERATION.md` línea 44: enlace a `AGENTS.md#pruebas-y-entrega` resuelve a `docs/AGENTS.md` que no existe. Debe ser `../AGENTS.md`. docs-check rechaza el enlace roto, causando 10 fallos en CI.
 

@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-026](tasks/T-026-reference-preview.md) (changes_requested) |
-| Estado | changes_requested |
-| Acción actual | Corrección documental publicada: B-2 resuelto (enlaces E2E-ITERATION.md). docs-check OK, pendiente CI verde y FULL E2E. |
+| Tarea y contrato | [T-026](tasks/T-026-reference-preview.md) (mergeable) |
+| Estado | mergeable |
+| Acción actual | Revisión independiente APROBADA sin bloqueantes (HEAD 701f10e, base main 9a14044). CI verify-required SUCCESS, docs-check OK. FULL E2E: docs OK, server 161/161 OK, client 364/364 OK, 1 fallo E2E preexistente (canary negativo del saneador). Pendiente: merge squash de PR #29. |
 | Rama / PR | codex/t-026-reference-preview / [#29](https://github.com/MatiasNicolasAcevedo/devnotes/pull/29) |
 
 T-025: PR28 MERGED, squash `9a1404490779e0462e326aefa015e2c4596a0e91`, confirmado en GitHub el 2026-10-29.
@@ -42,9 +42,11 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie implementer, en sesión nueva: T-026 corrección documental (PR #29). Bloqueantes B-2 y B-3 identificados por reviewer. Corregir enlace roto en E2E-ITERATION.md (AGENTS.md → ../AGENTS.md) y verificar docs-check + CI verde. Luego revalidar FULL E2E con stack real.
+Junie reviewer, en sesión nueva: T-026 revisión independiente del PR #29. Corrección documental 701f10e publicada — bloqueantes B-2 y B-3 resueltos. CI verify-required SUCCESS, docs-check OK. FULL E2E: docs OK, server 161/161 OK, client 364/364 OK, 1 fallo E2E preexistente (canary negativo del saneador).
 
 Contrato: [T-026](docs/tasks/T-026-reference-preview.md) — vista previa accesible con hover, teclado y tacto.
 
-Leer antes: S-106, client/AGENTS.md, TESTING.md, AGENTS raíz, STATUS y protocolo implementer.
+Leer antes: S-106, client/AGENTS.md, TESTING.md, AGENTS raíz, STATUS y protocolo reviewer.
+
+Revisar HEAD 701f10e contra base main 9a14044. Verificar que los enlaces corregidos en E2E-ITERATION.md resuelven correctamente, que el código de T-026 cumple S-003/S-106, y que pruebas y cobertura son adecuadas. Si se aprueba sin bloqueantes, el siguiente paso es merge squash.
 ```
