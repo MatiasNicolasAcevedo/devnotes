@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-027](tasks/T-027-voice-storage.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | in_progress |
-| Acción actual | Implementando almacenamiento de notas de voz. Backend clean verify 190/190 OK. |
-| Rama / PR | codex/t-027-voice-storage · PR pendiente |
+| Estado | in_review |
+| Acción actual | PR31 publicado, esperando revisión independiente. Backend clean verify 190/190 OK. |
+| Rama / PR | codex/t-027-voice-storage · [PR31](https://github.com/MatiasNicolasAcevedo/devnotes/pull/31) |
 
 T-017: PR30 MERGED, squash `6e7ebd01851ba1a81c856147d7895449ea97a7fe`, confirmado en GitHub el 2026-10-31.
 

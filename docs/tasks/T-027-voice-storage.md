@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-027-voice-storage
-pr: null (pending)
+pr: 31
 depends_on: [T-017]
 ---
 # T-027 · Persistencia privada y CAS de notas de voz
@@ -52,7 +52,7 @@ PostgreSQL 18 real/Testcontainers: dos notas mismo dueño/día, dos dueños sin 
 
 ## Checkpoint vigente
 
-2026-10-31: implementación en progreso. Rama codex/t-027-voice-storage, base main 6e7ebd0. VoiceText (domain), VoiceNote (entidad), VoiceNoteRepository (CAS), VoiceNoteService (CRUD+paginación), V5 migración. VoiceTextTest 16/16 OK, VoiceNoteServiceIT 24/24 OK. clean verify 190/190 OK, Spotless OK, JaCoCo OK. Modelo Qwen3.6-27B-FP8, Junie implementer. Pendiente: commit, push, PR y revisión independiente.
+2026-10-31: PR31 publicado (6de2a75). Base main 6e7ebd0. clean verify 190/190 OK, Spotless OK, JaCoCo OK. Modelo Qwen3.6-27B-FP8, Junie implementer. Pendiente: revisión independiente y gate APPLICATION completo.
 
 ## Correcciones significativas
 
