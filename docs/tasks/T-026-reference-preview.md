@@ -37,7 +37,7 @@ Gate desde raíz Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=
 
 ## Checkpoint vigente
 
-Revisión independiente completada — CAMBIOS REQUERIDOS. Junie reviewer, Qwen3.6-27B-FP8. HEAD 37c9cc5, base main 9a14044. CI verify-required FAIL (10/98 tests). Bloqueantes B-2 (enlace roto E2E-ITERATION.md) y B-3 (STATUS.md inconsistente). Código aprobado sin bloqueantes; O-1, O-2, O-3 son observaciones no bloqueantes. Pendiente: corrección documental y revalidar CI.
+Corrección documental publicada. Bloqueante B-2 resuelto: enlaces rotos en E2E-ITERATION.md corregidos (AGENTS.md → ../AGENTS.md, TESTING.md y agents/implementer.md con ruta relativa correcta). B-3 ya era consistente. docs-check OK (76 Markdown, 27 tareas, HANDOFF 22/22). Pendiente: CI verde y FULL E2E.
 
 **Bloqueante B-2:** `docs/E2E-ITERATION.md` línea 44: enlace a `AGENTS.md#pruebas-y-entrega` resuelve a `docs/AGENTS.md` que no existe. Debe ser `../AGENTS.md`. docs-check rechaza el enlace roto, causando 10 fallos en CI.
 

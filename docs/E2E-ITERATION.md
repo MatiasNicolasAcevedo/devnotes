@@ -40,6 +40,6 @@ node scripts/run-e2e.mjs compose --env-file scripts/fixtures/e2e.env.example -p 
 
 ### Referencia
 
-- [TESTING.md — Tiempos de E2E](docs/TESTING.md#tiempos-de-e2e---advertencia-critica)
-- [AGENTS.md — Pruebas y entrega](AGENTS.md#pruebas-y-entrega)
-- [Implementer protocol — E2E](docs/agents/implementer.md#4)
+- [TESTING.md — Tiempos de E2E](TESTING.md#tiempos-de-e2e---advertencia-critica)
+- [AGENTS.md — Pruebas y entrega](../AGENTS.md#pruebas-y-entrega)
+- [Implementer protocol — E2E](agents/implementer.md#4)

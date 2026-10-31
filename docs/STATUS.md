@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-026](tasks/T-026-reference-preview.md) (changes_requested) |
 | Estado | changes_requested |
-| Acción actual | Revisión independiente: CAMBIOS REQUERIDOS. Bloqueantes B-2 (enlace roto E2E-ITERATION.md) y B-3 (STATUS.md inconsistente). Código aprobado. Pendiente: corrección documental y revalidar CI + FULL E2E. |
+| Acción actual | Corrección documental publicada: B-2 resuelto (enlaces E2E-ITERATION.md). docs-check OK, pendiente CI verde y FULL E2E. |
 | Rama / PR | codex/t-026-reference-preview / [#29](https://github.com/MatiasNicolasAcevedo/devnotes/pull/29) |
 
 T-025: PR28 MERGED, squash `9a1404490779e0462e326aefa015e2c4596a0e91`, confirmado en GitHub el 2026-10-29.
