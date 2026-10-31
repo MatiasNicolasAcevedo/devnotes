@@ -1,6 +1,6 @@
 ---
 id: T-027
-status: draft
+status: in_progress
 priority: P1
 size: M
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-027-voice-storage
-pr: null
+pr: null (pending)
 depends_on: [T-017]
 ---
 # T-027 · Persistencia privada y CAS de notas de voz
@@ -52,7 +52,7 @@ PostgreSQL 18 real/Testcontainers: dos notas mismo dueño/día, dos dueños sin 
 
 ## Checkpoint vigente
 
-2026-10-31: contrato de frontera preparado en T-017 sobre main 0d976dc2187cb2a07061c3db48130c334b1e471b. Sin implementación, PR, migración aplicada ni tests de esta tarea ejecutados. Rol/modelo/herramienta/esfuerzo del ejecutor se registran al tomarla; no heredar capacidades Junie de frontera.
+2026-10-31: implementación en progreso. Rama codex/t-027-voice-storage, base main 6e7ebd0. VoiceText (domain), VoiceNote (entidad), VoiceNoteRepository (CAS), VoiceNoteService (CRUD+paginación), V5 migración. VoiceTextTest 16/16 OK, VoiceNoteServiceIT 24/24 OK. clean verify 190/190 OK, Spotless OK, JaCoCo OK. Modelo Qwen3.6-27B-FP8, Junie implementer. Pendiente: commit, push, PR y revisión independiente.
 
 ## Correcciones significativas
 

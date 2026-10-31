@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-017](tasks/T-017-voice-readiness.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | in_review |
-| Acción actual | PR30 publicado (3992d97, base 0d976dc). Backend 354/354 OK (188 unit + 166 IT). Client gate falló por 3 tests preexistentes en main (DailyNotesPage, ReferencePreview, ReferenceSession). docs-check OK, policy STARTER. Listo para revisión independiente. |
-| Rama / PR | codex/t-017-voice-readiness · [PR30](https://github.com/MatiasNicolasAcevedo/devnotes/pull/30) |
+| Tarea y contrato | [T-027](tasks/T-027-voice-storage.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
+| Estado | in_progress |
+| Acción actual | Implementando almacenamiento de notas de voz. Backend clean verify 190/190 OK. |
+| Rama / PR | codex/t-027-voice-storage · PR pendiente |
+
+T-017: PR30 MERGED, squash `6e7ebd01851ba1a81c856147d7895449ea97a7fe`, confirmado en GitHub el 2026-10-31.
 
 T-026: PR29 MERGED, squash `0d976dc2187cb2a07061c3db48130c334b1e471b`, confirmado en GitHub el 2026-10-31.
 
@@ -44,5 +46,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie implementer, sesión nueva: tomar T-017 (docs/tasks/T-017-voice-readiness.md), S-105 v2/M2-RC1, rama existente codex/t-017-voice-readiness. Confirmar PR29 MERGED (0d976dc2187cb2a07061c3db48130c334b1e471b) y main/base actuales; preservar contratos y cambios locales sin commit. Reconciliar PR25/26 obsoletos según la tarea antes de abrir el único PR activo. Implementar solo configuración apagada y capacidades privadas; publicar estos contratos con ese primer código, sin PR separado de planificación ni activar Groq/leer secretos/enviar audio. Ejecutar dirigidos y gate STARTER de T-017, docs-check/policy y entregar revisión independiente. Tras MERGED, otra sesión concilia done y toma T-027 predefinida; no implementarla en esta sesión.
+Junie implementer, sesión nueva: tomar T-027 (docs/tasks/T-027-voice-storage.md), S-105 v2/M2-RC1. Confirmar PR30 MERGED (6e7ebd01851ba1a81c856147d7895449ea97a7fe) y main/base actuales. Implementar almacenamiento de notas de voz según el contrato T-027. Ejecutar dirigidos y gate, docs-check/policy y entregar revisión independiente. Tras MERGED, otra sesión concilia done y toma T-028 predefinida; no implementarla en esta sesión.
 ```
