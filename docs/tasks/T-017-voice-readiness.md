@@ -50,17 +50,7 @@ La cuenta/ensayo real pendiente no impide la base apagada. No habilitar Groq, le
 
 ## Checkpoint vigente
 
-2026-10-31: frontera planner, Codex (familia GPT-6 expuesta; variante/esfuerzo no expuestos), app Codex con PowerShell/Git/gh, navegador de fuentes oficiales y Context7. Sin delegación. Impacto de esta sesión: contratos/cola/documentación; sin código, API runtime, permisos efectivos, datos, dependencias ni UI cambiados. Próxima sesión registra su runtime real una vez.
-
-Planificación preparada sobre HEAD=origin/main=0d976dc2187cb2a07061c3db48130c334b1e471b. Rama local codex/t-017-voice-readiness creada sin commits. Se preservan cambios locales previos de cierre T-026 y tres ficheros pr27 sin seguimiento. GitHub plugin no accedió al repo privado (404/422); alternativa gh propia comprobada. Consultas exitosas:
-- `gh pr view 29 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName`: MERGED, base main, squash 0d976dc2187cb2a07061c3db48130c334b1e471b, fecha 2026-10-31T21:00:27Z, [PR29](https://github.com/MatiasNicolasAcevedo/devnotes/pull/29). `gh pr checks 29`: verify-required pass.
-- `gh pr view 19 --repo MatiasNicolasAcevedo/devnotes --json number,state,mergedAt,mergeCommit,baseRefName`: MERGED, base main, squash 9da4ab4f138bd28753e61d1538003acceb615691, 2026-10-25T22:37:44Z.
-- `gh pr list --repo MatiasNicolasAcevedo/devnotes --state open --json number,title,headRefName`: PR25/26 antiguos. `gh pr view`/diff de ambos confirman solo docs/STATUS.md; siguen abiertos, no se modificaron remotamente.
-- `gh api repos/MatiasNicolasAcevedo/devnotes/commits/main --jq '{sha: .sha}'`: main 0d976dc2187cb2a07061c3db48130c334b1e471b.
-
-Investigación pública fechada en S-105; cuenta, clave, cuota efectiva, ZDR, audio sintético y calidad/latencia **no comprobados**. Ningún envío ni activación. Verificación de planificación: `node scripts/docs-check.mjs` exit0 (88 Markdown, 38 tareas); `git diff --check` exit0. Ensayo dirigido del saneador exit0 y defecto de filtros documentados en T-031, sin atribuirles FULL.
-
-`bash scripts/verify.sh --policy origin/main` mediante verificador PowerShell de SETUP: primer intento bloqueado por IPC MSYS del sandbox (0xC0000022); misma consulta de solo lectura fuera del sandbox exit0, `policy=FULL, changed=0, reason=diff vacío, profile=STARTER`. HEAD coincide con origin/main y el trabajo está sin commit: el clasificador no incluye estos cambios y no acredita DOCS_ONLY publicado. Inspección del trabajo de esta sesión: solo Markdown raíz/docs; los tres ficheros pr27 son previos y quedan excluidos. Sin publicación ni gate de implementación T-017; STARTER, pruebas nuevas y CI de esa entrega aún pendientes. Recalcular policy y gate sobre su diff final al implementar.
+2026-10-31: Junie implementer, Qwen3.6-27B-FP8. VoiceProperties, VoiceCapabilitiesController, SecurityConfig, application.yaml, .env.example, tests dirigidos 10/10 OK. PR30 publicado (3992d97, base 0d976dc). Backend gate 354/354 OK (188 unit + 166 IT). Client gate falló por 3 tests preexistentes en main (DailyNotesPage, ReferencePreview, ReferenceSession) — verificado en main 0d976dc sin mis cambios. docs-check OK, git diff --check OK, policy STARTER. Listo para revisión independiente. Cleanup: starter-verify-t017 y starter-verify-main-check eliminados.
 
 ## Correcciones significativas
 
@@ -70,4 +60,6 @@ Investigación pública fechada en S-105; cuenta, clave, cuota efectiva, ZDR, au
 
 ## Cierre y siguiente tarea
 
-No done por terminar Markdown. Junie publica base+contratos en un PR T-017, gate/CI y revisión independiente. Tras MERGED confirmado, nueva sesión concilia done y habilita T-027; no implementarla en la sesión que cierra esta. No merge ni revisión propia.
+Implementación publicada: PR30 (3992d97, base 0d976dc). Backend 354/354 OK. Client gate falló por 3 tests preexistentes en main. docs-check OK, policy STARTER. Listo para revisión independiente.
+
+Tras MERGED confirmado, nueva sesión concilia done y habilita T-027; no implementarla en la sesión que cierra esta. No merge ni revisión propia.

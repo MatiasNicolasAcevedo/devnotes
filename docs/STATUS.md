@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-017](tasks/T-017-voice-readiness.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | in_progress |
-| Acción actual | Implementación de base apagada y capacidades privadas: VoiceProperties, VoiceCapabilitiesController, SecurityConfig, application.yaml, .env.example, tests dirigidos 10/10 OK. Pendiente gate STARTER y publicación. |
-| Rama / PR | codex/t-017-voice-readiness · sin PR aún |
+| Estado | in_review |
+| Acción actual | PR30 publicado (3992d97, base 0d976dc). Backend 354/354 OK (188 unit + 166 IT). Client gate falló por 3 tests preexistentes en main (DailyNotesPage, ReferencePreview, ReferenceSession). docs-check OK, policy STARTER. Listo para revisión independiente. |
+| Rama / PR | codex/t-017-voice-readiness · [PR30](https://github.com/MatiasNicolasAcevedo/devnotes/pull/30) |
 
 T-026: PR29 MERGED, squash `0d976dc2187cb2a07061c3db48130c334b1e471b`, confirmado en GitHub el 2026-10-31.
 
