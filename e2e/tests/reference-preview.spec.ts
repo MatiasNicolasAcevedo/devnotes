@@ -1,5 +1,5 @@
 import { test, expect, control, readiness, interactiveLogin, layout } from './fixtures';
-import { writeWork, saveVersion, readVersion } from './daily-helpers';
+import { saveVersion, readVersion } from './daily-helpers';
 
 test.describe.configure({ timeout: 120_000 });
 const refPath = '/api/v1/reference-items';
@@ -43,17 +43,26 @@ test('reference preview: insert, save, edit original, delete, and preview access
   await page.keyboard.type('@');
   await expect(page.locator('[data-reference-picker]')).toBeVisible({ timeout: 5_000 });
 
-  // Escribir la consulta con delay para respetar el debounce de 250 ms del picker
-  await page.keyboard.type('Referencia', { delay: 50 });
+  // Escribir la consulta; el picker deboucea 250 ms, así que se espera a que dispare la búsqueda.
+  await page.keyboard.type('Referencia', { delay: 100 });
+  // Esperar a que el debounce expire y la búsqueda devuelva resultados.
   await expect(page.getByText('Referencia E2E')).toBeVisible({ timeout: 10_000 });
-  // Click en el botón del resultado del picker
-  await page.locator('[data-reference-picker] [role="button"]').first().click();
+  // Seleccionar el primer resultado con Enter (el picker maneja teclado)
+  await page.keyboard.press('Enter');
 
   // El átomo debe aparecer con @Título
   await expect(page.getByText('@Referencia E2E')).toBeVisible({ timeout: 5_000 });
 
-  /* 3. Guardar nota */
-  const note = await writeWork(page, today, '');
+  /* 3. Guardar nota — esperar al debounce automático (700 ms) */
+  // No usar writeWork porque editor.fill() limpiaría el átomo @Referencia E2E.
+  // El editor guarda automáticamente tras 700 ms de inactividad.
+  const saveNote = page.waitForResponse(r => new URL(r.url()).pathname === `/api/v1/daily-notes/${today}` && r.request().method() === 'PUT');
+  await page.waitForTimeout(1000);
+  const saveResp = await saveNote;
+  expect(saveResp.status()).toBe(200);
+  const note = await saveResp.json();
+  expect(note.date).toBe(today);
+  await expect(page.getByText('Guardado', { exact: true })).toBeVisible();
 
   /* 4. Guardar versión */
   await saveVersion(page, today);
