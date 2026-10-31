@@ -52,9 +52,9 @@ Quince contratos de producto I1 completados (T-003 y T-014 mergeadas). T-021 MER
 
 ## Próximo · I2 / M2-RC1 voz
 
-Próxima acción: [T-017](tasks/T-017-voice-readiness.md), Junie implementer en sesión nueva, base apagada/capacidades privadas y publicación de los contratos junto al primer código. [S-105 v2](specs/S-105-voice-notes.md) sustituye el draft; [VOICE-RELEASE](VOICE-RELEASE.md) fija versión, activación y pruebas del dueño.
+Próxima acción: [T-027](tasks/T-027-voice-storage.md), Junie implementer en sesión nueva, persistencia privada y CAS de notas de voz. T-017 ya MERGED (PR30 `6e7ebd0`). [S-105 v2](specs/S-105-voice-notes.md) sustituye el draft; [VOICE-RELEASE](VOICE-RELEASE.md) fija versión, activación y pruebas del dueño.
 
-El dueño decidió priorizar voz el 2026-10-31. Solo T-017 ready; las otras once tareas están completamente especificadas y draft exclusivamente por la dependencia indicada. No requieren otra sesión planner entre implementaciones. WIP1 y revisión independiente; no PR separado de planificación. Los antiguos PR documentales #25/#26 se reconcilian antes de publicar el primero según T-017.
+El dueño decidió priorizar voz el 2026-10-31. T-017 MERGED; T-027 ready con dependencia satisfecha. Las otras diez tareas están completamente especificadas y draft exclusivamente por la dependencia indicada. No requieren otra sesión planner entre implementaciones. WIP1 y revisión independiente; no PR separado de planificación.
 
 | Orden | Contrato / resultado | Dependencia |
 |---|---|---|

@@ -1,6 +1,6 @@
 ---
 id: T-017
-status: in_review
+status: done
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-017-voice-readiness
-pr: null
+pr: 30
 depends_on: [T-026]
 ---
 # T-017 · Disponibilidad privada y base apagada de voz
@@ -50,7 +50,7 @@ La cuenta/ensayo real pendiente no impide la base apagada. No habilitar Groq, le
 
 ## Checkpoint vigente
 
-2026-10-31: Junie implementer, Qwen3.6-27B-FP8. VoiceProperties, VoiceCapabilitiesController, SecurityConfig, application.yaml, .env.example, tests dirigidos 10/10 OK. PR30 publicado (3992d97, base 0d976dc). Backend gate 354/354 OK (188 unit + 166 IT). Client gate falló por 3 tests preexistentes en main (DailyNotesPage, ReferencePreview, ReferenceSession) — verificado en main 0d976dc sin mis cambios. docs-check OK, git diff --check OK, policy STARTER. Listo para revisión independiente. Cleanup: starter-verify-t017 y starter-verify-main-check eliminados.
+2026-10-31: PR30 MERGED, squash 6e7ebd01851ba1a81c856147d7895449ea97a7fe, confirmado en GitHub. Tarea completada.
 
 ## Correcciones significativas
 
@@ -60,6 +60,6 @@ La cuenta/ensayo real pendiente no impide la base apagada. No habilitar Groq, le
 
 ## Cierre y siguiente tarea
 
-Implementación publicada: PR30 (3992d97, base 0d976dc). Backend 354/354 OK. Client gate falló por 3 tests preexistentes en main. docs-check OK, policy STARTER. Listo para revisión independiente.
+PR30 MERGED, squash 6e7ebd01851ba1a81c856147d7895449ea97a7fe, confirmado en GitHub el 2026-10-31. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD a5837fa, base main 0d976dc, CI verify-required SUCCESS (run 41249132151), docs-check OK, policy STARTER. Backend gate 354/354 OK (188 unit + 166 IT), JaCoCo OK, spotless OK.
 
-Tras MERGED confirmado, nueva sesión concilia done y habilita T-027; no implementarla en la sesión que cierra esta. No merge ni revisión propia.
+Tras MERGED, nueva sesión concilia done y toma T-027 predefinida; no implementarla en la sesión que cierra esta.
