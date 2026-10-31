@@ -12,6 +12,7 @@ Desde la raíz con Git Bash, Docker Desktop Linux y Node >=24. En Windows/PowerS
 | `bash scripts/verify.sh --server` | Maven `clean verify`: Spotless, unitarios/slices Surefire, integración PostgreSQL Failsafe, JaCoCo |
 | `bash scripts/verify.sh --client` | Typecheck, lint, formato, Vitest/cobertura y build; reconstruye la imagen verify |
 | `bash scripts/verify.sh --e2e` | Solo Playwright contra API/DB/OIDC reales, saneador y cleanup |
+| `node scripts/run-e2e.mjs ... --grep "patrón"` | Solo los tests E2E que coincidan con el patrón; usa `--project=desktop` para evitar mobile. Iteración rápida, no sustituye FULL |
 | `bash scripts/verify.sh --tooling` | Inicializador, copia compilable, CLI persistente, proxies/fallos/señales; no duplica Playwright final |
 | `bash scripts/verify.sh --starter` | FULL de aplicación + tooling, para mantenimiento de starter/entorno |
 | `bash scripts/verify.sh --fast` | Iteración parcial sin E2E; no acredita FULL |
@@ -22,6 +23,25 @@ Ejemplo FULL con namespaces propios nuevos:
 ```bash
 COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-mi-cambio STARTER_E2E_PROJECT=starter-e2e-mi-cambio STARTER_SERVER_TESTS=container bash scripts/verify.sh
 ```
+
+## Tiempos de E2E — advertencia crítica
+La suite E2E completa ejecuta **9 specs × 2 proyectos** (desktop + mobile) = ~18 tests en serie con `workers: 1`. Esto tarda **>100 minutos** en total.
+
+**Nunca ejecutes la suite FULL E2E durante iteración de desarrollo.** Usa siempre `--grep` para ejecutar solo el test afectado:
+
+```bash
+# Iteración rápida — solo el test de reference-preview, solo desktop
+docker compose -p starter-e2e-xxx -f docker-compose.yml -f compose.auth-test.yml -f docker-compose.e2e.yml \
+  --profile oidc --profile e2e run --rm --no-deps e2e npx playwright test \
+  --grep "reference preview:" --project=desktop
+
+# Con run-e2e.mjs (soporta --grep)
+node scripts/run-e2e.mjs compose --env-file scripts/fixtures/e2e.env.example -p starter-e2e-xxx \
+  -f docker-compose.yml -f compose.auth-test.yml -f docker-compose.e2e.yml \
+  --profile oidc --profile e2e --grep "reference preview:"
+```
+
+**Regla:** Durante desarrollo, ejecuta solo el test específico con `--grep` y `--project=desktop`. La suite FULL solo se ejecuta una vez al cerrar la tarea, con stack limpio y sin editar fuentes durante la corrida.
 
 ## Elegir pruebas para una tarea pequeña
 Frontera especifica la capa mínima que demuestra el riesgo y el comando exacto, sin dejar nombres ficticios por resolver a Junie. Bugfix: rojo antes del arreglo. Mantener regresiones útiles; no duplicar casos en todas las capas ni añadir E2E por costumbre.

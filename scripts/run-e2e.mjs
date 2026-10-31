@@ -10,7 +10,15 @@ const project = args[args.indexOf('-p') + 1];
 assert.match(project, /^starter-e2e-[a-z0-9][a-z0-9-]{0,47}$/);
 const root = resolve('e2e/artifacts', project);
 const control = join(root, 'control');
-assert.deepEqual(args, ['compose', '--env-file', 'scripts/fixtures/e2e.env.example', '-p', project,
+
+// Soporte --grep para iteraciones rápidas: ejecutar solo tests que coincidan con el patrón.
+// La suite FULL (9 specs × 2 proyectos) tarda >100 min; usar --grep durante desarrollo.
+const grepIndex = args.indexOf('--grep');
+const grepPattern = grepIndex >= 0 ? args[grepIndex + 1] : undefined;
+
+// Validar argumentos base (sin --grep que es opcional).
+const baseArgs = grepPattern ? args.filter((_, i) => i !== grepIndex && i !== grepIndex + 1) : args;
+assert.deepEqual(baseArgs, ['compose', '--env-file', 'scripts/fixtures/e2e.env.example', '-p', project,
   '-f', 'docker-compose.yml', '-f', 'compose.auth-test.yml', '-f', 'docker-compose.e2e.yml',
   '--profile', 'oidc', '--profile', 'e2e']);
 const original = JSON.parse(readFileSync('scripts/fixtures/oidc.json', 'utf8'));
@@ -77,9 +85,17 @@ const directedSpecs = { 1: 'system.spec.ts', swagger: 'swagger.spec.ts' };
 const requested = process.env.STARTER_E2E_ASSERT_FAILURE ?? '';
 const inducedFailure = Object.hasOwn(directedSpecs, requested) ? requested : '0';
 const directedArguments = inducedFailure === '0' ? [] : ['--', directedSpecs[inducedFailure]];
+
+// Construir argumentos de Playwright: --grep (si se proporcionó) y specs dirigidas (si aplica).
+const playwrightArgs = [];
+if (grepPattern) {
+  playwrightArgs.push('--grep', grepPattern);
+}
+playwrightArgs.push(...directedArguments);
+
 const runner = spawn('docker', [...args, 'run', '--rm', '--no-deps',
   '-e', `E2E_ASSERT_FAILURE=${inducedFailure}`,
-  'e2e', 'npm', 'test', ...directedArguments], { stdio: 'inherit' });
+  'e2e', 'npx', 'playwright', 'test', ...playwrightArgs], { stdio: 'inherit' });
 let finished = false;
 const completion = new Promise(resolveExit => {
   runner.on('error', () => { finished = true; resolveExit(1); });
