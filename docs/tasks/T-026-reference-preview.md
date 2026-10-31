@@ -37,9 +37,15 @@ Gate desde raíz Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=
 
 ## Checkpoint vigente
 
-Revisión independiente en curso. Junie reviewer, Qwen3.6-27B-FP8. HEAD de9c612 (incluye corrección documental T-025 → done), base main 9a14044.
+Corrección B-1 publicada d7e075d. Junie implementer, Qwen3.6-27B-FP8. HEAD d7e075d, base main 9a14044.
 
-**Bloqueante B-1:** E2E `reference-preview.spec.ts` falla en paso 2 (línea 46): `page.keyboard.type('@Referencia')` envía todos los caracteres de una vez; el picker con debounce 250 ms no dispara la búsqueda a tiempo y `getByText('Referencia E2E')` no aparece en 10 s. El picker funciona correctamente en otros tests (reference.spec.ts pasa). Corrección: el test debe escribir `@` con `keyboard.type('@')`, esperar a que el picker se abra, luego escribir la consulta con pausa entre caracteres o usar `fill`/`pressSequentially` con delay. Verificar que el picker muestra resultados antes de continuar.
+**Bloqueante B-1 (en corrección):** E2E `reference-preview.spec.ts` fallaba por dos causas: (1) `page.keyboard.type('@Referencia')` enviaba todos los caracteres de una vez; el picker con debounce 250 ms no disparaba la búsqueda a tiempo. (2) `writeWork(page, today, '')` llamaba a `editor.fill('')` que limpiaba el átomo `@Referencia E2E` antes de guardar. Corrección aplicada: escribir `@` primero, esperar a que el picker se abra (`[data-reference-picker]` visible), luego escribir la consulta con `delay: 100` entre caracteres, esperar resultados con timeout 10 s, seleccionar con `Enter`. Reemplazar `writeWork` por `waitForResponse` + `waitForTimeout(1000)` para el debounce automático de 700 ms. Pendiente: revalidar con E2E completa.
+
+**Correcciones significativas:**
+| # | Problema | Causa | Arreglo | SHA |
+|---|---|---|---|---|
+| 1 | E2E picker no busca | `type('@Referencia')` sin separar `@` de consulta; debounce 250 ms no dispara | Separar `@`, esperar picker, `type('Referencia', {delay:100})` | d7e075d |
+| 2 | `writeWork` limpia editor | `editor.fill('')` borra átomo `@Referencia E2E` | `waitForResponse` + `waitForTimeout(1000)` para auto-save | d7e075d |
 
 **Observación O-1:** `ReferenceView.tsx` elimina el parámetro `editor` de `ReactNodeViewProps` (no se usaba). Cambio limpio.
 
