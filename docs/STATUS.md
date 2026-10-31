@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-026](tasks/T-026-reference-preview.md) (changes_requested) |
 | Estado | in_progress |
-| Acción actual | Corrección B-1 publicada (d7e075d): picker timing + writeWork limpia editor. Pendiente: revalidar E2E. |
+| Acción actual | Corrección B-1 publicada (a897987): picker timing, writeWork, force click. Pendiente: revalidar E2E completa. |
 | Rama / PR | codex/t-026-reference-preview / [#29](https://github.com/MatiasNicolasAcevedo/devnotes/pull/29) |
 
 T-025: PR28 MERGED, squash `9a1404490779e0462e326aefa015e2c4596a0e91`, confirmado en GitHub el 2026-10-29.
