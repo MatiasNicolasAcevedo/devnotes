@@ -1,6 +1,8 @@
 package com.example.devnotes.security;
 
+import com.example.devnotes.voice.config.VoiceProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -21,6 +23,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 
 /** Session authentication grants access only to the current identity, not future commercial resources. */
 @Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties(VoiceProperties.class)
 @Import({OidcConfiguration.class, LocalOidcUserService.class, ApiDocsConfiguration.class})
 public class SecurityConfig {
 
@@ -73,6 +76,8 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.POST, "/api/v1/daily-notes/{date}/version")
                             .authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/v1/daily-versions", "/api/v1/daily-versions/{date}")
+                            .authenticated()
+                            .requestMatchers("/api/v1/voice/**")
                             .authenticated()
                             .anyRequest()
                             .denyAll();

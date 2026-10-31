@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-026](tasks/T-026-reference-preview.md) (mergeable) |
-| Estado | mergeable |
-| Acción actual | Revisión independiente APROBADA sin bloqueantes (HEAD 701f10e, base main 9a14044). CI verify-required SUCCESS, docs-check OK. FULL E2E: docs OK, server 161/161 OK, client 364/364 OK, 1 fallo E2E preexistente (canary negativo del saneador). Pendiente: merge squash de PR #29. |
-| Rama / PR | codex/t-026-reference-preview / [#29](https://github.com/MatiasNicolasAcevedo/devnotes/pull/29) |
+| Tarea y contrato | [T-017](tasks/T-017-voice-readiness.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
+| Estado | in_progress |
+| Acción actual | Implementación de base apagada y capacidades privadas: VoiceProperties, VoiceCapabilitiesController, SecurityConfig, application.yaml, .env.example, tests dirigidos 10/10 OK. Pendiente gate STARTER y publicación. |
+| Rama / PR | codex/t-017-voice-readiness · sin PR aún |
+
+T-026: PR29 MERGED, squash `0d976dc2187cb2a07061c3db48130c334b1e471b`, confirmado en GitHub el 2026-10-31.
 
 T-025: PR28 MERGED, squash `9a1404490779e0462e326aefa015e2c4596a0e91`, confirmado en GitHub el 2026-10-29.
 
@@ -42,11 +44,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie reviewer, en sesión nueva: T-026 revisión independiente del PR #29. Corrección documental 701f10e publicada — bloqueantes B-2 y B-3 resueltos. CI verify-required SUCCESS, docs-check OK. FULL E2E: docs OK, server 161/161 OK, client 364/364 OK, 1 fallo E2E preexistente (canary negativo del saneador).
-
-Contrato: [T-026](docs/tasks/T-026-reference-preview.md) — vista previa accesible con hover, teclado y tacto.
-
-Leer antes: S-106, client/AGENTS.md, TESTING.md, AGENTS raíz, STATUS y protocolo reviewer.
-
-Revisar HEAD 701f10e contra base main 9a14044. Verificar que los enlaces corregidos en E2E-ITERATION.md resuelven correctamente, que el código de T-026 cumple S-003/S-106, y que pruebas y cobertura son adecuadas. Si se aprueba sin bloqueantes, el siguiente paso es merge squash.
+Junie implementer, sesión nueva: tomar T-017 (docs/tasks/T-017-voice-readiness.md), S-105 v2/M2-RC1, rama existente codex/t-017-voice-readiness. Confirmar PR29 MERGED (0d976dc2187cb2a07061c3db48130c334b1e471b) y main/base actuales; preservar contratos y cambios locales sin commit. Reconciliar PR25/26 obsoletos según la tarea antes de abrir el único PR activo. Implementar solo configuración apagada y capacidades privadas; publicar estos contratos con ese primer código, sin PR separado de planificación ni activar Groq/leer secretos/enviar audio. Ejecutar dirigidos y gate STARTER de T-017, docs-check/policy y entregar revisión independiente. Tras MERGED, otra sesión concilia done y toma T-027 predefinida; no implementarla en esta sesión.
 ```

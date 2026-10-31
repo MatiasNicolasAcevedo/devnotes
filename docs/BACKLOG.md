@@ -2,16 +2,20 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
-## Actual · Referencias y copiado
+## Hechas · S-106 completada
 
-- [T-023](tasks/T-023-copy-actions.md): copiar título, descripción y nota; depende de T-022 (MERGED).
-- [T-024](tasks/T-024-reference-document.md) → [T-025](tasks/T-025-reference-insertion.md) → [T-026](tasks/T-026-reference-preview.md): contratos [S-106](specs/S-106-reference-links.md), draft por dependencia MERGED.
+S-106 completa con las 5 tareas MERGED (T-022 a T-026), control de cinco por Junie cumplido. Frontera toma voz por decisión del dueño del 2026-10-31; contrato de I2 preparado.
 
-El dueño amplió T-020 el 2026-10-26 para resolver navegación por fecha, preparación OIDC de dos actores y recorridos de versiones dentro de la misma entrega. La reparación pertenece a T-020; I2 continúa sin habilitar.
+- [T-026](tasks/T-026-reference-preview.md): PR29 MERGED `0d976dc`.
+- [T-025](tasks/T-025-reference-insertion.md): PR28 MERGED `9a14044`.
+- [T-024](tasks/T-024-reference-document.md): PR27 MERGED `e049e3c`.
+- [T-023](tasks/T-023-copy-actions.md): PR24 MERGED `b0ebaae`.
+- [T-022](tasks/T-022-reference-search.md): PR23 MERGED `ca9d44d`.
+
+El dueño amplió T-020 el 2026-10-26 para resolver navegación por fecha, preparación OIDC de dos actores y recorridos de versiones dentro de la misma entrega. La reparación pertenece a T-020; no se reabre para I2.
 
 ## Hechas
 
-- [T-022](tasks/T-022-reference-search.md): PR23 MERGED `ca9d44d`.
 - [T-021](tasks/T-021-editor-ergonomics.md): PR22 MERGED `8e09525`.
 
 - [T-020](tasks/T-020-editor-usability.md): editor, navegación por fecha y versiones; PR20 MERGED `cde66f4`.
@@ -46,19 +50,32 @@ Quince contratos de producto I1 completados (T-003 y T-014 mergeadas). T-021 MER
 | 14 | [T-013](tasks/T-013-version-save.md) · Acción manual/flush/reemplazo | T-012 |
 | 15 | [T-014](tasks/T-014-mvp-journey.md) · CA-01…06 de punta a punta | T-013; control de quince, salida I1 y retorno a frontera |
 
-## Próximo · Referencias y copiado
+## Próximo · I2 / M2-RC1 voz
 
-Intención del dueño del 2026-10-27, especificada en S-106 tras cerrar T-021/PR22. Mantener Referencia como lista privada independiente para apuntes rápidos y añadir estas capacidades antes de encarar voz:
+Próxima acción: [T-017](tasks/T-017-voice-readiness.md), Junie implementer en sesión nueva, base apagada/capacidades privadas y publicación de los contratos junto al primer código. [S-105 v2](specs/S-105-voice-notes.md) sustituye el draft; [VOICE-RELEASE](VOICE-RELEASE.md) fija versión, activación y pruebas del dueño.
 
-- Desde una nota diaria, escribir `@` para buscar referencias propias, elegir una e insertar una vinculación que permita identificarla después. La búsqueda y selección deben servir también con teclado.
-- Consultar rápidamente el contenido de la referencia desde la nota mediante una vista previa. El dueño propone hover sin clic y deja abierta la mejor interacción; definir una alternativa accesible con foco/teclado y pantallas táctiles, sin ocultar el contenido necesario a quien no use mouse.
-- Agregar acciones con icono para copiar el título y la descripción de las referencias y el texto de la nota diaria, conservando la selección y copia habituales con Ctrl+C. Definir el alcance exacto de la copia de la nota con enlaces y separadores y mostrar éxito o error real del portapapeles.
+El dueño decidió priorizar voz el 2026-10-31. Solo T-017 ready; las otras once tareas están completamente especificadas y draft exclusivamente por la dependencia indicada. No requieren otra sesión planner entre implementaciones. WIP1 y revisión independiente; no PR separado de planificación. Los antiguos PR documentales #25/#26 se reconcilian antes de publicar el primero según T-017.
 
-S-106 concreta búsqueda privada, vinculación, copia, vista previa y pruebas. La nota y el historial muestran el contenido vigente; tras borrar el original indican que no está disponible. No asumir que la referencia existe para siempre ni comprometer el aislamiento por cuenta o las versiones históricas. Estas son solicitudes pendientes, no funcionalidades implementadas ni aceptación de un diseño técnico.
+| Orden | Contrato / resultado | Dependencia |
+|---|---|---|
+| 1 | [T-017](tasks/T-017-voice-readiness.md) · Disponibilidad privada apagada + contratos | T-026 MERGED |
+| 2 | [T-027](tasks/T-027-voice-storage.md) · Tabla y servicio CAS privado | T-017 MERGED |
+| 3 | [T-028](tasks/T-028-voice-api.md) · CRUD/listado HTTP | T-027 MERGED |
+| 4 | [T-029](tasks/T-029-voice-transcription.md) · Adaptador/endpoint con IT ficticio | T-028 MERGED |
+| 5 | [T-030](tasks/T-030-voice-transport.md) · Proxies/Compose/doble externo; control de cinco tras merge | T-029 MERGED |
+| 6 | [T-031](tasks/T-031-voice-harness.md) · Reparar filtros/lifecycle y E2E de transporte | T-030 MERGED |
+| 7 | [T-032](tasks/T-032-voice-client.md) · HTTP multipart y Query privada | T-031 MERGED |
+| 8 | [T-033](tasks/T-033-voice-recorder.md) · Captura/ciclo de vida | T-032 MERGED |
+| 9 | [T-034](tasks/T-034-voice-workspace.md) · Pantalla nueva, edición/copia/guardado | T-033 MERGED |
+| 10 | [T-035](tasks/T-035-voice-library.md) · Colección/consulta/corrección/borrado; control de diez tras merge | T-034 MERGED |
+| 11 | [T-036](tasks/T-036-voice-navigation.md) · Guardia navegación/sesión/daily | T-035 MERGED |
+| 12 | [T-037](tasks/T-037-voice-release.md) · Recorrido/evidencia/entrega M2-RC1 | T-036 MERGED |
 
-## Posterior · I2 voz
+Controles de cinco/diez por Junie tras T-030/T-035; retorno a frontera al entregar T-037/M2-RC1 o decisión fuera del contrato. La versión técnica se verifica con API/DB/OIDC propios reales, micrófono ficticio y doble externo; cuenta/clave/cuota/retención y ensayo Groq real son pendientes de activación explícitos, no evidencia inventada ni un bloqueo de la construcción apagada. No se envió audio ni se contrató servicio.
 
-[S-105](specs/S-105-voice-notes.md) registra intención confirmada y propuesta de transcribir al detener, editar/copiar/guardar/consultar/borrar texto privado. El dueño reiteró el 2026-10-27 que quiere abordar voz después de resolver y pulir lo pendiente, con ensayos de transcripción y copia manual a otros destinos. [T-017](tasks/T-017-voice-readiness.md), frontera planner draft, valida Groq/Whisper/configuración con audio ficticio y convierte sus seis paquetes ordenados en contratos Junie pequeños. Reconfirmar condiciones y disponibilidad del nivel gratuito antes de habilitarlo; no se garantiza cuota ni se autoriza contratar un plan. No son tareas de implementación ready todavía; ninguna depende para I1. Sin audio enviado ni servicio contratado por esta planificación.
+## Posterior a M2-RC1
+
+Pruebas personales del dueño sobre el SHA entregado; frontera agrupa correcciones/mejoras a partir de resultados. Sin nuevas capacidades ready ahora. Fuera de esta versión: streaming, audio persistido, integración automática con CLI/daily, Safari/iOS, despliegue y pagos. Opciones de ROADMAP conservan su carácter futuro.
 
 ## Fuera de I1
 

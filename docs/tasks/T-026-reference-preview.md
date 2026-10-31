@@ -1,6 +1,6 @@
 ---
 id: T-026
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M1
@@ -37,7 +37,7 @@ Gate desde raíz Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=
 
 ## Checkpoint vigente
 
-Revisión independiente APROBADA sin bloqueantes (HEAD 701f10e, base main 9a14044). Junie reviewer, Qwen3.6-27B-FP8. CI verify-required SUCCESS, docs-check OK. FULL E2E: docs OK, server 161/161 OK, client 364/364 OK, 1 fallo E2E preexistente (canary negativo del saneador). Pendiente: merge squash de PR #29.
+PR29 MERGED, squash `0d976dc2187cb2a07061c3db48130c334b1e471b`, confirmado en GitHub el 2026-10-31. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes (HEAD 701f10e, base main 9a14044). CI verify-required SUCCESS, docs-check OK. FULL E2E: docs OK, server 161/161 OK, client 364/364 OK, 1 fallo E2E preexistente (canary negativo del saneador).
 
 **Bloqueante B-2:** `docs/E2E-ITERATION.md` línea 44: enlace a `AGENTS.md#pruebas-y-entrega` resuelve a `docs/AGENTS.md` que no existe. Debe ser `../AGENTS.md`. docs-check rechaza el enlace roto, causando 10 fallos en CI.
 

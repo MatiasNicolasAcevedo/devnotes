@@ -92,3 +92,9 @@ logging:
     org.springframework.boot.jdbc.health.DataSourceHealthIndicator: ERROR
     com.zaxxer.hikari.pool.PoolBase: ERROR
     com.zaxxer.hikari.pool.ProxyConnection: ERROR
+
+# Voice — disabled by default; activation requires explicit configuration (S-105).
+devnotes:
+  voice:
+    enabled: ${DEVNOTES_VOICE_ENABLED:false}
+    api-key: ${GROQ_API_KEY:}
