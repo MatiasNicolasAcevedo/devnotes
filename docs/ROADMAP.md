@@ -26,9 +26,24 @@ Ruta completa de quince tareas en [BACKLOG](BACKLOG.md). Secuencial: implementac
 
 Revisión de avance tras T-005, T-009 y T-014 (5/10/15 tareas de producto) mergeadas por Junie. Revisar contratos/dependencias/evidencia, tiempos medidos y hallazgos fuera de alcance en BACKLOG. **Frontera vuelve tras T-014 mergeada y objetivo I1 comprobado**, o antes por nueva intención/decisión/bloqueo fuera de contrato. No implementar otra tarea en la sesión que cierra un PR.
 
-## I2 / M2 · Notas de voz, posterior al MVP
+## I1 posterior · Pulido y referencias integradas
 
-Intención del dueño 2026-10-21: botón de grabación con indicador rojo, detener/transcribir, texto editable/copiable y colección privada guardable/borrable. [S-105 draft](specs/S-105-voice-notes.md) propone transcripción al detener con Groq/Whisper y persistencia solo de texto, separada de las notas diarias. [T-017](tasks/T-017-voice-readiness.md) se toma por frontera tras I1: revalidar candidato/configuración/smoke ficticio y convertir paquetes A…F en tareas Junie completas antes de ejecución. Objetivo de salida futuro VO-01…07; no sustituye CA ni introduce dependencias/infraestructura en I1. Proveedor externo, audio real y eventuales costos mantienen límites de AUTONOMY.
+T-020/T-021 y [S-106](specs/S-106-reference-links.md) T-022…T-026 completadas. PR29 MERGED el 2026-10-31; control de cinco cumplido. Frontera revisa el hito y toma la prioridad del dueño: voz. No reabre estos contratos ni traslada sus evidencias a I2.
+
+## I2 / M2-RC1 · Voz y versión local para pruebas del dueño
+
+Prioridad confirmada por el dueño el 2026-10-31. [S-105 v2](specs/S-105-voice-notes.md) fija grabar/detener/transcribir en español, editar/copiar, guardar/consultar/corregir/borrar varias notas privadas, separadas de daily. Texto plano persistido; audio solo transitorio. Decisiones y límites cerrados, proveedor Groq/Whisper con activación externa separada.
+
+| Tramo | Tareas ordenadas | Salida |
+|---|---|---|
+| Base backend | T-017 → T-027 → T-028 → T-029 | Disponibilidad apagada, persistencia CAS, API privada y transcripción acotada |
+| Transporte y cliente | T-030 → T-031 → T-032 → T-033 | Proxies/doble, reparación de filtros/harness, HTTP multipart y captura segura |
+| Producto integrado | T-034 → T-035 → T-036 | Pantalla, colección y guardia navegación/sesión |
+| Cierre de versión | T-037 | VO-01…07, SHA/guía/evidencia y entrega M2-RC1 |
+
+Solo T-017 ready; demás draft exclusivamente por dependencia anterior. No hace falta volver a planner entre tareas: Junie confirma MERGED y habilita la siguiente. Controles de cinco/diez tras T-030/T-035; **retorno a frontera al entregar T-037/M2-RC1** o por decisión fuera del contrato. No comenzar otra capacidad en la sesión de cierre.
+
+[VOICE-RELEASE](VOICE-RELEASE.md) define salida técnica con dobles, ensayo externo ficticio y pruebas personales. Cuenta/clave/cuota/retención/autorización de envío no se acreditan por esta planificación. Si faltan al cerrar código, entregar «RC técnica, activación externa pendiente» con la acción concreta; no anunciar precisión ni aceptación del dueño. Después de sus pruebas se priorizan correcciones/mejoras en otra iteración. M2-RC1 es un hito, sin tag, despliegue ni bump automático de artefactos.
 
 ## Objetivos futuros sin contrato de ejecución
 
