@@ -1,6 +1,6 @@
 ---
 id: T-027
-status: in_progress
+status: in_review
 priority: P1
 size: M
 executor: junie
