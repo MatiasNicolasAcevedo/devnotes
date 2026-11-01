@@ -1,6 +1,6 @@
 ---
 id: T-031
-status: draft
+status: in_progress
 priority: P1
 size: S
 executor: junie
@@ -52,7 +52,7 @@ scripts/e2e.sh, scripts/run-e2e.mjs y scripts/ci/e2e-arguments.test.mjs; e2e/tes
 
 ## Checkpoint vigente
 
-Frontera2026-10-31, main 0d976dc2187cb2a07061c3db48130c334b1e471b. Hallazgo estático de argv confirmado en scripts/run-e2e.mjs; reproducción roja todavía pendiente de esta tarea. Ensayo `python e2e/harness/test_sanitize.py` sí ejecutado por frontera: exit0, canario protegido; no es FULL ni prueba de voz. Sin código/PR de esta tarea.
+2026-11-01, rama codex/t-031-voice-harness, base main 2581b17. Reparación implementada: run-e2e.mjs parsea una vez y separa composeArgs/playwrightArgs; e2e.sh acepta --grep y --project con validación completa. Tests Node 19/19 OK (`node --test scripts/ci/e2e-arguments.test.mjs`). Gate STARTER pendiente.
 
 ## Correcciones significativas
 

@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-030](tasks/T-030-voice-transport.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | `in_review` |
-| Acción actual | PR34 draft publicado. Revisión independiente + gate STARTER (Git Bash/Docker). |
-| Rama / PR | codex/t-030-voice-transport · [PR34](https://github.com/MatiasNicolasAcevedo/devnotes/pull/34) draft |
+| Tarea y contrato | [T-031](tasks/T-031-voice-harness.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
+| Estado | `in_progress` |
+| Acción actual | Reparación del harness E2E: parsear una vez y separar composeArgs/playwrightArgs. Tests Node 19/19 OK. |
+| Rama / PR | codex/t-031-voice-harness · PR pendiente |
+
+T-030: PR34 MERGED, squash `2581b17cb19c949dbe7566ac77d830dd9fdcc7c9`, confirmado en GitHub el 2026-11-01. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD c02b721, base main 3700ad0, CI verify-required SUCCESS (run 41273488514), docs-check OK. Backend clean verify 210/210 OK, JaCoCo OK, Spotless OK. Gate STARTER docs/server/client/tooling OK.
 
 T-029: PR33 MERGED, squash `3700ad0da30efe1ab517c3eb6f686b08bc7e1487`, confirmado en GitHub el 2026-11-01. Junie implementer + reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD c8ac0a4, base main 32e5584, docs-check OK, policy FULL. Backend clean verify 210/210 OK, JaCoCo OK, Spotless OK. Gate STARTER docs/server/client OK; tooling failure (test-init-copy.sh) preexistente.
 
@@ -52,5 +54,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie reviewer, sesión nueva: revisar PR34 (codex/t-030-voice-transport, fd1e0bf), T-030. Base main 3700ad0. Verificar proxies nginx/Vite (21m, buffering off, 75s), Compose voice-provider overlay, doble externo y ensayo. Ejecutar gate STARTER con Git Bash/Docker Desktop: DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t030 STARTER_E2E_PROJECT=starter-e2e-t030 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter. Si APROBADO sin bloqueantes, merger mergea y otra sesión concilia done y toma T-031.
+Junie implementer, sesión nueva: T-031 (codex/t-031-voice-harness), continuar reparación del harness E2E. Base main 2581b17 (T-030 MERGED). Tests Node 19/19 OK. Gate STARTER pendiente: DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t031 STARTER_E2E_PROJECT=starter-e2e-t031 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter. Si APROBADO, publicar PR y otra sesión revisa.
 ```
