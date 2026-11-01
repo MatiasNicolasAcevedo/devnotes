@@ -138,7 +138,8 @@ export default defineConfig(({ command, mode }) => {
                       proxyRequest.removeHeader(name)
                     }
                   }
-                  if (!origin) throw new Error('Public origin is required for the development proxy')
+                  if (!origin)
+                    throw new Error('Public origin is required for the development proxy')
                   proxyRequest.setHeader('Host', origin.authority)
                   proxyRequest.setHeader('X-Forwarded-Host', origin.authority)
                   proxyRequest.setHeader('X-Forwarded-Proto', origin.scheme)

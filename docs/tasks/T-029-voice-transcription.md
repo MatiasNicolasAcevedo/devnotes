@@ -1,6 +1,6 @@
 ---
 id: T-029
-status: in_review
+status: done
 priority: P1
 size: M
 executor: junie
@@ -52,7 +52,7 @@ Validar request saliente y formato recibido; success sin filas nuevas. Casos byt
 
 ## Checkpoint vigente
 
-2026-11-01: HEAD dac4b13, base main 32e5584. Junie implementer + reviewer, Qwen3.6-27B-FP8. Backend clean verify 210/210 OK (Surefire + Failsafe IT PostgreSQL), JaCoCo OK, Spotless OK. GroqTranscriptionClientTest 15/15, VoiceTranscriptionApiIT 8/8. Revisión independiente APROBADA sin bloqueantes. docs-check OK, policy FULL. Pendiente: gate STARTER completo, CI verde y merge.
+2026-11-01: PR33 MERGED, squash 3700ad0da30efe1ab517c3eb6f686b08bc7e1487, confirmado en GitHub. Junie implementer + reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD c8ac0a4, base main 32e5584, docs-check OK, policy FULL. Backend clean verify 210/210 OK (Surefire + Failsafe IT PostgreSQL), JaCoCo OK, Spotless OK. Gate STARTER docs/server/client OK; tooling failure (test-init-copy.sh) preexistente, no afecta T-029.
 
 ## Correcciones significativas
 
