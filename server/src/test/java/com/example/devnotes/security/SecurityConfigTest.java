@@ -41,6 +41,9 @@ class SecurityConfigTest {
     private com.example.devnotes.daily.application.DailyVersionService dailyVersions;
 
     @MockitoBean
+    private com.example.devnotes.voice.application.VoiceNoteService voiceNotes;
+
+    @MockitoBean
     private IdentityService identityService;
 
     @Autowired
@@ -201,5 +204,52 @@ class SecurityConfigTest {
         var session = result.getRequest().getSession(false);
         assertThat(session == null || session.getAttribute("SPRING_SECURITY_SAVED_REQUEST") == null)
                 .isTrue();
+    }
+
+    @Test
+    void voiceNotesExactMethodsAllowedAndOthersDenied() throws Exception {
+        var token = mockMvc.perform(get("/api/v1/auth/csrf"))
+                .andReturn()
+                .getResponse()
+                .getCookie("XSRF-TOKEN");
+        var user = oidcLogin().oidcUser(AuthFixtures.localUser("Demo", null, false));
+
+        // Uncontracted methods denied on collection
+        for (String method : new String[] {"HEAD", "OPTIONS", "PATCH"}) {
+            mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request(
+                                    org.springframework.http.HttpMethod.valueOf(method), "/api/v1/voice-notes")
+                            .with(user)
+                            .cookie(token)
+                            .header("X-XSRF-TOKEN", token.getValue()))
+                    .andExpect(status().isForbidden());
+        }
+
+        // Uncontracted methods denied on item
+        for (String method : new String[] {"HEAD", "OPTIONS", "PATCH"}) {
+            mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request(
+                                    org.springframework.http.HttpMethod.valueOf(method),
+                                    "/api/v1/voice-notes/01900000-0000-7000-8000-000000000001")
+                            .with(user)
+                            .cookie(token)
+                            .header("X-XSRF-TOKEN", token.getValue()))
+                    .andExpect(status().isForbidden());
+        }
+
+        // Neighbour routes denied
+        for (String path :
+                new String[] {"/api/v1/voice-notes/extra/child", "/api/v1/voice-notes/", "/api/v1/voice/private"}) {
+            mockMvc.perform(get(path).with(user)).andExpect(status().isForbidden());
+        }
+
+        verifyNoInteractions(voiceNotes);
+    }
+
+    @Test
+    void voiceNotesAnonymousGets401() throws Exception {
+        mockMvc.perform(get("/api/v1/voice-notes").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/api/v1/voice-notes/01900000-0000-7000-8000-000000000001")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
     }
 }
