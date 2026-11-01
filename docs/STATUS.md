@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-030](tasks/T-030-voice-transport.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | `in_progress` |
-| Acción actual | Implementando proxies nginx/Vite, Compose voice-provider, doble externo y ensayo. |
-| Rama / PR | codex/t-030-voice-transport · PR pendiente |
+| Estado | `in_review` |
+| Acción actual | PR34 draft publicado. Revisión independiente + gate STARTER (Git Bash/Docker). |
+| Rama / PR | codex/t-030-voice-transport · [PR34](https://github.com/MatiasNicolasAcevedo/devnotes/pull/34) draft |
 
 T-029: PR33 MERGED, squash `3700ad0da30efe1ab517c3eb6f686b08bc7e1487`, confirmado en GitHub el 2026-11-01. Junie implementer + reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD c8ac0a4, base main 32e5584, docs-check OK, policy FULL. Backend clean verify 210/210 OK, JaCoCo OK, Spotless OK. Gate STARTER docs/server/client OK; tooling failure (test-init-copy.sh) preexistente.
 
@@ -52,5 +52,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie implementer, sesión nueva: tomar T-030 (docs/tasks/T-030-voice-transport.md), S-105 v2/M2-RC1. Confirmar PR33 MERGED (3700ad0da30efe1ab517c3eb6f686b08bc7e1487) y main/base actuales. Implementar proxies/Compose/doble externo según el contrato T-030. Ejecutar dirigidos y gate, docs-check/policy y entregar revisión independiente. Control de cinco tras T-030. Tras MERGED, otra sesión concilia done y toma T-031 predefinida; no implementarla en esta sesión.
+Junie reviewer, sesión nueva: revisar PR34 (codex/t-030-voice-transport, fd1e0bf), T-030. Base main 3700ad0. Verificar proxies nginx/Vite (21m, buffering off, 75s), Compose voice-provider overlay, doble externo y ensayo. Ejecutar gate STARTER con Git Bash/Docker Desktop: DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t030 STARTER_E2E_PROJECT=starter-e2e-t030 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter. Si APROBADO sin bloqueantes, merger mergea y otra sesión concilia done y toma T-031.
 ```
