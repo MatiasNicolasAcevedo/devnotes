@@ -79,6 +79,8 @@ public class SecurityConfig {
                             .authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/v1/voice/capabilities")
                             .authenticated()
+                            .requestMatchers(HttpMethod.POST, "/api/v1/voice/transcriptions")
+                            .authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/v1/voice-notes")
                             .authenticated()
                             .requestMatchers(HttpMethod.POST, "/api/v1/voice-notes")

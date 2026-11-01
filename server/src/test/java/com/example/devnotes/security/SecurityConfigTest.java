@@ -44,6 +44,12 @@ class SecurityConfigTest {
     private com.example.devnotes.voice.application.VoiceNoteService voiceNotes;
 
     @MockitoBean
+    private com.example.devnotes.voice.application.VoiceTranscriptionService voiceTranscription;
+
+    @MockitoBean
+    private com.example.devnotes.voice.infrastructure.GroqTranscriptionClient groqClient;
+
+    @MockitoBean
     private IdentityService identityService;
 
     @Autowired

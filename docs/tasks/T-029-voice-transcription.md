@@ -1,6 +1,6 @@
 ---
 id: T-029
-status: draft
+status: in_review
 priority: P1
 size: M
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-029-voice-transcription
-pr: null
+pr: 33
 depends_on: [T-028]
 ---
 # T-029 · Transcripción acotada mediante adaptador Groq
@@ -52,7 +52,7 @@ Validar request saliente y formato recibido; success sin filas nuevas. Casos byt
 
 ## Checkpoint vigente
 
-2026-10-31: contrato de frontera preparado en T-017 sobre main 0d976dc2187cb2a07061c3db48130c334b1e471b. Sin implementación, PR, migración aplicada ni tests de esta tarea ejecutados. Rol/modelo/herramienta/esfuerzo del ejecutor se registran al tomarla; no heredar capacidades Junie de frontera.
+2026-11-01: HEAD dac4b13, base main 32e5584. Junie implementer + reviewer, Qwen3.6-27B-FP8. Backend clean verify 210/210 OK (Surefire + Failsafe IT PostgreSQL), JaCoCo OK, Spotless OK. GroqTranscriptionClientTest 15/15, VoiceTranscriptionApiIT 8/8. Revisión independiente APROBADA sin bloqueantes. docs-check OK, policy FULL. Pendiente: gate STARTER completo, CI verde y merge.
 
 ## Correcciones significativas
 
