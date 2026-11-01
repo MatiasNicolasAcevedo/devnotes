@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-027](tasks/T-027-voice-storage.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | in_review |
-| Acción actual | PR31 publicado, esperando revisión independiente. Backend clean verify 190/190 OK. |
-| Rama / PR | codex/t-027-voice-storage · [PR31](https://github.com/MatiasNicolasAcevedo/devnotes/pull/31) |
+| Tarea y contrato | [T-028](tasks/T-028-voice-api.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
+| Estado | `in_progress` |
+| Acción actual | T-028 implementada, backend gate OK 202/202. Pendiente PR, revisión independiente y gate FULL. |
+| Rama / PR | codex/t-028-voice-api · — |
+
+T-027: PR31 MERGED, squash `cf518dc86daf02b66f077acc371184a4beb69280`, confirmado en GitHub el 2026-10-31. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD 3366c58, base main 6e7ebd0, CI verify-required SUCCESS (run 41252701369), docs-check OK. Backend clean verify 190/190 OK, JaCoCo OK, Spotless OK.
 
 T-017: PR30 MERGED, squash `6e7ebd01851ba1a81c856147d7895449ea97a7fe`, confirmado en GitHub el 2026-10-31.
 
@@ -46,5 +48,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie implementer, sesión nueva: tomar T-027 (docs/tasks/T-027-voice-storage.md), S-105 v2/M2-RC1. Confirmar PR30 MERGED (6e7ebd01851ba1a81c856147d7895449ea97a7fe) y main/base actuales. Implementar almacenamiento de notas de voz según el contrato T-027. Ejecutar dirigidos y gate, docs-check/policy y entregar revisión independiente. Tras MERGED, otra sesión concilia done y toma T-028 predefinida; no implementarla en esta sesión.
+Junie implementer, sesión nueva: tomar T-028 (docs/tasks/T-028-voice-api.md), S-105 v2/M2-RC1. Confirmar PR31 MERGED (cf518dc86daf02b66f077acc371184a4beb69280) y main/base actuales. Implementar CRUD y listado HTTP privados de voz según el contrato T-028. Ejecutar dirigidos y gate, docs-check/policy y entregar revisión independiente. Tras MERGED, otra sesión concilia done y toma T-029 predefinida; no implementarla en esta sesión.
 ```

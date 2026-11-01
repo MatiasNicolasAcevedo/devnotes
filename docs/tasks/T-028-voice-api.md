@@ -1,6 +1,6 @@
 ---
 id: T-028
-status: draft
+status: in_progress
 priority: P1
 size: S
 executor: junie
@@ -52,7 +52,7 @@ Rutas nuevas de backend bajo server/src/main/java/com/example/devnotes/ y sus te
 
 ## Checkpoint vigente
 
-2026-10-31: contrato de frontera preparado en T-017 sobre main 0d976dc2187cb2a07061c3db48130c334b1e471b. Sin implementación, PR, migración aplicada ni tests de esta tarea ejecutados. Rol/modelo/herramienta/esfuerzo del ejecutor se registran al tomarla; no heredar capacidades Junie de frontera.
+2026-10-31: Junie implementer, Qwen3.6-27B-FP8. Implementación publicada d6218e9 en codex/t-028-voice-api, base main cf518dc. Backend gate OK: 202/202 tests, JaCoCo OK, Spotless OK. Policy APPLICATION. Pendiente: PR abierto, revisión independiente y gate FULL (incluye frontend/E2E).
 
 ## Correcciones significativas
 
