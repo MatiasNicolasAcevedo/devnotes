@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-029](tasks/T-029-voice-transcription.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | `in-progress` |
-| Acción actual | Implementando adaptador/endpoint de transcripción. Backend clean verify 221/221 OK. |
-| Rama / PR | codex/t-029-voice-transcription · PR pendiente |
+| Estado | `in_progress` |
+| Acción actual | Backend clean verify 210/210 OK. Gate STARTER, revisión independiente y merge pendientes. |
+| Rama / PR | codex/t-029-voice-transcription · PR33 (ad1be02) |
 
 T-028: PR32 MERGED, squash `32e55845e5dd79f6e0b6276e7620604f20995d8f`, confirmado en GitHub el 2026-11-01. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD 7d5fb90, base main cf518dc, CI verify-required SUCCESS (run 41259585317), docs-check OK. Backend clean verify 202/202 OK, JaCoCo OK, Spotless OK.
 

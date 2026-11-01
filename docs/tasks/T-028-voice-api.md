@@ -1,6 +1,6 @@
 ---
 id: T-028
-status: in_progress
+status: done
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-028-voice-api
-pr: null
+pr: 32
 depends_on: [T-027]
 ---
 # T-028 · CRUD y listado HTTP privados de voz
@@ -52,7 +52,7 @@ Rutas nuevas de backend bajo server/src/main/java/com/example/devnotes/ y sus te
 
 ## Checkpoint vigente
 
-2026-10-31: Junie implementer, Qwen3.6-27B-FP8. Implementación publicada d6218e9 en codex/t-028-voice-api, base main cf518dc. Backend gate OK: 202/202 tests, JaCoCo OK, Spotless OK. Policy APPLICATION. Pendiente: PR abierto, revisión independiente y gate FULL (incluye frontend/E2E).
+2026-11-01: PR32 MERGED, squash 32e55845e5dd79f6e0b6276e7620604f20995d8f, confirmado en GitHub. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD 7d5fb90, base main cf518dc, CI verify-required SUCCESS (run 41259585317), docs-check OK. Backend 202/202 OK.
 
 ## Correcciones significativas
 
