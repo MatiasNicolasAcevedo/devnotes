@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-028](tasks/T-028-voice-api.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | `in_progress` |
-| Acción actual | T-028 implementada, código publicado. Pendiente PR abierto, revisión independiente y merge. |
-| Rama / PR | codex/t-028-voice-api · PR32 (b374909) |
+| Tarea y contrato | [T-029](tasks/T-029-voice-transcription.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
+| Estado | `in-progress` |
+| Acción actual | Implementando adaptador/endpoint de transcripción. Backend clean verify 221/221 OK. |
+| Rama / PR | codex/t-029-voice-transcription · PR pendiente |
+
+T-028: PR32 MERGED, squash `32e55845e5dd79f6e0b6276e7620604f20995d8f`, confirmado en GitHub el 2026-11-01. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD 7d5fb90, base main cf518dc, CI verify-required SUCCESS (run 41259585317), docs-check OK. Backend clean verify 202/202 OK, JaCoCo OK, Spotless OK.
 
 T-027: PR31 MERGED, squash `cf518dc86daf02b66f077acc371184a4beb69280`, confirmado en GitHub el 2026-10-31. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD 3366c58, base main 6e7ebd0, CI verify-required SUCCESS (run 41252701369), docs-check OK. Backend clean verify 190/190 OK, JaCoCo OK, Spotless OK.
 
@@ -48,5 +50,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie implementer, sesión nueva: tomar T-028 (docs/tasks/T-028-voice-api.md), S-105 v2/M2-RC1. Confirmar PR31 MERGED (cf518dc86daf02b66f077acc371184a4beb69280) y main/base actuales. Implementar CRUD y listado HTTP privados de voz según el contrato T-028. Ejecutar dirigidos y gate, docs-check/policy y entregar revisión independiente. Tras MERGED, otra sesión concilia done y toma T-029 predefinida; no implementarla en esta sesión.
+Junie implementer, sesión nueva: tomar T-029 (docs/tasks/T-029-voice-transcription.md), S-105 v2/M2-RC1. Confirmar PR32 MERGED (32e55845e5dd79f6e0b6276e7620604f20995d8f) y main/base actuales. Implementar adaptador/endpoint de transcripción con IT ficticio según el contrato T-029. Ejecutar dirigidos y gate, docs-check/policy y entregar revisión independiente. Tras MERGED, otra sesión concilia done y toma T-030 predefinida; no implementarla en esta sesión.
 ```

@@ -29,6 +29,12 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  servlet:
+    multipart:
+      # Voice transcription limits (S-105): 20 MiB file, 21 MiB request, keep in memory.
+      max-file-size: 20MB
+      max-request-size: 21MB
+      file-size-threshold: 21MB
 
 starter:
   name: "DevNotes"
@@ -98,3 +104,5 @@ devnotes:
   voice:
     enabled: ${DEVNOTES_VOICE_ENABLED:false}
     api-key: ${GROQ_API_KEY:}
+    test-provider: ${DEVNOTES_VOICE_TEST_PROVIDER:false}
+    test-provider-url: ${DEVNOTES_VOICE_TEST_PROVIDER_URL:}
