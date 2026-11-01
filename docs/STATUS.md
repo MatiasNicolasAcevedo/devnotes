@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-028](tasks/T-028-voice-api.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | `in_progress` |
-| Acción actual | T-028 implementada, backend gate OK 202/202. Pendiente PR, revisión independiente y gate FULL. |
-| Rama / PR | codex/t-028-voice-api · — |
+| Estado | `in_review` |
+| Acción actual | T-028 en revisión independiente. PR32 abierto, CI pendiente tras corrección docs (T-027→done, BACKLOG alineado). |
+| Rama / PR | codex/t-028-voice-api · PR32 (b374909) |
 
 T-027: PR31 MERGED, squash `cf518dc86daf02b66f077acc371184a4beb69280`, confirmado en GitHub el 2026-10-31. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD 3366c58, base main 6e7ebd0, CI verify-required SUCCESS (run 41252701369), docs-check OK. Backend clean verify 190/190 OK, JaCoCo OK, Spotless OK.
 
