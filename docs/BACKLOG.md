@@ -52,9 +52,9 @@ Quince contratos de producto I1 completados (T-003 y T-014 mergeadas). T-021 MER
 
 ## Próximo · I2 / M2-RC1 voz
 
-Próxima acción: [T-030](tasks/T-030-voice-transport.md), Junie implementer en sesión nueva, proxies/Compose/doble externo. T-029 ya MERGED (PR33 `3700ad0`). [S-105 v2](specs/S-105-voice-notes.md) sustituye el draft; [VOICE-RELEASE](VOICE-RELEASE.md) fija versión, activación y pruebas del dueño.
+Próxima acción: [T-031](tasks/T-031-voice-harness.md), Junie implementer, reparación del harness E2E. T-030 ya MERGED (PR34 `2581b17`). [S-105 v2](specs/S-105-voice-notes.md) sustituye el draft; [VOICE-RELEASE](VOICE-RELEASE.md) fija versión, activación y pruebas del dueño.
 
-El dueño decidió priorizar voz el 2026-10-31. T-017, T-027, T-028 y T-029 MERGED; T-030 ready con dependencia satisfecha. Las otras ocho tareas están completamente especificadas y draft exclusivamente por la dependencia indicada. No requieren otra sesión planner entre implementaciones. WIP1 y revisión independiente; no PR separado de planificación. Control de cinco tras T-030.
+El dueño decidió priorizar voz el 2026-10-31. T-017, T-027, T-028, T-029 y T-030 MERGED; T-031 en progreso con dependencia satisfecha. Las otras siete tareas están completamente especificadas y draft exclusivamente por la dependencia indicada. No requieren otra sesión planner entre implementaciones. WIP1 y revisión independiente; no PR separado de planificación. Control de cinco tras T-030 ya cumplido.
 
 | Orden | Contrato / resultado | Dependencia |
 |---|---|---|
