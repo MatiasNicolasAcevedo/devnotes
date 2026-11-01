@@ -1,6 +1,6 @@
 ---
 id: T-030
-status: draft
+status: in_review
 priority: P1
 size: M
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-030-voice-transport
-pr: null
+pr: 34
 depends_on: [T-029]
 ---
 # T-030 · Transporte de voz y doble externo aislado
@@ -53,7 +53,7 @@ Antes de operaciones largas: SHA/base, huellas, logs saneados, namespaces/puerto
 
 ## Checkpoint vigente
 
-Contrato de frontera 2026-10-31 sobre main 0d976dc2187cb2a07061c3db48130c334b1e471b. Sin código, ensayos, PR ni datos cambiados en esta tarea. Runtime del ejecutor se registra al tomarla.
+Implementación publicada fd1e0bf, base main 3700ad0. PR34 draft https://github.com/MatiasNicolasAcevedo/devnotes/pull/34. Proxies nginx/Vite con ruta exacta transcripción (21m, buffering off, 75s). Compose server con DEVNOTES_VOICE_ENABLED/GROQ_API_KEY. Overlay E2E con voice-provider (Node 24, sin puertos host, clave ficticia). Doble externo validado: 8/8 tests OK (éxito, 429, malformed, silencio, timeout, reset, 404). Ensayo test-voice-proxies.mjs creado. docs-check OK. Gate STARTER pendiente (requiere Git Bash/Docker Desktop). Revisión independiente pendiente.
 
 ## Correcciones significativas
 

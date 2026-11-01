@@ -39,6 +39,9 @@ services:
       # OpenAPI/Swagger UI (ADR 0003): apagado; opt-in solo con APP_PUBLIC_URL HTTP loopback, en /api/docs/.
       STARTER_API_DOCS_ENABLED: ${STARTER_API_DOCS_ENABLED:-false}
       SERVER_FORWARD_HEADERS_STRATEGY: framework
+      # Voice transcription (S-105 v2): disabled by default; key inherited from owner's environment.
+      DEVNOTES_VOICE_ENABLED: ${DEVNOTES_VOICE_ENABLED:-false}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy

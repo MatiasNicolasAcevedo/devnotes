@@ -179,7 +179,7 @@ test('daily progress updates task and STATUS without rewriting queue or HANDOFF'
   const path = join(temporary, 'docs/tasks', filename), before = readFileSync(path, 'utf8');
   try {
     writeFileSync(path, before.replace(/^status: \w+/m, 'status: in_progress'));
-    change('docs/STATUS.md', text => text.replace(/^(\| Estado \|) [a-z_]+ \|/m, '$1 in_progress |'));
+    change('docs/STATUS.md', text => text.replace(/^(\| Estado \|) `?[a-z_]+`? \|/m, '$1 `in_progress` |'));
     change('docs/BACKLOG.md', () => `# Cola\n\n- [${statusTask}](tasks/${filename}): trabajo actual y próxima dependencia.\n`);
     const result = run(); assert.equal(result.status, 0, result.stderr);
     assert.equal(readFileSync(join(temporary, 'docs/HANDOFF.md'), 'utf8'), originals.get('docs/HANDOFF.md'));

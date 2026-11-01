@@ -1,11 +1,16 @@
 # Overlay over docker-compose.yml + compose.auth-test.yml. No host ports.
 # Loopback origin stays valid under S-001: browser shares only the client's network namespace.
+# Voice provider (S-105 v2): isolated fake in private network, no host ports, fictitious key only.
 services:
   server:
     environment:
       APP_PUBLIC_URL: http://localhost
       # Explicit opt-in (ADR 0003): Swagger UI and document under /api/docs/ for swagger.spec.ts.
       STARTER_API_DOCS_ENABLED: "true"
+      # E2E overlay: enable voice with fictitious key and test provider (S-105 v2).
+      DEVNOTES_VOICE_ENABLED: "true"
+      GROQ_API_KEY: "fictitious-e2e-voice-key"
+      DEVNOTES_VOICE_TEST_PROVIDER: "true"
   client:
     ports: !reset []
     environment:
@@ -14,6 +19,19 @@ services:
     ports: !reset []
     volumes: !override
       - ${STARTER_E2E_ARTIFACTS:?script supplies a fresh directory}/control/oidc.json:/config/oidc.json:ro
+  voice-provider:
+    profiles: ["e2e"]
+    image: node:24.21.0-alpine
+    # No host ports — server reaches it via Docker network only.
+    command: ["node", "/app/voice-provider.mjs"]
+    volumes:
+      - ./e2e/fixtures/voice-provider.mjs:/app/voice-provider.mjs:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8091/healthz"]
+      interval: 2s
+      timeout: 1s
+      retries: 10
+      start_period: 2s
   e2e:
     profiles: ["e2e"]
     build:
@@ -27,4 +45,6 @@ services:
       - ${STARTER_E2E_ARTIFACTS:?script supplies a fresh directory}:/artifacts
     depends_on:
       client:
+        condition: service_healthy
+      voice-provider:
         condition: service_healthy
