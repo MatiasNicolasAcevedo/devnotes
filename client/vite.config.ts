@@ -11,6 +11,10 @@ const proxiedPaths = [
   '/logout',
   '^/actuator/health/readiness(?:\\?.*)?$',
 ]
+// Voice transcription requires extended timeouts for large multipart uploads (S-105 v2).
+// This exact path must be configured before the generic /api/ prefix so it takes precedence.
+const voiceTranscriptionPath = '/api/v1/voice/transcriptions'
+const voiceTimeout = 75_000 // 75 s — matches nginx proxy_send_timeout / proxy_read_timeout
 // En el contenedor client-dev apunta a http://server:8080; en el host, al server publicado en loopback.
 const apiTarget = process.env.STARTER_API_TARGET ?? 'http://127.0.0.1:8080'
 
@@ -92,33 +96,60 @@ export default defineConfig(({ command, mode }) => {
       strictPort: true,
       allowedHosts: origin ? [origin.host] : [],
       // Remove the entire incoming namespace, including unknown extensions, before writing upstream headers.
-      proxy: Object.fromEntries(
-        proxiedPaths.map((path) => [
-          path,
-          {
-            target: apiTarget,
-            xfwd: false,
-            configure(proxy) {
-              proxy.on('proxyReq', (proxyRequest, request) => {
-                for (const name of proxyRequest.getHeaderNames()) {
-                  if (
-                    name.toLowerCase() === 'forwarded' ||
-                    name.toLowerCase().startsWith('x-forwarded-')
-                  ) {
-                    proxyRequest.removeHeader(name)
-                  }
+      // Voice transcription proxy (exact path) must precede the generic /api/ prefix.
+      proxy: {
+        [voiceTranscriptionPath]: {
+          target: apiTarget,
+          xfwd: false,
+          // Extended timeout for large multipart audio uploads (S-105 v2).
+          proxyTimeout: voiceTimeout,
+          configure(proxy) {
+            proxy.on('proxyReq', (proxyRequest, request) => {
+              for (const name of proxyRequest.getHeaderNames()) {
+                if (
+                  name.toLowerCase() === 'forwarded' ||
+                  name.toLowerCase().startsWith('x-forwarded-')
+                ) {
+                  proxyRequest.removeHeader(name)
                 }
-                if (!origin) throw new Error('Public origin is required for the development proxy')
-                proxyRequest.setHeader('Host', origin.authority)
-                proxyRequest.setHeader('X-Forwarded-Host', origin.authority)
-                proxyRequest.setHeader('X-Forwarded-Proto', origin.scheme)
-                proxyRequest.setHeader('X-Forwarded-Port', origin.port)
-                proxyRequest.setHeader('X-Forwarded-For', request.socket.remoteAddress ?? '')
-              })
-            },
-          } satisfies ProxyOptions,
-        ]),
-      ),
+              }
+              if (!origin) throw new Error('Public origin is required for the development proxy')
+              proxyRequest.setHeader('Host', origin.authority)
+              proxyRequest.setHeader('X-Forwarded-Host', origin.authority)
+              proxyRequest.setHeader('X-Forwarded-Proto', origin.scheme)
+              proxyRequest.setHeader('X-Forwarded-Port', origin.port)
+              proxyRequest.setHeader('X-Forwarded-For', request.socket.remoteAddress ?? '')
+            })
+          },
+        } satisfies ProxyOptions,
+        ...Object.fromEntries(
+          proxiedPaths.map((path) => [
+            path,
+            {
+              target: apiTarget,
+              xfwd: false,
+              configure(proxy) {
+                proxy.on('proxyReq', (proxyRequest, request) => {
+                  for (const name of proxyRequest.getHeaderNames()) {
+                    if (
+                      name.toLowerCase() === 'forwarded' ||
+                      name.toLowerCase().startsWith('x-forwarded-')
+                    ) {
+                      proxyRequest.removeHeader(name)
+                    }
+                  }
+                  if (!origin) throw new Error('Public origin is required for the development proxy')
+                  proxyRequest.setHeader('Host', origin.authority)
+                  proxyRequest.setHeader('X-Forwarded-Host', origin.authority)
+                  proxyRequest.setHeader('X-Forwarded-Proto', origin.scheme)
+                  proxyRequest.setHeader('X-Forwarded-Port', origin.port)
+                  proxyRequest.setHeader('X-Forwarded-For', request.socket.remoteAddress ?? '')
+                })
+              },
+            } satisfies ProxyOptions,
+          ]),
+        ),
+      },
       // Bind mounts de Windows no propagan eventos de archivos al contenedor: client-dev activa polling.
       watch:
         process.env.STARTER_WATCH_POLLING === 'true' ? { usePolling: true, interval: 300 } : {},

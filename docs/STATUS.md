@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-029](tasks/T-029-voice-transcription.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | `in_review` |
-| Acción actual | Revisión APROBADA. Gate STARTER docs/server/client OK. tooling failure preexistente. Merge pendiente. |
-| Rama / PR | codex/t-029-voice-transcription · PR33 (ad1be02) |
+| Tarea y contrato | [T-030](tasks/T-030-voice-transport.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
+| Estado | `in_progress` |
+| Acción actual | Implementando proxies nginx/Vite, Compose voice-provider, doble externo y ensayo. |
+| Rama / PR | codex/t-030-voice-transport · PR pendiente |
+
+T-029: PR33 MERGED, squash `3700ad0da30efe1ab517c3eb6f686b08bc7e1487`, confirmado en GitHub el 2026-11-01. Junie implementer + reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD c8ac0a4, base main 32e5584, docs-check OK, policy FULL. Backend clean verify 210/210 OK, JaCoCo OK, Spotless OK. Gate STARTER docs/server/client OK; tooling failure (test-init-copy.sh) preexistente.
 
 T-028: PR32 MERGED, squash `32e55845e5dd79f6e0b6276e7620604f20995d8f`, confirmado en GitHub el 2026-11-01. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD 7d5fb90, base main cf518dc, CI verify-required SUCCESS (run 41259585317), docs-check OK. Backend clean verify 202/202 OK, JaCoCo OK, Spotless OK.
 
@@ -50,5 +52,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie implementer, sesión nueva: tomar T-029 (docs/tasks/T-029-voice-transcription.md), S-105 v2/M2-RC1. Confirmar PR32 MERGED (32e55845e5dd79f6e0b6276e7620604f20995d8f) y main/base actuales. Implementar adaptador/endpoint de transcripción con IT ficticio según el contrato T-029. Ejecutar dirigidos y gate, docs-check/policy y entregar revisión independiente. Tras MERGED, otra sesión concilia done y toma T-030 predefinida; no implementarla en esta sesión.
+Junie implementer, sesión nueva: tomar T-030 (docs/tasks/T-030-voice-transport.md), S-105 v2/M2-RC1. Confirmar PR33 MERGED (3700ad0da30efe1ab517c3eb6f686b08bc7e1487) y main/base actuales. Implementar proxies/Compose/doble externo según el contrato T-030. Ejecutar dirigidos y gate, docs-check/policy y entregar revisión independiente. Control de cinco tras T-030. Tras MERGED, otra sesión concilia done y toma T-031 predefinida; no implementarla en esta sesión.
 ```

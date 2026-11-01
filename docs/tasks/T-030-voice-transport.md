@@ -1,6 +1,6 @@
 ---
 id: T-030
-status: draft
+status: in_progress
 priority: P1
 size: M
 executor: junie
@@ -53,7 +53,7 @@ Antes de operaciones largas: SHA/base, huellas, logs saneados, namespaces/puerto
 
 ## Checkpoint vigente
 
-Contrato de frontera 2026-10-31 sobre main 0d976dc2187cb2a07061c3db48130c334b1e471b. Sin código, ensayos, PR ni datos cambiados en esta tarea. Runtime del ejecutor se registra al tomarla.
+Implementación en curso, rama codex/t-030-voice-transport desde HEAD c8ac0a4, base main 32e5584. PR33/T-029 confirmado MERGED (3700ad0). Proxies nginx/Vite con ruta exacta transcripción (21m, buffering off, 75s). Compose server con DEVNOTES_VOICE_ENABLED/GROQ_API_KEY. Overlay E2E con voice-provider (Node 24, sin puertos host, clave ficticia). Doble externo validado: 8/8 tests OK (éxito, 429, malformed, silencio, timeout, reset, 404). Ensayo test-voice-proxies.mjs creado con patrón de namespace único. Pendiente: commit/push, docs-check, gate STARTER, revisión independiente.
 
 ## Correcciones significativas
 
