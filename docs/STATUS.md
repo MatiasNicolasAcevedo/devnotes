@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-031](tasks/T-031-voice-harness.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | `in_progress` |
-| Acción actual | Reparación del harness E2E: parsear una vez y separar composeArgs/playwrightArgs. Tests Node 19/19 OK. |
-| Rama / PR | codex/t-031-voice-harness · PR pendiente |
+| Estado | `in_review` |
+| Acción actual | PR35 publicado. Revisión independiente + gate E2E completo (Git Bash con cygpath). |
+| Rama / PR | codex/t-031-voice-harness · [PR35](https://github.com/MatiasNicolasAcevedo/devnotes/pull/35) |
 
 T-030: PR34 MERGED, squash `2581b17cb19c949dbe7566ac77d830dd9fdcc7c9`, confirmado en GitHub el 2026-11-01. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD c02b721, base main 3700ad0, CI verify-required SUCCESS (run 41273488514), docs-check OK. Backend clean verify 210/210 OK, JaCoCo OK, Spotless OK. Gate STARTER docs/server/client/tooling OK.
 
@@ -54,5 +54,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie implementer, sesión nueva: T-031 (codex/t-031-voice-harness), continuar reparación del harness E2E. Base main 2581b17 (T-030 MERGED). Tests Node 19/19 OK. Gate STARTER pendiente: DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t031 STARTER_E2E_PROJECT=starter-e2e-t031 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter. Si APROBADO, publicar PR y otra sesión revisa.
+Junie reviewer, sesión nueva: revisar PR35 (codex/t-031-voice-harness, f409a0a), T-031. Base main 2581b17. Verificar separación composeArgs/playwrightArgs en run-e2e.mjs y e2e.sh, tests Node 19/19 OK. Gate E2E completo requiere Git Bash con cygpath. Si APROBADO sin bloqueantes, merger mergea y otra sesión concilia done y toma T-032.
 ```

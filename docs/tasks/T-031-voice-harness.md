@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-031-voice-harness
-pr: null
+pr: 35
 depends_on: [T-030]
 ---
 # T-031 · Iteración E2E con filtros y controlador real
@@ -52,7 +52,7 @@ scripts/e2e.sh, scripts/run-e2e.mjs y scripts/ci/e2e-arguments.test.mjs; e2e/tes
 
 ## Checkpoint vigente
 
-2026-11-01, rama codex/t-031-voice-harness, base main 2581b17. Reparación implementada: run-e2e.mjs parsea una vez y separa composeArgs/playwrightArgs; e2e.sh acepta --grep y --project con validación completa. Tests Node 19/19 OK (`node --test scripts/ci/e2e-arguments.test.mjs`). Gate STARTER pendiente.
+2026-11-01, rama codex/t-031-voice-harness, base main 2581b17. PR35 publicado (HEAD f409a0a). Reparación implementada: run-e2e.mjs parsea una vez y separa composeArgs/playwrightArgs; e2e.sh acepta --grep y --project con validación completa. Tests Node 19/19 OK. Gate STARTER: docs OK, server 210/210 OK, client 364/364 OK; tooling failure (test-init-copy.sh) preexistente; E2E completo requiere Git Bash con cygpath. Pendiente: revisión independiente.
 
 ## Correcciones significativas
 
