@@ -1,12 +1,42 @@
 #!/usr/bin/env bash
 # --harness proves A only; default runs the real B matrix. Always cleans its own project.
+# Supports --grep "pattern" and --project desktop|mobile for filtered iterations.
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib/isolated-auth.sh"
 isolated_init
-[[ $# -le 1 && ( $# == 0 || "$1" == --harness || "$1" == --runner-failure ) ]] || {
-  echo 'Usage: e2e.sh [--harness|--runner-failure]' >&2; exit 2;
-}
-if [[ $# == 0 ]]; then
+
+# Parse arguments: separate mode flags from Playwright filters.
+E2E_GREP=""
+E2E_PROJECT=""
+E2E_MODE=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --harness|--runner-failure)
+      [[ -z "$E2E_MODE" ]] || { echo "e2e.sh: duplicate mode flag" >&2; exit 2; }
+      E2E_MODE="$1"; shift ;;
+    --grep)
+      [[ $# -ge 2 ]] || { echo "e2e.sh: --grep requires a value" >&2; exit 2; }
+      [[ -z "$E2E_GREP" ]] || { echo "e2e.sh: duplicate --grep" >&2; exit 2; }
+      E2E_GREP="$2"; shift 2 ;;
+    --project)
+      [[ $# -ge 2 ]] || { echo "e2e.sh: --project requires a value" >&2; exit 2; }
+      [[ -z "$E2E_PROJECT" ]] || { echo "e2e.sh: duplicate --project" >&2; exit 2; }
+      if [[ "$2" != "desktop" && "$2" != "mobile" ]]; then
+        echo "e2e.sh: --project must be desktop or mobile" >&2; exit 2;
+      fi
+      E2E_PROJECT="$2"; shift 2 ;;
+    *)
+      echo "e2e.sh: unknown flag: $1" >&2; exit 2 ;;
+  esac
+done
+
+# Reject combining mode flags with filters.
+if [[ -n "$E2E_MODE" && ( -n "$E2E_GREP" || -n "$E2E_PROJECT" ) ]]; then
+  echo "e2e.sh: cannot combine --harness/--runner-failure with --grep/--project" >&2; exit 2;
+fi
+
+if [[ -z "$E2E_MODE" ]]; then
   # Product mode: host Node 24 runs the closed lifecycle/DB control (run-e2e.mjs). Fail before any build or resource.
   node -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 24 ? 0 : 1)' 2>/dev/null || {
     echo 'e2e.sh: product mode requires Node >= 24 on the host (scripts/run-e2e.mjs)' >&2; exit 2;
@@ -31,15 +61,26 @@ install_cleanup # Before build/up: handles partial start, build failure and sign
 compose build server client e2e
 compose up -d --wait --wait-timeout 300 db oidc server client
 compose run --rm --no-deps e2e node harness/readiness.mjs
-if [[ "${1:-}" == --harness ]]; then
+if [[ "$E2E_MODE" == "--harness" ]]; then
   compose run --rm --no-deps e2e npm run harness
-elif [[ "${1:-}" == --runner-failure ]]; then
+elif [[ "$E2E_MODE" == "--runner-failure" ]]; then
   # Infrastructure assay only: explicit container failure, never product evidence.
   compose run --rm --no-deps e2e node -e 'process.exit(42)'
 else
+  # Product mode: run full E2E lifecycle via run-e2e.mjs controller.
   # Prove this exact image's sanitizer (canaries, fail-closed refusal) before trusting any report it exports.
   compose run --rm --no-deps e2e python3 harness/test_sanitize.py
-  node scripts/run-e2e.mjs "${COMPOSE_ARGS[@]}" &
+  
+  # Build filter arguments for run-e2e.mjs (passed after compose args).
+  FILTER_ARGS=()
+  if [[ -n "$E2E_GREP" ]]; then
+    FILTER_ARGS+=('--grep' "$E2E_GREP")
+  fi
+  if [[ -n "$E2E_PROJECT" ]]; then
+    FILTER_ARGS+=('--project' "$E2E_PROJECT")
+  fi
+  
+  node scripts/run-e2e.mjs "${COMPOSE_ARGS[@]}" "${FILTER_ARGS[@]}" &
   COMPOSE_PID=$!
   code=0
   wait "$COMPOSE_PID" || code=$?

@@ -6,24 +6,38 @@ import { resolve, join } from 'node:path';
 import { setTimeout as pollDelay } from 'node:timers/promises';
 
 const args = process.argv.slice(2);
-const project = args[args.indexOf('-p') + 1];
+
+// Parse once: separate Playwright flags (--grep, --project) from Docker compose args.
+// Playwright flags must never reach docker compose operations.
+const grepIndex = args.indexOf('--grep');
+const grepPattern = grepIndex >= 0 ? args[grepIndex + 1] : undefined;
+const projectFilterIndex = args.indexOf('--project');
+const projectFilter = projectFilterIndex >= 0 ? args[projectFilterIndex + 1] : undefined;
+
+// Build composeArgs: remove Playwright-specific flags so Docker never sees them.
+const playwrightIndices = new Set();
+if (grepIndex >= 0) {
+  playwrightIndices.add(grepIndex);
+  playwrightIndices.add(grepIndex + 1);
+}
+if (projectFilterIndex >= 0) {
+  playwrightIndices.add(projectFilterIndex);
+  playwrightIndices.add(projectFilterIndex + 1);
+}
+const composeArgs = args.filter((_, i) => !playwrightIndices.has(i));
+
+const project = composeArgs[composeArgs.indexOf('-p') + 1];
 assert.match(project, /^starter-e2e-[a-z0-9][a-z0-9-]{0,47}$/);
 const root = resolve('e2e/artifacts', project);
 const control = join(root, 'control');
 
-// Soporte --grep para iteraciones rápidas: ejecutar solo tests que coincidan con el patrón.
-// La suite FULL (9 specs × 2 proyectos) tarda >100 min; usar --grep durante desarrollo.
-const grepIndex = args.indexOf('--grep');
-const grepPattern = grepIndex >= 0 ? args[grepIndex + 1] : undefined;
-
-// Validar argumentos base (sin --grep que es opcional).
-const baseArgs = grepPattern ? args.filter((_, i) => i !== grepIndex && i !== grepIndex + 1) : args;
-assert.deepEqual(baseArgs, ['compose', '--env-file', 'scripts/fixtures/e2e.env.example', '-p', project,
+// Validate base compose args (without Playwright flags).
+assert.deepEqual(composeArgs, ['compose', '--env-file', 'scripts/fixtures/e2e.env.example', '-p', project,
   '-f', 'docker-compose.yml', '-f', 'compose.auth-test.yml', '-f', 'docker-compose.e2e.yml',
   '--profile', 'oidc', '--profile', 'e2e']);
 const original = JSON.parse(readFileSync('scripts/fixtures/oidc.json', 'utf8'));
 function compose(command) {
-  const result = spawnSync('docker', [...args, ...command], { encoding: 'utf8', timeout: 120_000 });
+  const result = spawnSync('docker', [...composeArgs, ...command], { encoding: 'utf8', timeout: 120_000 });
   // Never echo exec output, errors or auth logs. Return only a narrow DB fingerprint to the test.
   assert.equal(result.status, 0, 'Own-project control operation failed (details withheld)');
   return result.stdout.trim();
@@ -86,14 +100,17 @@ const requested = process.env.STARTER_E2E_ASSERT_FAILURE ?? '';
 const inducedFailure = Object.hasOwn(directedSpecs, requested) ? requested : '0';
 const directedArguments = inducedFailure === '0' ? [] : ['--', directedSpecs[inducedFailure]];
 
-// Construir argumentos de Playwright: --grep (si se proporcionó) y specs dirigidas (si aplica).
+// Construir argumentos de Playwright: --grep, --project (si se proporcionaron) y specs dirigidas (si aplica).
 const playwrightArgs = [];
 if (grepPattern) {
   playwrightArgs.push('--grep', grepPattern);
 }
+if (projectFilter) {
+  playwrightArgs.push('--project', projectFilter);
+}
 playwrightArgs.push(...directedArguments);
 
-const runner = spawn('docker', [...args, 'run', '--rm', '--no-deps',
+const runner = spawn('docker', [...composeArgs, 'run', '--rm', '--no-deps',
   '-e', `E2E_ASSERT_FAILURE=${inducedFailure}`,
   'e2e', 'npx', 'playwright', 'test', ...playwrightArgs], { stdio: 'inherit' });
 let finished = false;
@@ -117,6 +134,6 @@ while (!finished) {
   await pollDelay(100); // IPC readiness polling, never a scenario wait.
 }
 const code = await completion;
-const sanitize = spawnSync('docker', [...args, 'run', '--rm', '--no-deps', 'e2e',
+const sanitize = spawnSync('docker', [...composeArgs, 'run', '--rm', '--no-deps', 'e2e',
   'python3', 'harness/sanitize.py'], { stdio: 'inherit', timeout: 30_000 });
 process.exitCode = code || (sanitize.status === 0 ? 0 : 1);
