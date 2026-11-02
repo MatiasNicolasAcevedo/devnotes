@@ -67,6 +67,140 @@ describe('createHttpClient', () => {
     expect(contentType).toBe('application/json')
   })
 
+  it('envía FormData como multipart con boundary del browser y sin Content-Type manual', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const capturedFetch = vi.fn().mockImplementation(async (_input: unknown, _init: unknown) => {
+      // Verifica que no se establece Content-Type manual (el browser lo genera)
+      return Promise.resolve(
+        new Response(JSON.stringify({ text: 'hola', language: 'es' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      )
+    })
+
+    const fd = new FormData()
+    fd.append('file', new Blob(['fake-audio'], { type: 'audio/webm' }), 'recording.webm')
+
+    const client = createHttpClient({ fetch: capturedFetch as typeof fetch })
+    const result = await client.request(
+      PATH,
+      z.object({ text: z.string(), language: z.string() }),
+      {
+        method: 'POST',
+        formData: fd,
+      },
+    )
+
+    expect(result).toEqual({ text: 'hola', language: 'es' })
+    // Cuando se envía FormData, el browser establece Content-Type con el boundary
+    // En jsdom, FormData como body no establece Content-Type automáticamente,
+    // pero el cliente NO debe establecerlo manualmente
+    expect(capturedFetch).toHaveBeenCalled()
+    const callArgs = capturedFetch.mock.calls[0]
+    const init = callArgs[1] as { body?: FormData; headers?: Headers } | undefined
+    expect(init?.body).toBe(fd)
+    // El header Content-Type NO debe estar en Headers (el browser lo añade al enviar)
+    const headers = init?.headers as Headers | undefined
+    expect(headers?.has('Content-Type')).toBe(false)
+  })
+
+  it('rechaza body y formData simultáneos', async () => {
+    server.use(mock.post(PATH, () => new HttpResponse(null, { status: 204 })))
+
+    const fd = new FormData()
+    fd.append('file', new Blob(['x']))
+
+    await expect(
+      createHttpClient().requestVoid(PATH, { method: 'POST', body: { a: 1 }, formData: fd }),
+    ).rejects.toThrow('body y formData son mutuamente excluyentes')
+  })
+
+  it('envía CSRF en FormData al mismo origen', async () => {
+    let csrfHeader: string | null = null
+    const capturedFetch = vi.fn().mockImplementation(async (_input: unknown, init: unknown) => {
+      const headers = (init as { headers?: Headers })?.headers as Headers | undefined
+      csrfHeader = headers?.get('X-Test-Csrf') ?? null
+      return Promise.resolve(
+        new Response(JSON.stringify({ text: 'ok', language: 'es' }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      )
+    })
+
+    const fd = new FormData()
+    fd.append('file', new Blob(['x']))
+
+    await createHttpClient({
+      csrfToken: () => ({ headerName: 'X-Test-Csrf', token: 'csrf-fd' }),
+      fetch: capturedFetch as typeof fetch,
+    }).request(PATH, z.object({ text: z.string(), language: z.string() }), {
+      method: 'POST',
+      formData: fd,
+    })
+
+    expect(csrfHeader).toBe('csrf-fd')
+  })
+
+  it('aborta FormData sin convertirlo en NetworkError', async () => {
+    const controller = new AbortController()
+    const capturedFetch = vi.fn().mockImplementation((_input, init) => {
+      // Propaga el aborto del signal
+      const signal = (init as { signal?: AbortSignal }).signal
+      return new Promise<never>((_resolve, reject) => {
+        signal?.addEventListener('abort', () => {
+          reject(new DOMException('The operation was aborted.', 'AbortError'))
+        })
+      })
+    })
+
+    const fd = new FormData()
+    fd.append('file', new Blob(['x']))
+
+    const pending = createHttpClient({ fetch: capturedFetch as typeof fetch }).requestVoid(PATH, {
+      method: 'POST',
+      formData: fd,
+      signal: controller.signal,
+    })
+    controller.abort()
+
+    const error = await pending.catch((e: unknown) => e)
+    expect(error).not.toBeInstanceOf(NetworkError)
+    expect(error).toMatchObject({ name: 'AbortError' })
+  })
+
+  it('sessionIsCurrent con FormData: 401 obsoleto no publica expiración', async () => {
+    let release!: () => void
+    const held = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const capturedFetch = vi.fn().mockImplementation(async () => {
+      await held
+      return Promise.resolve(
+        new Response(JSON.stringify({ type: 'about:blank', title: 'Unauthorized', status: 401 }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/problem+json' },
+        }),
+      )
+    })
+    const listener = vi.fn()
+    const client = createHttpClient({
+      onUnauthorized: listener,
+      fetch: capturedFetch as typeof fetch,
+    })
+    let current = true
+    const fd = new FormData()
+    fd.append('file', new Blob(['x']))
+    const pending = client
+      .requestVoid(PATH, { method: 'POST', formData: fd, sessionIsCurrent: () => current })
+      .catch((error: unknown) => error)
+    current = false
+    release()
+    expect(await pending).toMatchObject({ status: 401 })
+    expect(listener).not.toHaveBeenCalled()
+  })
+
   it('convierte un ProblemDetail en ApiError con errores de campo', async () => {
     server.use(
       mock.post(PATH, () =>
