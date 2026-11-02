@@ -72,8 +72,10 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
 export interface RequestOptions {
   method?: HttpMethod
-  /** Se serializa como JSON. */
+  /** Se serializa como JSON. Mutuamente excluyente con `formData`. */
   body?: unknown
+  /** FormData para multipart (p. ej. transcripción de voz). El browser genera el boundary. Mutuamente excluyente con `body`. */
+  formData?: FormData
   /** Cancela la petición (TanStack Query lo provee en `queryFn`). El aborto se propaga tal cual, sin envolverlo. */
   signal?: AbortSignal
   /** Scoped private requests can identify a superseded session; rejection still reaches their caller. */
@@ -108,11 +110,17 @@ export function createHttpClient(options: HttpClientOptions = {}): HttpClient {
 
   async function send(
     path: string,
-    { method = 'GET', body, signal, sessionIsCurrent }: RequestOptions,
+    { method = 'GET', body, formData, signal, sessionIsCurrent }: RequestOptions,
   ): Promise<Response> {
+    if (body !== undefined && formData !== undefined) {
+      throw new Error('body y formData son mutuamente excluyentes')
+    }
     const headers = new Headers({ Accept: ACCEPT })
-    let payload: string | undefined
-    if (body !== undefined) {
+    let payload: string | FormData | undefined
+    if (formData !== undefined) {
+      // El browser genera el boundary automáticamente; no establecer Content-Type manual.
+      payload = formData
+    } else if (body !== undefined) {
       headers.set('Content-Type', 'application/json')
       payload = JSON.stringify(body)
     }

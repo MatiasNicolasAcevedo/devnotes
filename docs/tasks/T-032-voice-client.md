@@ -1,6 +1,6 @@
 ---
 id: T-032
-status: draft
+status: mergeable
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-032-voice-client
-pr: null
+pr: 36
 depends_on: [T-031]
 ---
 # T-032 · Cliente HTTP multipart y datos privados de voz
@@ -52,7 +52,9 @@ Envío multipart real con browser boundary, JSON previo intacto, no body+formDat
 
 ## Checkpoint vigente
 
-2026-10-31: contrato de frontera preparado en T-017 sobre main 0d976dc2187cb2a07061c3db48130c334b1e471b. Sin implementación, PR, migración aplicada ni tests de esta tarea ejecutados. Rol/modelo/herramienta/esfuerzo del ejecutor se registran al tomarla; no heredar capacidades Junie de frontera.
+2026-11-01: PR36 publicado (HEAD e449003). Client gate OK: 408 tests, 82.12% coverage. Gate APPLICATION: docs OK, server 210/210 OK (347s), client OK (78s). E2E FALLÓ por variable STARTER_E2E_ARTIFACTS ausente (preexistente, no afecta T-032 — sin specs de voz aún). Junie implementer, Qwen3.6-27B-FP8. Pendiente: revisión independiente.
+
+2026-11-01: Revisión independiente (Junie reviewer, Qwen3.6-27B-FP8). Diff verificado: http.ts formData con exclusión mutua y boundary del browser, API Zod con schemas de capacidades/transcripción/CRUD y rechazo de datos inválidos, hooks Query con keys fuera de ['auth'], retry=false en mutaciones, invalidación tras mutar. Tests dirigidos OK (408/408). CI verify-required SUCCESS en HEAD d2a16dc. Sin conversaciones bloqueantes. APROBADO sin bloqueantes.
 
 ## Correcciones significativas
 

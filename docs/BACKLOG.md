@@ -52,9 +52,9 @@ Quince contratos de producto I1 completados (T-003 y T-014 mergeadas). T-021 MER
 
 ## Próximo · I2 / M2-RC1 voz
 
-Próxima acción: [T-031](tasks/T-031-voice-harness.md), Junie implementer, reparación del harness E2E. T-030 ya MERGED (PR34 `2581b17`). [S-105 v2](specs/S-105-voice-notes.md) sustituye el draft; [VOICE-RELEASE](VOICE-RELEASE.md) fija versión, activación y pruebas del dueño.
+Próxima acción: [T-032](tasks/T-032-voice-client.md), Junie implementer, cliente HTTP multipart y datos privados de voz. T-031 ya MERGED (PR35 `af467de`). [S-105 v2](specs/S-105-voice-notes.md) sustituye el draft; [VOICE-RELEASE](VOICE-RELEASE.md) fija versión, activación y pruebas del dueño.
 
-El dueño decidió priorizar voz el 2026-10-31. T-017, T-027, T-028, T-029 y T-030 MERGED; T-031 en progreso con dependencia satisfecha. Las otras siete tareas están completamente especificadas y draft exclusivamente por la dependencia indicada. No requieren otra sesión planner entre implementaciones. WIP1 y revisión independiente; no PR separado de planificación. Control de cinco tras T-030 ya cumplido.
+El dueño decidió priorizar voz el 2026-10-31. T-017, T-027, T-028, T-029, T-030 y T-031 MERGED; T-032 en progreso con dependencia satisfecha. Las otras seis tareas están completamente especificadas y draft exclusivamente por la dependencia indicada. No requieren otra sesión planner entre implementaciones. WIP1 y revisión independiente; no PR separado de planificación.
 
 | Orden | Contrato / resultado | Dependencia |
 |---|---|---|
@@ -64,7 +64,7 @@ El dueño decidió priorizar voz el 2026-10-31. T-017, T-027, T-028, T-029 y T-0
 | 4 | [T-029](tasks/T-029-voice-transcription.md) · Adaptador/endpoint con IT ficticio | T-028 MERGED |
 | 5 | [T-030](tasks/T-030-voice-transport.md) · Proxies/Compose/doble externo; control de cinco tras merge | T-029 MERGED |
 | 6 | [T-031](tasks/T-031-voice-harness.md) · Reparar filtros/lifecycle y E2E de transporte | T-030 MERGED |
-| 7 | [T-032](tasks/T-032-voice-client.md) · HTTP multipart y Query privada | T-031 MERGED |
+| 7 | [T-032](tasks/T-032-voice-client.md) · HTTP multipart y Query privada | T-031 MERGED, in_progress |
 | 8 | [T-033](tasks/T-033-voice-recorder.md) · Captura/ciclo de vida | T-032 MERGED |
 | 9 | [T-034](tasks/T-034-voice-workspace.md) · Pantalla nueva, edición/copia/guardado | T-033 MERGED |
 | 10 | [T-035](tasks/T-035-voice-library.md) · Colección/consulta/corrección/borrado; control de diez tras merge | T-034 MERGED |
