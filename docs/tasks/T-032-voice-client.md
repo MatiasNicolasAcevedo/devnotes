@@ -1,6 +1,6 @@
 ---
 id: T-032
-status: in_review
+status: mergeable
 priority: P1
 size: S
 executor: junie
@@ -53,6 +53,8 @@ Envío multipart real con browser boundary, JSON previo intacto, no body+formDat
 ## Checkpoint vigente
 
 2026-11-01: PR36 publicado (HEAD e449003). Client gate OK: 408 tests, 82.12% coverage. Gate APPLICATION: docs OK, server 210/210 OK (347s), client OK (78s). E2E FALLÓ por variable STARTER_E2E_ARTIFACTS ausente (preexistente, no afecta T-032 — sin specs de voz aún). Junie implementer, Qwen3.6-27B-FP8. Pendiente: revisión independiente.
+
+2026-11-01: Revisión independiente (Junie reviewer, Qwen3.6-27B-FP8). Diff verificado: http.ts formData con exclusión mutua y boundary del browser, API Zod con schemas de capacidades/transcripción/CRUD y rechazo de datos inválidos, hooks Query con keys fuera de ['auth'], retry=false en mutaciones, invalidación tras mutar. Tests dirigidos OK (408/408). CI verify-required SUCCESS en HEAD d2a16dc. Sin conversaciones bloqueantes. APROBADO sin bloqueantes.
 
 ## Correcciones significativas
 
