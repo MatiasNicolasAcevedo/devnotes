@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-032](tasks/T-032-voice-client.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | `mergeable` |
-| Acción actual | Revisión independiente APROBADA sin bloqueantes. Pendiente: merge squash. |
-| Rama / PR | codex/t-032-voice-client · [PR36](https://github.com/MatiasNicolasAcevedo/devnotes/pull/36) |
+| Tarea y contrato | [T-033](tasks/T-033-voice-recorder.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
+| Estado | `in_progress` |
+| Acción actual | Implementando recorder.ts, useVoiceRecorder.ts y pruebas unitarias. |
+| Rama / PR | codex/t-033-voice-recorder · draft |
+
+T-032: PR36 MERGED, squash `f3bbaa80b9db64f607c953e58ea792c66461d53a`, confirmado en GitHub el 2026-11-02. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD b9d4192, base main af467de, CI verify-required SUCCESS, docs-check OK. Client gate 408/408 tests OK.
 
 T-031: PR35 MERGED, squash `af467de3a75cef0858f8d65682e2dd6206a6ddb7`, confirmado en GitHub el 2026-11-02.
 
@@ -56,5 +58,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie reviewer, sesión nueva: revisar PR de T-032 (codex/t-032-voice-client). Verificar http.ts formData, API Zod, hooks Query. Gate APPLICATION ya ejecutado. Si APROBADO sin bloqueantes, merger mergea.
+Junie implementer, sesión nueva: T-033 (codex/t-033-voice-recorder). Captura y ciclo de vida de voz. T-032 ya MERGED (PR36 f3bbaa8).
 ```
