@@ -1,6 +1,6 @@
 ---
 id: T-032
-status: in_progress
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-032-voice-client
-pr: null
+pr: 36
 depends_on: [T-031]
 ---
 # T-032 · Cliente HTTP multipart y datos privados de voz
@@ -52,7 +52,7 @@ Envío multipart real con browser boundary, JSON previo intacto, no body+formDat
 
 ## Checkpoint vigente
 
-2026-11-01: T-031 MERGED confirmado (af467de, PR35). Rama codex/t-032-voice-client creada desde main actualizada. Junie implementer, Qwen3.6-27B-FP8. Implementando http.ts formData, API Zod, hooks Query. Pendiente: tests dirigidos y gate APPLICATION.
+2026-11-01: PR36 publicado (HEAD e449003). Client gate OK: 408 tests, 82.12% coverage. Gate APPLICATION: docs OK, server 210/210 OK (347s), client OK (78s). E2E FALLÓ por variable STARTER_E2E_ARTIFACTS ausente (preexistente, no afecta T-032 — sin specs de voz aún). Junie implementer, Qwen3.6-27B-FP8. Pendiente: revisión independiente.
 
 ## Correcciones significativas
 

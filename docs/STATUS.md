@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-032](tasks/T-032-voice-client.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | `in_progress` |
-| Acción actual | Implementar http.ts formData, API Zod, hooks Query para voice. |
-| Rama / PR | codex/t-032-voice-client · PR pendiente |
+| Estado | `in_review` |
+| Acción actual | PR36 publicado. Revisión independiente + gate APPLICATION (backend + E2E). |
+| Rama / PR | codex/t-032-voice-client · [PR36](https://github.com/MatiasNicolasAcevedo/devnotes/pull/36) |
 
 T-031: PR35 MERGED, squash `af467de3a75cef0858f8d65682e2dd6206a6ddb7`, confirmado en GitHub el 2026-11-02.
 
