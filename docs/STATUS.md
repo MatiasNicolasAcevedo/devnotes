@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-033](tasks/T-033-voice-recorder.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | `in_progress` |
-| Acción actual | Implementando recorder.ts, useVoiceRecorder.ts y pruebas unitarias. |
-| Rama / PR | codex/t-033-voice-recorder · draft |
+| Estado | `in_review` |
+| Acción actual | PR37 publicado, esperando revisión independiente. |
+| Rama / PR | codex/t-033-voice-recorder · [PR37](https://github.com/MatiasNicolasAcevedo/devnotes/pull/37) |
 
 T-032: PR36 MERGED, squash `f3bbaa80b9db64f607c953e58ea792c66461d53a`, confirmado en GitHub el 2026-11-02. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD b9d4192, base main af467de, CI verify-required SUCCESS, docs-check OK. Client gate 408/408 tests OK.
 
