@@ -13,7 +13,9 @@ export const voiceNoteTextSchema = z
     // Normalizar CRLF/CR a LF
     const normalized = s.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
     // Sin U+0000 ni sustitutos aislados
-    if (/[\u0000]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<=[\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/.test(normalized)) {
+    if (
+      /\0|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<=[\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/.test(normalized)
+    ) {
       return false
     }
     // Al menos un carácter fuera de Unicode White_Space
@@ -96,30 +98,32 @@ export function useVoiceDraft() {
     setState((prev) => ({
       ...prev,
       text: normalized,
-      documentState: normalized.replace(/\s/g, '').length > 0 ? 'dirty' : prev.documentState === 'new' ? 'new' : 'dirty',
+      documentState:
+        normalized.replace(/\s/g, '').length > 0
+          ? 'dirty'
+          : prev.documentState === 'new'
+            ? 'new'
+            : 'dirty',
     }))
   }, [])
 
   /** Aplica la respuesta de transcripción al borrador. Solo si coincide la generación. */
-  const applyTranscription = useCallback(
-    (text: string, generation: number) => {
-      setState((prev) => {
-        if (prev.generation !== generation) return prev
-        const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
-        return {
-          ...prev,
-          text: normalized,
-          documentState: 'dirty',
-          captureState: 'idle',
-          captureResult: null,
-          captureError: null,
-          elapsedSeconds: 0,
-          elapsedFormatted: '00:00',
-        }
-      })
-    },
-    [],
-  )
+  const applyTranscription = useCallback((text: string, generation: number) => {
+    setState((prev) => {
+      if (prev.generation !== generation) return prev
+      const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+      return {
+        ...prev,
+        text: normalized,
+        documentState: 'dirty',
+        captureState: 'idle',
+        captureResult: null,
+        captureError: null,
+        elapsedSeconds: 0,
+        elapsedFormatted: '00:00',
+      }
+    })
+  }, [])
 
   /** Inicia la transcripción del blob capturado. */
   const transcribe = useCallback(() => {
@@ -149,7 +153,7 @@ export function useVoiceDraft() {
         })
       },
     })
-  }, [state.captureResult, state.generation, applyTranscription, transcribeMutation])
+  }, [state, applyTranscription, transcribeMutation])
 
   /** Guarda el borrador como nota nueva. */
   const save = useCallback(() => {
@@ -172,7 +176,7 @@ export function useVoiceDraft() {
         }))
       },
     })
-  }, [state.text, isTextEmpty, createMutation.isPending, createMutation])
+  }, [state.text, isTextEmpty, createMutation])
 
   /** Copia el texto actual al portapapeles. */
   const copyToClipboard = useCallback(async (): Promise<boolean> => {

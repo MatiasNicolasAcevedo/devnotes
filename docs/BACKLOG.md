@@ -52,7 +52,7 @@ Quince contratos de producto I1 completados (T-003 y T-014 mergeadas). T-021 MER
 
 ## Próximo · I2 / M2-RC1 voz
 
-Próxima acción: [T-033](tasks/T-033-voice-recorder.md), Junie implementer, captura y ciclo de vida de voz. T-032 ya MERGED (PR36 `f3bbaa8`). [S-105 v2](specs/S-105-voice-notes.md) sustituye el draft; [VOICE-RELEASE](VOICE-RELEASE.md) fija versión, activación y pruebas del dueño.
+Próxima acción: [T-034](tasks/T-034-voice-workspace.md), Junie implementer, pantalla nueva con edición, copia y guardado. T-033 ya MERGED (PR37 `27ceb1b`). [S-105 v2](specs/S-105-voice-notes.md) sustituye el draft; [VOICE-RELEASE](VOICE-RELEASE.md) fija versión, activación y pruebas del dueño.
 
 El dueño decidió priorizar voz el 2026-10-31. T-017, T-027, T-028, T-029, T-030, T-031 y T-032 MERGED. Las otras cinco tareas están completamente especificadas y draft exclusivamente por la dependencia indicada. No requieren otra sesión planner entre implementaciones. WIP1 y revisión independiente; no PR separado de planificación.
 

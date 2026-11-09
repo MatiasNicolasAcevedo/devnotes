@@ -19,11 +19,7 @@ export function VoicePage() {
           mx: 'auto',
         }}
       >
-        <Typography
-          component="h1"
-          variant="h5"
-          sx={{ mb: 2, fontWeight: 600 }}
-        >
+        <Typography component="h1" variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
           Notas de voz
         </Typography>
         <VoiceComposer />

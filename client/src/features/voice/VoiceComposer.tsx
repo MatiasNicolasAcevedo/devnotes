@@ -74,7 +74,11 @@ export function VoiceComposer() {
 
   // Enfocar el textarea tras transcripción exitosa
   useEffect(() => {
-    if (draft.state.documentState === 'dirty' && draft.state.captureState === 'idle' && !draft.state.captureResult) {
+    if (
+      draft.state.documentState === 'dirty' &&
+      draft.state.captureState === 'idle' &&
+      !draft.state.captureResult
+    ) {
       textAreaRef.current?.focus()
     }
   }, [draft.state.documentState, draft.state.captureState, draft.state.captureResult])
@@ -166,8 +170,8 @@ export function VoiceComposer() {
       {showGroqWarning && recordingEnabled && (
         <Alert severity="info" sx={{ mb: 2 }}>
           <Typography component="span">
-            Al detener, el audio se envía a Groq para transcribir. DevNotes guarda solo el texto que decidas guardar. La
-            retención de Groq depende de{' '}
+            Al detener, el audio se envía a Groq para transcribir. DevNotes guarda solo el texto que
+            decidas guardar. La retención de Groq depende de{' '}
             <Link
               href="https://console.groq.com/docs/your-data"
               target="_blank"
@@ -209,12 +213,7 @@ export function VoiceComposer() {
           sx={{ mb: 2 }}
           action={
             <Stack direction="row" spacing={1} useFlexGap>
-              <Button
-                size="small"
-                color="inherit"
-                onClick={handleStopRecording}
-                variant="outlined"
-              >
+              <Button size="small" color="inherit" onClick={handleStopRecording} variant="outlined">
                 Detener y transcribir
               </Button>
               <Button size="small" color="inherit" onClick={handleCancelRecording}>
@@ -365,21 +364,13 @@ export function VoiceComposer() {
 
         {/* Copiar */}
         {!draft.isTextEmpty && (
-          <Button
-            variant="outlined"
-            onClick={handleCopy}
-            disabled={isTranscribing || isSaving}
-          >
+          <Button variant="outlined" onClick={handleCopy} disabled={isTranscribing || isSaving}>
             Copiar
           </Button>
         )}
 
         {/* Guardar */}
-        <Button
-          variant="contained"
-          onClick={handleSave}
-          disabled={!canSave}
-        >
+        <Button variant="contained" onClick={handleSave} disabled={!canSave}>
           {isSaving ? 'Guardando…' : 'Guardar'}
         </Button>
       </Stack>
