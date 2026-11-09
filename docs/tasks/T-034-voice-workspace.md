@@ -1,6 +1,6 @@
 ---
 id: T-034
-status: changes_requested
+status: in_review
 priority: P1
 size: M
 executor: junie
@@ -52,12 +52,7 @@ Flujo de nota nueva completo sin guardado implícito, borrar palabras/copiar val
 
 ## Checkpoint vigente
 
-2026-11-09: Revisión independiente: CAMBIOS REQUERIDOS (4 bloqueantes). HEAD d09c47a, base main e1648a5. Server gate 210/210 OK, JaCoCo OK. Client gate FALLÓ: ESLint 1 error + 2 warnings en useVoiceDraft.ts. Docs-check FALLÓ: T-033 status y BACKLOG.md desactualizados. Bloqueantes:
-
-- **B-1** VoiceComposer.test.tsx ausente — la tarea lo exige explícitamente (`npm test -- --run src/features/voice/VoiceComposer.test.tsx`).
-- **B-2** ESLint error `no-control-regex` en useVoiceDraft.ts:16 — el regex `\u0000` contiene un control character. Corregir usando clase de caracteres o escape alternativo.
-- **B-3** ESLint warnings `react-hooks/exhaustive-deps` en useVoiceDraft.ts:152 (missing dep `state` en `transcribe`) y :175 (unnecessary dep `createMutation.isPending` en `save`). Con `--max-warnings 0`, los warnings son bloqueantes.
-- **B-4** docs-check falla — T-033 frontmatter `status: in_review` debe ser `merged`; BACKLOG.md "Próxima acción" apunta a T-033, no T-034. El PR no los actualizó.
+2026-11-09: Segunda revisión independiente: APROBADA sin bloqueantes. HEAD 69b6a1b, base main e1648a5. Los 4 bloqueantes (B-1 a B-4) corregidos en 8a007b2 y 69b6a1b. Client gate OK: lint sin errores, typecheck OK, VoiceComposer.test.tsx 5/5, AppRoutes.test.tsx 7/7, voiceNoteTextSchema.test.ts 7/7, build OK. Docs-check OK. git diff --check limpio. Junie reviewer, Qwen3.6-27B-FP8.
 
 ## Correcciones significativas
 
