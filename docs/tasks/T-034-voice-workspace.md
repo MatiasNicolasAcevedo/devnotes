@@ -1,6 +1,6 @@
 ---
 id: T-034
-status: in_progress
+status: changes_requested
 priority: P1
 size: M
 executor: junie
@@ -52,7 +52,12 @@ Flujo de nota nueva completo sin guardado implícito, borrar palabras/copiar val
 
 ## Checkpoint vigente
 
-2026-11-09: PR39 publicado (d09c47a). VoicePage, VoiceComposer, useVoiceDraft, ruta /voice y enlace Voz implementados. Typecheck OK. voiceNoteTextSchema.test.ts 7/7 OK. AppRoutes.test.tsx actualizado con test /voice. Gate APPLICATION pendiente. Esperando revisión independiente.
+2026-11-09: Revisión independiente: CAMBIOS REQUERIDOS (4 bloqueantes). HEAD d09c47a, base main e1648a5. Server gate 210/210 OK, JaCoCo OK. Client gate FALLÓ: ESLint 1 error + 2 warnings en useVoiceDraft.ts. Docs-check FALLÓ: T-033 status y BACKLOG.md desactualizados. Bloqueantes:
+
+- **B-1** VoiceComposer.test.tsx ausente — la tarea lo exige explícitamente (`npm test -- --run src/features/voice/VoiceComposer.test.tsx`).
+- **B-2** ESLint error `no-control-regex` en useVoiceDraft.ts:16 — el regex `\u0000` contiene un control character. Corregir usando clase de caracteres o escape alternativo.
+- **B-3** ESLint warnings `react-hooks/exhaustive-deps` en useVoiceDraft.ts:152 (missing dep `state` en `transcribe`) y :175 (unnecessary dep `createMutation.isPending` en `save`). Con `--max-warnings 0`, los warnings son bloqueantes.
+- **B-4** docs-check falla — T-033 frontmatter `status: in_review` debe ser `merged`; BACKLOG.md "Próxima acción" apunta a T-033, no T-034. El PR no los actualizó.
 
 ## Correcciones significativas
 
