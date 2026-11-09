@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-035](tasks/T-035-voice-library.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
 | Estado | `changes_requested` |
-| Acción actual | Frontera decidió B-1 (estado `conflict` explícito) y B-2 (`save()` devuelve `Promise<SaveOutcome>`); corrección local con client gate OK (468/468). Pendiente: publicar en PR40 y nueva revisión independiente autorizada por el dueño. Detalle en la tarea. |
+| Acción actual | 4.ª revisión independiente (ronda extra autorizada por el dueño) sobre HEAD a328044 / base 085dc76: CAMBIOS REQUERIDOS. Bloqueantes 409/Guardar y continuar resueltos; nuevos B-1 (ACK tardío de guardado/borrado sobrescribe otra nota) y B-2 (faltan negativos de borrado: cancelar, 404, 500). Client gate 468/468 OK, docs-check OK, CI verify-required SUCCESS. Siguiente: corrección por implementer nuevo; otra revisión requiere autorización del dueño. Detalle en la tarea. |
 | Rama / PR | codex/t-035-voice-library · [PR40](https://github.com/MatiasNicolasAcevedo/devnotes/pull/40) |
 
 T-034: PR39 MERGED, squash `085dc763918fa63e6de6b89b98ddfc9e87805f3a`, confirmado en GitHub el 2026-11-09. Junie reviewer + merger, Qwen3.6-27B-FP8. Segunda revisión independiente APROBADA sin bloqueantes. HEAD 13d250b, base main e1648a5, CI verify-required SUCCESS, docs-check OK. Client gate OK: lint, typecheck, VoiceComposer.test.tsx 5/5, AppRoutes.test.tsx 7/7, voiceNoteTextSchema.test.ts 7/7, build OK.
@@ -62,5 +62,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Checkpoint al dueño: T-035 (PR40) ha alcanzado el límite de dos rondas de revisión con 2 bloqueantes persistentes. B-1: el diálogo de conflicto 409 sigue sin abrirse porque useVoiceDraft.ts establece conflictResolution: 'none' en el handler de 409, pero el useEffect de VoiceComposer.tsx abre el diálogo solo cuando conflictResolution !== 'none'. B-2: "Guardar y continuar" en VoicePage.tsx invoca save() pero nunca cambia la selección a la nota pendiente. Se requiere decisión de arquitectura: ¿añadir un estado 'pending' a ConflictResolution o reestructurar la detección de 409? ¿Cómo notificar a VoicePage que save completó para cambiar la nota?
+Implementer, sesión nueva: T-035 (PR40 codex/t-035-voice-library), corregir B-1 y B-2 de la 4.ª revisión (detalle, archivos:líneas y condición de cierre en docs/tasks/T-035-voice-library.md, checkpoint 2026-11-09). B-1: save/deleteNote ignoran resultados de otra generación, reset() incrementa la generación y VoicePage no navega con guardado/borrado en vuelo; pruebas rojo→verde con PUT/DELETE retenidos. B-2: negativos de borrado (cancelar sin DELETE, 404, 500). Recomendado O-1…O-4. Base main 085dc76. Tras publicar, la revisión siguiente excede el límite de rondas: requiere autorización explícita del dueño.
 ```
