@@ -1,6 +1,6 @@
 ---
 id: T-034
-status: in_review
+status: done
 priority: P1
 size: M
 executor: junie
@@ -52,7 +52,7 @@ Flujo de nota nueva completo sin guardado implícito, borrar palabras/copiar val
 
 ## Checkpoint vigente
 
-2026-11-09: Segunda revisión independiente: APROBADA sin bloqueantes. HEAD 69b6a1b, base main e1648a5. Los 4 bloqueantes (B-1 a B-4) corregidos en 8a007b2 y 69b6a1b. Client gate OK: lint sin errores, typecheck OK, VoiceComposer.test.tsx 5/5, AppRoutes.test.tsx 7/7, voiceNoteTextSchema.test.ts 7/7, build OK. Docs-check OK. git diff --check limpio. Junie reviewer, Qwen3.6-27B-FP8.
+2026-11-09: PR39 MERGED, squash `085dc763918fa63e6de6b89b98ddfc9e87805f3a`, confirmado en GitHub el 2026-11-09. Junie reviewer + merger, Qwen3.6-27B-FP8. Segunda revisión independiente APROBADA sin bloqueantes. HEAD 13d250b, base main e1648a5, CI verify-required SUCCESS, docs-check OK. Client gate OK: lint, typecheck, VoiceComposer.test.tsx 5/5, AppRoutes.test.tsx 7/7, voiceNoteTextSchema.test.ts 7/7, build OK.
 
 ## Correcciones significativas
 
