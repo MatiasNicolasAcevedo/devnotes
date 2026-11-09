@@ -3,24 +3,44 @@ import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
+import Dialog from '@mui/material/Dialog'
+import DialogActions from '@mui/material/DialogActions'
+import DialogContent from '@mui/material/DialogContent'
+import DialogContentText from '@mui/material/DialogContentText'
+import DialogTitle from '@mui/material/DialogTitle'
 import Link from '@mui/material/Link'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
+import type { VoiceNoteDetail } from './api'
 import { useVoiceCapabilities } from './useVoiceNotes'
 import { useVoiceRecorder } from './useVoiceRecorder'
 import { useVoiceDraft, voiceNoteTextSchema } from './useVoiceDraft'
 
+interface VoiceComposerProps {
+  /** Detalle de una nota seleccionada desde la lista. Al cambiar, se carga en el composer. */
+  selectedDetail?: VoiceNoteDetail | null
+}
+
 /**
  * Composer de nota de voz: captura → transcripción → edición → copia/guardado manual.
+ * Soporta nueva nota (POST) y nota existente (PUT con CAS, DELETE con CAS).
  *
  * S-105: nueva nota abre borrador vacío. Permitir texto manual y grabación solo en nuevo vacío.
  * Antes de grabar: aviso Groq. Stop espera último fragmento y libera tracks.
- * Copiar entrega exactamente el texto actual. Guardar exige texto válido y ACK.
+ * Conflicto 409: conserva borrador, ofrece Copiar/Recargar/Nueva nota.
+ * Borrar: diálogo Confirmar/Cancelar, espera 204, error no oculta borrador.
  */
-export function VoiceComposer() {
+export function VoiceComposer({ selectedDetail }: VoiceComposerProps = {}) {
   const { data: capabilities } = useVoiceCapabilities()
   const draft = useVoiceDraft()
+
+  // Diálogo de confirmación de borrado
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  // Diálogo de conflicto de revisión
+  const [showConflictDialog, setShowConflictDialog] = useState(false)
+  // Diálogo de dirty al cambiar de nota
+  const [showDirtyDialog, setShowDirtyDialog] = useState(false)
 
   const recordingEnabled = capabilities?.recordingEnabled ?? false
   const recordingReason = capabilities?.reason
@@ -33,6 +53,10 @@ export function VoiceComposer() {
   // Validación del texto
   const [textError, setTextError] = useState<string | undefined>()
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Errores de operación (gestionados por callbacks, no por useEffect)
+  const [updateError, setUpdateError] = useState(false)
+  const [deleteError, setDeleteError] = useState(false)
 
   // Hook de captura de voz
   const recorder = useVoiceRecorder({
@@ -83,10 +107,20 @@ export function VoiceComposer() {
     }
   }, [draft.state.documentState, draft.state.captureState, draft.state.captureResult])
 
+  // Cargar nota seleccionada desde la lista
+  useEffect(() => {
+    if (selectedDetail != null) {
+      draft.loadNote(selectedDetail)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDetail?.id])
+
   const handleTextChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const value = e.target.value
       draft.setText(value)
+      setUpdateError(false)
+      setDeleteError(false)
       // Validar en tiempo real
       const result = voiceNoteTextSchema.safeParse(value)
       setTextError(result.success ? undefined : result.error.issues[0]?.message)
@@ -128,7 +162,6 @@ export function VoiceComposer() {
     const success = await draft.copyToClipboard()
     if (success) {
       setCopySuccess(true)
-      // Ocultar después de 3 segundos
       setTimeout(() => setCopySuccess(false), 3000)
     } else {
       setCopyError(true)
@@ -136,17 +169,50 @@ export function VoiceComposer() {
   }, [draft])
 
   const handleSave = useCallback(() => {
-    // Validar antes de guardar
     const result = voiceNoteTextSchema.safeParse(draft.state.text)
     if (!result.success) {
       setTextError(result.error.issues[0]?.message)
       return
     }
+    setUpdateError(false)
     draft.save()
   }, [draft])
 
+  const handleDeleteClick = useCallback(() => {
+    setShowDeleteDialog(true)
+  }, [])
+
+  const handleDeleteConfirm = useCallback(() => {
+    setShowDeleteDialog(false)
+    setDeleteError(false)
+    draft.deleteNote()
+  }, [draft])
+
+  const handleDeleteCancel = useCallback(() => {
+    setShowDeleteDialog(false)
+  }, [])
+
+  const handleConflictCopy = useCallback(async () => {
+    await draft.resolveConflict('copy')
+    setShowConflictDialog(false)
+    setUpdateError(false)
+  }, [draft])
+
+  const handleConflictReload = useCallback(async () => {
+    await draft.resolveConflict('reload')
+    setShowConflictDialog(false)
+    setUpdateError(false)
+  }, [draft])
+
+  const handleConflictNewNote = useCallback(async () => {
+    await draft.resolveConflict('newNote')
+    setShowConflictDialog(false)
+    setUpdateError(false)
+  }, [draft])
+
   const isTranscribing = draft.transcribeMutation.isPending
-  const isSaving = draft.createMutation.isPending
+  const isSaving = draft.createMutation.isPending || draft.updateMutation.isPending
+  const isDeleting = draft.deleteMutation.isPending
 
   // Determinar si se puede grabar: solo en borrador nuevo vacío
   const canRecord =
@@ -164,8 +230,22 @@ export function VoiceComposer() {
     draft.state.documentState !== 'saving' &&
     !textError
 
+  // Determinar si se puede borrar: solo nota existente y clean
+  const canDelete =
+    draft.state.noteId != null && draft.state.documentState === 'clean' && !draft.isBusy
+
+  // Determinar si es nota existente
+  const isExistingNote = draft.state.noteId != null
+
   return (
     <Box sx={{ width: '100%' }}>
+      {/* Info de nota existente */}
+      {isExistingNote && (
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+          Revisión {draft.state.revision}
+        </Typography>
+      )}
+
       {/* Aviso de Groq antes de grabar */}
       {showGroqWarning && recordingEnabled && (
         <Alert severity="info" sx={{ mb: 2 }}>
@@ -288,6 +368,20 @@ export function VoiceComposer() {
         </Alert>
       )}
 
+      {/* Error de actualización */}
+      {updateError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          La nota fue modificada por otra sesión. Tu borrador se conserva.
+        </Alert>
+      )}
+
+      {/* Error de borrado */}
+      {deleteError && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          No se pudo borrar la nota.
+        </Alert>
+      )}
+
       {/* Textarea de edición */}
       <TextField
         inputRef={textAreaRef}
@@ -322,6 +416,16 @@ export function VoiceComposer() {
           <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }} role="status">
             <CircularProgress size={20} aria-hidden />
             <Typography>Guardando…</Typography>
+          </Stack>
+        </Alert>
+      )}
+
+      {/* Mensaje de borrado en curso */}
+      {draft.state.documentState === 'deleting' && (
+        <Alert severity="info">
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }} role="status">
+            <CircularProgress size={20} aria-hidden />
+            <Typography>Eliminando…</Typography>
           </Stack>
         </Alert>
       )}
@@ -373,7 +477,77 @@ export function VoiceComposer() {
         <Button variant="contained" onClick={handleSave} disabled={!canSave}>
           {isSaving ? 'Guardando…' : 'Guardar'}
         </Button>
+
+        {/* Borrar — solo nota existente */}
+        {canDelete && (
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleDeleteClick}
+            disabled={isDeleting}
+          >
+            Borrar
+          </Button>
+        )}
       </Stack>
+
+      {/* Diálogo de confirmación de borrado */}
+      <Dialog open={showDeleteDialog} onClose={handleDeleteCancel}>
+        <DialogTitle>Eliminar nota</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            ¿Estás seguro de que querés eliminar esta nota? Esta acción no se puede deshacer.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteCancel}>Cancelar</Button>
+          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
+            Confirmar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Diálogo de conflicto de revisión */}
+      <Dialog open={showConflictDialog} onClose={() => setShowConflictDialog(false)}>
+        <DialogTitle>Conflicto de edición</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Esta nota fue modificada por otra sesión. ¿Qué querés hacer con tu borrador?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleConflictCopy}>Copiar texto</Button>
+          <Button onClick={handleConflictReload}>Recargar nota</Button>
+          <Button onClick={handleConflictNewNote}>Nueva nota</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Diálogo de dirty al cambiar de nota */}
+      <Dialog open={showDirtyDialog} onClose={() => setShowDirtyDialog(false)}>
+        <DialogTitle>Cambios sin guardar</DialogTitle>
+        <DialogContent>
+          <DialogContentText>Tenés cambios sin guardar. ¿Qué querés hacer?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowDirtyDialog(false)}>Cancelar</Button>
+          <Button
+            onClick={() => {
+              draft.save()
+              setShowDirtyDialog(false)
+            }}
+          >
+            Guardar y continuar
+          </Button>
+          <Button
+            onClick={() => {
+              draft.reset()
+              setShowDirtyDialog(false)
+            }}
+          >
+            Descartar y continuar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   )
 }

@@ -1,7 +1,13 @@
 import { useCallback, useMemo, useState } from 'react'
 import { z } from 'zod'
 import { type CaptureResult, type CaptureState } from './recorder'
-import { useCreateVoiceNote, useTranscribeAudio } from './useVoiceNotes'
+import type { VoiceNoteDetail } from './api'
+import {
+  useCreateVoiceNote,
+  useDeleteVoiceNote,
+  useTranscribeAudio,
+  useUpdateVoiceNote,
+} from './useVoiceNotes'
 
 /**
  * Validación de texto de nota de voz (S-105: 1…50000 UTF-16, al menos un carácter no White_Space,
@@ -28,7 +34,10 @@ export const voiceNoteTextSchema = z
   }, 'El texto debe tener entre 1 y 50 000 caracteres.')
 
 /** Estado del documento: new/clean/dirty/saving/deleting/error. */
-export type DocumentState = 'new' | 'clean' | 'dirty' | 'saving' | 'error'
+export type DocumentState = 'new' | 'clean' | 'dirty' | 'saving' | 'deleting' | 'error'
+
+/** Resultado de un conflicto de revisión. */
+export type ConflictResolution = 'none' | 'copy' | 'reload' | 'newNote'
 
 /** Estado combinado del workspace de voz. */
 export interface VoiceDraftState {
@@ -52,14 +61,19 @@ export interface VoiceDraftState {
   revision: number | null
   /** Generación actual para evitar respuestas tardías. */
   generation: number
+  /** Si hay un conflicto de revisión pendiente de resolver. */
+  conflictResolution: ConflictResolution
 }
 
 /**
- * Workspace en memoria para el borrador de una nota de voz nueva.
+ * Workspace en memoria para el borrador de una nota de voz.
  *
  * Sigue el precedente de DailyDraftWorkspace: estado local por propietario sobre el outlet,
- * sin persistencia en navegador. Maneja captura → transcripción → edición → guardado manual.
- * No guarda implícitamente: el usuario debe presionar Guardar explícitamente.
+ * sin persistencia en navegador. Soporta:
+ * - Nueva nota: captura → transcripción → edición → guardado manual (POST).
+ * - Nota existente: carga detalle → edición → guardado con CAS (PUT) → borrado con CAS (DELETE).
+ * - Dirty check: si el texto difiere del ACK, pide resolver antes de cambiar de nota.
+ * - Conflicto 409: conserva borrador, ofrece copiar/recargar/nueva nota.
  */
 export function useVoiceDraft() {
   const [state, setState] = useState<VoiceDraftState>({
@@ -73,10 +87,13 @@ export function useVoiceDraft() {
     noteId: null,
     revision: null,
     generation: 0,
+    conflictResolution: 'none',
   })
 
   const transcribeMutation = useTranscribeAudio()
   const createMutation = useCreateVoiceNote()
+  const updateMutation = useUpdateVoiceNote()
+  const deleteMutation = useDeleteVoiceNote()
 
   const isBusy = useMemo(() => {
     return (
@@ -84,13 +101,31 @@ export function useVoiceDraft() {
       state.captureState === 'stopping' ||
       state.captureState === 'requesting' ||
       transcribeMutation.isPending ||
-      createMutation.isPending
+      createMutation.isPending ||
+      updateMutation.isPending ||
+      deleteMutation.isPending
     )
-  }, [state.captureState, transcribeMutation.isPending, createMutation.isPending])
+  }, [
+    state.captureState,
+    transcribeMutation.isPending,
+    createMutation.isPending,
+    updateMutation.isPending,
+    deleteMutation.isPending,
+  ])
 
   const isTextEmpty = useMemo(() => {
     return state.text.replace(/\s/g, '').length === 0
   }, [state.text])
+
+  /**
+   * Indica si el borrador tiene cambios sin guardar comparados con el ACK del servidor.
+   * new → no dirty (aún no hay ACK).
+   * clean → no dirty.
+   * dirty → sí.
+   */
+  const isDirty = useMemo(() => {
+    return state.documentState === 'dirty'
+  }, [state.documentState])
 
   /** Normaliza el texto (CRLF/CR → LF) y lo establece en el borrador. */
   const setText = useCallback((text: string) => {
@@ -104,7 +139,34 @@ export function useVoiceDraft() {
           : prev.documentState === 'new'
             ? 'new'
             : 'dirty',
+      conflictResolution: 'none',
     }))
+  }, [])
+
+  /**
+   * Carga una nota existente en el borrador.
+   * Si hay cambios sin guardar, devuelve false y no carga.
+   */
+  const loadNote = useCallback((detail: VoiceNoteDetail) => {
+    setState((prev) => {
+      // Si hay cambios sin guardar, no sobrescribir
+      if (prev.documentState === 'dirty') return prev
+      const normalized = detail.text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+      return {
+        ...prev,
+        text: normalized,
+        documentState: 'clean',
+        noteId: detail.id,
+        revision: detail.revision,
+        captureState: 'idle',
+        captureResult: null,
+        captureError: null,
+        elapsedSeconds: 0,
+        elapsedFormatted: '00:00',
+        generation: prev.generation + 1,
+        conflictResolution: 'none',
+      }
+    })
   }, [])
 
   /** Aplica la respuesta de transcripción al borrador. Solo si coincide la generación. */
@@ -155,28 +217,169 @@ export function useVoiceDraft() {
     })
   }, [state, applyTranscription, transcribeMutation])
 
-  /** Guarda el borrador como nota nueva. */
+  /**
+   * Guarda el borrador.
+   * - Si es nueva (sin noteId): POST create.
+   * - Si es existente (con noteId + revision): PUT update con CAS.
+   */
   const save = useCallback(() => {
-    if (isTextEmpty || createMutation.isPending) return
+    if (isTextEmpty || createMutation.isPending || updateMutation.isPending) return
 
-    setState((prev) => ({ ...prev, documentState: 'saving' }))
-    createMutation.mutate(state.text, {
-      onSuccess: (response) => {
+    const { noteId, revision, text } = state
+
+    if (!noteId || revision == null) {
+      // Nueva nota: POST
+      setState((prev) => ({ ...prev, documentState: 'saving' }))
+      createMutation.mutate(text, {
+        onSuccess: (response) => {
+          setState((prev) => ({
+            ...prev,
+            noteId: response.id,
+            revision: response.revision,
+            documentState: 'clean',
+          }))
+        },
+        onError: () => {
+          setState((prev) => ({
+            ...prev,
+            documentState: 'dirty',
+          }))
+        },
+      })
+    } else {
+      // Nota existente: PUT con CAS
+      setState((prev) => ({ ...prev, documentState: 'saving' }))
+      updateMutation.mutate(
+        { id: noteId, text, expectedRevision: revision },
+        {
+          onSuccess: (response) => {
+            setState((prev) => ({
+              ...prev,
+              revision: response.revision,
+              documentState: 'clean',
+            }))
+          },
+          onError: (error) => {
+            setState((prev) => {
+              // Si es 409, marcar conflicto
+              if (
+                error &&
+                typeof error === 'object' &&
+                'status' in error &&
+                (error as { status: number }).status === 409
+              ) {
+                return {
+                  ...prev,
+                  documentState: 'dirty',
+                  conflictResolution: 'none',
+                }
+              }
+              return {
+                ...prev,
+                documentState: 'dirty',
+              }
+            })
+          },
+        },
+      )
+    }
+  }, [state, isTextEmpty, createMutation, updateMutation])
+
+  /**
+   * Elimina la nota actual con CAS.
+   * Solo si la nota está guardada y clean.
+   */
+  const deleteNote = useCallback(() => {
+    const { noteId, revision, documentState } = state
+    if (!noteId || revision == null || documentState !== 'clean' || deleteMutation.isPending) return
+
+    setState((prev) => ({ ...prev, documentState: 'deleting' }))
+    deleteMutation.mutate(
+      { id: noteId, expectedRevision: revision },
+      {
+        onSuccess: () => {
+          setState({
+            text: '',
+            documentState: 'new',
+            captureState: 'idle',
+            captureResult: null,
+            captureError: null,
+            elapsedFormatted: '00:00',
+            elapsedSeconds: 0,
+            noteId: null,
+            revision: null,
+            generation: 0,
+            conflictResolution: 'none',
+          })
+        },
+        onError: (error) => {
+          setState((prev) => {
+            if (error && typeof error === 'object' && 'status' in error) {
+              const status = (error as { status: number }).status
+              if (status === 409) {
+                return {
+                  ...prev,
+                  documentState: 'dirty',
+                  conflictResolution: 'none',
+                }
+              }
+              if (status === 404) {
+                // Nota ya eliminada, limpiar borrador
+                return {
+                  text: '',
+                  documentState: 'new',
+                  captureState: 'idle',
+                  captureResult: null,
+                  captureError: null,
+                  elapsedFormatted: '00:00',
+                  elapsedSeconds: 0,
+                  noteId: null,
+                  revision: null,
+                  generation: 0,
+                  conflictResolution: 'none',
+                }
+              }
+            }
+            return {
+              ...prev,
+              documentState: 'clean',
+            }
+          })
+        },
+      },
+    )
+  }, [state, deleteMutation])
+
+  /**
+   * Maneja el conflicto de revisión (409).
+   * - 'copy': copiar texto al portapapeles.
+   * - 'reload': recargar la nota desde el servidor (el caller debe invocar loadNote con el detalle actualizado).
+   * - 'newNote': reiniciar con el texto actual como nueva nota.
+   */
+  const resolveConflict = useCallback(
+    async (resolution: 'copy' | 'reload' | 'newNote') => {
+      setState((prev) => ({ ...prev, conflictResolution: resolution }))
+
+      if (resolution === 'copy') {
+        try {
+          await navigator.clipboard.writeText(state.text)
+        } catch {
+          // Silenciar — el texto sigue en el borrador
+        }
+      } else if (resolution === 'newNote') {
         setState((prev) => ({
           ...prev,
-          noteId: response.id,
-          revision: response.revision,
-          documentState: 'clean',
+          text: prev.text,
+          documentState: prev.text.replace(/\s/g, '').length > 0 ? 'dirty' : 'new',
+          noteId: null,
+          revision: null,
+          generation: prev.generation + 1,
         }))
-      },
-      onError: () => {
-        setState((prev) => ({
-          ...prev,
-          documentState: 'dirty', // Conservar borrador ante error
-        }))
-      },
-    })
-  }, [state.text, isTextEmpty, createMutation])
+      }
+      // 'reload': el caller debe cargar el detalle actualizado
+    },
+    [state.text],
+  )
 
   /** Copia el texto actual al portapapeles. */
   const copyToClipboard = useCallback(async (): Promise<boolean> => {
@@ -201,6 +404,7 @@ export function useVoiceDraft() {
       noteId: null,
       revision: null,
       generation: 0,
+      conflictResolution: 'none',
     })
   }, [])
 
@@ -229,13 +433,19 @@ export function useVoiceDraft() {
     state,
     isBusy,
     isTextEmpty,
+    isDirty,
     setText,
+    loadNote,
     transcribe,
     save,
+    deleteNote,
+    resolveConflict,
     copyToClipboard,
     reset,
     setCaptureState,
     transcribeMutation,
     createMutation,
+    updateMutation,
+    deleteMutation,
   }
 }
