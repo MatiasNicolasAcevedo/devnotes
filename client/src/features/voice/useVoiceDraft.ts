@@ -47,7 +47,7 @@ export type VoiceConflict = 'update' | 'delete'
  * Resultado de un guardado: solo 'saved' significa ACK aplicado al borrador vigente.
  * 'stale': la respuesta llegó cuando el borrador ya era otro documento y se ignoró.
  */
-export type SaveOutcome = 'saved' | 'conflict' | 'error' | 'skipped' | 'stale'
+export type SaveOutcome = 'saved' | 'conflict' | 'gone' | 'error' | 'skipped' | 'stale'
 
 /** Resultado de un borrado: solo 'deleted' significa 204 aplicado; 'stale' como en SaveOutcome. */
 export type DeleteOutcome = 'deleted' | 'conflict' | 'gone' | 'error' | 'skipped' | 'stale'
@@ -249,7 +249,8 @@ export function useVoiceDraft() {
    * Guarda el borrador y resuelve con el resultado, para que quien lo invoca (p. ej. «Guardar y
    * continuar» en VoicePage) solo continúe tras el ACK del servidor.
    * - Sin noteId: POST create.
-   * - Con noteId + revision: PUT con CAS; 409 deja `conflict = 'update'` sin reintento.
+   * - Con noteId + revision: PUT con CAS; 409 deja `conflict = 'update'` sin reintento;
+   *   404 (borrada en otra sesión) desvincula el texto como borrador nuevo ('gone').
    * Si el texto cambió durante el guardado, el documento queda dirty frente al nuevo ACK.
    * La respuesta solo se aplica si la generación no cambió (reset/carga de otra nota en medio).
    */
@@ -280,6 +281,16 @@ export function useVoiceDraft() {
       return 'saved'
     } catch (error) {
       if (!isCurrent()) return 'stale'
+      if (noteId != null && isNotFound(error)) {
+        applyIfCurrent((prev) => ({
+          ...prev,
+          documentState: 'dirty',
+          noteId: null,
+          revision: null,
+          generation: prev.generation + 1,
+        }))
+        return 'gone'
+      }
       const conflict = noteId != null && isConflict(error)
       applyIfCurrent((prev) => ({
         ...prev,

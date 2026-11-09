@@ -64,6 +64,9 @@ interface Backend {
   /** Si está definida, la respuesta PUT/DELETE espera a que se resuelva (petición en vuelo). */
   holdPut: Promise<void> | null
   holdDelete: Promise<void> | null
+  /** Estado forzado y retención de la próxima respuesta GET de detalle. */
+  nextGetStatus: number | null
+  holdGet: Promise<void> | null
 }
 
 /** Promesa controlable para retener una respuesta MSW. */
@@ -98,6 +101,8 @@ function installBackend(): Backend {
     nextDeleteStatus: null,
     holdPut: null,
     holdDelete: null,
+    nextGetStatus: null,
+    holdGet: null,
   }
   server.use(
     mock.get(CAPABILITIES_PATH, () =>
@@ -127,7 +132,13 @@ function installBackend(): Backend {
         totalPages: 1,
       })
     }),
-    mock.get(NOTE_PATH, ({ params }) => {
+    mock.get(NOTE_PATH, async ({ params }) => {
+      if (backend.holdGet) await backend.holdGet
+      if (backend.nextGetStatus != null) {
+        const status = backend.nextGetStatus
+        backend.nextGetStatus = null
+        return problemResponse(status)
+      }
       const found = backend.notes.get(String(params.id))
       return found ? HttpResponse.json(found) : problemResponse(404)
     }),
@@ -498,6 +509,90 @@ describe('VoicePage', () => {
       expect(screen.getByRole('button', { name: 'Borrar' })).toBeEnabled()
       expect(backend.notes.has(ID_1)).toBe(true)
       expect(screen.getByText('Extracto Texto 1')).toBeVisible()
+    })
+  })
+
+  describe('observaciones de la 4.ª revisión', () => {
+    it('O-1: PUT con 404 desvincula la nota, avisa y el siguiente Guardar hace POST', async () => {
+      const { user } = renderPage()
+      await editNote1(user)
+      backend.nextPutStatus = 404
+
+      await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+      expect(await screen.findByText(/La nota ya no existe/)).toBeVisible()
+      expect(textbox()).toHaveValue('Texto 1 editado')
+      expect(screen.queryByText(/Revisión/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/No se pudieron guardar los cambios/)).not.toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'Guardar' }))
+      await waitFor(() => expect(backend.posts).toEqual([{ text: 'Texto 1 editado' }]))
+      expect(backend.puts).toHaveLength(1)
+    })
+
+    it('O-2: mientras carga la nota el editor está bloqueado y avisa', async () => {
+      const { user } = renderPage()
+      const get = hold()
+      backend.holdGet = get.promise
+
+      await user.click(await screen.findByText('Extracto Texto 1'))
+
+      expect(await screen.findByText('Cargando nota…')).toBeVisible()
+      expect(textbox()).toBeDisabled()
+
+      get.release()
+      await waitFor(() => expect(textbox()).toHaveValue('Texto 1'))
+      expect(textbox()).toBeEnabled()
+      expect(screen.queryByText('Cargando nota…')).not.toBeInTheDocument()
+    })
+
+    it('O-2: si falla abrir la nota avisa, conserva el editor y Reintentar la carga', async () => {
+      const { user } = renderPage()
+      await openNote(user, 'Extracto Texto 1', 'Texto 1')
+      backend.nextGetStatus = 500
+
+      await user.click(screen.getByText('Extracto Texto 2'))
+
+      const alert = await screen.findByText(/No se pudo abrir la nota/)
+      expect(alert).toBeVisible()
+      expect(textbox()).toHaveValue('Texto 1')
+
+      await user.click(screen.getByRole('button', { name: 'Reintentar' }))
+      await waitFor(() => expect(textbox()).toHaveValue('Texto 2'))
+      expect(screen.queryByText(/No se pudo abrir la nota/)).not.toBeInTheDocument()
+    })
+
+    it('O-3: Copiar texto en el conflicto informa éxito y fallo', async () => {
+      const { user } = renderPage()
+      await editNote1(user)
+      backend.nextPutStatus = 409
+      await user.click(screen.getByRole('button', { name: 'Guardar' }))
+      const dialog = await screen.findByRole('dialog', { name: 'Conflicto de edición' })
+
+      await user.click(within(dialog).getByRole('button', { name: 'Copiar texto' }))
+      expect(await within(dialog).findByText('Texto copiado al portapapeles.')).toBeVisible()
+      await expect(navigator.clipboard.readText()).resolves.toBe('Texto 1 editado')
+
+      const failing = vi
+        .spyOn(navigator.clipboard, 'writeText')
+        .mockRejectedValue(new Error('denied'))
+      await user.click(within(dialog).getByRole('button', { name: 'Copiar texto' }))
+      expect(await within(dialog).findByText(/No se pudo copiar/)).toBeVisible()
+      expect(within(dialog).queryByText('Texto copiado al portapapeles.')).not.toBeInTheDocument()
+      failing.mockRestore()
+    })
+
+    it('O-4: «Nota guardada correctamente» solo tras guardar, no al abrir', async () => {
+      const { user } = renderPage()
+      await openNote(user, 'Extracto Texto 1', 'Texto 1')
+      expect(screen.queryByText('Nota guardada correctamente.')).not.toBeInTheDocument()
+
+      await user.type(textbox(), ' editado')
+      await user.click(screen.getByRole('button', { name: 'Guardar' }))
+      expect(await screen.findByText('Nota guardada correctamente.')).toBeVisible()
+
+      await openNote(user, 'Extracto Texto 2', 'Texto 2')
+      expect(screen.queryByText('Nota guardada correctamente.')).not.toBeInTheDocument()
     })
   })
 })

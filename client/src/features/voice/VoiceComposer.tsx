@@ -27,6 +27,8 @@ interface VoiceComposerProps {
    * cambia de documento: la respuesta pertenece a la nota actual (S-105: cargas tardías).
    */
   onBusyChange?: (busy: boolean) => void
+  /** La página está obteniendo el detalle de otra nota: editor y acciones bloqueados. */
+  loadingDetail?: boolean
 }
 
 export interface VoiceComposerHandle {
@@ -48,7 +50,7 @@ export interface VoiceComposerHandle {
  * Borrar: diálogo Confirmar/Cancelar, espera 204, error no oculta borrador.
  */
 export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposerProps>(
-  ({ selectedDetail, onBusyChange }, ref) => {
+  ({ selectedDetail, onBusyChange, loadingDetail = false }, ref) => {
     const { data: capabilities } = useVoiceCapabilities()
     const draft = useVoiceDraft()
     const queryClient = useQueryClient()
@@ -59,7 +61,9 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     const [confirmReload, setConfirmReload] = useState(false)
     const [reloading, setReloading] = useState(false)
     const [reloadError, setReloadError] = useState<string | null>(null)
-    const [conflictCopied, setConflictCopied] = useState(false)
+    const [conflictCopy, setConflictCopy] = useState<'ok' | 'error' | null>(null)
+    // Generación del documento guardado en esta sesión: el aviso de éxito solo se muestra para ella.
+    const [savedGeneration, setSavedGeneration] = useState<number | null>(null)
 
     const recordingEnabled = capabilities?.recordingEnabled ?? false
     const recordingReason = capabilities?.reason
@@ -74,7 +78,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     const textAreaRef = useRef<HTMLTextAreaElement>(null)
 
     // Errores de operación, fijados por el resultado de save()/deleteNote()
-    const [saveError, setSaveError] = useState(false)
+    const [saveError, setSaveError] = useState<'error' | 'gone' | null>(null)
     const [deleteError, setDeleteError] = useState<'error' | 'gone' | null>(null)
 
     // Hook de captura de voz
@@ -140,7 +144,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
       (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value
         draft.setText(value)
-        setSaveError(false)
+        setSaveError(null)
         setDeleteError(null)
         // Validar en tiempo real
         const result = voiceNoteTextSchema.safeParse(value)
@@ -196,10 +200,12 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
         textAreaRef.current?.focus()
         return 'skipped'
       }
-      setSaveError(false)
+      setSaveError(null)
       setDeleteError(null)
+      const generation = draft.state.generation
       const outcome = await draft.save()
-      setSaveError(outcome === 'error')
+      setSaveError(outcome === 'error' || outcome === 'gone' ? outcome : null)
+      if (outcome === 'saved') setSavedGeneration(generation)
       return outcome
     }, [draft])
 
@@ -210,7 +216,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     const handleDeleteConfirm = useCallback(async () => {
       setShowDeleteDialog(false)
       setDeleteError(null)
-      setSaveError(false)
+      setSaveError(null)
       const outcome = await draft.deleteNote()
       if (outcome === 'error' || outcome === 'gone') setDeleteError(outcome)
     }, [draft])
@@ -222,11 +228,11 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     const closeConflict = useCallback(() => {
       setConfirmReload(false)
       setReloadError(null)
-      setConflictCopied(false)
+      setConflictCopy(null)
     }, [])
 
     const handleConflictCopy = useCallback(async () => {
-      setConflictCopied(await draft.copyToClipboard())
+      setConflictCopy((await draft.copyToClipboard()) ? 'ok' : 'error')
     }, [draft])
 
     const handleConflictDismiss = useCallback(() => {
@@ -247,7 +253,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
           staleTime: 0,
         })
         draft.loadNote(fresh, { force: true })
-        setSaveError(false)
+        setSaveError(null)
         setDeleteError(null)
         closeConflict()
       } catch (error) {
@@ -264,7 +270,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
 
     const handleConflictNewNote = useCallback(() => {
       draft.detachAsNewNote()
-      setSaveError(false)
+      setSaveError(null)
       setDeleteError(null)
       closeConflict()
     }, [draft, closeConflict])
@@ -300,6 +306,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
 
     // Determinar si se puede guardar
     const canSave =
+      !loadingDetail &&
       !draft.isTextEmpty &&
       !isSaving &&
       !isTranscribing &&
@@ -309,7 +316,10 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
 
     // Determinar si se puede borrar: solo nota existente y clean
     const canDelete =
-      draft.state.noteId != null && draft.state.documentState === 'clean' && !draft.isBusy
+      !loadingDetail &&
+      draft.state.noteId != null &&
+      draft.state.documentState === 'clean' &&
+      !draft.isBusy
 
     // Determinar si es nota existente
     const isExistingNote = draft.state.noteId != null
@@ -444,9 +454,19 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
         )}
 
         {/* Error de guardado (no 409: el conflicto tiene su diálogo) */}
-        {saveError && (
+        {saveError === 'error' && (
           <Alert severity="error" sx={{ mb: 2 }}>
             No se pudieron guardar los cambios. Tu borrador se conserva.
+          </Alert>
+        )}
+
+        {/* Carga del detalle de otra nota */}
+        {loadingDetail && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }} role="status">
+              <CircularProgress size={20} aria-hidden />
+              <Typography>Cargando nota…</Typography>
+            </Stack>
           </Alert>
         )}
 
@@ -456,7 +476,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
             No se pudo borrar la nota.
           </Alert>
         )}
-        {deleteError === 'gone' && (
+        {(deleteError === 'gone' || saveError === 'gone') && (
           <Alert severity="warning" sx={{ mb: 2 }}>
             La nota ya no existe. El texto se conserva como borrador nuevo sin guardar.
           </Alert>
@@ -472,7 +492,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
           placeholder="Escribí tu nota o grabá audio para transcribir…"
           value={draft.state.text}
           onChange={handleTextChange}
-          disabled={isTranscribing || draft.state.captureState === 'recording'}
+          disabled={loadingDetail || isTranscribing || draft.state.captureState === 'recording'}
           error={!!textError}
           helperText={textError}
           slotProps={{
@@ -484,11 +504,13 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
         />
 
         {/* Mensaje de éxito al guardar */}
-        {draft.state.documentState === 'clean' && draft.state.noteId && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            Nota guardada correctamente.
-          </Alert>
-        )}
+        {draft.state.documentState === 'clean' &&
+          draft.state.noteId &&
+          savedGeneration === draft.state.generation && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              Nota guardada correctamente.
+            </Alert>
+          )}
 
         {/* Mensaje de guardado en curso */}
         {isSaving && (
@@ -605,9 +627,15 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
                 querés hacer?
               </DialogContentText>
             )}
-            {conflictCopied && !confirmReload && (
+            {conflictCopy === 'ok' && !confirmReload && (
               <Alert severity="success" sx={{ mt: 2 }}>
                 Texto copiado al portapapeles.
+              </Alert>
+            )}
+            {conflictCopy === 'error' && !confirmReload && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                No se pudo copiar al portapapeles. Seleccioná el texto en el editor y copiá
+                manualmente.
               </Alert>
             )}
             {reloadError && (

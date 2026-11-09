@@ -6,6 +6,7 @@ import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
+import Alert from '@mui/material/Alert'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import type { VoiceNoteListItem } from './api'
@@ -32,8 +33,13 @@ export function VoicePage() {
   const [composerBusy, setComposerBusy] = useState(false)
   const composerRef = useRef<VoiceComposerHandle>(null)
 
-  // Cargar detalle de la nota seleccionada
-  const { data: selectedDetail } = useVoiceNote(selectedId ?? '')
+  // Cargar detalle de la nota seleccionada. Mientras carga, el editor queda bloqueado (no se
+  // escribe sobre la nota anterior para luego perderlo); si falla, se avisa y se puede reintentar.
+  const detailQuery = useVoiceNote(selectedId ?? '')
+  const selectedDetail = detailQuery.data
+  const loadingDetail = selectedId != null && selectedDetail == null && detailQuery.isFetching
+  const detailError = selectedId != null && detailQuery.isError && !detailQuery.isFetching
+  const { refetch: refetchDetail } = detailQuery
 
   const goTo = useCallback((target: PendingTarget) => {
     if (target.kind === 'note') {
@@ -58,10 +64,13 @@ export function VoicePage() {
 
   const handleSelect = useCallback(
     (item: VoiceNoteListItem) => {
-      if (item.id === selectedId) return
+      if (item.id === selectedId) {
+        if (detailError) void refetchDetail()
+        return
+      }
       request({ kind: 'note', id: item.id })
     },
-    [request, selectedId],
+    [request, selectedId, detailError, refetchDetail],
   )
 
   const handleNewNote = useCallback(() => request({ kind: 'new' }), [request])
@@ -127,10 +136,24 @@ export function VoicePage() {
             flex: { lg: '0 0 auto' },
           }}
         >
+          {detailError && (
+            <Alert
+              severity="error"
+              sx={{ mb: 2 }}
+              action={
+                <Button color="inherit" size="small" onClick={() => void refetchDetail()}>
+                  Reintentar
+                </Button>
+              }
+            >
+              No se pudo abrir la nota. El editor conserva el documento anterior.
+            </Alert>
+          )}
           <VoiceComposer
             ref={composerRef}
             selectedDetail={selectedDetail}
             onBusyChange={setComposerBusy}
+            loadingDetail={loadingDetail}
           />
         </Box>
 
