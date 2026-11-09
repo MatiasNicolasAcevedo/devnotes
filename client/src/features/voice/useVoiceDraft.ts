@@ -145,12 +145,16 @@ export function useVoiceDraft() {
 
   /**
    * Carga una nota existente en el borrador.
-   * Si hay cambios sin guardar, devuelve false y no carga.
+   * Devuelve true si se cargó, false si se rechazó por dirty.
    */
-  const loadNote = useCallback((detail: VoiceNoteDetail) => {
+  const loadNote = useCallback((detail: VoiceNoteDetail): boolean => {
+    let rejected = false
     setState((prev) => {
       // Si hay cambios sin guardar, no sobrescribir
-      if (prev.documentState === 'dirty') return prev
+      if (prev.documentState === 'dirty') {
+        rejected = true
+        return prev
+      }
       const normalized = detail.text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
       return {
         ...prev,
@@ -167,6 +171,7 @@ export function useVoiceDraft() {
         conflictResolution: 'none',
       }
     })
+    return !rejected
   }, [])
 
   /** Aplica la respuesta de transcripción al borrador. Solo si coincide la generación. */
