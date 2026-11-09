@@ -1,6 +1,6 @@
 ---
 id: T-033
-status: merged
+status: done
 priority: P1
 size: S
 executor: junie
