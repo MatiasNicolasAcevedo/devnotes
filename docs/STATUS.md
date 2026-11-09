@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-033](tasks/T-033-voice-recorder.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
+| Tarea y contrato | [T-034](tasks/T-034-voice-workspace.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
 | Estado | `in_review` |
-| Acción actual | PR37 publicado, esperando revisión independiente. |
-| Rama / PR | codex/t-033-voice-recorder · [PR37](https://github.com/MatiasNicolasAcevedo/devnotes/pull/37) |
+| Acción actual | Segunda revisión independiente: APROBADA sin bloqueantes. Esperando CI y merge. |
+| Rama / PR | codex/t-034-voice-workspace · [PR39](https://github.com/MatiasNicolasAcevedo/devnotes/pull/39) |
+
+T-033: PR37 MERGED, squash `e1648a55b372194e6d61801aaae97ec4bf0c6a0f`, confirmado en GitHub el 2026-11-09. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD d26b601, base main f3bbaa8, CI verify-required SUCCESS, docs-check OK. Client gate 435/435 tests OK.
 
 T-032: PR36 MERGED, squash `f3bbaa80b9db64f607c953e58ea792c66461d53a`, confirmado en GitHub el 2026-11-02. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD b9d4192, base main af467de, CI verify-required SUCCESS, docs-check OK. Client gate 408/408 tests OK.
 
@@ -58,5 +60,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie implementer, sesión nueva: T-033 (codex/t-033-voice-recorder). Captura y ciclo de vida de voz. T-032 ya MERGED (PR36 f3bbaa8).
+Junie reviewer, sesión nueva: T-034 (PR39 codex/t-034-voice-workspace). Revisión independiente tras corrección de 4 bloqueantes (8a007b2). B-1 VoiceComposer.test.tsx, B-2 no-control-regex, B-3 exhaustive-deps, B-4 docs-check. Base main e1648a5.
 ```

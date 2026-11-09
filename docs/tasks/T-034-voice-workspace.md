@@ -1,6 +1,6 @@
 ---
 id: T-034
-status: draft
+status: in_review
 priority: P1
 size: M
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-034-voice-workspace
-pr: null
+pr: 39
 depends_on: [T-033]
 ---
 # T-034 · Grabar, editar, copiar y guardar una nota nueva
@@ -52,7 +52,7 @@ Flujo de nota nueva completo sin guardado implícito, borrar palabras/copiar val
 
 ## Checkpoint vigente
 
-2026-10-31: contrato de frontera preparado en T-017 sobre main 0d976dc2187cb2a07061c3db48130c334b1e471b. Sin implementación, PR, migración aplicada ni tests de esta tarea ejecutados. Rol/modelo/herramienta/esfuerzo del ejecutor se registran al tomarla; no heredar capacidades Junie de frontera.
+2026-11-09: Segunda revisión independiente: APROBADA sin bloqueantes. HEAD 69b6a1b, base main e1648a5. Los 4 bloqueantes (B-1 a B-4) corregidos en 8a007b2 y 69b6a1b. Client gate OK: lint sin errores, typecheck OK, VoiceComposer.test.tsx 5/5, AppRoutes.test.tsx 7/7, voiceNoteTextSchema.test.ts 7/7, build OK. Docs-check OK. git diff --check limpio. Junie reviewer, Qwen3.6-27B-FP8.
 
 ## Correcciones significativas
 
