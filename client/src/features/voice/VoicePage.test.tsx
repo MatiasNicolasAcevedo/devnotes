@@ -61,6 +61,18 @@ interface Backend {
   /** Fuerza el estado de la próxima respuesta PUT/DELETE (409, 500…). */
   nextPutStatus: number | null
   nextDeleteStatus: number | null
+  /** Si está definida, la respuesta PUT/DELETE espera a que se resuelva (petición en vuelo). */
+  holdPut: Promise<void> | null
+  holdDelete: Promise<void> | null
+}
+
+/** Promesa controlable para retener una respuesta MSW. */
+function hold(): { promise: Promise<void>; release: () => void } {
+  let release: () => void = () => undefined
+  const promise = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  return { promise, release }
 }
 
 function note(id: string, text: string, revision = 1): VoiceNoteDetail {
@@ -84,6 +96,8 @@ function installBackend(): Backend {
     deletes: [],
     nextPutStatus: null,
     nextDeleteStatus: null,
+    holdPut: null,
+    holdDelete: null,
   }
   server.use(
     mock.get(CAPABILITIES_PATH, () =>
@@ -128,6 +142,7 @@ function installBackend(): Backend {
       const id = String(params.id)
       const body = (await request.json()) as { text: string; expectedRevision: number }
       backend.puts.push({ id, ...body })
+      if (backend.holdPut) await backend.holdPut
       if (backend.nextPutStatus != null) {
         const status = backend.nextPutStatus
         backend.nextPutStatus = null
@@ -137,10 +152,11 @@ function installBackend(): Backend {
       backend.notes.set(id, updated)
       return HttpResponse.json(updated)
     }),
-    mock.delete(NOTE_PATH, ({ params, request }) => {
+    mock.delete(NOTE_PATH, async ({ params, request }) => {
       const id = String(params.id)
       const expectedRevision = Number(new URL(request.url).searchParams.get('expectedRevision'))
       backend.deletes.push({ id, expectedRevision })
+      if (backend.holdDelete) await backend.holdDelete
       if (backend.nextDeleteStatus != null) {
         const status = backend.nextDeleteStatus
         backend.nextDeleteStatus = null
@@ -372,6 +388,116 @@ describe('VoicePage', () => {
       expect(await screen.findByText(/No se pudieron guardar los cambios/)).toBeVisible()
       await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
       expect(textbox()).toHaveValue('Texto 1 editado')
+    })
+  })
+
+  describe('respuestas tardías de guardado/borrado (4.ª revisión B-1)', () => {
+    it('con un guardado en vuelo no se puede cambiar de nota ni crear otra, y el ACK no pisa otra nota', async () => {
+      const { user } = renderPage()
+      await editNote1(user)
+      const put = hold()
+      backend.holdPut = put.promise
+
+      await user.click(screen.getByRole('button', { name: 'Guardar' }))
+      await waitFor(() => expect(backend.puts).toHaveLength(1))
+
+      expect(screen.getByRole('button', { name: 'Nueva nota' })).toBeDisabled()
+      expect(screen.getByText('Extracto Texto 2').closest('[role="button"]')).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      )
+
+      put.release()
+      await waitFor(() => expect(screen.getByText('Revisión 2')).toBeVisible())
+      expect(textbox()).toHaveValue('Texto 1 editado')
+
+      await user.click(screen.getByRole('button', { name: 'Nueva nota' }))
+      await waitFor(() => expect(textbox()).toHaveValue(''))
+      await user.type(textbox(), 'Nota totalmente distinta')
+      await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+      await waitFor(() => expect(backend.posts).toEqual([{ text: 'Nota totalmente distinta' }]))
+      expect(backend.puts).toEqual([{ id: ID_1, text: 'Texto 1 editado', expectedRevision: 1 }])
+      expect(backend.notes.get(ID_1)?.text).toBe('Texto 1 editado')
+    })
+
+    it('con un borrado en vuelo no se puede cambiar de nota y el 204 no vacía otra nota', async () => {
+      const { user } = renderPage()
+      await openNote(user, 'Extracto Texto 1', 'Texto 1')
+      const del = hold()
+      backend.holdDelete = del.promise
+
+      await user.click(screen.getByRole('button', { name: 'Borrar' }))
+      const confirm = await screen.findByRole('dialog', { name: 'Eliminar nota' })
+      await user.click(within(confirm).getByRole('button', { name: 'Confirmar' }))
+      await waitFor(() => expect(backend.deletes).toHaveLength(1))
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+
+      expect(screen.getByRole('button', { name: 'Nueva nota' })).toBeDisabled()
+      expect(screen.getByText('Extracto Texto 2').closest('[role="button"]')).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      )
+
+      del.release()
+      await waitFor(() => expect(textbox()).toHaveValue(''))
+      await waitFor(() => expect(screen.queryByText('Extracto Texto 1')).not.toBeInTheDocument())
+
+      await openNote(user, 'Extracto Texto 2', 'Texto 2')
+      expect(backend.notes.get(ID_2)?.text).toBe('Texto 2')
+    })
+  })
+
+  describe('negativos de borrado (4.ª revisión B-2)', () => {
+    it('Cancelar el borrado no llama a la API y conserva la nota', async () => {
+      const { user } = renderPage()
+      await openNote(user, 'Extracto Texto 1', 'Texto 1')
+
+      await user.click(screen.getByRole('button', { name: 'Borrar' }))
+      const confirm = await screen.findByRole('dialog', { name: 'Eliminar nota' })
+      await user.click(within(confirm).getByRole('button', { name: 'Cancelar' }))
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+      expect(backend.deletes).toEqual([])
+      expect(textbox()).toHaveValue('Texto 1')
+      expect(screen.getByText('Revisión 1')).toBeVisible()
+    })
+
+    it('404 al borrar conserva el texto como borrador nuevo y Guardar hace POST', async () => {
+      const { user } = renderPage()
+      await openNote(user, 'Extracto Texto 1', 'Texto 1')
+      backend.nextDeleteStatus = 404
+
+      await user.click(screen.getByRole('button', { name: 'Borrar' }))
+      const confirm = await screen.findByRole('dialog', { name: 'Eliminar nota' })
+      await user.click(within(confirm).getByRole('button', { name: 'Confirmar' }))
+
+      expect(await screen.findByText(/La nota ya no existe/)).toBeVisible()
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+      expect(textbox()).toHaveValue('Texto 1')
+      expect(screen.queryByText(/Revisión/)).not.toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'Guardar' }))
+      await waitFor(() => expect(backend.posts).toEqual([{ text: 'Texto 1' }]))
+      expect(backend.puts).toHaveLength(0)
+    })
+
+    it('error 500 al borrar muestra aviso y conserva nota y texto', async () => {
+      const { user } = renderPage()
+      await openNote(user, 'Extracto Texto 1', 'Texto 1')
+      backend.nextDeleteStatus = 500
+
+      await user.click(screen.getByRole('button', { name: 'Borrar' }))
+      const confirm = await screen.findByRole('dialog', { name: 'Eliminar nota' })
+      await user.click(within(confirm).getByRole('button', { name: 'Confirmar' }))
+
+      expect(await screen.findByText('No se pudo borrar la nota.')).toBeVisible()
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+      expect(textbox()).toHaveValue('Texto 1')
+      expect(screen.getByText('Revisión 1')).toBeVisible()
+      expect(screen.getByRole('button', { name: 'Borrar' })).toBeEnabled()
+      expect(backend.notes.has(ID_1)).toBe(true)
+      expect(screen.getByText('Extracto Texto 1')).toBeVisible()
     })
   })
 })

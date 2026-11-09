@@ -28,6 +28,8 @@ export function VoicePage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [pending, setPending] = useState<PendingTarget | null>(null)
   const [savingBeforeContinue, setSavingBeforeContinue] = useState(false)
+  // Guardado/borrado en vuelo en el composer: no se cambia de documento hasta su respuesta.
+  const [composerBusy, setComposerBusy] = useState(false)
   const composerRef = useRef<VoiceComposerHandle>(null)
 
   // Cargar detalle de la nota seleccionada
@@ -44,6 +46,7 @@ export function VoicePage() {
 
   const request = useCallback(
     (target: PendingTarget) => {
+      if (composerRef.current?.isBusy) return
       if (composerRef.current?.isDirty) {
         setPending(target)
         return
@@ -102,7 +105,7 @@ export function VoicePage() {
         <Typography component="h1" variant="h5" sx={{ fontWeight: 600 }}>
           Notas de voz
         </Typography>
-        <Button variant="outlined" onClick={handleNewNote}>
+        <Button variant="outlined" onClick={handleNewNote} disabled={composerBusy}>
           Nueva nota
         </Button>
       </Box>
@@ -124,7 +127,11 @@ export function VoicePage() {
             flex: { lg: '0 0 auto' },
           }}
         >
-          <VoiceComposer ref={composerRef} selectedDetail={selectedDetail} />
+          <VoiceComposer
+            ref={composerRef}
+            selectedDetail={selectedDetail}
+            onBusyChange={setComposerBusy}
+          />
         </Box>
 
         {/* Lista de notas — abajo en mobile, izquierda en desktop */}
@@ -139,7 +146,7 @@ export function VoicePage() {
             },
           }}
         >
-          <VoiceLibrary onSelect={handleSelect} selectedId={selectedId} />
+          <VoiceLibrary onSelect={handleSelect} selectedId={selectedId} disabled={composerBusy} />
         </Box>
       </Box>
 

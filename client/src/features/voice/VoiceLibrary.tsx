@@ -32,6 +32,8 @@ interface VoiceLibraryProps {
   onSelect: (item: VoiceNoteListItem) => void
   /** ID de la nota actualmente seleccionada (para resaltar). */
   selectedId: string | null
+  /** Deshabilita la selección (p. ej. con un guardado o borrado en vuelo). */
+  disabled?: boolean
 }
 
 /**
@@ -40,7 +42,7 @@ interface VoiceLibraryProps {
  * S-105: 20 por página, fecha/hora local, excerpt escapado, orden fijo createdAt DESC.
  * Estados: cargando, vacío, error, lista con paginación.
  */
-export function VoiceLibrary({ onSelect, selectedId }: VoiceLibraryProps) {
+export function VoiceLibrary({ onSelect, selectedId, disabled = false }: VoiceLibraryProps) {
   const [page, setPage] = useState(0)
 
   const { data, isLoading, isError, error } = useVoiceNotes({
@@ -90,6 +92,7 @@ export function VoiceLibrary({ onSelect, selectedId }: VoiceLibraryProps) {
           <ListItem key={item.id} disablePadding divider>
             <ListItemButton
               selected={item.id === selectedId}
+              disabled={disabled}
               onClick={() => handleSelect(item)}
               sx={{
                 py: 1.5,

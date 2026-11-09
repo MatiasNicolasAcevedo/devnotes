@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-035](tasks/T-035-voice-library.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
 | Estado | `changes_requested` |
-| Acción actual | 4.ª revisión independiente (ronda extra autorizada por el dueño) sobre HEAD a328044 / base 085dc76: CAMBIOS REQUERIDOS. Bloqueantes 409/Guardar y continuar resueltos; nuevos B-1 (ACK tardío de guardado/borrado sobrescribe otra nota) y B-2 (faltan negativos de borrado: cancelar, 404, 500). Client gate 468/468 OK, docs-check OK, CI verify-required SUCCESS. Siguiente: corrección por implementer nuevo; otra revisión requiere autorización del dueño. Detalle en la tarea. |
+| Acción actual | Corrección local de los bloqueantes de la 4.ª revisión (B-1 respuesta tardía con guarda por generación y navegación bloqueada en vuelo; B-2 negativos de borrado). Client gate OK (475/475), docs-check OK. Pendiente: publicar en PR40 y 5.ª revisión independiente con autorización del dueño. Detalle en la tarea. |
 | Rama / PR | codex/t-035-voice-library · [PR40](https://github.com/MatiasNicolasAcevedo/devnotes/pull/40) |
 
 T-034: PR39 MERGED, squash `085dc763918fa63e6de6b89b98ddfc9e87805f3a`, confirmado en GitHub el 2026-11-09. Junie reviewer + merger, Qwen3.6-27B-FP8. Segunda revisión independiente APROBADA sin bloqueantes. HEAD 13d250b, base main e1648a5, CI verify-required SUCCESS, docs-check OK. Client gate OK: lint, typecheck, VoiceComposer.test.tsx 5/5, AppRoutes.test.tsx 7/7, voiceNoteTextSchema.test.ts 7/7, build OK.

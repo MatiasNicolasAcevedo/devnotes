@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { z } from 'zod'
 import { ApiError } from '../../services/http'
 import { type CaptureResult, type CaptureState } from './recorder'
@@ -43,11 +43,14 @@ export type DocumentState = 'new' | 'clean' | 'dirty' | 'saving' | 'deleting' | 
  */
 export type VoiceConflict = 'update' | 'delete'
 
-/** Resultado de un guardado: solo 'saved' significa ACK del servidor. */
-export type SaveOutcome = 'saved' | 'conflict' | 'error' | 'skipped'
+/**
+ * Resultado de un guardado: solo 'saved' significa ACK aplicado al borrador vigente.
+ * 'stale': la respuesta llegó cuando el borrador ya era otro documento y se ignoró.
+ */
+export type SaveOutcome = 'saved' | 'conflict' | 'error' | 'skipped' | 'stale'
 
-/** Resultado de un borrado: solo 'deleted' significa 204. */
-export type DeleteOutcome = 'deleted' | 'conflict' | 'gone' | 'error' | 'skipped'
+/** Resultado de un borrado: solo 'deleted' significa 204 aplicado; 'stale' como en SaveOutcome. */
+export type DeleteOutcome = 'deleted' | 'conflict' | 'gone' | 'error' | 'skipped' | 'stale'
 
 function isConflict(error: unknown): boolean {
   return error instanceof ApiError && error.status === 409
@@ -107,6 +110,12 @@ export function useVoiceDraft() {
     generation: 0,
     conflict: null,
   })
+
+  // Generación del último render confirmado: las operaciones async la comparan al volver.
+  const committedGeneration = useRef(state.generation)
+  useLayoutEffect(() => {
+    committedGeneration.current = state.generation
+  }, [state.generation])
 
   const transcribeMutation = useTranscribeAudio()
   const createMutation = useCreateVoiceNote()
@@ -242,19 +251,27 @@ export function useVoiceDraft() {
    * - Sin noteId: POST create.
    * - Con noteId + revision: PUT con CAS; 409 deja `conflict = 'update'` sin reintento.
    * Si el texto cambió durante el guardado, el documento queda dirty frente al nuevo ACK.
+   * La respuesta solo se aplica si la generación no cambió (reset/carga de otra nota en medio).
    */
   const save = useCallback(async (): Promise<SaveOutcome> => {
     if (isTextEmpty || createMutation.isPending || updateMutation.isPending) return 'skipped'
 
-    const { noteId, revision, text } = state
+    const { noteId, revision, text, generation } = state
     setState((prev) => ({ ...prev, documentState: 'saving', conflict: null }))
+
+    // Solo se aplica si el borrador sigue siendo el mismo documento que inició la operación.
+    const isCurrent = () => committedGeneration.current === generation
+    const applyIfCurrent = (next: (prev: VoiceDraftState) => VoiceDraftState) => {
+      setState((prev) => (prev.generation === generation ? next(prev) : prev))
+    }
 
     try {
       const response =
         !noteId || revision == null
           ? await createMutation.mutateAsync(text)
           : await updateMutation.mutateAsync({ id: noteId, text, expectedRevision: revision })
-      setState((prev) => ({
+      if (!isCurrent()) return 'stale'
+      applyIfCurrent((prev) => ({
         ...prev,
         noteId: response.id,
         revision: response.revision,
@@ -262,8 +279,9 @@ export function useVoiceDraft() {
       }))
       return 'saved'
     } catch (error) {
+      if (!isCurrent()) return 'stale'
       const conflict = noteId != null && isConflict(error)
-      setState((prev) => ({
+      applyIfCurrent((prev) => ({
         ...prev,
         documentState: 'dirty',
         conflict: conflict ? 'update' : prev.conflict,
@@ -277,15 +295,23 @@ export function useVoiceDraft() {
    * 409 deja `conflict = 'delete'`; 404 conserva el texto como borrador nuevo sin guardar.
    */
   const deleteNote = useCallback(async (): Promise<DeleteOutcome> => {
-    const { noteId, revision, documentState } = state
+    const { noteId, revision, documentState, generation } = state
     if (!noteId || revision == null || documentState !== 'clean' || deleteMutation.isPending) {
       return 'skipped'
     }
 
     setState((prev) => ({ ...prev, documentState: 'deleting', conflict: null }))
+
+    // Solo se aplica si el borrador sigue siendo el mismo documento que inició la operación.
+    const isCurrent = () => committedGeneration.current === generation
+    const applyIfCurrent = (next: (prev: VoiceDraftState) => VoiceDraftState) => {
+      setState((prev) => (prev.generation === generation ? next(prev) : prev))
+    }
+
     try {
       await deleteMutation.mutateAsync({ id: noteId, expectedRevision: revision })
-      setState((prev) => ({
+      if (!isCurrent()) return 'stale'
+      applyIfCurrent((prev) => ({
         ...prev,
         text: '',
         documentState: 'new',
@@ -301,22 +327,25 @@ export function useVoiceDraft() {
       }))
       return 'deleted'
     } catch (error) {
+      if (!isCurrent()) return 'stale'
+      let outcome: DeleteOutcome
       if (isConflict(error)) {
-        setState((prev) => ({ ...prev, documentState: 'clean', conflict: 'delete' }))
-        return 'conflict'
-      }
-      if (isNotFound(error)) {
-        setState((prev) => ({
+        applyIfCurrent((prev) => ({ ...prev, documentState: 'clean', conflict: 'delete' }))
+        outcome = 'conflict'
+      } else if (isNotFound(error)) {
+        applyIfCurrent((prev) => ({
           ...prev,
           documentState: 'dirty',
           noteId: null,
           revision: null,
           generation: prev.generation + 1,
         }))
-        return 'gone'
+        outcome = 'gone'
+      } else {
+        applyIfCurrent((prev) => ({ ...prev, documentState: 'clean' }))
+        outcome = 'error'
       }
-      setState((prev) => ({ ...prev, documentState: 'clean' }))
-      return 'error'
+      return outcome
     }
   }, [state, deleteMutation])
 
@@ -347,9 +376,12 @@ export function useVoiceDraft() {
     }
   }, [state.text])
 
-  /** Reinicia el borrador a estado vacío. */
+  /**
+   * Reinicia el borrador a estado vacío. Incrementa la generación (no la vuelve a 0) para que
+   * respuestas en vuelo del documento anterior se ignoren.
+   */
   const reset = useCallback(() => {
-    setState({
+    setState((prev) => ({
       text: '',
       documentState: 'new',
       captureState: 'idle',
@@ -359,9 +391,9 @@ export function useVoiceDraft() {
       elapsedSeconds: 0,
       noteId: null,
       revision: null,
-      generation: 0,
+      generation: prev.generation + 1,
       conflict: null,
-    })
+    }))
   }, [])
 
   /** Actualiza el estado de captura desde useVoiceRecorder. */

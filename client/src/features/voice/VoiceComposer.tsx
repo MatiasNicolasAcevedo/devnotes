@@ -22,10 +22,17 @@ import { type SaveOutcome, useVoiceDraft, voiceNoteTextSchema } from './useVoice
 interface VoiceComposerProps {
   /** Detalle de una nota seleccionada desde la lista. Al cambiar, se carga en el composer. */
   selectedDetail?: VoiceNoteDetail | null
+  /**
+   * Avisa cuando empieza/termina un guardado o borrado en vuelo. Mientras sea true la página no
+   * cambia de documento: la respuesta pertenece a la nota actual (S-105: cargas tardías).
+   */
+  onBusyChange?: (busy: boolean) => void
 }
 
 export interface VoiceComposerHandle {
   isDirty: boolean
+  /** Guardado o borrado en vuelo. */
+  isBusy: boolean
   /** Guarda el texto vigente; resuelve 'saved' solo con ACK del servidor. */
   save: () => Promise<SaveOutcome>
   reset: () => void
@@ -41,7 +48,7 @@ export interface VoiceComposerHandle {
  * Borrar: diálogo Confirmar/Cancelar, espera 204, error no oculta borrador.
  */
 export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposerProps>(
-  ({ selectedDetail }, ref) => {
+  ({ selectedDetail, onBusyChange }, ref) => {
     const { data: capabilities } = useVoiceCapabilities()
     const draft = useVoiceDraft()
     const queryClient = useQueryClient()
@@ -265,6 +272,11 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     const isTranscribing = draft.transcribeMutation.isPending
     const isSaving = draft.createMutation.isPending || draft.updateMutation.isPending
     const isDeleting = draft.deleteMutation.isPending
+    const isPersisting = isSaving || isDeleting
+
+    useEffect(() => {
+      onBusyChange?.(isPersisting)
+    }, [isPersisting, onBusyChange])
 
     // Exponer isDirty, save y reset al padre (VoicePage) para el diálogo de cambios sin guardar.
     // Se recrea cuando cambia handleSave (cada cambio de texto), para no guardar un texto desactualizado.
@@ -272,10 +284,11 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
       ref,
       () => ({
         isDirty: draft.isDirty,
+        isBusy: isPersisting,
         save: handleSave,
         reset: draft.reset,
       }),
-      [draft.isDirty, draft.reset, handleSave],
+      [draft.isDirty, draft.reset, handleSave, isPersisting],
     )
 
     // Determinar si se puede grabar: solo en borrador nuevo vacío
