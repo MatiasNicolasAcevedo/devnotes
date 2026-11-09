@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-035](tasks/T-035-voice-library.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
 | Estado | `changes_requested` |
-| Acción actual | Revisión independiente: 2 bloqueantes (B-1 diálogo 409 inaccesible, B-2 dirty check inoperativo). Esperando corrección. |
+| Acción actual | Revisión independiente: CAMBIOS REQUERIDOS, 2 bloqueantes. Commit 6ba1b3e publicado. Esperando corrección en nueva sesión implementer. |
 | Rama / PR | codex/t-035-voice-library · [PR40](https://github.com/MatiasNicolasAcevedo/devnotes/pull/40) |
 
 T-034: PR39 MERGED, squash `085dc763918fa63e6de6b89b98ddfc9e87805f3a`, confirmado en GitHub el 2026-11-09. Junie reviewer + merger, Qwen3.6-27B-FP8. Segunda revisión independiente APROBADA sin bloqueantes. HEAD 13d250b, base main e1648a5, CI verify-required SUCCESS, docs-check OK. Client gate OK: lint, typecheck, VoiceComposer.test.tsx 5/5, AppRoutes.test.tsx 7/7, voiceNoteTextSchema.test.ts 7/7, build OK.
