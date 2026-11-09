@@ -1,6 +1,6 @@
 ---
 id: T-035
-status: draft
+status: in_progress
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-035-voice-library
-pr: null
+pr: 40
 depends_on: [T-034]
 ---
 # T-035 · Colección privada y edición/borrado concurrentes
@@ -52,7 +52,7 @@ Varias notas del mismo día, reload/reopen preserva texto editado; lista no expo
 
 ## Checkpoint vigente
 
-2026-10-31: contrato de frontera preparado en T-017 sobre main 0d976dc2187cb2a07061c3db48130c334b1e471b. Sin implementación, PR, migración aplicada ni tests de esta tarea ejecutados. Rol/modelo/herramienta/esfuerzo del ejecutor se registran al tomarla; no heredar capacidades Junie de frontera.
+2026-11-09: PR40 publicado (467184c), in_review. Junie implementer, Qwen3.6-27B-FP8. Client gate OK: typecheck, lint, format, 456/456 tests (78.18% statements, 71.85% branches), build OK. VoiceLibrary.test.tsx 8/8, VoiceComposer.test.tsx 5/5. Siguiente: revisión independiente.
 
 ## Correcciones significativas
 
