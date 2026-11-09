@@ -1,6 +1,6 @@
 ---
 id: T-035
-status: in_progress
+status: changes_requested
 priority: P1
 size: S
 executor: junie
@@ -52,7 +52,8 @@ Varias notas del mismo día, reload/reopen preserva texto editado; lista no expo
 
 ## Checkpoint vigente
 
-2026-11-09: PR40 publicado (467184c), in_review. Junie implementer, Qwen3.6-27B-FP8. Client gate OK: typecheck, lint, format, 456/456 tests (78.18% statements, 71.85% branches), build OK. VoiceLibrary.test.tsx 8/8, VoiceComposer.test.tsx 5/5. Siguiente: revisión independiente.
+2026-11-09: PR40 publicado (467184c), in_review. Junie implementer, Qwen3.6-27B-FP8. Client gate OK: typecheck, lint, format, 456/456 tests (78.18% statements, 71.85% branches), build OK. VoiceLibrary.test.tsx 8/8, VoiceComposer.test.tsx 5/5.
+2026-11-09: Revisión independiente: CAMBIOS REQUERIDOS, 2 bloqueantes. Junie reviewer, Qwen3.6-27B-FP8. HEAD 467184c, base main 085dc76. Client gate verificado: typecheck OK, lint OK, 456/456 tests OK, build OK. Bloqueantes: B-1 diálogo de conflicto 409 nunca se abre (VoiceComposer.tsx setShowConflictDialog(true) ausente), B-2 diálogo de dirty nunca se abre al cambiar de nota (VoicePage.tsx handleSelect sin verificar isDirty, setShowDirtyDialog(true) ausente). Siguiente: corrección de bloqueantes en misma rama/PR, nueva sesión implementer.
 
 ## Correcciones significativas
 
