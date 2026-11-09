@@ -1,6 +1,6 @@
 ---
 id: T-033
-status: in_review
+status: done
 priority: P1
 size: S
 executor: junie
@@ -53,6 +53,10 @@ Cero solicitud al montar; gesto inicia una sola captura. final dataavailable ant
 ## Checkpoint vigente
 
 2026-11-02: PR37 publicado (27ceb1b), in_review. Client gate 435/435 tests OK, typecheck/lint/format/build OK. Junie implementer, Qwen3.6-27B-FP8. 4 archivos nuevos: recorder.ts, recorder.test.ts, useVoiceRecorder.ts, useVoiceRecorder.test.tsx. Siguiente: revisión independiente.
+
+2026-11-09: Revisión independiente (Junie reviewer, Qwen3.6-27B-FP8). Diff verificado: CaptureController con máquina de estados, MediaRecorder/getUserMedia reales con APIs inyectables, selección MIME, límites 600 s/20 MiB, stop idempotente, cancelRequest, dispose. Hook con cleanup completo, logoutPending, pagehide/visibilitychange, elapsed con RAF. Tests dirigidos 27/27 OK, client gate 435/435 OK. CI verify-required SUCCESS en HEAD d26b601. APROBADO sin bloqueantes.
+
+2026-11-09: PR37 MERGED, squash e1648a55b372194e6d61801aaae97ec4bf0c6a0f, confirmado en GitHub. HEAD revisado d26b601, base main f3bbaa8. CI verify-required SUCCESS. Siguiente: T-034 tras MERGED.
 
 ## Correcciones significativas
 
