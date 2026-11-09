@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-034](tasks/T-034-voice-workspace.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | `in_progress` |
-| Acción actual | Implementando pantalla /voice: VoicePage, VoiceComposer, useVoiceDraft, ruta y enlace. |
-| Rama / PR | codex/t-034-voice-workspace · — |
+| Estado | `in_review` |
+| Acción actual | PR39 publicado, esperando revisión independiente. |
+| Rama / PR | codex/t-034-voice-workspace · [PR39](https://github.com/MatiasNicolasAcevedo/devnotes/pull/39) |
 
 T-033: PR37 MERGED, squash `e1648a55b372194e6d61801aaae97ec4bf0c6a0f`, confirmado en GitHub el 2026-11-09. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD d26b601, base main f3bbaa8, CI verify-required SUCCESS, docs-check OK. Client gate 435/435 tests OK.
 
@@ -60,5 +60,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie implementer, sesión nueva: T-034 (codex/t-034-voice-workspace). Pantalla nueva, edición/copia/guardado de voz. T-033 ya MERGED (PR37 e1648a5).
+Junie reviewer, sesión nueva: T-034 (PR39 codex/t-034-voice-workspace). Revisión independiente. Gate APPLICATION pendiente.
 ```

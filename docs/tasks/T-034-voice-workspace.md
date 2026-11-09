@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-034-voice-workspace
-pr: null
+pr: 39
 depends_on: [T-033]
 ---
 # T-034 · Grabar, editar, copiar y guardar una nota nueva
@@ -52,7 +52,7 @@ Flujo de nota nueva completo sin guardado implícito, borrar palabras/copiar val
 
 ## Checkpoint vigente
 
-2026-11-09: T-033 MERGED (PR37 e1648a5). Rama codex/t-034-voice-workspace creada desde origin/main. Implementando VoicePage, VoiceComposer, useVoiceDraft, ruta /voice y enlace Voz. Executor: Junie implementer, Qwen3.6-27B-FP8. Impacto: nueva ruta /voice, nuevo enlace en shell, 3 módulos de feature (VoicePage, VoiceComposer, useVoiceDraft), 2 tests nuevos (VoiceComposer.test.tsx, AppRoutes.test.tsx actualizado). Sin cambios en backend ni API.
+2026-11-09: PR39 publicado (d09c47a). VoicePage, VoiceComposer, useVoiceDraft, ruta /voice y enlace Voz implementados. Typecheck OK. voiceNoteTextSchema.test.ts 7/7 OK. AppRoutes.test.tsx actualizado con test /voice. Gate APPLICATION pendiente. Esperando revisión independiente.
 
 ## Correcciones significativas
 
