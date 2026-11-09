@@ -1,6 +1,6 @@
 ---
 id: T-034
-status: draft
+status: ready
 priority: P1
 size: M
 executor: junie
