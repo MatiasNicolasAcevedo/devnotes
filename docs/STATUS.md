@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-035](tasks/T-035-voice-library.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
 | Estado | `changes_requested` |
-| Acción actual | Segunda revisión independiente: CAMBIOS REQUERIDOS, 3 bloqueantes. Bloqueantes previos B-1 y B-2 persisten sin corrección + B-3 nuevo. Esperando corrección en nueva sesión implementer. |
+| Acción actual | Tercera revisión independiente: CAMBIOS REQUERIDOS, 2 bloqueantes persistentes. B-1 no corregido (conflictResolution 'none' en 409 impide abrir diálogo), B-2 corrección parcial (Guardar y continuar no cambia nota). B-3 corregido. Límite de rondas alcanzado: checkpoint al dueño. |
 | Rama / PR | codex/t-035-voice-library · [PR40](https://github.com/MatiasNicolasAcevedo/devnotes/pull/40) |
 
 T-034: PR39 MERGED, squash `085dc763918fa63e6de6b89b98ddfc9e87805f3a`, confirmado en GitHub el 2026-11-09. Junie reviewer + merger, Qwen3.6-27B-FP8. Segunda revisión independiente APROBADA sin bloqueantes. HEAD 13d250b, base main e1648a5, CI verify-required SUCCESS, docs-check OK. Client gate OK: lint, typecheck, VoiceComposer.test.tsx 5/5, AppRoutes.test.tsx 7/7, voiceNoteTextSchema.test.ts 7/7, build OK.
@@ -62,5 +62,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie reviewer, sesión nueva: T-035 (PR40 codex/t-035-voice-library). Revisión independiente de VoiceLibrary, useVoiceDraft extendido, VoiceComposer con delete/conflict, VoicePage responsive. Base main 085dc76.
+Checkpoint al dueño: T-035 (PR40) ha alcanzado el límite de dos rondas de revisión con 2 bloqueantes persistentes. B-1: el diálogo de conflicto 409 sigue sin abrirse porque useVoiceDraft.ts establece conflictResolution: 'none' en el handler de 409, pero el useEffect de VoiceComposer.tsx abre el diálogo solo cuando conflictResolution !== 'none'. B-2: "Guardar y continuar" en VoicePage.tsx invoca save() pero nunca cambia la selección a la nota pendiente. Se requiere decisión de arquitectura: ¿añadir un estado 'pending' a ConflictResolution o reestructurar la detección de 409? ¿Cómo notificar a VoicePage que save completó para cambiar la nota?
 ```
