@@ -64,6 +64,9 @@ function AppShellContent({ outlet }: { outlet: ReactNode }) {
             <Link component={RouterLink} to="/reference" color="inherit">
               Referencia
             </Link>
+            <Link component={RouterLink} to="/voice" color="inherit">
+              Voz
+            </Link>
           </Stack>
           <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', justifyContent: 'flex-end' }}>
             <SessionControls />

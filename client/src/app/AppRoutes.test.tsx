@@ -41,6 +41,16 @@ describe('AppRoutes', () => {
   })
 })
 
+describe('Página /voice', () => {
+  it('muestra la pantalla de notas de voz con el enlace en la barra', async () => {
+    installAuthBackend()
+    renderWithProviders(<AppRoutes />, { route: '/voice' })
+
+    expect(await screen.findByRole('heading', { name: 'Notas de voz' })).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Voz' })).toHaveAttribute('href', '/voice')
+  })
+})
+
 describe('Página /login', () => {
   it('«Continuar con Google» es una navegación completa same-origin al inicio OIDC', async () => {
     installAuthBackend()

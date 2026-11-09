@@ -5,6 +5,7 @@ import { DailyHistoryPage } from '../features/daily/DailyHistoryPage'
 import { LoginPage } from '../features/auth/LoginPage'
 import { HomePage } from '../features/system/HomePage'
 import { ReferencePage } from '../features/reference/ReferencePage'
+import { VoicePage } from '../features/voice/VoicePage'
 import { AppShell } from './AppShell'
 import { NotFoundPage } from './NotFoundPage'
 
@@ -21,6 +22,7 @@ export function AppRoutes() {
           <Route path="history" element={<DailyHistoryPage />} />
           <Route path="history/:date" element={<DailyHistoryPage />} />
           <Route path="reference" element={<ReferencePage />} />
+          <Route path="voice" element={<VoicePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

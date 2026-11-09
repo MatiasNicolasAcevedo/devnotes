@@ -1,6 +1,6 @@
 ---
 id: T-034
-status: draft
+status: in_progress
 priority: P1
 size: M
 executor: junie
@@ -52,7 +52,7 @@ Flujo de nota nueva completo sin guardado implícito, borrar palabras/copiar val
 
 ## Checkpoint vigente
 
-2026-10-31: contrato de frontera preparado en T-017 sobre main 0d976dc2187cb2a07061c3db48130c334b1e471b. Sin implementación, PR, migración aplicada ni tests de esta tarea ejecutados. Rol/modelo/herramienta/esfuerzo del ejecutor se registran al tomarla; no heredar capacidades Junie de frontera.
+2026-11-09: T-033 MERGED (PR37 e1648a5). Rama codex/t-034-voice-workspace creada desde origin/main. Implementando VoicePage, VoiceComposer, useVoiceDraft, ruta /voice y enlace Voz. Executor: Junie implementer, Qwen3.6-27B-FP8. Impacto: nueva ruta /voice, nuevo enlace en shell, 3 módulos de feature (VoicePage, VoiceComposer, useVoiceDraft), 2 tests nuevos (VoiceComposer.test.tsx, AppRoutes.test.tsx actualizado). Sin cambios en backend ni API.
 
 ## Correcciones significativas
 
