@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-035](tasks/T-035-voice-library.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
 | Estado | `changes_requested` |
-| Acción actual | Tercera revisión independiente: CAMBIOS REQUERIDOS, 2 bloqueantes persistentes. B-1 no corregido (conflictResolution 'none' en 409 impide abrir diálogo), B-2 corrección parcial (Guardar y continuar no cambia nota). B-3 corregido. Límite de rondas alcanzado: checkpoint al dueño. |
+| Acción actual | Frontera decidió B-1 (estado `conflict` explícito) y B-2 (`save()` devuelve `Promise<SaveOutcome>`); corrección local con client gate OK (468/468). Pendiente: publicar en PR40 y nueva revisión independiente autorizada por el dueño. Detalle en la tarea. |
 | Rama / PR | codex/t-035-voice-library · [PR40](https://github.com/MatiasNicolasAcevedo/devnotes/pull/40) |
 
 T-034: PR39 MERGED, squash `085dc763918fa63e6de6b89b98ddfc9e87805f3a`, confirmado en GitHub el 2026-11-09. Junie reviewer + merger, Qwen3.6-27B-FP8. Segunda revisión independiente APROBADA sin bloqueantes. HEAD 13d250b, base main e1648a5, CI verify-required SUCCESS, docs-check OK. Client gate OK: lint, typecheck, VoiceComposer.test.tsx 5/5, AppRoutes.test.tsx 7/7, voiceNoteTextSchema.test.ts 7/7, build OK.

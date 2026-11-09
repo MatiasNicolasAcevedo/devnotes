@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { z } from 'zod'
+import { ApiError } from '../../services/http'
 import { type CaptureResult, type CaptureState } from './recorder'
 import type { VoiceNoteDetail } from './api'
 import {
@@ -36,8 +37,25 @@ export const voiceNoteTextSchema = z
 /** Estado del documento: new/clean/dirty/saving/deleting/error. */
 export type DocumentState = 'new' | 'clean' | 'dirty' | 'saving' | 'deleting' | 'error'
 
-/** Resultado de un conflicto de revisión. */
-export type ConflictResolution = 'none' | 'copy' | 'reload' | 'newNote'
+/**
+ * Conflicto de revisión pendiente (409 en PUT o DELETE). Es un hecho del documento, no la acción elegida:
+ * mientras no sea null la UI muestra Copiar / Recargar con confirmación / Nueva nota. Sin reintento automático.
+ */
+export type VoiceConflict = 'update' | 'delete'
+
+/** Resultado de un guardado: solo 'saved' significa ACK del servidor. */
+export type SaveOutcome = 'saved' | 'conflict' | 'error' | 'skipped'
+
+/** Resultado de un borrado: solo 'deleted' significa 204. */
+export type DeleteOutcome = 'deleted' | 'conflict' | 'gone' | 'error' | 'skipped'
+
+function isConflict(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 409
+}
+
+function isNotFound(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404
+}
 
 /** Estado combinado del workspace de voz. */
 export interface VoiceDraftState {
@@ -61,8 +79,8 @@ export interface VoiceDraftState {
   revision: number | null
   /** Generación actual para evitar respuestas tardías. */
   generation: number
-  /** Si hay un conflicto de revisión pendiente de resolver. */
-  conflictResolution: ConflictResolution
+  /** Conflicto de revisión pendiente de resolver, o null. */
+  conflict: VoiceConflict | null
 }
 
 /**
@@ -87,7 +105,7 @@ export function useVoiceDraft() {
     noteId: null,
     revision: null,
     generation: 0,
-    conflictResolution: 'none',
+    conflict: null,
   })
 
   const transcribeMutation = useTranscribeAudio()
@@ -139,20 +157,17 @@ export function useVoiceDraft() {
           : prev.documentState === 'new'
             ? 'new'
             : 'dirty',
-      conflictResolution: 'none',
+      conflict: null,
     }))
   }, [])
 
   /**
-   * Carga una nota existente en el borrador.
-   * Devuelve true si se cargó, false si se rechazó por dirty.
+   * Carga una nota existente en el borrador. Sin `force` nunca pisa cambios sin guardar (la página
+   * resuelve antes el diálogo de cambios); `force` solo tras confirmación explícita (Recargar en conflicto).
    */
-  const loadNote = useCallback((detail: VoiceNoteDetail): boolean => {
-    let rejected = false
+  const loadNote = useCallback((detail: VoiceNoteDetail, options?: { force?: boolean }) => {
     setState((prev) => {
-      // Si hay cambios sin guardar, no sobrescribir
-      if (prev.documentState === 'dirty') {
-        rejected = true
+      if (prev.documentState === 'dirty' && !options?.force) {
         return prev
       }
       const normalized = detail.text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
@@ -168,10 +183,9 @@ export function useVoiceDraft() {
         elapsedSeconds: 0,
         elapsedFormatted: '00:00',
         generation: prev.generation + 1,
-        conflictResolution: 'none',
+        conflict: null,
       }
     })
-    return !rejected
   }, [])
 
   /** Aplica la respuesta de transcripción al borrador. Solo si coincide la generación. */
@@ -223,168 +237,105 @@ export function useVoiceDraft() {
   }, [state, applyTranscription, transcribeMutation])
 
   /**
-   * Guarda el borrador.
-   * - Si es nueva (sin noteId): POST create.
-   * - Si es existente (con noteId + revision): PUT update con CAS.
+   * Guarda el borrador y resuelve con el resultado, para que quien lo invoca (p. ej. «Guardar y
+   * continuar» en VoicePage) solo continúe tras el ACK del servidor.
+   * - Sin noteId: POST create.
+   * - Con noteId + revision: PUT con CAS; 409 deja `conflict = 'update'` sin reintento.
+   * Si el texto cambió durante el guardado, el documento queda dirty frente al nuevo ACK.
    */
-  const save = useCallback(() => {
-    if (isTextEmpty || createMutation.isPending || updateMutation.isPending) return
+  const save = useCallback(async (): Promise<SaveOutcome> => {
+    if (isTextEmpty || createMutation.isPending || updateMutation.isPending) return 'skipped'
 
     const { noteId, revision, text } = state
+    setState((prev) => ({ ...prev, documentState: 'saving', conflict: null }))
 
-    if (!noteId || revision == null) {
-      // Nueva nota: POST
-      setState((prev) => ({ ...prev, documentState: 'saving' }))
-      createMutation.mutate(text, {
-        onSuccess: (response) => {
-          setState((prev) => ({
-            ...prev,
-            noteId: response.id,
-            revision: response.revision,
-            documentState: 'clean',
-          }))
-        },
-        onError: () => {
-          setState((prev) => ({
-            ...prev,
-            documentState: 'dirty',
-          }))
-        },
-      })
-    } else {
-      // Nota existente: PUT con CAS
-      setState((prev) => ({ ...prev, documentState: 'saving' }))
-      updateMutation.mutate(
-        { id: noteId, text, expectedRevision: revision },
-        {
-          onSuccess: (response) => {
-            setState((prev) => ({
-              ...prev,
-              revision: response.revision,
-              documentState: 'clean',
-            }))
-          },
-          onError: (error) => {
-            setState((prev) => {
-              // Si es 409, marcar conflicto
-              if (
-                error &&
-                typeof error === 'object' &&
-                'status' in error &&
-                (error as { status: number }).status === 409
-              ) {
-                return {
-                  ...prev,
-                  documentState: 'dirty',
-                  conflictResolution: 'none',
-                }
-              }
-              return {
-                ...prev,
-                documentState: 'dirty',
-              }
-            })
-          },
-        },
-      )
+    try {
+      const response =
+        !noteId || revision == null
+          ? await createMutation.mutateAsync(text)
+          : await updateMutation.mutateAsync({ id: noteId, text, expectedRevision: revision })
+      setState((prev) => ({
+        ...prev,
+        noteId: response.id,
+        revision: response.revision,
+        documentState: prev.text === text ? 'clean' : 'dirty',
+      }))
+      return 'saved'
+    } catch (error) {
+      const conflict = noteId != null && isConflict(error)
+      setState((prev) => ({
+        ...prev,
+        documentState: 'dirty',
+        conflict: conflict ? 'update' : prev.conflict,
+      }))
+      return conflict ? 'conflict' : 'error'
     }
   }, [state, isTextEmpty, createMutation, updateMutation])
 
   /**
-   * Elimina la nota actual con CAS.
-   * Solo si la nota está guardada y clean.
+   * Elimina la nota actual con CAS (solo guardada y clean) y espera el 204.
+   * 409 deja `conflict = 'delete'`; 404 conserva el texto como borrador nuevo sin guardar.
    */
-  const deleteNote = useCallback(() => {
+  const deleteNote = useCallback(async (): Promise<DeleteOutcome> => {
     const { noteId, revision, documentState } = state
-    if (!noteId || revision == null || documentState !== 'clean' || deleteMutation.isPending) return
+    if (!noteId || revision == null || documentState !== 'clean' || deleteMutation.isPending) {
+      return 'skipped'
+    }
 
-    setState((prev) => ({ ...prev, documentState: 'deleting' }))
-    deleteMutation.mutate(
-      { id: noteId, expectedRevision: revision },
-      {
-        onSuccess: () => {
-          setState({
-            text: '',
-            documentState: 'new',
-            captureState: 'idle',
-            captureResult: null,
-            captureError: null,
-            elapsedFormatted: '00:00',
-            elapsedSeconds: 0,
-            noteId: null,
-            revision: null,
-            generation: 0,
-            conflictResolution: 'none',
-          })
-        },
-        onError: (error) => {
-          setState((prev) => {
-            if (error && typeof error === 'object' && 'status' in error) {
-              const status = (error as { status: number }).status
-              if (status === 409) {
-                return {
-                  ...prev,
-                  documentState: 'dirty',
-                  conflictResolution: 'none',
-                }
-              }
-              if (status === 404) {
-                // Nota ya eliminada, limpiar borrador
-                return {
-                  text: '',
-                  documentState: 'new',
-                  captureState: 'idle',
-                  captureResult: null,
-                  captureError: null,
-                  elapsedFormatted: '00:00',
-                  elapsedSeconds: 0,
-                  noteId: null,
-                  revision: null,
-                  generation: 0,
-                  conflictResolution: 'none',
-                }
-              }
-            }
-            return {
-              ...prev,
-              documentState: 'clean',
-            }
-          })
-        },
-      },
-    )
-  }, [state, deleteMutation])
-
-  /**
-   * Maneja el conflicto de revisión (409).
-   * - 'copy': copiar texto al portapapeles.
-   * - 'reload': recargar la nota desde el servidor (el caller debe invocar loadNote con el detalle actualizado).
-   * - 'newNote': reiniciar con el texto actual como nueva nota.
-   */
-  const resolveConflict = useCallback(
-    async (resolution: 'copy' | 'reload' | 'newNote') => {
-      setState((prev) => ({ ...prev, conflictResolution: resolution }))
-
-      if (resolution === 'copy') {
-        try {
-          await navigator.clipboard.writeText(state.text)
-        } catch {
-          // Silenciar — el texto sigue en el borrador
-        }
-      } else if (resolution === 'newNote') {
+    setState((prev) => ({ ...prev, documentState: 'deleting', conflict: null }))
+    try {
+      await deleteMutation.mutateAsync({ id: noteId, expectedRevision: revision })
+      setState((prev) => ({
+        ...prev,
+        text: '',
+        documentState: 'new',
+        captureState: 'idle',
+        captureResult: null,
+        captureError: null,
+        elapsedFormatted: '00:00',
+        elapsedSeconds: 0,
+        noteId: null,
+        revision: null,
+        generation: prev.generation + 1,
+        conflict: null,
+      }))
+      return 'deleted'
+    } catch (error) {
+      if (isConflict(error)) {
+        setState((prev) => ({ ...prev, documentState: 'clean', conflict: 'delete' }))
+        return 'conflict'
+      }
+      if (isNotFound(error)) {
         setState((prev) => ({
           ...prev,
-          text: prev.text,
-          documentState: prev.text.replace(/\s/g, '').length > 0 ? 'dirty' : 'new',
+          documentState: 'dirty',
           noteId: null,
           revision: null,
           generation: prev.generation + 1,
         }))
+        return 'gone'
       }
-      // 'reload': el caller debe cargar el detalle actualizado
-    },
-    [state.text],
-  )
+      setState((prev) => ({ ...prev, documentState: 'clean' }))
+      return 'error'
+    }
+  }, [state, deleteMutation])
+
+  /** Cierra el conflicto sin cambiar el borrador (sigue dirty; un nuevo guardado vuelve a usar CAS). */
+  const dismissConflict = useCallback(() => {
+    setState((prev) => ({ ...prev, conflict: null }))
+  }, [])
+
+  /** «Nueva nota» desde un conflicto: conserva el texto y lo desvincula para guardarlo con POST. */
+  const detachAsNewNote = useCallback(() => {
+    setState((prev) => ({
+      ...prev,
+      documentState: prev.text.replace(/\s/g, '').length > 0 ? 'dirty' : 'new',
+      noteId: null,
+      revision: null,
+      generation: prev.generation + 1,
+      conflict: null,
+    }))
+  }, [])
 
   /** Copia el texto actual al portapapeles. */
   const copyToClipboard = useCallback(async (): Promise<boolean> => {
@@ -409,7 +360,7 @@ export function useVoiceDraft() {
       noteId: null,
       revision: null,
       generation: 0,
-      conflictResolution: 'none',
+      conflict: null,
     })
   }, [])
 
@@ -444,7 +395,8 @@ export function useVoiceDraft() {
     transcribe,
     save,
     deleteNote,
-    resolveConflict,
+    dismissConflict,
+    detachAsNewNote,
     copyToClipboard,
     reset,
     setCaptureState,

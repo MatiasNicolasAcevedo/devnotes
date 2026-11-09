@@ -10,68 +10,102 @@ import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import type { VoiceNoteListItem } from './api'
 import { useVoiceNote } from './useVoiceNotes'
-import { VoiceComposer } from './VoiceComposer'
+import { VoiceComposer, type VoiceComposerHandle } from './VoiceComposer'
 import { VoiceLibrary } from './VoiceLibrary'
+
+/** Destino pendiente mientras se resuelve el diálogo de cambios sin guardar. */
+type PendingTarget = { kind: 'note'; id: string } | { kind: 'new' }
 
 /**
  * Pantalla de voz: ruta /voice.
  *
  * S-105: una columna a375 px; lista/editor adyacentes si caben a1280 px.
  * VoiceLibrary (lista paginada) + VoiceComposer (editor con captura).
- * Al seleccionar una nota, se carga el detalle y se muestra en el composer.
- * Si hay cambios sin guardar, pide resolver antes de cambiar.
+ * Al seleccionar una nota (o pulsar Nueva nota) con cambios sin guardar, pide resolver antes:
+ * «Guardar y continuar» solo continúa tras el ACK del servidor; 409/error se quedan en la nota actual.
  */
 export function VoicePage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [pendingSelectId, setPendingSelectId] = useState<string | null>(null)
-  const [showDirtyDialog, setShowDirtyDialog] = useState(false)
-  const composerRef = useRef<{ isDirty: boolean; save: () => void; reset: () => void } | null>(null)
+  const [pending, setPending] = useState<PendingTarget | null>(null)
+  const [savingBeforeContinue, setSavingBeforeContinue] = useState(false)
+  const composerRef = useRef<VoiceComposerHandle>(null)
 
   // Cargar detalle de la nota seleccionada
   const { data: selectedDetail } = useVoiceNote(selectedId ?? '')
 
+  const goTo = useCallback((target: PendingTarget) => {
+    if (target.kind === 'note') {
+      setSelectedId(target.id)
+    } else {
+      composerRef.current?.reset()
+      setSelectedId(null)
+    }
+  }, [])
+
+  const request = useCallback(
+    (target: PendingTarget) => {
+      if (composerRef.current?.isDirty) {
+        setPending(target)
+        return
+      }
+      goTo(target)
+    },
+    [goTo],
+  )
+
   const handleSelect = useCallback(
     (item: VoiceNoteListItem) => {
       if (item.id === selectedId) return
-
-      // B-2: verificar si hay cambios sin guardar antes de cambiar
-      const isDirty = composerRef.current?.isDirty ?? false
-      if (isDirty) {
-        setPendingSelectId(item.id)
-        setShowDirtyDialog(true)
-        return
-      }
-      setSelectedId(item.id)
+      request({ kind: 'note', id: item.id })
     },
-    [selectedId],
+    [request, selectedId],
   )
 
-  const handleDirtySaveAndContinue = useCallback(() => {
-    setShowDirtyDialog(false)
-    composerRef.current?.save()
-    // Esperar a que el guardado complete y el estado vuelva a clean
-    // antes de cambiar la selección (se hace en un efecto del composer)
-  }, [])
+  const handleNewNote = useCallback(() => request({ kind: 'new' }), [request])
+
+  const handleDirtySaveAndContinue = useCallback(async () => {
+    const target = pending
+    const composer = composerRef.current
+    if (target == null || composer == null) return
+    setSavingBeforeContinue(true)
+    const outcome = await composer.save()
+    setSavingBeforeContinue(false)
+    setPending(null)
+    // Solo con ACK se cambia de nota; 409 abre el conflicto y un error se muestra en el composer.
+    if (outcome === 'saved') goTo(target)
+  }, [goTo, pending])
 
   const handleDirtyDiscardAndContinue = useCallback(() => {
-    setShowDirtyDialog(false)
+    const target = pending
+    setPending(null)
+    if (target == null) return
     composerRef.current?.reset()
-    if (pendingSelectId != null) {
-      setSelectedId(pendingSelectId)
-      setPendingSelectId(null)
-    }
-  }, [pendingSelectId])
+    goTo(target)
+  }, [goTo, pending])
 
   const handleDirtyCancel = useCallback(() => {
-    setShowDirtyDialog(false)
-    setPendingSelectId(null)
-  }, [])
+    if (savingBeforeContinue) return
+    setPending(null)
+  }, [savingBeforeContinue])
 
   return (
     <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 2 } }}>
-      <Typography component="h1" variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
-        Notas de voz
-      </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 1,
+          mb: 2,
+        }}
+      >
+        <Typography component="h1" variant="h5" sx={{ fontWeight: 600 }}>
+          Notas de voz
+        </Typography>
+        <Button variant="outlined" onClick={handleNewNote}>
+          Nueva nota
+        </Button>
+      </Box>
 
       <Box
         sx={{
@@ -90,16 +124,7 @@ export function VoicePage() {
             flex: { lg: '0 0 auto' },
           }}
         >
-          <VoiceComposer
-            ref={
-              composerRef as React.RefObject<{
-                isDirty: boolean
-                save: () => void
-                reset: () => void
-              }>
-            }
-            selectedDetail={selectedDetail}
-          />
+          <VoiceComposer ref={composerRef} selectedDetail={selectedDetail} />
         </Box>
 
         {/* Lista de notas — abajo en mobile, izquierda en desktop */}
@@ -118,16 +143,22 @@ export function VoicePage() {
         </Box>
       </Box>
 
-      {/* Diálogo de dirty al cambiar de nota */}
-      <Dialog open={showDirtyDialog} onClose={handleDirtyCancel}>
+      {/* Diálogo de cambios sin guardar al cambiar de nota o crear una nueva */}
+      <Dialog open={pending != null} onClose={handleDirtyCancel}>
         <DialogTitle>Cambios sin guardar</DialogTitle>
         <DialogContent>
           <DialogContentText>Tenés cambios sin guardar. ¿Qué querés hacer?</DialogContentText>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDirtyCancel}>Cancelar</Button>
-          <Button onClick={handleDirtySaveAndContinue}>Guardar y continuar</Button>
-          <Button onClick={handleDirtyDiscardAndContinue}>Descartar y continuar</Button>
+        <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
+          <Button onClick={handleDirtyCancel} disabled={savingBeforeContinue}>
+            Cancelar
+          </Button>
+          <Button onClick={handleDirtySaveAndContinue} disabled={savingBeforeContinue}>
+            {savingBeforeContinue ? 'Guardando…' : 'Guardar y continuar'}
+          </Button>
+          <Button onClick={handleDirtyDiscardAndContinue} disabled={savingBeforeContinue}>
+            Descartar y continuar
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>

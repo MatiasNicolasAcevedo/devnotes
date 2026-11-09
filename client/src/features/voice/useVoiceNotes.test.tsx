@@ -225,7 +225,8 @@ describe('useTranscribeAudio', () => {
       await result.current.mutateAsync(blob)
     })
 
-    expect(result.current.isSuccess).toBe(true)
+    // El observer de la mutación publica el estado después de que mutateAsync resuelve.
+    await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(result.current.data?.text).toBe('transcrito')
     expect(transcribeSpy).toHaveBeenCalledWith(blob)
     transcribeSpy.mockRestore()

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
@@ -12,10 +13,11 @@ import Link from '@mui/material/Link'
 import Stack from '@mui/material/Stack'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
-import type { VoiceNoteDetail } from './api'
+import { ApiError } from '../../services/http'
+import { fetchVoiceNote, voiceQueryKeys, type VoiceNoteDetail } from './api'
 import { useVoiceCapabilities } from './useVoiceNotes'
 import { useVoiceRecorder } from './useVoiceRecorder'
-import { useVoiceDraft, voiceNoteTextSchema } from './useVoiceDraft'
+import { type SaveOutcome, useVoiceDraft, voiceNoteTextSchema } from './useVoiceDraft'
 
 interface VoiceComposerProps {
   /** Detalle de una nota seleccionada desde la lista. Al cambiar, se carga en el composer. */
@@ -24,7 +26,8 @@ interface VoiceComposerProps {
 
 export interface VoiceComposerHandle {
   isDirty: boolean
-  save: () => void
+  /** Guarda el texto vigente; resuelve 'saved' solo con ACK del servidor. */
+  save: () => Promise<SaveOutcome>
   reset: () => void
 }
 
@@ -34,20 +37,22 @@ export interface VoiceComposerHandle {
  *
  * S-105: nueva nota abre borrador vacío. Permitir texto manual y grabación solo en nuevo vacío.
  * Antes de grabar: aviso Groq. Stop espera último fragmento y libera tracks.
- * Conflicto 409: conserva borrador, ofrece Copiar/Recargar/Nueva nota.
+ * Conflicto 409: conserva borrador, ofrece Copiar / Recargar con confirmación / Nueva nota con ese texto.
  * Borrar: diálogo Confirmar/Cancelar, espera 204, error no oculta borrador.
  */
 export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposerProps>(
   ({ selectedDetail }, ref) => {
     const { data: capabilities } = useVoiceCapabilities()
     const draft = useVoiceDraft()
+    const queryClient = useQueryClient()
 
     // Diálogo de confirmación de borrado
     const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-    // Diálogo de conflicto de revisión
-    const [showConflictDialog, setShowConflictDialog] = useState(false)
-    // Diálogo de dirty al cambiar de nota
-    const [showDirtyDialog, setShowDirtyDialog] = useState(false)
+    // Conflicto 409: el diálogo se abre mientras draft.state.conflict != null (sin estado espejo).
+    const [confirmReload, setConfirmReload] = useState(false)
+    const [reloading, setReloading] = useState(false)
+    const [reloadError, setReloadError] = useState<string | null>(null)
+    const [conflictCopied, setConflictCopied] = useState(false)
 
     const recordingEnabled = capabilities?.recordingEnabled ?? false
     const recordingReason = capabilities?.reason
@@ -61,9 +66,9 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     const [textError, setTextError] = useState<string | undefined>()
     const textAreaRef = useRef<HTMLTextAreaElement>(null)
 
-    // Errores de operación (gestionados por callbacks, no por useEffect)
-    const [updateError, setUpdateError] = useState(false)
-    const [deleteError, setDeleteError] = useState(false)
+    // Errores de operación, fijados por el resultado de save()/deleteNote()
+    const [saveError, setSaveError] = useState(false)
+    const [deleteError, setDeleteError] = useState<'error' | 'gone' | null>(null)
 
     // Hook de captura de voz
     const recorder = useVoiceRecorder({
@@ -78,9 +83,11 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
       },
     })
 
-    // Sincronizar estado de captura con el draft
+    // Sincronizar estado de captura con el draft. Depende solo del callback estable: `draft` es un
+    // objeto nuevo en cada render y como dependencia provocaba un bucle de renders infinito.
+    const { setCaptureState } = draft
     useEffect(() => {
-      draft.setCaptureState(
+      setCaptureState(
         recorder.state,
         recorder.result,
         recorder.error,
@@ -93,7 +100,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
       recorder.error,
       recorder.elapsedSeconds,
       recorder.elapsedFormatted,
-      draft,
+      setCaptureState,
     ])
 
     // Cuando hay resultado de captura, iniciar transcripción automáticamente
@@ -122,36 +129,12 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedDetail?.id])
 
-    // B-1: Abrir diálogo de conflicto cuando el hook detecta 409
-    useEffect(() => {
-      if (
-        draft.state.conflictResolution === 'none' &&
-        (draft.updateMutation.isError || draft.deleteMutation.isError)
-      ) {
-        // Error no-409: se maneja por el puente de errores abajo
-        return
-      }
-      if (draft.state.conflictResolution !== 'none') {
-        setShowConflictDialog(true)
-      }
-    }, [draft.state.conflictResolution, draft.updateMutation.isError, draft.deleteMutation.isError])
-
-    // B-3: Puente de errores de actualización y borrado (no-409)
-    useEffect(() => {
-      if (draft.updateMutation.isError && draft.state.conflictResolution === 'none') {
-        setUpdateError(true)
-      }
-      if (draft.deleteMutation.isError && draft.state.conflictResolution === 'none') {
-        setDeleteError(true)
-      }
-    }, [draft.updateMutation.isError, draft.deleteMutation.isError, draft.state.conflictResolution])
-
     const handleTextChange = useCallback(
       (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = e.target.value
         draft.setText(value)
-        setUpdateError(false)
-        setDeleteError(false)
+        setSaveError(false)
+        setDeleteError(null)
         // Validar en tiempo real
         const result = voiceNoteTextSchema.safeParse(value)
         setTextError(result.success ? undefined : result.error.issues[0]?.message)
@@ -199,68 +182,100 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
       }
     }, [draft])
 
-    const handleSave = useCallback(() => {
+    const handleSave = useCallback(async (): Promise<SaveOutcome> => {
       const result = voiceNoteTextSchema.safeParse(draft.state.text)
       if (!result.success) {
         setTextError(result.error.issues[0]?.message)
-        return
+        textAreaRef.current?.focus()
+        return 'skipped'
       }
-      setUpdateError(false)
-      draft.save()
+      setSaveError(false)
+      setDeleteError(null)
+      const outcome = await draft.save()
+      setSaveError(outcome === 'error')
+      return outcome
     }, [draft])
 
     const handleDeleteClick = useCallback(() => {
       setShowDeleteDialog(true)
     }, [])
 
-    const handleDeleteConfirm = useCallback(() => {
+    const handleDeleteConfirm = useCallback(async () => {
       setShowDeleteDialog(false)
-      setDeleteError(false)
-      draft.deleteNote()
+      setDeleteError(null)
+      setSaveError(false)
+      const outcome = await draft.deleteNote()
+      if (outcome === 'error' || outcome === 'gone') setDeleteError(outcome)
     }, [draft])
 
     const handleDeleteCancel = useCallback(() => {
       setShowDeleteDialog(false)
     }, [])
 
+    const closeConflict = useCallback(() => {
+      setConfirmReload(false)
+      setReloadError(null)
+      setConflictCopied(false)
+    }, [])
+
     const handleConflictCopy = useCallback(async () => {
-      await draft.resolveConflict('copy')
-      setShowConflictDialog(false)
-      setUpdateError(false)
+      setConflictCopied(await draft.copyToClipboard())
     }, [draft])
 
-    const handleConflictReload = useCallback(async () => {
-      await draft.resolveConflict('reload')
-      setShowConflictDialog(false)
-      setUpdateError(false)
-    }, [draft])
+    const handleConflictDismiss = useCallback(() => {
+      if (reloading) return
+      draft.dismissConflict()
+      closeConflict()
+    }, [draft, closeConflict, reloading])
 
-    const handleConflictNewNote = useCallback(async () => {
-      await draft.resolveConflict('newNote')
-      setShowConflictDialog(false)
-      setUpdateError(false)
-    }, [draft])
+    const handleConflictReloadConfirm = useCallback(async () => {
+      const id = draft.state.noteId
+      if (id == null) return
+      setReloading(true)
+      setReloadError(null)
+      try {
+        const fresh = await queryClient.fetchQuery({
+          queryKey: voiceQueryKeys.detail(id),
+          queryFn: ({ signal }) => fetchVoiceNote(id, signal),
+          staleTime: 0,
+        })
+        draft.loadNote(fresh, { force: true })
+        setSaveError(false)
+        setDeleteError(null)
+        closeConflict()
+      } catch (error) {
+        setConfirmReload(false)
+        setReloadError(
+          error instanceof ApiError && error.status === 404
+            ? 'La nota ya no existe en el servidor. Podés guardar tu texto como nota nueva.'
+            : 'No se pudo recargar la nota. Tu borrador se conserva.',
+        )
+      } finally {
+        setReloading(false)
+      }
+    }, [draft, queryClient, closeConflict])
+
+    const handleConflictNewNote = useCallback(() => {
+      draft.detachAsNewNote()
+      setSaveError(false)
+      setDeleteError(null)
+      closeConflict()
+    }, [draft, closeConflict])
 
     const isTranscribing = draft.transcribeMutation.isPending
     const isSaving = draft.createMutation.isPending || draft.updateMutation.isPending
     const isDeleting = draft.deleteMutation.isPending
 
-    // Exponer isDirty, save y reset al padre (VoicePage) para dirty check
+    // Exponer isDirty, save y reset al padre (VoicePage) para el diálogo de cambios sin guardar.
+    // Se recrea cuando cambia handleSave (cada cambio de texto), para no guardar un texto desactualizado.
     useImperativeHandle(
       ref,
       () => ({
-        get isDirty() {
-          return draft.isDirty
-        },
-        save() {
-          handleSave()
-        },
-        reset() {
-          draft.reset()
-        },
+        isDirty: draft.isDirty,
+        save: handleSave,
+        reset: draft.reset,
       }),
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      [draft.isDirty, draft.reset],
+      [draft.isDirty, draft.reset, handleSave],
     )
 
     // Determinar si se puede grabar: solo en borrador nuevo vacío
@@ -415,24 +430,22 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
           </Alert>
         )}
 
-        {/* Error de guardar */}
-        {draft.createMutation.error && (
+        {/* Error de guardado (no 409: el conflicto tiene su diálogo) */}
+        {saveError && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            No se pudo guardar la nota. El texto se conserva en el borrador.
-          </Alert>
-        )}
-
-        {/* Error de actualización */}
-        {updateError && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            La nota fue modificada por otra sesión. Tu borrador se conserva.
+            No se pudieron guardar los cambios. Tu borrador se conserva.
           </Alert>
         )}
 
         {/* Error de borrado */}
-        {deleteError && (
+        {deleteError === 'error' && (
           <Alert severity="error" sx={{ mb: 2 }}>
             No se pudo borrar la nota.
+          </Alert>
+        )}
+        {deleteError === 'gone' && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            La nota ya no existe. El texto se conserva como borrador nuevo sin guardar.
           </Alert>
         )}
 
@@ -561,45 +574,66 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
           </DialogActions>
         </Dialog>
 
-        {/* Diálogo de conflicto de revisión */}
-        <Dialog open={showConflictDialog} onClose={() => setShowConflictDialog(false)}>
-          <DialogTitle>Conflicto de edición</DialogTitle>
+        {/* Diálogo de conflicto de revisión (409): abierto mientras haya conflicto pendiente */}
+        <Dialog
+          open={draft.state.conflict != null}
+          onClose={handleConflictDismiss}
+          aria-labelledby="voice-conflict-title"
+        >
+          <DialogTitle id="voice-conflict-title">Conflicto de edición</DialogTitle>
           <DialogContent>
-            <DialogContentText>
-              Esta nota fue modificada por otra sesión. ¿Qué querés hacer con tu borrador?
-            </DialogContentText>
+            {confirmReload ? (
+              <DialogContentText>
+                Se descartará tu borrador y se cargará la versión guardada en el servidor.
+              </DialogContentText>
+            ) : (
+              <DialogContentText>
+                Esta nota fue modificada o borrada por otra sesión. Tu borrador se conserva. ¿Qué
+                querés hacer?
+              </DialogContentText>
+            )}
+            {conflictCopied && !confirmReload && (
+              <Alert severity="success" sx={{ mt: 2 }}>
+                Texto copiado al portapapeles.
+              </Alert>
+            )}
+            {reloadError && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {reloadError}
+              </Alert>
+            )}
           </DialogContent>
-          <DialogActions>
-            <Button onClick={handleConflictCopy}>Copiar texto</Button>
-            <Button onClick={handleConflictReload}>Recargar nota</Button>
-            <Button onClick={handleConflictNewNote}>Nueva nota</Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Diálogo de dirty al cambiar de nota */}
-        <Dialog open={showDirtyDialog} onClose={() => setShowDirtyDialog(false)}>
-          <DialogTitle>Cambios sin guardar</DialogTitle>
-          <DialogContent>
-            <DialogContentText>Tenés cambios sin guardar. ¿Qué querés hacer?</DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setShowDirtyDialog(false)}>Cancelar</Button>
-            <Button
-              onClick={() => {
-                draft.save()
-                setShowDirtyDialog(false)
-              }}
-            >
-              Guardar y continuar
-            </Button>
-            <Button
-              onClick={() => {
-                draft.reset()
-                setShowDirtyDialog(false)
-              }}
-            >
-              Descartar y continuar
-            </Button>
+          <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
+            {confirmReload ? (
+              <>
+                <Button onClick={() => setConfirmReload(false)} disabled={reloading}>
+                  Volver
+                </Button>
+                <Button
+                  onClick={handleConflictReloadConfirm}
+                  color="warning"
+                  variant="contained"
+                  disabled={reloading}
+                >
+                  {reloading ? 'Recargando…' : 'Descartar y recargar'}
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button onClick={handleConflictCopy}>Copiar texto</Button>
+                <Button
+                  onClick={() => {
+                    setReloadError(null)
+                    setConfirmReload(true)
+                  }}
+                >
+                  Recargar nota
+                </Button>
+                <Button onClick={handleConflictNewNote} variant="contained">
+                  Nueva nota
+                </Button>
+              </>
+            )}
           </DialogActions>
         </Dialog>
       </Box>
