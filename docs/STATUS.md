@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-035](tasks/T-035-voice-library.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
 | Estado | `changes_requested` |
-| Acción actual | Corrección de la 4.ª revisión publicada en PR40: B-1 (respuesta tardía: guarda por generación y navegación bloqueada en vuelo), B-2 (negativos de borrado) y observaciones O-1…O-4. Client gate OK (480/480), docs-check OK. Siguiente: 5.ª revisión independiente con autorización del dueño. Detalle en la tarea. |
+| Acción actual | 5.ª revisión independiente (ronda extra autorizada por el dueño: «Sí, autorizo»), HEAD eb4155a / base 085dc76: **CAMBIOS REQUERIDOS**. Correcciones de la 4.ª revisión verificadas. Bloqueantes nuevos: B-1 aviso falso «No se pudo abrir la nota» tras borrar, B-2 la lista abre una nota guardada durante la grabación y la transcripción la reemplaza, B-3 la última página vacía tras borrar no retrocede. Siguiente: corrección por sesión implementer nueva; la 6.ª revisión requiere nueva autorización del dueño. Detalle en la tarea. |
 | Rama / PR | codex/t-035-voice-library · [PR40](https://github.com/MatiasNicolasAcevedo/devnotes/pull/40) |
 
 T-034: PR39 MERGED, squash `085dc763918fa63e6de6b89b98ddfc9e87805f3a`, confirmado en GitHub el 2026-11-09. Junie reviewer + merger, Qwen3.6-27B-FP8. Segunda revisión independiente APROBADA sin bloqueantes. HEAD 13d250b, base main e1648a5, CI verify-required SUCCESS, docs-check OK. Client gate OK: lint, typecheck, VoiceComposer.test.tsx 5/5, AppRoutes.test.tsx 7/7, voiceNoteTextSchema.test.ts 7/7, build OK.
@@ -62,5 +62,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Implementer, sesión nueva: T-035 (PR40 codex/t-035-voice-library), corregir B-1 y B-2 de la 4.ª revisión (detalle, archivos:líneas y condición de cierre en docs/tasks/T-035-voice-library.md, checkpoint 2026-11-09). B-1: save/deleteNote ignoran resultados de otra generación, reset() incrementa la generación y VoicePage no navega con guardado/borrado en vuelo; pruebas rojo→verde con PUT/DELETE retenidos. B-2: negativos de borrado (cancelar sin DELETE, 404, 500). Recomendado O-1…O-4. Base main 085dc76. Tras publicar, la revisión siguiente excede el límite de rondas: requiere autorización explícita del dueño.
+Implementer, sesión nueva: T-035 (PR40 codex/t-035-voice-library), corregir B-1…B-3 de la 5.ª revisión (archivos:líneas, causa y condición de cierre en docs/tasks/T-035-voice-library.md, checkpoint 2026-11-09 «Quinta revisión»). B-1: limpiar selectedId cuando el composer desvincula la nota (deleted/gone), sin aviso «No se pudo abrir la nota» tras un 204. B-2: bloquear lista y Nueva nota también durante captura/transcripción y aplicar la transcripción solo a un borrador nuevo sin noteId. B-3: VoiceLibrary retrocede de página si la posterior queda vacía. Pruebas rojo→verde en VoicePage.test.tsx, useVoiceDraft.test.tsx y VoiceLibrary.test.tsx. Base main 085dc76. Tras publicar, la 6.ª revisión excede el límite de rondas: requiere autorización explícita del dueño.
 ```

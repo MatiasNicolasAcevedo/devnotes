@@ -73,6 +73,8 @@ El dueño decidió priorizar voz el 2026-10-31. T-017, T-027, T-028, T-029, T-03
 
 Controles de cinco/diez por Junie tras T-030/T-035; retorno a frontera al entregar T-037/M2-RC1 o decisión fuera del contrato. La versión técnica se verifica con API/DB/OIDC propios reales, micrófono ficticio y doble externo; cuenta/clave/cuota/retención y ensayo Groq real son pendientes de activación explícitos, no evidencia inventada ni un bloqueo de la construcción apagada. No se envió audio ni se contrató servicio.
 
+Hallazgo fuera de alcance de T-035 (5.ª revisión PR40, 2026-11-09), heredado de T-034 y presente en main `085dc76`: en `client/src/features/voice/VoiceComposer.tsx` el efecto que llama a `draft.transcribe()` depende de `draft` (objeto nuevo en cada render) y de `recorder.result`, que sigue fijado tras detener; cada render vuelve a transcribir, incrementa la generación y lanza otra petición hasta que llega la respuesta. Una prueba descartable con el grabador simulado devolviendo `result` en `idle` colgó el worker de Vitest (bucle de render). Riesgo: varias transcripciones por intento (S-105 §4: una sola petición) y cupo Groq. Las pruebas actuales simulan el grabador sin resultado y no lo detectan. Corregir antes de T-037 (en T-036 o tarea propia que decida el dueño), con prueba roja «un stop con resultado dispara exactamente un POST de transcripción».
+
 ## Posterior a M2-RC1
 
 Pruebas personales del dueño sobre el SHA entregado; frontera agrupa correcciones/mejoras a partir de resultados. Sin nuevas capacidades ready ahora. Fuera de esta versión: streaming, audio persistido, integración automática con CLI/daily, Safari/iOS, despliegue y pagos. Opciones de ROADMAP conservan su carácter futuro.
