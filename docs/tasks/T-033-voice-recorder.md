@@ -1,6 +1,6 @@
 ---
 id: T-033
-status: draft
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-033-voice-recorder
-pr: null
+pr: 37
 depends_on: [T-032]
 ---
 # T-033 · Ciclo de vida seguro del micrófono
@@ -52,7 +52,7 @@ Cero solicitud al montar; gesto inicia una sola captura. final dataavailable ant
 
 ## Checkpoint vigente
 
-2026-10-31: contrato de frontera preparado en T-017 sobre main 0d976dc2187cb2a07061c3db48130c334b1e471b. Sin implementación, PR, migración aplicada ni tests de esta tarea ejecutados. Rol/modelo/herramienta/esfuerzo del ejecutor se registran al tomarla; no heredar capacidades Junie de frontera.
+2026-11-02: PR37 publicado (27ceb1b), in_review. Client gate 435/435 tests OK, typecheck/lint/format/build OK. Junie implementer, Qwen3.6-27B-FP8. 4 archivos nuevos: recorder.ts, recorder.test.ts, useVoiceRecorder.ts, useVoiceRecorder.test.tsx. Siguiente: revisión independiente.
 
 ## Correcciones significativas
 
