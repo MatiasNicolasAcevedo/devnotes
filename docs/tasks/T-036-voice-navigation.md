@@ -1,6 +1,6 @@
 ---
 id: T-036
-status: in_review
+status: mergeable
 priority: P1
 size: M
 executor: junie
@@ -53,12 +53,24 @@ Atrás/Adelante y navegación por header no pierden texto, no renderizan destino
 
 ## Checkpoint vigente
 
-2026-11-10. `in_review`. Corrección B-4 publicada en PR42 con el gate sustituto autorizado por el dueño; evidencia en [Entrega de la corrección B-4](#entrega-de-la-corrección-b-4). Fuentes `e41fcfd`, base publicada `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`; el HEAD posterior solo agrega Markdown regular. Los cambios locales de Render y portabilidad en `docs/DEPLOYMENT.md` y `docs/BACKLOG.md` siguen fuera de los commits de T-036.
+2026-11-10. `mergeable`. La cuarta revisión independiente cerró B-4 sin bloqueantes nuevos y aceptó el gate sustituto; evidencia en [Cuarta revisión independiente](#cuarta-revisión-independiente). El veredicto `APROBADO` se publica en PR42 ligado al HEAD documental de esta transición y la base `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`, después de la CI `verify-required` de ese HEAD. Siguiente: merge según AUTONOMY y merger, y MERGED confirmado antes de habilitar T-037. Los cambios locales de Render y portabilidad en `docs/DEPLOYMENT.md` y `docs/BACKLOG.md` siguen fuera de los commits de T-036.
 
 Decisión del dueño, 2026-11-10, en el chat de la tercera revisión: respondió «Sí, autorizo» a una corrección acotada de B-4 y una revisión independiente más. Indicó además «no corramos el full de nuevo por que es muy costoso».
 
 - **Excepción del dueño al gate.** Para B-4 no se repite FULL/APPLICATION. La evidencia FULL de `8b9438b` cubre backend con IT PostgreSQL y Playwright. La excepción vale solo si el diff desde `8b9438b` toca únicamente archivos regulares de `client/src/features/voice/` además de Markdown. Cualquier otra ruta, un cambio de base o un fallo exige FULL o volver al dueño. Gate sustituto desde `client/` con Node 24: rojo/verde de B-4, las nueve suites dirigidas y `npm run verify` completo; además `node scripts/docs-check.mjs`, `git diff --check` y `bash scripts/verify.sh --policy origin/main`. El reviewer acepta este gate como válido para merge solo con esas condiciones y lo cita en su veredicto.
 - **Reviewer independiente, sesión nueva.** Única revisión adicional autorizada por esta decisión. Verificar B-4, conservar B-1/B-2/B-3, comprobar las condiciones del gate sustituto y `verify-required`, con veredicto ligado a HEAD/base. Si el veredicto es favorable, continuar solo según AUTONOMY. Ante otro bloqueante, volver al dueño. T-037 espera el MERGED confirmado de T-036.
+
+## Cuarta revisión independiente
+
+2026-11-10. Reviewer en sesión nueva, Claude Code (Claude Opus 5.5, `claude-opus-5-5`, PowerShell/Git Bash/Git/gh/Node/Vitest; esfuerzo no expuesto). No implementó ni revisó antes esta tarea en esta sesión. Es la única revisión adicional autorizada por el dueño. Esta revisión cambia solo documentación operativa. PR42 OPEN, no draft, `codex/t-036-voice-navigation` contra `main`. HEAD de entrada `c2be7496e635066ccc72cc688e245faef5eaff25` y base `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`, confirmados con `gh pr view` y `git ls-remote`. [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42768377469/job/129670140463) para el HEAD de entrada. Sin hilos de revisión abiertos. La verificación usó un worktree aislado en ese HEAD.
+
+- **Gate sustituto aceptado.** `git diff --raw 8b9438b c2be749` muestra solo `client/src/features/voice/VoiceComposer.tsx`, `client/src/features/voice/VoiceDraftNavigation.test.tsx`, `docs/STATUS.md` y la tarea, todos en modo `100644`. Historia lineal desde `8b9438b`, sin merges. La base sigue en `a621005`. Se cumplen las condiciones de la excepción del dueño: la evidencia FULL/APPLICATION de `8b9438b` vale para backend con IT PostgreSQL y Playwright, y el gate sustituto para el cambio de cliente.
+- **B-4 cerrado.** Rojo: con `VoiceComposer.tsx` de `8b9438b` y la regresión del HEAD, `-t 'abre una nota existente'` dio exit 1 en ambas variantes, con el aviso todavía visible tras abrir la nota. Una sonda temporal sin esa aserción falló en `toBeEnabled` de «Guardar», el síntoma de B-4. Verde: exit 0, 2/2 con las fuentes del PR. La regresión usa router real y MSW. En las dos variantes, aviso excedido y permiso denegado, abre «Extracto existente», edita y guarda con un único PUT `{text, expectedRevision: 1}` y ACK, sin POST de transcripción. Las fuentes y la regresión se restauraron.
+- Código. `dismissNotices` llama a `resetError`, que solo sale de `error`. Sus únicos llamadores son `goTo` de `VoicePage`, que no cambia de documento con captura u operación en curso, y el `reset` del editor. No altera una captura en curso ni un resultado pendiente; lo cubre el negativo de `useVoiceRecorder`.
+- Regresiones. Las nueve suites dirigidas pasaron 118/118. Incluyen B-1 (recarga tardía ignorada), B-2 (601 s descartados sin POST y transcripción explícita al ocultar), B-3 (recuperación tras el aviso) y el negativo «resetError no altera una captura en curso». `npm run verify` desde `client/` con Node 24.21.0 dio exit 0: typecheck, lint sin warnings, formato, 516/516 con 87.94 % statements y 82.66 % branches, y build.
+- `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` pasaron. `bash scripts/verify.sh --policy origin/main` informa FULL/APPLICATION, cubierto por la excepción. Sin recursos Docker creados.
+
+Sin bloqueantes. Veredicto favorable sujeto a la CI del HEAD documental.
 
 ## Entrega de la corrección B-4
 
