@@ -1,6 +1,6 @@
 ---
 id: T-039
-status: in_progress
+status: in_review
 priority: P1
 size: S
 executor: frontier
@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-039-voice-activation
-pr: null
+pr: 46
 depends_on: [T-037]
 ---
 # T-039 · Activación de Groq y pruebas personales de M2-RC1
@@ -68,7 +68,7 @@ No se fabrica ningún resultado: lo que no se ejecutó figura como pendiente. CI
 
 ## Checkpoint vigente
 
-2026-11-10. `in_progress`. Frontera en Codex Desktop con GPT-6 (variante y esfuerzo no expuestos), PowerShell, Git, `gh`, Node y consulta web. Impacto previsto: habilitación local de la transcripción mediante la configuración existente del dueño. El PR registra evidencia en Markdown.
+2026-11-10. `in_review`. Frontera en Codex Desktop con GPT-6 (variante y esfuerzo no expuestos), PowerShell, Git, `gh`, Node, Docker, Edge y consulta web. Impacto observado: grabación habilitada por la configuración local y transcripción externa bloqueada. El PR registra evidencia en Markdown.
 
 - Base `c63038d8c8d0820396b6ea94e78f61671175a040`. `git status --short --branch` mostró main limpio antes de `git switch --create codex/t-039-voice-activation main`. `git merge-base --is-ancestor aef4213 main` salió 0. `git ls-remote --heads origin main codex/t-039-voice-activation` confirmó ese main y la ausencia de rama remota. `gh pr view 44 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName,statusCheckRollup` confirmó `MERGED`, squash `aef4213db2fe7f676591811b7ee67a22757b64b0`, `mergedAt` 2026-11-10T16:37:31Z y `verify-required` SUCCESS sobre `ad548bc`. `gh pr list --repo MatiasNicolasAcevedo/devnotes --state open` mostró solo PR38 de una conciliación anterior. `git diff --name-only aef4213..main` mostró solo Markdown.
 - Revalidación pública registrada en [VOICE-RELEASE](../VOICE-RELEASE.md#habilitación-segura-del-proveedor). El dueño informó haber completado los pasos de alta y configuración, creado la clave y pedido continuar tras la guía de plan Free e `Inference APIs ZDR`. La consola del dueño se mantiene como fuente de los límites efectivos.
@@ -88,7 +88,8 @@ No se fabrica ningún resultado: lo que no se ejecutó figura como pendiente. CI
 - Arranque del stack de prueba con exit 0, `Local API/DB/OIDC check passed` y origen `http://127.0.0.1:18175`. La revisión del 502 confirmó en la referencia de Groq que el modelo va en una parte multipart obligatoria. El contrato de corrección quedó en [BACKLOG](../BACKLOG.md#hallazgos-de-t-039).
 - Cleanup del stack sin clave: `dev.sh down` con el mismo proyecto y archivo de puertos, y `docker volume rm starter-dev-t039-unconfigured-5d73b9_db-data` tras cotejar el nombre y las etiquetas exactas del ensayo. Las consultas finales por proyecto dieron cero contenedores, redes y volúmenes propios. El stack principal tenía cuatro contenedores en ejecución.
 - Veredicto explícito del dueño el 2026-11-10: «Aceptada con mejoras». Dio por concluida esta ronda y pidió retomar las pruebas de voz tras corregir el 502. Matriz y ensayo registrados en [VOICE-RELEASE](../VOICE-RELEASE.md).
-- Siguiente acción: publicar el PR documental y entregar a revisión independiente. La corrección y el reensayo quedan en el seguimiento documentado en BACKLOG.
+- Publicación: [PR46](https://github.com/MatiasNicolasAcevedo/devnotes/pull/46) contra `main`, evidencia inicial en `f7061b1`. `node scripts/docs-check.mjs` y `git diff --check` pasaron. `bash scripts/verify.sh --policy origin/main` dio `policy=DOCS_ONLY`, `profile=DOCUMENTATION`, cuatro Markdown.
+- Siguiente acción: revisión independiente del PR46 sobre HEAD y base publicados. La corrección y el reensayo quedan en el seguimiento de BACKLOG, en otra tarea.
 
 ## Correcciones significativas
 
@@ -100,3 +101,5 @@ No se fabrica ningún resultado: lo que no se ejecutó figura como pendiente. CI
 ## Cierre y siguiente tarea
 
 Un PR documental con el veredicto. Se revisa y mergea según AUTONOMY: la revisión independiente comprueba que la evidencia esté saneada y sea coherente. Tras MERGED, la siguiente sesión concilia done y toma [T-040](T-040-daily-timestamps.md), salvo que el veredicto sea «no aceptada»: en ese caso vuelve a frontera con los hallazgos bloqueantes.
+
+Con el veredicto «Aceptada con mejoras», el dueño pidió retomar el ensayo de voz después de corregir el 502. Frontera prepara ese seguimiento tras el cierre documental, con contrato y sesión propios.

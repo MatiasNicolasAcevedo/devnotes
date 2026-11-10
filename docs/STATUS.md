@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-039](tasks/T-039-voice-activation.md) · S-105 / activación de Groq y pruebas personales de M2-RC1 |
-| Estado | `in_progress` |
-| Acción actual | El dueño dio el veredicto «Aceptada con mejoras». Publicar el PR documental de T-039 con la evidencia y el bloqueo de transcripción. |
-| Rama / PR | codex/t-039-voice-activation · sin PR |
+| Estado | `in_review` |
+| Acción actual | Revisar la evidencia y el alcance documental de T-039. El dueño dio el veredicto «Aceptada con mejoras» y la transcripción real queda como seguimiento. |
+| Rama / PR | codex/t-039-voice-activation · [PR46](https://github.com/MatiasNicolasAcevedo/devnotes/pull/46) |
 
 T-037: PR44 MERGED, squash `aef4213db2fe7f676591811b7ee67a22757b64b0`, confirmado en GitHub el 2026-11-10 (mergedAt 2026-11-10T16:37:31Z). Conciliada como done; SHA de entrega congelado en [VOICE-RELEASE](VOICE-RELEASE.md). Plan posterior del dueño (2026-11-10) en [S-107](specs/S-107-xlsx-portability.md) y [S-108](specs/S-108-render-pilot.md).
 
@@ -70,5 +70,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomar el cierre documental de T-039 en codex/t-039-voice-activation. Leer AGENTS.md, T-039 y VOICE-RELEASE. Publicar un PR contra main con el veredicto «Aceptada con mejoras», los resultados saneados y el seguimiento de la transcripción 502 en BACKLOG. Dejarlo listo para revisión independiente.
+Sesión nueva de revisión independiente de T-039, PR46 contra main. Leer AGENTS.md, docs/agents/reviewer.md, T-039 y VOICE-RELEASE. Confirmar HEAD y base remotos y el perfil DOCUMENTATION. Revisar el diff, la evidencia saneada, el veredicto «Aceptada con mejoras» y el seguimiento del 502 en BACKLOG. Publicar el veredicto de revisión y aplicar AUTONOMY si el PR es elegible. Tras el merge, frontera prepara en otra sesión la corrección y el reensayo de voz.
 ```
