@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-048](tasks/T-048-groq-multipart-fix.md) · S-105 / multipart saliente a Groq |
-| Estado | `in_review` |
-| Acción actual | Nueva sesión reviewer verifica el cierre de B-1 en el HEAD publicado de PR47 y emite el veredicto independiente. |
+| Estado | `mergeable` |
+| Acción actual | Cerrar PR47 tras verificar el HEAD documental y publicar el veredicto ligado a HEAD/base. Con MERGED confirmado, la siguiente sesión de frontera concilia T-048 y toma T-049. |
 | Rama / PR | `codex/t-048-groq-multipart-fix` · [PR47](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47) |
 
 T-039: [PR46 MERGED y conciliada como done](tasks/T-039-voice-activation.md#checkpoint-vigente). El reensayo con el dueño queda en [T-049](tasks/T-049-voice-retest.md) tras el merge de T-048. T-040 espera el reensayo favorable y su PR MERGED.
@@ -72,5 +72,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva de Junie reviewer para la segunda revisión de T-048 en PR47. Leer AGENTS.md, server/AGENTS.md, STATUS, el checkpoint y la evidencia de B-1 de T-048, el veredicto anterior de PR47, docs/agents/reviewer.md y el aplazamiento de FULL en TESTING. Confirmar PR47 abierto contra main, HEAD/base publicados y verify-required verde sobre el HEAD vigente. Revisar el diff publicado y comprobar que la corrección desde be3f6d8 solo reformatea las dos condiciones de checkGroqRequest. Verificar spotless:check y GroqTranscriptionClientTest con Maven Wrapper/JDK 21, docs-check, diff y clasificación. Emitir el veredicto ligado a HEAD/base según el protocolo reviewer. Si es favorable y cumple AUTONOMY, seguir el protocolo merger y confirmar MERGED en GitHub antes de habilitar T-049 en otra sesión. FULL integrado después de T-044 MERGED.
+Sesión nueva de frontera para T-049 con el dueño. Leer AGENTS.md, STATUS, el cierre de PR47, T-048, T-049 y sus referencias en VOICE-RELEASE. Confirmar en GitHub PR47 MERGED contra main con mergedAt y mergeCommit.oid según docs/agents/merger.md. Si el merge sigue pendiente, retomar su cierre según AUTONOMY antes de iniciar T-049. Con MERGED confirmado, conciliar T-048 como done en el primer avance de la rama de T-049 y coordinar el reensayo sintético según su contrato. T-040 espera T-049 favorable y MERGED. FULL integrado después de T-044 MERGED.
 ```

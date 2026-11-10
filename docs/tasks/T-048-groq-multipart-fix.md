@@ -1,6 +1,6 @@
 ---
 id: T-048
-status: in_review
+status: mergeable
 priority: P1
 size: S
 executor: junie
@@ -49,7 +49,15 @@ Completar la solicitud que DevNotes envía a Groq al detener la grabación. T-03
 
 ## Checkpoint vigente
 
-B-1 corregido en `codex/t-048-groq-multipart-fix`. La siguiente sesión reviewer verifica el [PR47](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47), sus SHA publicados y `verify-required`, y revisa la corrección de formato. FULL diferido por decisión del dueño hasta después de T-044 MERGED.
+B-1 cerrado en la segunda revisión independiente del [PR47](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47). El veredicto y el merge quedan sujetos a la verificación del HEAD documental publicado sobre la misma base. La sesión de T-049 empieza tras confirmar `MERGED` en GitHub. FULL integrado diferido hasta después de T-044 MERGED.
+
+### Evidencia de la segunda revisión independiente
+
+2026-11-10. Reviewer en sesión nueva de Codex Desktop (GPT-6, variante y esfuerzo no expuestos), con PowerShell, Git, `gh`, Git Bash, Node y Maven Wrapper con Corretto 21.0.9. Esta revisión solo cambia documentación. La entrega modifica el multipart saliente y su prueba, con el mismo contrato de API pública, permisos, persistencia y UI.
+
+- `gh pr view 47` y `git ls-remote` confirmaron PR abierto contra `main`, HEAD `4f8694a4c083b6a20a793a8b8d10f4b31f21db68` y base `c5e37cc4b73ad038ac35edf29c66131416bb4a34`. `gh run view 42888240377` confirmó [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42888240377/job/130082168815) en ese HEAD. GitHub informó cero hilos de revisión.
+- La revisión del diff completo confirmó las cinco partes salientes con boundary y CRLF consistentes y la regresión HTTP local con fixtures ficticias. Comparé el test publicado con el de `be3f6d8e46c48d43078066f025adcca78e34c98a` aplicando únicamente los dos cambios de salto de línea e indentación de `checkGroqRequest`. El archivo resultante coincide íntegramente con el publicado. El adaptador conserva su blob y la corrección incluye dos archivos de seguimiento en Markdown.
+- Desde `server/`, `./mvnw -q spotless:check` y `./mvnw -q test -Dtest=GroqTranscriptionClientTest` terminaron con exit 0. Surefire informó 16 pruebas, 0 fallos, 0 errores y 0 omitidas. Desde la raíz, `node scripts/docs-check.mjs`, `git diff --check origin/main...HEAD` y `bash scripts/verify.sh --policy origin/main` terminaron con exit 0. Clasificación `FULL / APPLICATION`, con FULL integrado diferido según TESTING.
 
 ### Evidencia de corrección B-1
 
