@@ -293,13 +293,18 @@ describe('workspace de voz y navegación', () => {
     expect(post).toHaveBeenCalledOnce()
   })
 
-  it('descarta audio que excedió 600 s durante la suspensión', async () => {
-    const { track } = installMicrophone()
+  it('descarta audio que excedió 600 s durante la suspensión y recupera el editor', async () => {
+    const { track, getUserMedia } = installMicrophone()
     const post = vi.fn()
+    const saved = vi.fn()
     server.use(
       mock.post(TRANSCRIPTION, () => {
         post()
         return HttpResponse.json({ text: 'No debe transcribirse', language: 'es' })
+      }),
+      mock.post(LIST, async ({ request }) => {
+        saved(await request.json())
+        return note('Texto manual tras el aviso')
       }),
     )
     const now = vi.spyOn(performance, 'now')
@@ -315,6 +320,20 @@ describe('workspace de voz y navegación', () => {
     expect(screen.queryByRole('button', { name: 'Transcribir' })).not.toBeInTheDocument()
     expect(await screen.findByText(/Se excedió la duración máxima/)).toBeVisible()
     expect(unload()).toBe(false)
+    expect(post).not.toHaveBeenCalled()
+
+    // El mismo workspace vuelve a grabar por gesto y guarda texto manual con ACK.
+    await user.click(screen.getByRole('button', { name: 'Nueva nota' }))
+    expect(screen.queryByText(/Se excedió la duración máxima/)).not.toBeInTheDocument()
+    await user.click(await screen.findByRole('button', { name: 'Grabar' }))
+    expect(await screen.findByText('Grabando')).toBeVisible()
+    expect(getUserMedia).toHaveBeenCalledTimes(2)
+    await user.click(screen.getByRole('button', { name: 'Cancelar grabación' }))
+    expect(track.stop).toHaveBeenCalledTimes(2)
+    await user.type(await voiceText(), 'Texto manual tras el aviso')
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+    expect(await screen.findByText('Nota guardada correctamente.')).toBeVisible()
+    expect(saved).toHaveBeenCalledExactlyOnceWith({ text: 'Texto manual tras el aviso' })
     expect(post).not.toHaveBeenCalled()
   })
 

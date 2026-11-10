@@ -223,12 +223,9 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
     }
   }, [cancel, stop])
 
+  // Solo sale de 'error': no altera una captura en curso ni un resultado pendiente.
   const resetError = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      state: 'idle',
-      error: null,
-    }))
+    setState((prev) => (prev.state === 'error' ? { ...prev, state: 'idle', error: null } : prev))
   }, [])
 
   return {

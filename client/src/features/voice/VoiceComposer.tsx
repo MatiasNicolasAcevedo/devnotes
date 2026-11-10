@@ -279,6 +279,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     }, [draft, closeConflict, onDetached])
 
     const { reset: resetDraft } = draft
+    const { resetError: resetRecorderError } = recorder
     const dismissNotices = useCallback(() => {
       setSaveError(null)
       setDeleteError(null)
@@ -311,10 +312,12 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
         save: handleSave,
         reset: () => {
           resetDraft()
+          // Un aviso de captura (p. ej. audio excedido y ya descartado) no bloquea el documento nuevo.
+          resetRecorderError()
           dismissNotices()
         },
       }),
-      [draft.isDirty, resetDraft, handleSave, isPersisting, dismissNotices],
+      [draft.isDirty, resetDraft, resetRecorderError, handleSave, isPersisting, dismissNotices],
     )
 
     // Determinar si se puede grabar: solo en borrador nuevo vacío

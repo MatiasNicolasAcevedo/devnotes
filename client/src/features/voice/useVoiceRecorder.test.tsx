@@ -265,6 +265,21 @@ describe('useVoiceRecorder', () => {
     expect(result.current.error).toBeNull()
   })
 
+  it('resetError no altera una captura en curso', async () => {
+    const { result } = renderHook(() => useVoiceRecorder(buildControllerOptions()), {
+      wrapper: SessionWrapper,
+    })
+
+    await act(async () => {
+      await result.current.start()
+    })
+    act(() => {
+      result.current.resetError()
+    })
+
+    expect(result.current.state).toBe('recording')
+  })
+
   it('stop tras start cambia estado a idle', async () => {
     const { result } = renderHook(() => useVoiceRecorder(buildControllerOptions()), {
       wrapper: SessionWrapper,
