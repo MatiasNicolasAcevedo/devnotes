@@ -201,6 +201,17 @@ export function useVoiceDraft() {
   const applyTranscription = useCallback((text: string, generation: number) => {
     setState((prev) => {
       if (prev.generation !== generation) return prev
+      // S-105 §1: una nota guardada no se reemplaza grabando; el audio se descarta.
+      if (prev.noteId != null) {
+        return {
+          ...prev,
+          captureState: 'idle',
+          captureResult: null,
+          captureError: null,
+          elapsedSeconds: 0,
+          elapsedFormatted: '00:00',
+        }
+      }
       const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
       return {
         ...prev,

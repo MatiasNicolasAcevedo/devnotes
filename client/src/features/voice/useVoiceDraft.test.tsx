@@ -1,6 +1,6 @@
 import { http as mock, HttpResponse } from 'msw'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, renderHook } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'
 import { server } from '../../test/msw/server'
@@ -96,5 +96,33 @@ describe('useVoiceDraft · respuestas tardías', () => {
     expect(result.current.state.noteId).toBe(ID_2)
     expect(result.current.state.text).toBe('Texto 2')
     expect(result.current.state.documentState).toBe('clean')
+  })
+})
+
+describe('useVoiceDraft · transcripción', () => {
+  it('una transcripción no reemplaza el texto de una nota guardada', async () => {
+    server.use(
+      mock.post('/api/v1/voice/transcriptions', () =>
+        HttpResponse.json({ text: 'transcrito', language: 'es' }),
+      ),
+    )
+    const { result } = renderDraft()
+    act(() => result.current.loadNote(note(ID_1, 'Texto 1')))
+    act(() =>
+      result.current.setCaptureState('idle', {
+        blob: new Blob(['audio'], { type: 'audio/webm' }),
+        durationSeconds: 1,
+        sizeBytes: 5,
+        generation: 0,
+      }),
+    )
+
+    act(() => result.current.transcribe())
+    await waitFor(() => expect(result.current.transcribeMutation.isSuccess).toBe(true))
+
+    expect(result.current.state.text).toBe('Texto 1')
+    expect(result.current.state.noteId).toBe(ID_1)
+    expect(result.current.state.documentState).toBe('clean')
+    expect(result.current.state.captureResult).toBeNull()
   })
 })

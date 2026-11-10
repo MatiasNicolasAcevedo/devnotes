@@ -16,9 +16,11 @@ import { VoicePage } from './VoicePage'
  * con la API simulada por MSW. Solo se sustituye el grabador (MediaRecorder no existe en jsdom).
  * Las versiones anteriores mockeaban el composer y ocultaron los bloqueantes B-1/B-2 de T-035.
  */
+const recorderMock = vi.hoisted(() => ({ state: 'idle' }))
+
 vi.mock('./useVoiceRecorder', () => ({
   useVoiceRecorder: () => ({
-    state: 'idle',
+    state: recorderMock.state,
     result: null,
     error: null,
     elapsedSeconds: 0,
@@ -67,6 +69,8 @@ interface Backend {
   /** Estado forzado y retención de la próxima respuesta GET de detalle. */
   nextGetStatus: number | null
   holdGet: Promise<void> | null
+  /** IDs pedidos al GET de detalle, en orden. */
+  detailGets: string[]
 }
 
 /** Promesa controlable para retener una respuesta MSW. */
@@ -103,6 +107,7 @@ function installBackend(): Backend {
     holdDelete: null,
     nextGetStatus: null,
     holdGet: null,
+    detailGets: [],
   }
   server.use(
     mock.get(CAPABILITIES_PATH, () =>
@@ -133,6 +138,7 @@ function installBackend(): Backend {
       })
     }),
     mock.get(NOTE_PATH, async ({ params }) => {
+      backend.detailGets.push(String(params.id))
       if (backend.holdGet) await backend.holdGet
       if (backend.nextGetStatus != null) {
         const status = backend.nextGetStatus
@@ -218,6 +224,7 @@ describe('VoicePage', () => {
   let backend: Backend
 
   beforeEach(() => {
+    recorderMock.state = 'idle'
     backend = installBackend()
   })
 
@@ -593,6 +600,51 @@ describe('VoicePage', () => {
 
       await openNote(user, 'Extracto Texto 2', 'Texto 2')
       expect(screen.queryByText('Nota guardada correctamente.')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('5.ª revisión', () => {
+    it('B-1: tras borrar con 204 no se vuelve a pedir la nota ni aparece «No se pudo abrir la nota»', async () => {
+      const { user } = renderPage()
+      await openNote(user, 'Extracto Texto 1', 'Texto 1')
+
+      await user.click(screen.getByRole('button', { name: 'Borrar' }))
+      const confirm = await screen.findByRole('dialog', { name: 'Eliminar nota' })
+      const getsBeforeDelete = backend.detailGets.length
+      await user.click(within(confirm).getByRole('button', { name: 'Confirmar' }))
+
+      await waitFor(() => expect(textbox()).toHaveValue(''))
+      await waitFor(() => expect(screen.queryByText('Extracto Texto 1')).not.toBeInTheDocument())
+      expect(screen.queryByText(/No se pudo abrir la nota/)).not.toBeInTheDocument()
+      expect(backend.detailGets.slice(getsBeforeDelete)).not.toContain(ID_1)
+    })
+
+    it('B-1: tras un PUT con 404 la nota deja de estar seleccionada y no se vuelve a pedir', async () => {
+      const { user } = renderPage()
+      await editNote1(user)
+      backend.nextPutStatus = 404
+      const getsBeforeSave = backend.detailGets.length
+
+      await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+      expect(await screen.findByText(/La nota ya no existe/)).toBeVisible()
+      await waitFor(() =>
+        expect(screen.getByText('Extracto Texto 1').closest('[role="button"]')).not.toHaveClass(
+          'Mui-selected',
+        ),
+      )
+      expect(screen.queryByText(/No se pudo abrir la nota/)).not.toBeInTheDocument()
+      expect(backend.detailGets.slice(getsBeforeSave)).not.toContain(ID_1)
+    })
+
+    it('B-2: con una grabación en curso no se puede abrir otra nota ni crear una nueva', async () => {
+      recorderMock.state = 'recording'
+      renderPage()
+
+      const row = (await screen.findByText('Extracto Texto 1')).closest('[role="button"]')
+      await waitFor(() => expect(row).toHaveAttribute('aria-disabled', 'true'))
+      expect(screen.getByRole('button', { name: 'Nueva nota' })).toBeDisabled()
+      expect(backend.detailGets).toHaveLength(0)
     })
   })
 })

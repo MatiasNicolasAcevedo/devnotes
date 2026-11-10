@@ -52,6 +52,10 @@ export function VoiceLibrary({ onSelect, selectedId, disabled = false }: VoiceLi
 
   const items: VoiceNoteListItem[] = useMemo(() => data?.content ?? [], [data])
   const totalPages = data?.totalPages ?? 0
+  // S-105 §8: si se vacía una página posterior (p. ej. tras borrar su última nota), retroceder.
+  const pageEmptied = page > 0 && data != null && data.content.length === 0
+  // Ajuste de estado durante el render (patrón de React para estado derivado de props/datos).
+  if (pageEmptied) setPage(Math.max(0, Math.min(page - 1, totalPages - 1)))
 
   const handleSelect = useCallback(
     (item: VoiceNoteListItem) => {
@@ -64,7 +68,7 @@ export function VoiceLibrary({ onSelect, selectedId, disabled = false }: VoiceLi
     setPage(value - 1) // Pagination es 1-based
   }, [])
 
-  if (isLoading) {
+  if (isLoading || pageEmptied) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
         <CircularProgress size={24} aria-label="Cargando notas" />

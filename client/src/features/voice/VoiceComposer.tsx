@@ -29,6 +29,8 @@ interface VoiceComposerProps {
   onBusyChange?: (busy: boolean) => void
   /** La página está obteniendo el detalle de otra nota: editor y acciones bloqueados. */
   loadingDetail?: boolean
+  /** El documento dejó de corresponder a una nota guardada (borrada o 404): la página la deselecciona. */
+  onDetached?: () => void
 }
 
 export interface VoiceComposerHandle {
@@ -50,7 +52,7 @@ export interface VoiceComposerHandle {
  * Borrar: diálogo Confirmar/Cancelar, espera 204, error no oculta borrador.
  */
 export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposerProps>(
-  ({ selectedDetail, onBusyChange, loadingDetail = false }, ref) => {
+  ({ selectedDetail, onBusyChange, loadingDetail = false, onDetached }, ref) => {
     const { data: capabilities } = useVoiceCapabilities()
     const draft = useVoiceDraft()
     const queryClient = useQueryClient()
@@ -206,8 +208,9 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
       const outcome = await draft.save()
       setSaveError(outcome === 'error' || outcome === 'gone' ? outcome : null)
       if (outcome === 'saved') setSavedGeneration(generation)
+      if (outcome === 'gone') onDetached?.()
       return outcome
-    }, [draft])
+    }, [draft, onDetached])
 
     const handleDeleteClick = useCallback(() => {
       setShowDeleteDialog(true)
@@ -219,7 +222,8 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
       setSaveError(null)
       const outcome = await draft.deleteNote()
       if (outcome === 'error' || outcome === 'gone') setDeleteError(outcome)
-    }, [draft])
+      if (outcome === 'deleted' || outcome === 'gone') onDetached?.()
+    }, [draft, onDetached])
 
     const handleDeleteCancel = useCallback(() => {
       setShowDeleteDialog(false)
@@ -278,7 +282,9 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     const isTranscribing = draft.transcribeMutation.isPending
     const isSaving = draft.createMutation.isPending || draft.updateMutation.isPending
     const isDeleting = draft.deleteMutation.isPending
-    const isPersisting = isSaving || isDeleting
+    // La página no cambia de documento con guardado/borrado, captura o transcripción en curso,
+    // ni con audio pendiente de transcribir/descartar (S-105: no se superponen).
+    const isPersisting = isSaving || isDeleting || draft.isBusy || draft.state.captureResult != null
 
     useEffect(() => {
       onBusyChange?.(isPersisting)

@@ -231,4 +231,35 @@ describe('VoiceLibrary', () => {
     // Se hicieron dos llamadas: página 0 y página 1
     expect(callCount).toBe(2)
   })
+
+  it('retrocede a la página anterior cuando la actual queda vacía tras invalidar', async () => {
+    const items1 = Array.from({ length: 20 }, (_, i) => buildListItem(i + 1))
+    let items2 = [buildListItem(100)]
+    server.use(
+      mock.get(NOTES_PATH, ({ request }) => {
+        const page = Number(new URL(request.url).searchParams.get('page') ?? '0')
+        const totalElements = items1.length + items2.length
+        const totalPages = Math.ceil(totalElements / 20)
+        return HttpResponse.json({
+          content: page === 0 ? items1 : items2,
+          page,
+          size: 20,
+          totalElements,
+          totalPages,
+        })
+      }),
+    )
+    const queryClient = buildQueryClient()
+    renderLibrary(queryClient)
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('button', { name: /Go to page 2/i }))
+    expect(await screen.findByText('Extracto de la nota 100…')).toBeInTheDocument()
+
+    // Se borra la única nota de la página 2 (como tras un DELETE 204) y se invalida la lista.
+    items2 = []
+    await queryClient.invalidateQueries({ queryKey: ['voice'] })
+
+    expect(await screen.findByText('Extracto de la nota 1…')).toBeInTheDocument()
+    expect(screen.queryByText(/No hay notas de voz/)).not.toBeInTheDocument()
+  })
 })

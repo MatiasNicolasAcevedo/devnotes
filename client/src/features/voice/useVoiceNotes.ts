@@ -85,8 +85,13 @@ export function useDeleteVoiceNote() {
   return useMutation({
     mutationFn: ({ id, expectedRevision }: { id: string; expectedRevision: number }) =>
       deleteVoiceNote(id, expectedRevision),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: voiceQueryKeys.all })
+    onSuccess: (_data, variables) => {
+      // Todo lo de voz salvo el detalle borrado, que daría 404 si se volviera a pedir.
+      const deletedDetail = voiceQueryKeys.detail(variables.id)
+      queryClient.invalidateQueries({
+        queryKey: voiceQueryKeys.all,
+        predicate: (query) => !deletedDetail.every((part, index) => query.queryKey[index] === part),
+      })
     },
   })
 }

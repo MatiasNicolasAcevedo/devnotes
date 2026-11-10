@@ -75,6 +75,9 @@ export function VoicePage() {
 
   const handleNewNote = useCallback(() => request({ kind: 'new' }), [request])
 
+  // La nota abierta se borró (204) o ya no existe (404): se deja de observar su detalle.
+  const handleDetached = useCallback(() => setSelectedId(null), [])
+
   const handleDirtySaveAndContinue = useCallback(async () => {
     const target = pending
     const composer = composerRef.current
@@ -154,6 +157,7 @@ export function VoicePage() {
             selectedDetail={selectedDetail}
             onBusyChange={setComposerBusy}
             loadingDetail={loadingDetail}
+            onDetached={handleDetached}
           />
         </Box>
 
