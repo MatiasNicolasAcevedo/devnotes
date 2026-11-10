@@ -45,6 +45,18 @@ Solo T-017 ready; demás draft exclusivamente por dependencia anterior. No hace 
 
 [VOICE-RELEASE](VOICE-RELEASE.md) define salida técnica con dobles, ensayo externo ficticio y pruebas personales. Cuenta/clave/cuota/retención/autorización de envío no se acreditan por esta planificación. Si faltan al cerrar código, entregar «RC técnica, activación externa pendiente» con la acción concreta; no anunciar precisión ni aceptación del dueño. Después de sus pruebas se priorizan correcciones/mejoras en otra iteración. M2-RC1 es un hito, sin tag, despliegue ni bump automático de artefactos.
 
+## M2-RC1 · Activación y pruebas del dueño
+
+T-037 MERGED (`aef4213`, 2026-11-10): RC técnica entregada. [T-039](tasks/T-039-voice-activation.md) activa Groq en el stack persistente del dueño, ejecuta el ensayo externo acotado y recoge su veredicto según [VOICE-RELEASE](VOICE-RELEASE.md). Un veredicto «no aceptada» vuelve a frontera antes de M3.
+
+## I3 / M3 · Portabilidad `.xlsx`
+
+Prioridad del dueño del 2026-11-10. [S-107](specs/S-107-xlsx-portability.md): exportar todos los datos de la cuenta (diarias, versiones, voz y referencias) e importarlos solo en una cuenta vacía, con el archivo como respaldo y migración, no como editor. Tareas T-040 → T-041 → T-042 → T-043 → T-044 (control de cinco) → T-045 (E2E de ida y vuelta y prueba del dueño). Salida: XL-01…06 y el veredicto del dueño.
+
+## I4 / M4 · Piloto en Render Free
+
+Último paso del plan del 2026-11-10, solo si M3 sale bien. [S-108](specs/S-108-render-pilot.md) con la receta de [DEPLOYMENT](DEPLOYMENT.md#piloto-de-devnotes-en-render-free): T-046 (imagen única y smoke local con 512 MB) → T-047 (primer deploy con Google real, migración `.xlsx` y aceptación del dueño). Los recursos, secretos y gastos quedan reservados al dueño. **Frontera vuelve al cerrar T-047**, o antes por un veredicto negativo o una decisión fuera de contrato.
+
 ## Objetivos futuros sin contrato de ejecución
 
-Restauración/comparación/múltiples revisiones por día, búsquedas, exportación, plantillas de enlaces, personalización y despliegue son opciones del contexto, no tareas ready ni dependencias del MVP. No instalar infraestructura para ellas. Google real, servicios pagos y datos reales reservados al dueño.
+Restauración/comparación/múltiples revisiones por día, búsquedas, plantillas de enlaces y personalización son opciones del contexto, no tareas ready ni dependencias. La exportación/importación y el piloto de despliegue tienen contrato en S-107/S-108; producción en VPS sigue como propuesta de DEPLOYMENT. No instalar infraestructura para ellas. Google real, servicios pagos y datos reales reservados al dueño.

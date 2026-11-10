@@ -2,6 +2,45 @@
 
 **Pendiente de decisión del dueño para cada aplicación.** Esta guía es una propuesta técnica: completar contexto, carga prevista, capacidad, presupuesto, proveedor, región y dominio propios antes de aprobar despliegue o gastos. Las decisiones del mantenimiento del starter no autorizan ni aceptan la operación de una copia.
 
+## Piloto de DevNotes en Render Free
+
+Alcance acordado con el dueño el 2026-11-10. Orden decidido ese mismo día: primero la activación y las pruebas de M2-RC1 ([T-039](tasks/T-039-voice-activation.md)), después la portabilidad `.xlsx` ([S-107](specs/S-107-xlsx-portability.md)) y al final este piloto ([S-108](specs/S-108-render-pilot.md), tareas T-046 y T-047). La validación cloud usa una instancia de prueba y datos ficticios. La creación de recursos, los accesos a GitHub y Render y la configuración de Google se confirman con el dueño al iniciar la prueba.
+
+### Empaquetado
+
+- Un Web Service Docker con React compilado, nginx y Spring Boot. PostgreSQL 18 Free separado, en la misma región, con acceso por red interna y acceso externo deshabilitado. Crear la base al tener la imagen lista porque el plazo de 30 días corre desde su creación. [Red de Render Postgres](https://render.com/docs/postgresql-creating-connecting) y [límites de Free](https://render.com/docs/free#free-postgres).
+- Preparar `deploy/render/Dockerfile` multietapa con contexto en la raíz. Reutilizar el flujo `npm ci` y `npm run build` del cliente y el Maven Wrapper con Java 21 del servidor. Mantener las versiones fijadas, copiar insumos explícitos y usar credenciales solo en el entorno de ejecución. Coordinar el inicio, el fallo y la terminación ordenada de los dos procesos. [Docker en Render](https://render.com/docs/docker).
+- Adaptar el proxy nginx existente para escuchar en `PORT` y reenviar a Spring en `127.0.0.1:8080`. Mantener React, `/api/`, `/oauth2/`, el callback y `/logout` bajo un único origen público. Conservar la validación de Host, la reconstrucción de `Forwarded`/`X-Forwarded-*` desde configuración confiable, sesión, CSRF y el fallback de rutas de la SPA. Publicar el `GET /actuator/health/readiness` existente, que comprueba Spring y PostgreSQL. [Contrato de origen](adr/0002-google-oidc-session-csrf-and-proxy.md), [puerto de Render](https://render.com/docs/web-services#port-binding) y [health checks](https://render.com/docs/health-checks).
+
+### Prueba local y comandos previstos
+
+Una pasada sobre la imagen final con aproximadamente 512 MB y 0,1 CPU, PostgreSQL 18 aparte y OIDC ficticio. Registrar tiempo hasta readiness y pico de memoria en el arranque y tras guardar una nota. Si el límite falla, aislar Spring para ubicar el consumo antes de reconsiderar el empaquetado. Contrastar la referencia local con las métricas de Render. [Recursos del plan](https://render.com/docs/blueprint-spec) y [métricas](https://render.com/docs/service-metrics).
+
+Los comandos son el contrato previsto para `deploy/render/compose.smoke.yml`. La tarea debe crear ese archivo y verificar la receta desde un checkout limpio. El stack usa un nombre único, puertos de loopback libres y datos descartables. Limpiar volúmenes solo después de verificar la propiedad y las etiquetas exactas del proyecto de prueba.
+
+```powershell
+# Desde la raíz del repo y en la misma terminal durante toda la prueba.
+$project = "devnotes-render-smoke-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
+$compose = @("compose", "--env-file", ".env.example", "-p", $project,
+             "-f", "deploy/render/compose.smoke.yml")
+docker @compose up -d --build --wait --wait-timeout 300
+curl.exe -fsS http://127.0.0.1:18080/actuator/health/readiness
+# Después de guardar una nota ficticia, leer el pico en bytes si está disponible.
+docker @compose exec -T app cat /sys/fs/cgroup/memory.peak
+# Tras verificar la propiedad de los recursos descartables del proyecto.
+docker @compose down --volumes
+```
+
+La prueba local incluye recarga directa de una ruta interna, API privada `401` sin sesión y recuperación de la nota tras reiniciar el contenedor de la app. El pico del cgroup es memoria del contenedor. Si el host no expone `memory.peak`, informar el máximo observado con `docker stats` como estimación. Cierre con el gate STARTER por los cambios en Docker y Compose, según [TESTING](TESTING.md#frecuencia-y-alcance-del-gate). [Pico de memoria del cgroup](https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html) y [docker stats](https://docs.docker.com/reference/cli/docker/container/stats/).
+
+### Primer deploy y aceptación del dueño
+
+1. Crear la base y un Web Service Free de Docker con el Dockerfile anterior, contexto raíz, health check de readiness y redeploy manual por SHA. Cargar `SPRING_DATASOURCE_URL` como JDBC interno y configurar usuario y contraseña en `SPRING_DATASOURCE_USERNAME` y `SPRING_DATASOURCE_PASSWORD`. [Configuración de Docker](https://render.com/docs/docker) y [deploy manual](https://render.com/docs/deploys#manual-deploys).
+2. Fijar `APP_PUBLIC_URL` a la URL HTTPS pública del servicio y registrar su callback exacto `/login/oauth2/code/google`. El dueño autoriza Google y carga `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` en el panel privado. Para operar mediante MCP, comprobar la conexión por OAuth y el alcance de acceso concedido al entorno de prueba. [Callback de Google](https://developers.google.com/identity/protocols/oauth2/web-server) y [MCP de Render](https://render.com/docs/mcp-server).
+3. El dueño inicia sesión, guarda una nota ficticia, reinicia el Web Service y vuelve a abrir la nota desde Chrome instalado como app. Registrar SHA desplegado, resultado del recorrido y métricas de arranque y RAM. La receta documenta diagnóstico de build, conexión y callback. [Instalar como app en Chrome](https://support.google.com/chrome/answer/9658361?hl=es-419).
+
+El piloto arranca bajo demanda. Si las suspensiones posteriores molestan, evaluar un ping externo cada 10 minutos durante la franja elegida en Buenos Aires. En un mes de 31 días, de 07:00 a 22:00 son 465 h y hasta las 23:00 son 496 h, más la espera hasta la suspensión y el tráfico fuera de horario. El workspace comparte 750 h mensuales entre sus Web Services Free. [Cuota e inactividad](https://render.com/docs/free#free-web-services).
+
 ## Arquitectura recomendada
 Un VPS Linux con Docker Compose, un proxy HTTPS compartido (Caddy como opción inicial), un PostgreSQL 18 compartido y un stack separado por aplicación. Servir React compilado y `/api`, `/oauth2`, callback y logout desde el mismo origen de cada aplicación: `https://app-a.ejemplo.com`, `https://app-b.ejemplo.com`. Cloudflare DNS Free como opción inicial propuesta; proxy/CDN opcionales, con TLS completo hasta el origen. No cachear API privada ni respuestas con sesión. No cambiar el modelo OIDC/sesión/CSRF ni publicar puertos de PostgreSQL/backend.
 

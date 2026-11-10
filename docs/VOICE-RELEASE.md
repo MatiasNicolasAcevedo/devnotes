@@ -1,6 +1,6 @@
 # M2-RC1 · Entrega local y pruebas de voz
 
-Estado al 2026-11-10: **RC técnica en revisión** ([PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44)), **activación externa pendiente**. Planificada el 2026-10-31. Contrato canónico [S-105 v2](specs/S-105-voice-notes.md); ejecución/evidencia [T-037](tasks/T-037-voice-release.md). Esta guía diferencia planificación, verificación técnica y aceptación del dueño.
+Estado al 2026-11-10: **RC técnica**, SHA de entrega `aef4213db2fe7f676591811b7ee67a22757b64b0` (squash de [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44), revisión independiente cumplida), **activación externa pendiente**. La activación y las pruebas del dueño están en [T-039](tasks/T-039-voice-activation.md). Planificada el 2026-10-31. Contrato canónico [S-105 v2](specs/S-105-voice-notes.md); ejecución/evidencia [T-037](tasks/T-037-voice-release.md). Esta guía diferencia planificación, verificación técnica y aceptación del dueño.
 
 ## Qué recibirá el dueño
 
@@ -79,16 +79,16 @@ No requerir al dueño que repita todas las pruebas de seguridad/carga automatiza
 
 ## Evidencia final a completar por T-037
 
-La tarea conserva logs y comandos. Aquí solo figuran el enlace a la evidencia y el estado de entrega. La «RC técnica» exige además T-037 MERGED. Hasta entonces la entrega está **en revisión**.
+La tarea conserva logs y comandos. Aquí solo figuran el enlace a la evidencia y el estado de entrega. T-037 está MERGED y conciliada: la entrega es **RC técnica**.
 
 | Dato | Estado al 2026-11-10 |
 | --- | --- |
-| SHA/base integrados y PR finales | Fuentes `8775ac9` sobre main `289dd66` (T-017, T-027…T-036 y T-038 MERGED), [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44). SHA de entrega: el squash de PR44, a registrar tras MERGED |
+| SHA/base integrados y PR finales | **SHA de entrega `aef4213db2fe7f676591811b7ee67a22757b64b0`**, squash de [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44) en main (mergedAt 2026-11-10T16:37:31Z). Fuentes técnicas `8775ac9` sobre main `289dd66`; T-017, T-027…T-038 MERGED |
 | VO-01…07 por capa y dos viewports | Matriz siguiente; Playwright `voice:` 2/2 en desktop 1280 y 2/2 en mobile 375 |
-| FULL local / CI / revisión independiente | Gate STARTER (`verify.sh --starter`) exit 0 sobre `8775ac9`; CI `verify-required` verde en ese HEAD; revisión independiente pendiente. [Evidencia](tasks/T-037-voice-release.md#gate-de-cierre) |
+| FULL local / CI / revisión independiente | Gate STARTER (`verify.sh --starter`) exit 0 sobre `8775ac9`; CI `verify-required` verde en ese HEAD; revisión independiente APROBADA sin bloqueantes sobre `ad548bc` con `verify-required` SUCCESS. [Evidencia](tasks/T-037-voice-release.md#gate-de-cierre) |
 | Cleanup de recursos de pruebas | Proyectos `starter-verify-t037`, `starter-e2e-t037` y `starter-e2e-t037-iter` sin contenedores, volúmenes ni redes; stack persistente del dueño intacto |
-| Ensayo Groq, fecha/modelo/formato/retención/cuota | No realizado: no hay configuración ni autorización del dueño. Activación externa pendiente, sin bloquear la RC técnica |
-| Aceptación personal del dueño | Pendiente de sus pruebas sobre el SHA de entrega |
+| Ensayo Groq, fecha/modelo/formato/retención/cuota | No realizado: no hay configuración ni autorización del dueño. Activación externa pendiente, sin bloquear la RC técnica; se ejecuta en [T-039](tasks/T-039-voice-activation.md) |
+| Aceptación personal del dueño | Pendiente de sus pruebas sobre `aef4213` en [T-039](tasks/T-039-voice-activation.md) |
 
 Matriz VO por capa. Las capas anteriores son las pruebas de las tareas citadas, todas dentro del gate de cierre. El recorrido integrado usa Chromium real con micrófono sintético, la API, la base y el OIDC propios, y el doble de Groq en la red privada, sin interceptar la API propia. Corre en `e2e/tests/voice.spec.ts`, en ambos viewports.
 

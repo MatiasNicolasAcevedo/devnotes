@@ -2,6 +2,26 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
+Próxima acción: [T-039](tasks/T-039-voice-activation.md), activación de Groq y pruebas personales de M2-RC1 con el dueño.
+
+## Siguientes · plan del dueño del 2026-11-10
+
+Orden decidido por el dueño: (1) activar Groq y probar M2-RC1; (2) exportar e importar la cuenta en `.xlsx` y probarlo; (3) si todo sale bien, desplegar el piloto en Render. Contratos: [VOICE-RELEASE](VOICE-RELEASE.md), [S-107](specs/S-107-xlsx-portability.md) y [S-108](specs/S-108-render-pilot.md), con la receta técnica en [DEPLOYMENT](DEPLOYMENT.md#piloto-de-devnotes-en-render-free). Cada tarea `draft` tiene el contrato completo y espera solo a la anterior: quien concilia un MERGED habilita la siguiente sin volver a frontera. WIP 1, una sesión nueva por tarea y por revisión.
+
+| Orden | Contrato / resultado | Ejecuta | Dependencia |
+|---|---|---|---|
+| 1 | [T-039](tasks/T-039-voice-activation.md) · Activación de Groq, ensayo externo y pruebas personales de M2-RC1 | Dueño con un agente de frontera | T-037 MERGED (`aef4213`) |
+| 2 | [T-040](tasks/T-040-daily-timestamps.md) · Instantes de daily y versiones a microsegundos (bugfix previo a exportar) | Junie | T-039 aceptada |
+| 3 | [T-041](tasks/T-041-xlsx-codec.md) · Codec `devnotes-xlsx` v1 y límites | Junie | T-040 MERGED |
+| 4 | [T-042](tasks/T-042-xlsx-export-api.md) · GET de exportación privada | Junie | T-041 MERGED |
+| 5 | [T-043](tasks/T-043-xlsx-import-api.md) · Vista previa e importación atómica en cuenta vacía, y proxies | Junie | T-042 MERGED |
+| 6 | [T-044](tasks/T-044-xlsx-client.md) · Pantalla «Datos»; control de cinco tras el merge | Junie | T-043 MERGED |
+| 7 | [T-045](tasks/T-045-xlsx-journey.md) · E2E de ida y vuelta y prueba del dueño | Junie y el dueño | T-044 MERGED |
+| 8 | [T-046](tasks/T-046-render-image.md) · Imagen única y smoke local con 512 MB | Junie | T-045 MERGED y aceptada |
+| 9 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | T-046 MERGED |
+
+Retorno a frontera: un veredicto «no aceptada» en T-039, T-045 o T-047, una decisión fuera de contrato, o el cierre de T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
+
 ## Hechas · S-106 completada
 
 S-106 completa con las 5 tareas MERGED (T-022 a T-026), control de cinco por Junie cumplido. Frontera toma voz por decisión del dueño del 2026-10-31; contrato de I2 preparado.
@@ -50,11 +70,11 @@ Quince contratos de producto I1 completados (T-003 y T-014 mergeadas). T-021 MER
 | 14 | [T-013](tasks/T-013-version-save.md) · Acción manual/flush/reemplazo | T-012 |
 | 15 | [T-014](tasks/T-014-mvp-journey.md) · CA-01…06 de punta a punta | T-013; control de quince, salida I1 y retorno a frontera |
 
-## Próximo · I2 / M2-RC1 voz
+## Hechas · I2 / M2-RC1 voz
 
-En curso: [T-037](tasks/T-037-voice-release.md), última tarea de M2-RC1; al entregarla vuelve a frontera. [S-105 v2](specs/S-105-voice-notes.md) y [VOICE-RELEASE](VOICE-RELEASE.md) fijan el contrato y la entrega.
+M2-RC1 entregada como RC técnica: [T-037](tasks/T-037-voice-release.md) PR44 MERGED, squash `aef4213` (2026-11-10). [S-105 v2](specs/S-105-voice-notes.md) y [VOICE-RELEASE](VOICE-RELEASE.md) fijan el contrato y la entrega; la activación externa y las pruebas del dueño siguen en T-039.
 
-El dueño decidió priorizar voz el 2026-10-31. T-017, T-027…T-036 y T-038 están conciliadas como MERGED. T-037 en curso con contrato completo. WIP1 y revisión independiente.
+El dueño decidió priorizar voz el 2026-10-31. T-017 y T-027…T-038 están conciliadas como MERGED.
 
 | Orden | Contrato / resultado | Dependencia |
 |---|---|---|
@@ -78,13 +98,13 @@ Hallazgo fuera de alcance de T-035 (5.ª revisión PR40, 2026-11-09), heredado d
 
 Prueba faltante no bloqueante de T-035 (8.ª revisión PR40, 2026-11-09, sin pérdida de datos): la guarda `if (prev.conflict != null) return prev` de `loadNote` (`client/src/features/voice/useVoiceDraft.ts:183`) no tiene prueba propia; quitarla deja la suite verde porque los casos con conflicto `update` ya son `dirty`. Solo decide con borrador `clean` y conflicto `delete`: si el 409 del DELETE llega antes que un refetch del detalle en vuelo con revisión nueva, sin la guarda el diálogo se cerraría solo y el editor mostraría la revisión remota (S-105 §7: nunca actualizar automáticamente; no hay texto sin guardar en riesgo). Añadir en VoicePage.test.tsx la variante de «B-1 … durante el borrado» liberando primero el DELETE (409) y después el GET, que exija el diálogo abierto y «Texto 1»; debe fallar al quitar la guarda.
 
-Hallazgo fuera de alcance de T-037 (2026-11-10). `DailyNoteService.nowMicros()` (`server/src/main/java/com/example/devnotes/daily/application/DailyNoteService.java`) repite el patrón que T-037 corrigió en voz: `Instant.ofEpochMilli(clock.millis()).plusNanos(...)` suma dos veces la fracción de milisegundos y adelanta `createdAt`/`updatedAt` hasta casi 1 s, en lugar de truncar a microsegundos. Las pruebas usan instantes sin fracción y no lo detectan. Riesgo: marcas de tiempo de daily y versiones desplazadas y orden temporal no fiable. Corregir con prueba unitaria roja con reloj fijo de fracción no nula, como `VoiceNoteServiceTest`.
+Hallazgo fuera de alcance de T-037 (2026-11-10), **asignado a [T-040](tasks/T-040-daily-timestamps.md)** por planificación de frontera del 2026-11-10, que también incluye `DailyVersionService`. `DailyNoteService.nowMicros()` (`server/src/main/java/com/example/devnotes/daily/application/DailyNoteService.java`) repite el patrón que T-037 corrigió en voz: `Instant.ofEpochMilli(clock.millis()).plusNanos(...)` suma dos veces la fracción de milisegundos y adelanta `createdAt`/`updatedAt` hasta casi 1 s, en lugar de truncar a microsegundos. Las pruebas usan instantes sin fracción y no lo detectan. Riesgo: marcas de tiempo de daily y versiones desplazadas y orden temporal no fiable. Corregir con prueba unitaria roja con reloj fijo de fracción no nula, como `VoiceNoteServiceTest`.
 
 Hallazgo de pruebas daily fuera de T-036. En el cliente Linux del gate, MSW registró un PUT sin handler en el caso existente «discard no revive borrador por ACK tardío» de `useDailyNote.test.tsx`. La suite pasó 511/511. El caso depende de una espera de 100 ms y solo instala handlers GET.
 
 ## Posterior a M2-RC1
 
-Pruebas personales del dueño sobre el SHA entregado; frontera agrupa correcciones/mejoras a partir de resultados. Sin nuevas capacidades ready ahora. Fuera de esta versión: streaming, audio persistido, integración automática con CLI/daily, Safari/iOS, despliegue y pagos. Opciones de ROADMAP conservan su carácter futuro.
+Las pruebas personales del dueño sobre el SHA entregado ocurren en T-039. Frontera agrupa correcciones o mejoras a partir de los resultados, y las bloqueantes se insertan antes de T-040. Fuera de esta versión de voz: streaming, audio persistido, integración automática con CLI/daily y Safari/iOS. La portabilidad y el despliegue tienen ahora contrato propio (S-107 y S-108). Las demás opciones de ROADMAP conservan su carácter futuro.
 
 ## Fuera de I1
 

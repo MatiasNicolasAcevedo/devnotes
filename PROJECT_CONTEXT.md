@@ -35,6 +35,10 @@ Propuesta de frontera para mantenerlo simple: transcribir al detener, español, 
 
 Groq (con q) es el candidato investigado, distinto de Grok/xAI. Cuotas y política del proveedor se vuelven a comprobar al habilitar I2; cuenta/clave y una prueba externa con audio ficticio aún no se acreditan. No se contratan planes pagos ni se envía audio real con esta solicitud de planificación.
 
+## Plan posterior a M2-RC1 · Portabilidad y piloto cloud
+
+Intención confirmada por el dueño el 2026-11-10, en orden: (1) activar Groq y probar M2-RC1; (2) exportar e importar en `.xlsx` todos los datos de la propia cuenta (diarias, versiones, voz y referencias), con importación solo en cuenta vacía y el archivo como respaldo y migración, no como editor ([S-107](docs/specs/S-107-xlsx-portability.md)); (3) si todo sale bien, un piloto en Render Free con Google real y migración por `.xlsx` ([S-108](docs/specs/S-108-render-pilot.md)). Esto amplía lo que I1 dejaba fuera (importación/exportación y despliegue) solo en ese alcance. Recursos, secretos, Google real y gastos siguen reservados al dueño.
+
 ## Datos, reglas y permisos
 
 - **NotaDiaria:** UUID, propietario local, fecha calendario sin hora, contenido estructurado (texto/enlaces/separadores), última modificación UTC y revisión técnica contra escrituras concurrentes. Única por `(propietario, fecha)`.
