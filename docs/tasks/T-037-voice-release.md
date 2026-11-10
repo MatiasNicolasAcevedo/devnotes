@@ -1,6 +1,6 @@
 ---
 id: T-037
-status: in_review
+status: mergeable
 priority: P1
 size: M
 executor: junie
@@ -54,7 +54,9 @@ Iteración browser desde raíz/Git Bash, después de T-031: `DEVNOTES_VOICE_ENAB
 
 ## Checkpoint vigente
 
-2026-11-10. `in_review`. Implementación publicada en [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44): fuentes técnicas `8775ac9485e61e9a47974f1802543d95ce638fde` sobre main `289dd66acfad5bb632ad3270a90963c17d239f96`. Gate STARTER verde ([Gate de cierre](#gate-de-cierre)) y CI `verify-required` verde en ese HEAD. El cierre posterior solo cambia Markdown y conserva el gate. Siguiente: revisión independiente en sesión nueva y después merge según AUTONOMY. VOICE-RELEASE declara la entrega «en revisión» y la activación externa pendiente.
+2026-11-10. `mergeable`. La revisión independiente no encontró bloqueantes; evidencia en [Revisión independiente](#revisión-independiente). El veredicto `APROBADO` se publica en PR44 ligado al HEAD documental de esta transición y la base `289dd66acfad5bb632ad3270a90963c17d239f96`, después de la CI `verify-required` de ese HEAD. Siguiente: merge según AUTONOMY y merger; tras MERGED confirmado, sesión nueva concilia done, congela el SHA de entrega en VOICE-RELEASE y entrega al dueño/frontera la activación y las pruebas de M2-RC1.
+
+Entrega del implementer: [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44), fuentes técnicas `8775ac9485e61e9a47974f1802543d95ce638fde` sobre main `289dd66acfad5bb632ad3270a90963c17d239f96`. Gate STARTER verde ([Gate de cierre](#gate-de-cierre)) y CI `verify-required` verde en ese HEAD. El cierre posterior solo cambia Markdown y conserva el gate. VOICE-RELEASE declara la entrega «en revisión» y la activación externa pendiente.
 
 Implementer en sesión nueva, Claude Code (Claude Opus 5.5, `claude-opus-5-5`, PowerShell/Git Bash/Git/gh/Node 24.21.0/JDK 21/Maven/Docker; esfuerzo no expuesto). Dependencia satisfecha: `gh pr view 42 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` devolvió MERGED, squash `289dd66`, `mergedAt` 2026-11-10T06:39:13Z. T-036 está conciliada como done en el primer commit de esta rama.
 
@@ -64,6 +66,20 @@ Impacto. En comportamiento y API, la transcripción acepta el WebM real de Media
 - Iteración desde la raíz: `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false STARTER_E2E_PROJECT=starter-e2e-t037-iter bash scripts/e2e.sh --grep "voice:" --project desktop|mobile`. Con las fuentes finales dio 2/2 en mobile (`.orchestrator/t037/iter6.log`) y el primer recorrido en desktop (`iter5.log`); el FULL cubre ambos en ambos viewports.
 - Backend dirigido desde `server/`: `VoiceTranscriptionServiceTest`, `VoiceNoteServiceTest` y `GroqTranscriptionClientTest` verdes. En Failsafe, `VoiceTranscriptionApiIT` 8/8, `VoiceNoteServiceIT` 24/24 y `VoiceNoteApiIT` 12/12.
 - Ensayo Groq externo no realizado: falta configuración y autorización del dueño. Se declara la activación pendiente sin inventar resultados, según VOICE-RELEASE.
+
+## Revisión independiente
+
+2026-11-10. Reviewer en sesión nueva, Claude Code (Claude Opus 5.5, `claude-opus-5-5`, PowerShell/Git Bash/Git/gh/Node 24.21.0/JDK 21/Maven; esfuerzo no expuesto). No implementó esta tarea. Esta revisión cambia solo documentación operativa. PR44 OPEN, no draft, `codex/t-037-voice-release` contra `main`, `mergeStateStatus` CLEAN, sin hilos de revisión. HEAD de entrada `cb318c9f3c5e68df57e43502d1863128f4325788` y base `289dd66acfad5bb632ad3270a90963c17d239f96`, confirmados con `gh pr view` y `git ls-remote`. [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42780397632/job/129708784386) para ese HEAD; `8775ac9` también tuvo `verify-required` SUCCESS.
+
+- **Gate.** `git diff --name-only 8775ac9 cb318c9` toca solo `docs/STATUS.md`, `docs/VOICE-RELEASE.md` y esta tarea. `classify-diff.mjs --base 289dd66 --head cb318c9` da `profile=STARTER`, cubierto por `verify.sh --starter`. El log local del gate coincide con el SHA-256 registrado: `START` y `END` con HEAD `8775ac9`, base `289dd66`, `DIRTY=0` y exit 0. Surefire 227/227. E2E con 45 aprobados y sin fallos, incluidos los dos `voice:` en desktop y en mobile.
+- **Rojo/verde reproducido** en un worktree aislado de `8775ac9`, restaurando desde `289dd66` solo `scripts/e2e.sh`, `VoiceNoteService.java` y `VoiceTranscriptionService.java`. Rojo: `node --test scripts/ci/e2e-arguments.test.mjs` 19/20 (`e2e.sh up starts voice-provider`). `VoiceNoteServiceTest` 2/2 fallan con `21.946Z` en vez de `20.973456Z`. `VoiceTranscriptionServiceTest` falla en «acepta EBML» (`InvalidRequest`) y en «rechaza RIFF». Verde con las fuentes del PR: 20/20 y Surefire `VoiceNoteServiceTest` 2/2, `VoiceTranscriptionServiceTest` 4/4 y `GroqTranscriptionClientTest` 15/15. El worktree se retiró.
+- **Código.** `nowMicros()` hace una sola lectura del reloj truncada a microsegundos. El parser EBML lee como máximo 256 bytes, acota cada tamaño y desplazamiento al prefijo leído y al tamaño declarado de la cabecera, y avanza siempre. No llama al proveedor ante RIFF, `matroska`, truncados o VINT inválidos. `e2e.sh` añade `voice-provider` al `up --wait`, con una regresión estática que exige todos los `depends_on` del runner.
+- **Recorridos `voice:`.** Sin `page.route` ni interceptores sobre la API propia. El fixture concede permisos solo al origen de la SPA y envuelve `getUserMedia` para registrar los tracks del stream real, que devuelve sin cambios. MediaRecorder y la API propia son los reales. El doble se controla por la red privada. La matriz VO-01…07 de VOICE-RELEASE corresponde a las aserciones de `e2e/tests/voice.spec.ts`.
+- `node scripts/docs-check.mjs` y `git diff --check 289dd66 cb318c9` pasaron. Sin recursos Docker creados.
+
+Observación no bloqueante: el comentario de `vint` dice que rechaza tamaños reservados, pero el tamaño desconocido de un byte (`0xFF`, 127) cabe en el prefijo. No hay riesgo, porque igual exige un DocType `webm` completo dentro de lo leído.
+
+Sin bloqueantes. Veredicto favorable sujeto a la CI del HEAD documental.
 
 ## Gate de cierre
 
