@@ -91,6 +91,8 @@ public class SecurityConfig {
                             .authenticated()
                             .requestMatchers(HttpMethod.DELETE, "/api/v1/voice-notes/{id}")
                             .authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/v1/portability/export")
+                            .authenticated()
                             .anyRequest()
                             .denyAll();
                 })

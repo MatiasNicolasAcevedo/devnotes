@@ -50,6 +50,9 @@ class SecurityConfigTest {
     private com.example.devnotes.voice.infrastructure.GroqTranscriptionClient groqClient;
 
     @MockitoBean
+    private com.example.devnotes.portability.application.PortabilityExportService portabilityExport;
+
+    @MockitoBean
     private IdentityService identityService;
 
     @Autowired
@@ -257,5 +260,35 @@ class SecurityConfigTest {
         mockMvc.perform(get("/api/v1/voice-notes/01900000-0000-7000-8000-000000000001")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void portabilityExportAllowsOnlyAuthenticatedGet() throws Exception {
+        var token = mockMvc.perform(get("/api/v1/auth/csrf"))
+                .andReturn()
+                .getResponse()
+                .getCookie("XSRF-TOKEN");
+        var user = oidcLogin().oidcUser(AuthFixtures.localUser("Demo", null, false));
+
+        mockMvc.perform(get("/api/v1/portability/export").accept(MediaType.ALL))
+                .andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(header().doesNotExist("Content-Disposition"));
+
+        for (String method : new String[] {"POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"}) {
+            mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request(
+                                    org.springframework.http.HttpMethod.valueOf(method), "/api/v1/portability/export")
+                            .with(user)
+                            .cookie(token)
+                            .header("X-XSRF-TOKEN", token.getValue()))
+                    .andExpect(status().isForbidden());
+        }
+        for (String path :
+                new String[] {"/api/v1/portability", "/api/v1/portability/export/", "/api/v1/portability/export/extra"
+                }) {
+            mockMvc.perform(get(path).with(user)).andExpect(status().isForbidden());
+        }
+
+        verifyNoInteractions(portabilityExport);
     }
 }
