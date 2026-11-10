@@ -29,6 +29,8 @@ interface VoiceComposerProps {
   onBusyChange?: (busy: boolean) => void
   /** La página está obteniendo el detalle de otra nota: editor y acciones bloqueados. */
   loadingDetail?: boolean
+  /** La nota pedida no se pudo abrir: el editor queda bloqueado hasta reintentar o elegir otra. */
+  detailUnavailable?: boolean
   /** El documento dejó de corresponder a una nota guardada (borrada o 404): la página la deselecciona. */
   onDetached?: () => void
 }
@@ -37,6 +39,8 @@ export interface VoiceComposerHandle {
   isDirty: boolean
   /** Guardado o borrado en vuelo. */
   isBusy: boolean
+  /** Quita avisos de la nota anterior (error de guardado/borrado, copia) al cambiar de documento. */
+  dismissNotices: () => void
   /** Guarda el texto vigente; resuelve 'saved' solo con ACK del servidor. */
   save: () => Promise<SaveOutcome>
   reset: () => void
@@ -52,7 +56,13 @@ export interface VoiceComposerHandle {
  * Borrar: diálogo Confirmar/Cancelar, espera 204, error no oculta borrador.
  */
 export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposerProps>(
-  ({ selectedDetail, onBusyChange, loadingDetail = false, onDetached }, ref) => {
+  (
+    { selectedDetail, onBusyChange, loadingDetail = false, detailUnavailable = false, onDetached },
+    ref,
+  ) => {
+    // Mientras la nota pedida carga o falló no se escribe, graba, guarda ni borra: lo que se hiciera
+    // quedaría sobre el documento anterior y el detalle entrante lo descartaría o se superpondría.
+    const editorLocked = loadingDetail || detailUnavailable
     const { data: capabilities } = useVoiceCapabilities()
     const draft = useVoiceDraft()
     const queryClient = useQueryClient()
@@ -76,7 +86,14 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     const [showGroqWarning, setShowGroqWarning] = useState(true)
 
     // Validación del texto
-    const [textError, setTextError] = useState<string | undefined>()
+    // Error de validación derivado del texto vigente: solo con cambios sin guardar, y nunca se arrastra
+    // de un documento a otro.
+    const textValidation =
+      draft.state.documentState === 'dirty' ? voiceNoteTextSchema.safeParse(draft.state.text) : null
+    const textError =
+      textValidation && !textValidation.success
+        ? textValidation.error.issues[0]?.message
+        : undefined
     const textAreaRef = useRef<HTMLTextAreaElement>(null)
 
     // Errores de operación, fijados por el resultado de save()/deleteNote()
@@ -140,7 +157,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
         draft.loadNote(selectedDetail)
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedDetail?.id])
+    }, [selectedDetail?.id, selectedDetail?.revision])
 
     const handleTextChange = useCallback(
       (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -148,9 +165,6 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
         draft.setText(value)
         setSaveError(null)
         setDeleteError(null)
-        // Validar en tiempo real
-        const result = voiceNoteTextSchema.safeParse(value)
-        setTextError(result.success ? undefined : result.error.issues[0]?.message)
       },
       [draft],
     )
@@ -198,7 +212,6 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     const handleSave = useCallback(async (): Promise<SaveOutcome> => {
       const result = voiceNoteTextSchema.safeParse(draft.state.text)
       if (!result.success) {
-        setTextError(result.error.issues[0]?.message)
         textAreaRef.current?.focus()
         return 'skipped'
       }
@@ -277,7 +290,16 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
       setSaveError(null)
       setDeleteError(null)
       closeConflict()
-    }, [draft, closeConflict])
+      onDetached?.()
+    }, [draft, closeConflict, onDetached])
+
+    const { reset: resetDraft } = draft
+    const dismissNotices = useCallback(() => {
+      setSaveError(null)
+      setDeleteError(null)
+      setCopySuccess(false)
+      setCopyError(false)
+    }, [])
 
     const isTranscribing = draft.transcribeMutation.isPending
     const isSaving = draft.createMutation.isPending || draft.updateMutation.isPending
@@ -297,14 +319,19 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
       () => ({
         isDirty: draft.isDirty,
         isBusy: isPersisting,
+        dismissNotices,
         save: handleSave,
-        reset: draft.reset,
+        reset: () => {
+          resetDraft()
+          dismissNotices()
+        },
       }),
-      [draft.isDirty, draft.reset, handleSave, isPersisting],
+      [draft.isDirty, resetDraft, handleSave, isPersisting, dismissNotices],
     )
 
     // Determinar si se puede grabar: solo en borrador nuevo vacío
     const canRecord =
+      !editorLocked &&
       recordingEnabled &&
       draft.state.captureState === 'idle' &&
       draft.state.documentState === 'new' &&
@@ -312,7 +339,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
 
     // Determinar si se puede guardar
     const canSave =
-      !loadingDetail &&
+      !editorLocked &&
       !draft.isTextEmpty &&
       !isSaving &&
       !isTranscribing &&
@@ -322,7 +349,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
 
     // Determinar si se puede borrar: solo nota existente y clean
     const canDelete =
-      !loadingDetail &&
+      !editorLocked &&
       draft.state.noteId != null &&
       draft.state.documentState === 'clean' &&
       !draft.isBusy
@@ -498,7 +525,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
           placeholder="Escribí tu nota o grabá audio para transcribir…"
           value={draft.state.text}
           onChange={handleTextChange}
-          disabled={loadingDetail || isTranscribing || draft.state.captureState === 'recording'}
+          disabled={editorLocked || isTranscribing || draft.state.captureState === 'recording'}
           error={!!textError}
           helperText={textError}
           slotProps={{

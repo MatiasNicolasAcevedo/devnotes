@@ -176,8 +176,16 @@ export function useVoiceDraft() {
    */
   const loadNote = useCallback((detail: VoiceNoteDetail, options?: { force?: boolean }) => {
     setState((prev) => {
-      if (prev.documentState === 'dirty' && !options?.force) {
-        return prev
+      if (!options?.force) {
+        if (prev.documentState === 'dirty') return prev
+        // Misma nota con revisión igual o anterior (p. ej. detalle cacheado): nada que cargar.
+        if (
+          prev.noteId === detail.id &&
+          prev.revision != null &&
+          detail.revision <= prev.revision
+        ) {
+          return prev
+        }
       }
       const normalized = detail.text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
       return {

@@ -42,6 +42,7 @@ export function VoicePage() {
   const { refetch: refetchDetail } = detailQuery
 
   const goTo = useCallback((target: PendingTarget) => {
+    composerRef.current?.dismissNotices()
     if (target.kind === 'note') {
       setSelectedId(target.id)
     } else {
@@ -65,7 +66,7 @@ export function VoicePage() {
   const handleSelect = useCallback(
     (item: VoiceNoteListItem) => {
       if (item.id === selectedId) {
-        if (detailError) void refetchDetail()
+        if (detailError && !composerRef.current?.isBusy) void refetchDetail()
         return
       }
       request({ kind: 'note', id: item.id })
@@ -144,12 +145,17 @@ export function VoicePage() {
               severity="error"
               sx={{ mb: 2 }}
               action={
-                <Button color="inherit" size="small" onClick={() => void refetchDetail()}>
+                <Button
+                  color="inherit"
+                  size="small"
+                  disabled={composerBusy}
+                  onClick={() => void refetchDetail()}
+                >
                   Reintentar
                 </Button>
               }
             >
-              No se pudo abrir la nota. El editor conserva el documento anterior.
+              No se pudo abrir la nota. Reintentá o elegí otra nota.
             </Alert>
           )}
           <VoiceComposer
@@ -157,6 +163,7 @@ export function VoicePage() {
             selectedDetail={selectedDetail}
             onBusyChange={setComposerBusy}
             loadingDetail={loadingDetail}
+            detailUnavailable={detailError}
             onDetached={handleDetached}
           />
         </Box>

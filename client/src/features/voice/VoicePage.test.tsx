@@ -71,6 +71,8 @@ interface Backend {
   holdGet: Promise<void> | null
   /** IDs pedidos al GET de detalle, en orden. */
   detailGets: string[]
+  /** Capacidad de grabación anunciada por el servidor. */
+  recordingEnabled: boolean
 }
 
 /** Promesa controlable para retener una respuesta MSW. */
@@ -108,12 +110,13 @@ function installBackend(): Backend {
     nextGetStatus: null,
     holdGet: null,
     detailGets: [],
+    recordingEnabled: false,
   }
   server.use(
     mock.get(CAPABILITIES_PATH, () =>
       HttpResponse.json({
-        recordingEnabled: false,
-        reason: 'disabled',
+        recordingEnabled: backend.recordingEnabled,
+        reason: backend.recordingEnabled ? null : 'disabled',
         maxDurationSeconds: 600,
         maxAudioBytes: 20_971_520,
         maxTextLength: 50_000,
@@ -645,6 +648,116 @@ describe('VoicePage', () => {
       await waitFor(() => expect(row).toHaveAttribute('aria-disabled', 'true'))
       expect(screen.getByRole('button', { name: 'Nueva nota' })).toBeDisabled()
       expect(backend.detailGets).toHaveLength(0)
+    })
+  })
+
+  describe('6.ª revisión', () => {
+    it('B-1: una nota nueva guardada aparece en la lista', async () => {
+      const { user } = renderPage()
+      await screen.findByText('Extracto Texto 1')
+
+      await user.type(textbox(), 'Nota recién creada')
+      await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+      expect(await screen.findByText('Extracto Nota recién creada')).toBeVisible()
+    })
+
+    it('B-1: el extracto se actualiza tras corregir una nota', async () => {
+      const { user } = renderPage()
+      await editNote1(user)
+
+      await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+      expect(await screen.findByText('Extracto Texto 1 editado')).toBeVisible()
+      expect(screen.queryByText('Extracto Texto 1')).not.toBeInTheDocument()
+    })
+
+    it('B-2: mientras carga otra nota no se ofrece Grabar', async () => {
+      backend.recordingEnabled = true
+      const { user } = renderPage()
+      expect(await screen.findByRole('button', { name: 'Grabar' })).toBeVisible()
+      const get = hold()
+      backend.holdGet = get.promise
+
+      await user.click(screen.getByText('Extracto Texto 1'))
+
+      expect(await screen.findByText('Cargando nota…')).toBeVisible()
+      expect(screen.queryByRole('button', { name: 'Grabar' })).not.toBeInTheDocument()
+      get.release()
+      await waitFor(() => expect(textbox()).toHaveValue('Texto 1'))
+      expect(screen.queryByRole('button', { name: 'Grabar' })).not.toBeInTheDocument()
+    })
+
+    it('B-2: si falla abrir la nota el editor queda bloqueado y no se ofrece Grabar', async () => {
+      backend.recordingEnabled = true
+      const { user } = renderPage()
+      expect(await screen.findByRole('button', { name: 'Grabar' })).toBeVisible()
+      backend.nextGetStatus = 500
+
+      await user.click(screen.getByText('Extracto Texto 1'))
+
+      expect(await screen.findByText(/No se pudo abrir la nota/)).toBeVisible()
+      expect(screen.queryByRole('button', { name: 'Grabar' })).not.toBeInTheDocument()
+      expect(textbox()).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Guardar' })).toBeDisabled()
+    })
+
+    it('observación: tras un 404 la nota inexistente desaparece de la lista', async () => {
+      const { user } = renderPage()
+      await editNote1(user)
+      backend.notes.delete(ID_1)
+      backend.nextPutStatus = 404
+
+      await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+      expect(await screen.findByText(/La nota ya no existe/)).toBeVisible()
+      await waitFor(() => expect(screen.queryByText('Extracto Texto 1')).not.toBeInTheDocument())
+      expect(textbox()).toHaveValue('Texto 1 editado')
+    })
+  })
+
+  describe('auditoría propia tras la 6.ª revisión', () => {
+    it('A-1: un error de validación no pasa a la nota que se abre después', async () => {
+      const { user } = renderPage()
+      await openNote(user, 'Extracto Texto 1', 'Texto 1')
+      await user.clear(textbox())
+      expect(await screen.findByText(/al menos un carácter/)).toBeVisible()
+
+      await user.click(screen.getByText('Extracto Texto 2'))
+      const dialog = await screen.findByRole('dialog', { name: 'Cambios sin guardar' })
+      await user.click(within(dialog).getByRole('button', { name: 'Descartar y continuar' }))
+
+      await waitFor(() => expect(textbox()).toHaveValue('Texto 2'))
+      expect(screen.queryByText(/al menos un carácter/)).not.toBeInTheDocument()
+    })
+
+    it('A-2: al reabrir una nota cambiada en otra sesión se carga la revisión nueva, no la cacheada', async () => {
+      const { user } = renderPage()
+      await openNote(user, 'Extracto Texto 1', 'Texto 1')
+      await openNote(user, 'Extracto Texto 2', 'Texto 2')
+      backend.notes.set(ID_1, note(ID_1, 'Texto remoto', 2))
+
+      await user.click(screen.getByText('Extracto Texto 1'))
+
+      await waitFor(() => expect(textbox()).toHaveValue('Texto remoto'))
+      expect(screen.getByText('Revisión 2')).toBeVisible()
+    })
+
+    it('A-3: «Nueva nota» desde el conflicto deja de seleccionar la nota anterior', async () => {
+      const { user } = renderPage()
+      await editNote1(user)
+      backend.nextPutStatus = 409
+      await user.click(screen.getByRole('button', { name: 'Guardar' }))
+      const dialog = await screen.findByRole('dialog', { name: 'Conflicto de edición' })
+
+      await user.click(within(dialog).getByRole('button', { name: 'Nueva nota' }))
+
+      await waitFor(() =>
+        expect(screen.getByText('Extracto Texto 1').closest('[role="button"]')).not.toHaveClass(
+          'Mui-selected',
+        ),
+      )
+      expect(textbox()).toHaveValue('Texto 1 editado')
     })
   })
 })
