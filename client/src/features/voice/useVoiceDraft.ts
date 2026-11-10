@@ -116,6 +116,11 @@ export function useVoiceDraft(sessionIsCurrent?: () => boolean) {
   useLayoutEffect(() => {
     committedGeneration.current = state.generation
   }, [state.generation])
+  const isCurrentGeneration = useCallback(
+    (generation: number) =>
+      committedGeneration.current === generation && sessionIsCurrent?.() !== false,
+    [sessionIsCurrent],
+  )
 
   const transcribeMutation = useTranscribeAudio(sessionIsCurrent)
   const createMutation = useCreateVoiceNote(sessionIsCurrent)
@@ -336,8 +341,6 @@ export function useVoiceDraft(sessionIsCurrent?: () => boolean) {
     setState((prev) => ({ ...prev, documentState: 'saving', conflict: null }))
 
     // Solo se aplica si el borrador sigue siendo el mismo documento que inició la operación.
-    const isCurrent = () =>
-      committedGeneration.current === generation && sessionIsCurrent?.() !== false
     const applyIfCurrent = (next: (prev: VoiceDraftState) => VoiceDraftState) => {
       setState((prev) => (prev.generation === generation ? next(prev) : prev))
     }
@@ -347,7 +350,7 @@ export function useVoiceDraft(sessionIsCurrent?: () => boolean) {
         !noteId || revision == null
           ? await createMutation.mutateAsync(text)
           : await updateMutation.mutateAsync({ id: noteId, text, expectedRevision: revision })
-      if (!isCurrent()) return 'stale'
+      if (!isCurrentGeneration(generation)) return 'stale'
       applyIfCurrent((prev) => ({
         ...prev,
         noteId: response.id,
@@ -356,7 +359,7 @@ export function useVoiceDraft(sessionIsCurrent?: () => boolean) {
       }))
       return 'saved'
     } catch (error) {
-      if (!isCurrent()) return 'stale'
+      if (!isCurrentGeneration(generation)) return 'stale'
       if (noteId != null && isNotFound(error)) {
         applyIfCurrent((prev) => ({
           ...prev,
@@ -375,7 +378,7 @@ export function useVoiceDraft(sessionIsCurrent?: () => boolean) {
       }))
       return conflict ? 'conflict' : 'error'
     }
-  }, [state, isTextEmpty, createMutation, updateMutation, sessionIsCurrent])
+  }, [state, isTextEmpty, createMutation, updateMutation, sessionIsCurrent, isCurrentGeneration])
 
   /**
    * Elimina la nota actual con CAS (solo guardada y clean) y espera el 204.
@@ -396,15 +399,13 @@ export function useVoiceDraft(sessionIsCurrent?: () => boolean) {
     setState((prev) => ({ ...prev, documentState: 'deleting', conflict: null }))
 
     // Solo se aplica si el borrador sigue siendo el mismo documento que inició la operación.
-    const isCurrent = () =>
-      committedGeneration.current === generation && sessionIsCurrent?.() !== false
     const applyIfCurrent = (next: (prev: VoiceDraftState) => VoiceDraftState) => {
       setState((prev) => (prev.generation === generation ? next(prev) : prev))
     }
 
     try {
       await deleteMutation.mutateAsync({ id: noteId, expectedRevision: revision })
-      if (!isCurrent()) return 'stale'
+      if (!isCurrentGeneration(generation)) return 'stale'
       applyIfCurrent((prev) => ({
         ...prev,
         text: '',
@@ -421,7 +422,7 @@ export function useVoiceDraft(sessionIsCurrent?: () => boolean) {
       }))
       return 'deleted'
     } catch (error) {
-      if (!isCurrent()) return 'stale'
+      if (!isCurrentGeneration(generation)) return 'stale'
       let outcome: DeleteOutcome
       if (isConflict(error)) {
         applyIfCurrent((prev) => ({ ...prev, documentState: 'clean', conflict: 'delete' }))
@@ -441,7 +442,7 @@ export function useVoiceDraft(sessionIsCurrent?: () => boolean) {
       }
       return outcome
     }
-  }, [state, deleteMutation, sessionIsCurrent])
+  }, [state, deleteMutation, sessionIsCurrent, isCurrentGeneration])
 
   /** Cierra el conflicto sin cambiar el borrador (sigue dirty; un nuevo guardado vuelve a usar CAS). */
   const dismissConflict = useCallback(() => {
@@ -521,6 +522,7 @@ export function useVoiceDraft(sessionIsCurrent?: () => boolean) {
     isBusy,
     isTextEmpty,
     isDirty,
+    isCurrentGeneration,
     setText,
     loadNote,
     transcribe,

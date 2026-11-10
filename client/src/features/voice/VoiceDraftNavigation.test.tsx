@@ -8,6 +8,7 @@ import { installAuthBackend } from '../../test/msw/authBackend'
 import { server } from '../../test/msw/server'
 import { renderWithProviders } from '../../test/render'
 import { authQueryKeys, LOGOUT_PATH } from '../auth/api'
+import { voiceQueryKeys } from './api'
 
 const VOICE = '/voice?origen=prueba#editor'
 const DAILY = '/notes/2026-10-19'
@@ -210,6 +211,46 @@ describe('workspace de voz y navegación', () => {
     expect(unload()).toBe(false)
   })
 
+  it('ignora la recarga de un conflicto después de descartar al navegar', async () => {
+    const reload = heldResponse()
+    const get = vi.fn()
+    server.use(
+      mock.post(LIST, () => note('Texto guardado')),
+      mock.put(`${LIST}/${id}`, () => problemResponse(409)),
+      mock.get(`${LIST}/${id}`, async () => {
+        get()
+        await reload.promise
+        return HttpResponse.json({
+          id,
+          text: 'Respuesta tardía del detalle',
+          revision: 2,
+          createdAt: '2026-11-01T12:00:00Z',
+          updatedAt: '2026-11-01T12:01:00Z',
+        })
+      }),
+    )
+    const { user, queryClient } = renderApp('/')
+    await user.click(screen.getByRole('button', { name: 'Ir a voz' }))
+    const back = screen.getByRole('button', { name: 'Atrás' })
+    await user.type(await voiceText(), 'Texto guardado')
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+    await screen.findByText('Nota guardada correctamente.')
+    await user.type(await voiceText(), ' con cambios')
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+    await user.click(await screen.findByRole('button', { name: 'Recargar nota' }))
+    await user.click(await screen.findByRole('button', { name: 'Descartar y recargar' }))
+    await waitFor(() => expect(get).toHaveBeenCalledOnce())
+    // POP puede ocurrir aunque el diálogo tenga el foco.
+    fireEvent.click(back)
+    await user.click(await screen.findByRole('button', { name: 'Descartar y continuar' }))
+    reload.release()
+    await waitFor(() =>
+      expect(queryClient.isFetching({ queryKey: voiceQueryKeys.detail(id) })).toBe(0),
+    )
+    await user.click(screen.getByRole('link', { name: 'Voz' }))
+    expect(await voiceText()).toHaveValue('')
+  })
+
   it('cancela permiso al navegar y detiene los tracks que llegan después', async () => {
     const { getUserMedia, stream, track } = installMicrophone()
     const permission = heldResponse()
@@ -250,6 +291,31 @@ describe('workspace de voz y navegación', () => {
     await user.click(screen.getByRole('button', { name: 'Transcribir' }))
     await waitFor(async () => expect(await voiceText()).toHaveValue('Transcripción explícita'))
     expect(post).toHaveBeenCalledOnce()
+  })
+
+  it('descarta audio que excedió 600 s durante la suspensión', async () => {
+    const { track } = installMicrophone()
+    const post = vi.fn()
+    server.use(
+      mock.post(TRANSCRIPTION, () => {
+        post()
+        return HttpResponse.json({ text: 'No debe transcribirse', language: 'es' })
+      }),
+    )
+    const now = vi.spyOn(performance, 'now')
+    const { user } = renderApp()
+    await user.click(await screen.findByRole('button', { name: 'Grabar' }))
+    expect(await screen.findByText('Grabando')).toBeVisible()
+    // El reloj avanza durante la suspensión aunque el timer no se ejecute.
+    now.mockReturnValue(performance.now() + 601_000)
+    const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true)
+    fireEvent(document, new Event('visibilitychange'))
+    await waitFor(() => expect(track.stop).toHaveBeenCalledOnce())
+    hidden.mockRestore()
+    expect(screen.queryByRole('button', { name: 'Transcribir' })).not.toBeInTheDocument()
+    expect(await screen.findByText(/Se excedió la duración máxima/)).toBeVisible()
+    expect(unload()).toBe(false)
+    expect(post).not.toHaveBeenCalled()
   })
 
   it('aborta la transcripción al salir, permite volver sin enviar y descarta audio explícitamente', async () => {

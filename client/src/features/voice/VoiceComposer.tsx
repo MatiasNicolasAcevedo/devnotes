@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
@@ -16,6 +23,7 @@ import Typography from '@mui/material/Typography'
 import { ApiError } from '../../services/http'
 import { fetchVoiceNote, voiceQueryKeys, type VoiceNoteDetail } from './api'
 import { useSession } from '../auth/sessionContext'
+import { MaxDurationExceededError } from './recorder'
 import { type SaveOutcome, voiceNoteTextSchema } from './useVoiceDraft'
 import { useVoiceDraftContext } from './voiceDraftContext'
 
@@ -74,10 +82,18 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     // Conflicto 409: el diálogo se abre mientras draft.state.conflict != null (sin estado espejo).
     const [confirmReload, setConfirmReload] = useState(false)
     const [reloading, setReloading] = useState(false)
+    const reloadOperation = useRef<symbol | null>(null)
     const [reloadError, setReloadError] = useState<string | null>(null)
     const [conflictCopy, setConflictCopy] = useState<'ok' | 'error' | null>(null)
     // Generación del documento guardado en esta sesión: el aviso de éxito solo se muestra para ella.
     const [savedGeneration, setSavedGeneration] = useState<number | null>(null)
+
+    useLayoutEffect(() => {
+      // El borrador sobrevive al outlet, pero una recarga iniciada por el editor no.
+      return () => {
+        reloadOperation.current = null
+      }
+    }, [])
 
     const recordingEnabled = capabilities?.recordingEnabled ?? false
     const recordingReason = capabilities?.reason
@@ -218,8 +234,13 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     }, [draft, closeConflict, reloading])
 
     const handleConflictReloadConfirm = useCallback(async () => {
-      const id = draft.state.noteId
-      if (id == null) return
+      const { noteId: id, generation } = draft.state
+      if (id == null || reloadOperation.current !== null || !draft.isCurrentGeneration(generation))
+        return
+      const operation = Symbol()
+      reloadOperation.current = operation
+      const isCurrent = () =>
+        reloadOperation.current === operation && draft.isCurrentGeneration(generation)
       setReloading(true)
       setReloadError(null)
       try {
@@ -228,11 +249,13 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
           queryFn: ({ signal }) => fetchVoiceNote(id, signal),
           staleTime: 0,
         })
+        if (!isCurrent()) return
         draft.loadNote(fresh, { force: true })
         setSaveError(null)
         setDeleteError(null)
         closeConflict()
       } catch (error) {
+        if (!isCurrent()) return
         setConfirmReload(false)
         setReloadError(
           error instanceof ApiError && error.status === 404
@@ -240,7 +263,10 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
             : 'No se pudo recargar la nota. Tu borrador se conserva.',
         )
       } finally {
-        setReloading(false)
+        if (reloadOperation.current === operation) {
+          reloadOperation.current = null
+          setReloading(false)
+        }
       }
     }, [draft, queryClient, closeConflict])
 
@@ -455,8 +481,9 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
             }
             sx={{ mb: 2 }}
           >
-            No se pudo transcribir el audio.{' '}
-            {draft.state.captureResult ? 'Podés reintentar o descartar.' : 'Intentá de nuevo.'}
+            {captureError instanceof MaxDurationExceededError
+              ? `${captureError.message} Se descartó el audio.`
+              : `No se pudo transcribir el audio. ${draft.state.captureResult ? 'Podés reintentar o descartar.' : 'Intentá de nuevo.'}`}
           </Alert>
         )}
 

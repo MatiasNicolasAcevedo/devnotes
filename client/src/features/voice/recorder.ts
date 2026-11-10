@@ -271,10 +271,15 @@ export class CaptureController {
     }
 
     const gen = this._generation
+    // El timer puede demorarse durante una suspensión. Medir al detener evita contar la entrega de onstop.
+    const durationMs = this._now() - this._startTime
+    if (durationMs > this._maxDuration * 1000) {
+      throw new MaxDurationExceededError(this._maxDuration)
+    }
 
     // Si el recorder ya está parado (ej. onerror), ensamblar directamente.
     if (recorder.state === 'inactive') {
-      const result = this._assembleResult(gen)
+      const result = this._assembleResult(gen, durationMs)
       return Promise.resolve(result!)
     }
 
@@ -284,7 +289,7 @@ export class CaptureController {
       recorder.onstop = () => {
         this._cancelStop = null
         try {
-          const result = this._assembleResult(gen)
+          const result = this._assembleResult(gen, durationMs)
           resolve(result!)
         } catch (e) {
           reject(e)
@@ -294,8 +299,7 @@ export class CaptureController {
     })
   }
 
-  private _assembleResult(gen: number): CaptureResult {
-    const durationMs = this._now() - this._startTime
+  private _assembleResult(gen: number, durationMs: number): CaptureResult {
     const durationSeconds = Math.round(durationMs / 1000) / 1000
 
     const blob = new Blob(this._chunks, { type: this._recorder?.mimeType ?? 'audio/webm' })
