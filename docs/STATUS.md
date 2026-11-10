@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-038](tasks/T-038-reference-preview-fix.md) · S-106 / bugfix antes de T-036 |
-| Estado | `in_progress` |
-| Acción actual | Implementer: arreglo de inserción de referencia (`DailyEditor.handleReferenceSelect`, RangeError al final del documento) con prueba roja→verde; E2E dirigido, client gate y FULL/APPLICATION antes de publicar. Detalle en la tarea. |
-| Rama / PR | codex/t-038-reference-preview-fix · sin PR |
+| Estado | `in_review` |
+| Acción actual | Implementación publicada (código `9e89f8a`, base main `e1fbaea`): `insertContentAt` sobre el rango `@consulta` + pasos 7/13 del spec reabren la nota. FULL/APPLICATION verde (e2e 41/41 desktop+mobile). Siguiente: revisión independiente en sesión nueva. Detalle en la tarea. |
+| Rama / PR | codex/t-038-reference-preview-fix · [PR41](https://github.com/MatiasNicolasAcevedo/devnotes/pull/41) |
 
 T-035: PR40 MERGED, squash `e1fbaea1ca3ae868dd2ca93569da45eab65aa413`, confirmado en GitHub el 2026-11-09 (mergedAt 2026-11-10T01:39:05Z). Merge con excepción del dueño acotada a `reference-preview.spec.ts` (preexistente), corregido en T-038.
 
@@ -64,5 +64,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Implementer, sesión nueva: T-038 (rama codex/t-038-reference-preview-fix, base main e1fbaea). Retomar el checkpoint de docs/tasks/T-038-reference-preview-fix.md: completar gate FULL/APPLICATION si falta, publicar PR contra main y dejar la tarea in_review con prompt de revisor. No revisar ni mergear la propia implementación.
+Reviewer, sesión nueva no autora: T-038 (PR41, rama codex/t-038-reference-preview-fix, base main e1fbaea). Revisar el HEAD publicado contra docs/tasks/T-038-reference-preview-fix.md: causa (insertContentAt con posición previa al borrado), arreglo en DailyEditor.handleReferenceSelect, que ReferenceInsertion.test.tsx falle al revertirlo, que los pasos 7/13 de e2e/tests/reference-preview.spec.ts conserven la intención de T-026 sin rebajar aserciones/timeouts, y TESTING «Tiempos de E2E». Evidencia FULL/APPLICATION en la tarea; comprobar CI verify-required. Publicar veredicto en el PR; no mergear sin las condiciones de AUTONOMY.
 ```

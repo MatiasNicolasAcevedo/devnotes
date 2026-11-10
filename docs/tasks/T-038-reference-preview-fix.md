@@ -1,6 +1,6 @@
 ---
 id: T-038
-status: in_progress
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -9,7 +9,7 @@ milestone: M2
 product_cycle: I2
 spec: S-106
 branch: codex/t-038-reference-preview-fix
-pr: null
+pr: 41
 depends_on: [T-035]
 ---
 # T-038 · Reparar inserción de referencia con @ (E2E reference-preview)
@@ -55,7 +55,7 @@ Bugfix preexistente decidido por el dueño el 2026-11-09 al mergear T-035 con ex
 
 Hecho: rojo ReferenceInsertion.test.tsx 0/2 (`RangeError: Position 12 out of range` y átomo desplazado a «líne|a») → 2/2 con el arreglo. Dirigidas daily 44/44. Client gate `npm run verify` exit 0: typecheck, lint, format, 499/499 tests (86.1% statements, 80.32% branches), build. E2E dirigido `scripts/e2e.sh --grep "reference preview:"` desktop **passed** y mobile **passed** (exit 0, proyecto `starter-e2e-t038`, limpiado por el script). `docs-check` OK, `git diff --check` OK.
 
-Antes del FULL (operación larga): base main `e1fbaea`, HEAD = commit de código+docs de esta tarea en la rama. Comando: el gate APPLICATION de «Aceptación y pruebas» con `COMPOSE_PROJECT_NAME=starter-verify-t038` y `STARTER_E2E_PROJECT=starter-e2e-t038` (namespaces comprobados libres). Log local fuera del repo (scratchpad de la sesión), no versionado. Recursos propios: solo los labels `com.docker.compose.project=starter-verify-t038` y `starter-e2e-t038`; cleanup por esos labels exactos si el script no limpia. No tocar `starter-dev-local-nginx`, volúmenes ajenos ni prune. Siguiente: con FULL verde, push, PR contra main y estado in_review.
+FULL **APPLICATION** (`--policy origin/main` → FULL/APPLICATION) sobre HEAD de código `9e89f8a`, base main `e1fbaea`, 2026-11-10T02:01Z–02:29Z: docs OK, server 210/210 OK (BUILD SUCCESS), client OK, e2e OK (41 passed, 0 failed, desktop + mobile, incluido `reference preview:`), exit 0. Log local fuera del repo. Cleanup: el script retiró contenedores/volúmenes E2E; quedaban `starter-verify-t038_m2-cache` y la red `starter-verify-t038_default`, retirados por nombre/label exacto; ambos namespaces quedan vacíos. PR [41](https://github.com/MatiasNicolasAcevedo/devnotes/pull/41) publicado; cierre solo documental posterior conserva el FULL (mismas fuentes/base). Siguiente: revisión independiente en sesión nueva.
 
 ## Correcciones significativas
 
