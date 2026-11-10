@@ -1,6 +1,6 @@
 ---
 id: T-049
-status: draft
+status: in_progress
 priority: P1
 size: S
 executor: frontier
@@ -52,7 +52,13 @@ Demostrar voz real en el entorno local del dueño con el adaptador corregido y e
 
 ## Checkpoint vigente
 
-Contrato listo, `draft` hasta T-048 MERGED. El dueño coordina la habilitación y presencia en la ronda. El resultado externo permanece pendiente.
+2026-11-10. Frontera en Codex Desktop (GPT-6, variante y esfuerzo no expuestos), con PowerShell, Windows Speech Synthesis, Git, `gh`, Git Bash, Node 24.21.0 y consulta web. Avance documental, sin cambios en comportamiento, API, permisos de la aplicación, persistencia ni UI. Base de la rama y SHA objetivo `6f423e37be71d8fd9bb48561b3a74bfcb80c2421`, confirmado en [T-048](T-048-groq-multipart-fix.md#checkpoint-vigente). Worktree documental separado del checkout original que usa el stack persistente.
+
+El dueño autorizó hasta cuatro muestras sintéticas y 120 s de captura. Confirmó organización Free, ausencia de gasto nuevo, `Inference APIs ZDR` activo y cuota efectiva suficiente. Groq publica compatibilidad de `whisper-large-v3-turbo` con WebM y español, máximo Free de 25 MB, cuota Free de 20 solicitudes/min, 2.000/día, 7.200 s de audio/h y 28.800 s/día, y elegibilidad ZDR para transcripciones. [Modelo y formatos](https://console.groq.com/docs/speech-to-text) · [Cuotas](https://console.groq.com/docs/rate-limits) · [Retención](https://console.groq.com/docs/your-data)
+
+Preparación local en `.orchestrator/t049-synthetic-fixtures/` del checkout original, ruta ignorada. `node .orchestrator/t049-synthetic-fixtures/prepare-silence.mjs` terminó con exit 0 y verificó WAV PCM mono de 16 bits: breve 14,93 s, técnica 27,74 s, silencio 4,00 s y segunda breve 13,15 s (59,82 s total de las fuentes). `node --check .orchestrator/t049-synthetic-fixtures/observe-transcription.js` terminó con exit 0. La prueba aislada del observador con `node:vm` confirmó registro mínimo para 200, 422 `VOICE_NO_SPEECH` y fallo de red, con bloqueo de un segundo POST. Pendiente validar en Chromium con la aplicación real. Para el cleanup, retirar solo los cuatro WAV propios y los perfiles separados de esta ronda después de cerrarlos, además de las notas ficticias identificadas en el ensayo.
+
+Pendiente: el dueño aplica el SHA objetivo y retoma su stack desde el checkout original con la clave cargada en privado, `DEVNOTES_VOICE_ENABLED=true` y `DEVNOTES_VOICE_TEST_PROVIDER=false`. Tras su confirmación, verificar capabilities autenticado y la sonda de observación en Chromium separado antes de grabar. Cero intentos consumidos. FULL integrado diferido hasta después de T-044 MERGED.
 
 ## Correcciones significativas
 

@@ -2,7 +2,7 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
-Próxima acción: [T-048](tasks/T-048-groq-multipart-fix.md), corregir el multipart de Groq con una regresión HTTP local.
+Próxima acción: [T-049](tasks/T-049-voice-retest.md), reensayar con Groq y el dueño tras T-048 MERGED.
 
 ## Siguientes · plan del dueño del 2026-11-10
 
@@ -10,7 +10,6 @@ Orden decidido por el dueño: (1) activar Groq y probar M2-RC1; (2) exportar e i
 
 | Orden | Contrato / resultado | Ejecuta | Dependencia |
 |---|---|---|---|
-| 1 | [T-048](tasks/T-048-groq-multipart-fix.md) · Corrección multipart de Groq | Junie | T-039 MERGED |
 | 2 | [T-049](tasks/T-049-voice-retest.md) · Reensayo sintético con Groq | Dueño con un agente de frontera | T-048 MERGED |
 | 3 | [T-040](tasks/T-040-daily-timestamps.md) · Instantes de daily y versiones a microsegundos (bugfix previo a exportar) | Junie | T-049 favorable y MERGED |
 | 4 | [T-041](tasks/T-041-xlsx-codec.md) · Codec `devnotes-xlsx` v1 y límites | Junie | T-040 MERGED |
