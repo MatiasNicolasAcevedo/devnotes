@@ -22,6 +22,12 @@ Orden decidido por el dueño: (1) activar Groq y probar M2-RC1; (2) exportar e i
 
 Retorno a frontera: un veredicto «no aceptada» en T-039, T-045 o T-047, una decisión fuera de contrato, o el cierre de T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
 
+### Hallazgos de T-039
+
+- **Bloqueante para la transcripción real.** En Edge 157.0.4341.42, SHA `c63038d` (fuentes `aef4213`), iniciar sesión local, abrir Voz, grabar la muestra técnica de ~30,4 s con micrófono sintético y pulsar «Detener y transcribir». Se esperaba HTTP 200 con texto editable. DevNotes devolvió HTTP 502 `VOICE_INVALID_RESPONSE`. El silencio y la segunda nota reprodujeron el mismo 502. Al revisar `GroqTranscriptionClient`, el multipart contiene solo `file`. El estado exacto de Groq quedó sin medir. Con «Aceptada con mejoras», el dueño pidió corregir y volver a probar voz tras esta ronda. Frontera prepara el seguimiento en una tarea separada. [Evidencia del ensayo](VOICE-RELEASE.md#resultado-de-t-039)
+
+  Contrato verificado el 2026-11-10. En el `POST /openai/v1/audio/transcriptions` de Groq, enviar las partes `file` (WebM), `model=whisper-large-v3-turbo`, `language=es`, `temperature=0` y `response_format=verbose_json` en el cuerpo `multipart/form-data`. `Authorization: Bearer …` y `Content-Type: multipart/form-data; boundary=…` son cabeceras del servidor y ya se construyen. `verbose_json` incluye metadatos de segmentos, incluido `no_speech_prob`, para la comprobación de silencio de S-105. La regresión debe rechazar en el doble la omisión del modelo y comprobar los valores de las partes en la solicitud corregida. [Referencia de la API de Groq](https://console.groq.com/docs/api-reference) · [Parámetros y metadatos](https://console.groq.com/docs/speech-to-text#using-the-api)
+
 ## Hechas · S-106 completada
 
 S-106 completa con las 5 tareas MERGED (T-022 a T-026), control de cinco por Junie cumplido. Frontera toma voz por decisión del dueño del 2026-10-31; contrato de I2 preparado.

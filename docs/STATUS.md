@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-039](tasks/T-039-voice-activation.md) · S-105 / activación de Groq y pruebas personales de M2-RC1 |
-| Estado | `ready` |
-| Acción actual | M2-RC1 entregada como RC técnica (`aef4213`). El dueño, guiado por un agente de frontera, activa Groq en su stack persistente sin exponer la clave, hace el ensayo externo acotado y recorre la matriz personal de VOICE-RELEASE. Después sigue la portabilidad `.xlsx` (T-040…T-045) y al final el piloto en Render (T-046, T-047), según [BACKLOG](BACKLOG.md#siguientes--plan-del-dueño-del-2026-11-10). |
+| Estado | `in_progress` |
+| Acción actual | El dueño dio el veredicto «Aceptada con mejoras». Publicar el PR documental de T-039 con la evidencia y el bloqueo de transcripción. |
 | Rama / PR | codex/t-039-voice-activation · sin PR |
 
 T-037: PR44 MERGED, squash `aef4213db2fe7f676591811b7ee67a22757b64b0`, confirmado en GitHub el 2026-11-10 (mergedAt 2026-11-10T16:37:31Z). Conciliada como done; SHA de entrega congelado en [VOICE-RELEASE](VOICE-RELEASE.md). Plan posterior del dueño (2026-11-10) en [S-107](specs/S-107-xlsx-portability.md) y [S-108](specs/S-108-render-pilot.md).
@@ -70,5 +70,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva de frontera con el dueño para T-039 (docs/tasks/T-039-voice-activation.md). Leer AGENTS.md, docs/STATUS.md, T-039 y docs/VOICE-RELEASE.md. Comprobar git status, que main contiene aef4213 (T-037 MERGED) y crear la rama codex/t-039-voice-activation desde main. Guiar al dueño en la habilitación segura de Groq: confirmar sus condiciones, revalidar modelos, cuota y retención en la documentación oficial, y que él cargue GROQ_API_KEY y DEVNOTES_VOICE_ENABLED=true en su propia terminal y recree su stack persistente con sus mismos parámetros. Nunca pedir, leer ni imprimir la clave. Verificar GET /api/v1/voice/capabilities, ejecutar el ensayo externo acotado de cuatro muestras y acompañar la matriz personal. Registrar evidencia saneada y el veredicto del dueño en VOICE-RELEASE y en T-039, los hallazgos en BACKLOG, y publicar un PR solo de documentación. No comenzar T-040 en esa sesión. Si el veredicto es «no aceptada», volver a frontera con los defectos bloqueantes.
+Retomar el cierre documental de T-039 en codex/t-039-voice-activation. Leer AGENTS.md, T-039 y VOICE-RELEASE. Publicar un PR contra main con el veredicto «Aceptada con mejoras», los resultados saneados y el seguimiento de la transcripción 502 en BACKLOG. Dejarlo listo para revisión independiente.
 ```
