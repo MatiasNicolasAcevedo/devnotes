@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-049](tasks/T-049-voice-retest.md) · S-105 / reensayo sintético con Groq |
 | Estado | `in_progress` |
-| Acción actual | Segunda ronda sobre `8d787c1` detenida: `01-breve` y `02-tecnico` favorables, `03-silencio` fuera de criterio (HTTP 200 con «Gracias.»), `04` sin intentar. Bloqueada en frontera/dueño: decidir cómo medir los segmentos reales de Groq y la regla para texto alucinado. [Evidencia](tasks/T-049-voice-retest.md#segunda-ronda-sobre-8d787c1) |
+| Acción actual | Segunda ronda sobre `8d787c1` detenida: `01-breve` y `02-tecnico` favorables, `03-silencio` fuera de criterio (HTTP 200 con «Gracias.»), `04` sin intentar. Medido: Groq devuelve ese texto con `no_speech_prob` 0, fuera del alcance de la regla actual. Bloqueada en frontera/dueño: elegir otra señal de silencio para S-105. [Evidencia](tasks/T-049-voice-retest.md#segunda-ronda-sobre-8d787c1) |
 | Rama / PR | `codex/t-049-voice-retest` · PR único tras resultado favorable |
 
 T-048: [PR47 MERGED y conciliada como done](tasks/T-048-groq-multipart-fix.md#checkpoint-vigente). T-040 espera T-049 favorable y MERGED. FULL integrado después de T-044 MERGED.
@@ -74,5 +74,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Frontera: retomar T-049 en codex/t-049-voice-retest (.orchestrator/t049-worktree) con el dueño. Leer AGENTS.md, STATUS y «Segunda ronda sobre 8d787c1» de T-049 con sus referencias. El silencio sintético volvió a dar HTTP 200 con «Gracias.» con la corrección de 8d787c1 activa. Decidir con el dueño cómo medir de forma saneada los campos de segmento de la respuesta real de Groq para el silencio (requiere presupuesto para al menos una inferencia) y qué regla de S-105 aplicar a texto alucinado con no_speech_prob bajo o sin segmentos válidos. Dejar la corrección como contrato acotado con prueba roja previa. No repetir la matriz sin esa decisión ni sin presupuesto nuevo; el conductor de la ronda está en .orchestrator/t049-synthetic-fixtures del checkout original. T-040 espera T-049 favorable y MERGED. FULL integrado después de T-044 MERGED.
+Frontera: retomar T-049 en codex/t-049-voice-retest (.orchestrator/t049-worktree) con el dueño. Leer AGENTS.md, STATUS y «Segunda ronda sobre 8d787c1» de T-049 con sus referencias. El silencio sintético volvió a dar HTTP 200 con «Gracias.» con la corrección de 8d787c1 activa. La medición real dio un segmento con no_speech_prob 0, avg_logprob -0,297 y compression_ratio 0,529: ese campo no sirve para rechazarlo. Decidir con el dueño otra señal de silencio para S-105 (por ejemplo, ausencia de señal detectada en el cliente antes de enviar, u otra regla en el backend) y actualizar la spec. Dejar la corrección como contrato acotado con prueba roja previa. No repetir la matriz sin esa decisión ni sin presupuesto nuevo; el conductor de la ronda está en .orchestrator/t049-synthetic-fixtures del checkout original. T-040 espera T-049 favorable y MERGED. FULL integrado después de T-044 MERGED.
 ```

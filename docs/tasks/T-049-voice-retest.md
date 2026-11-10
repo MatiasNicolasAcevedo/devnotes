@@ -107,9 +107,24 @@ Paso de reensayo para el dueño: dar presupuesto explícito para una ronda nueva
 
 Captura total ~47 s. La confirmación del dueño sobre la utilidad de los textos de `01` y `02` queda pendiente. Con la corrección activa, el resultado de silencio indica que la respuesta de Groq trae texto y al menos un segmento con `no_speech_prob` por debajo de 0,6, sin probabilidad válida, o ningún segmento; son los casos que `allSegmentsIndicateSilence` conserva como voz. Es una inferencia desde el código: las probabilidades reales siguen sin medirse, los logs del server no registran la respuesta y no se inspeccionó la clase dentro del contenedor.
 
-Vuelve a frontera/dueño según el paso de reensayo. Decisión necesaria: cómo medir de forma saneada los campos de segmento de la respuesta real para el silencio (cuesta al menos una inferencia nueva) y qué regla de S-105 aplicar a un texto alucinado con probabilidad baja. No repetir la matriz sin esa decisión y un presupuesto nuevo.
+Vuelve a frontera/dueño según el paso de reensayo. La medición siguiente resolvió la primera incógnita. Decisión pendiente: qué señal distinta de `no_speech_prob` usa S-105 para el silencio. No repetir la matriz sin esa decisión y un presupuesto nuevo.
 
-Cleanup pendiente, sin borrar en esta sesión: notas `[T-049-R2-01-breve]` y `[T-049-01-breve]` en el volumen del dueño; cuatro WAV, perfiles `edge-*` y `edge-r2-*` (cerrados), `t049-cdp.mjs`, `r2-launch.ps1` y `r2-*.json` en `.orchestrator/t049-synthetic-fixtures/`; `.orchestrator/t049-apply.ps1` (no usado) y `.orchestrator/t049-proof`. El checkout original queda en `8d787c1` con HEAD separado y el stack del dueño activo con voz habilitada.
+#### Medición de la respuesta real
+
+El dueño autorizó después una inferencia adicional de silencio para medir la respuesta. Se grabaron 4 s de `03-silencio.wav` con el `MediaRecorder` de Edge en un perfil separado, fuera de la aplicación (`audio/webm;codecs=opus`, 1.289 bytes). Ese WebM se envió una sola vez a Groq con `curl` desde dentro del contenedor del server, con los mismos campos del adaptador (`whisper-large-v3-turbo`, `language=es`, `temperature=0`, `verbose_json`). La clave se usó por referencia a la variable del contenedor y no se leyó ni imprimió. Resultado: HTTP 200 en ~0,45 s.
+
+| Campo | Valor medido |
+|---|---|
+| `text` | « Gracias.» |
+| `language` / `duration` | `Spanish` / 4,56 s |
+| `segments` | 1 segmento, de 0 a 1 s |
+| `no_speech_prob` | **0** |
+| `avg_logprob` | −0,297 |
+| `compression_ratio` | 0,529 |
+
+Conclusión: para silencio digital Groq devuelve texto alucinado con `no_speech_prob` 0. Ninguna regla de S-105 basada en ese campo puede rechazarlo, cualquiera sea el umbral, y `8d787c1` actúa según su contrato. `avg_logprob` tampoco separa este caso de voz real con un umbral habitual. La corrección exige otra señal, que es decisión de frontera/dueño: por ejemplo, detectar ausencia de señal en el cliente antes de enviar, o filtrar en el backend por una regla distinta. Es una sola medición con silencio digital exacto; no cubre ruido ambiente ni un micrófono real. Con esta inferencia la sesión suma cuatro envíos a Groq.
+
+Cleanup pendiente, sin borrar en esta sesión: `/tmp/t049-silence.webm` y `/tmp/t049-resp.json` dentro del contenedor del server (desaparecen al recrearlo); `r2-silence.webm` y `r2-silence-response.json` en la carpeta de fixtures; notas `[T-049-R2-01-breve]` y `[T-049-01-breve]` en el volumen del dueño; cuatro WAV, perfiles `edge-*` y `edge-r2-*` (cerrados), `t049-cdp.mjs`, `r2-launch.ps1` y `r2-*.json` en `.orchestrator/t049-synthetic-fixtures/`; `.orchestrator/t049-apply.ps1` (no usado) y `.orchestrator/t049-proof`. El checkout original queda en `8d787c1` con HEAD separado y el stack del dueño activo con voz habilitada.
 
 ## Correcciones significativas
 
