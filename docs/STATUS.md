@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-038](tasks/T-038-reference-preview-fix.md) · S-106 / bugfix antes de T-036 |
+| Tarea y contrato | [T-036](tasks/T-036-voice-navigation.md) · S-105 / navegación y sesión |
 | Estado | `mergeable` |
-| Acción actual | Segunda revisión independiente cerró B-1 y B-2. Consultar el veredicto y los checks del HEAD vigente en PR41 y confirmar el merge antes de habilitar T-036. |
-| Rama / PR | codex/t-038-reference-preview-fix · [PR41](https://github.com/MatiasNicolasAcevedo/devnotes/pull/41) |
+| Acción actual | La cuarta revisión independiente cerró B-4 sin bloqueantes y aceptó el gate sustituto del dueño. Consultar el veredicto y los checks del HEAD vigente en PR42 y confirmar el merge antes de habilitar T-037. |
+| Rama / PR | codex/t-036-voice-navigation · [PR42](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42) |
+
+T-038: PR41 MERGED y conciliada como done. Evidencia del squash y checks en [T-038](tasks/T-038-reference-preview-fix.md#checkpoint-vigente).
 
 T-035: PR40 MERGED, squash `e1fbaea1ca3ae868dd2ca93569da45eab65aa413`, confirmado en GitHub el 2026-11-09 (mergedAt 2026-11-10T01:39:05Z). Merge con excepción del dueño acotada a `reference-preview.spec.ts` (preexistente), corregido en T-038.
 
@@ -64,5 +66,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Confirmar el estado de PR41 (T-038) en GitHub según docs/agents/merger.md. Si sigue OPEN, retomar como merger y aplicar AUTONOMY sobre el veredicto, HEAD/base y checks vigentes. Con MERGED, registrar SHA y fecha, y en sesión implementer nueva conciliar T-038 como done en el primer avance de codex/t-036-voice-navigation. Comprobar las dependencias T-035 y T-038, actualizar STATUS y la cola según corresponda y ejecutar el contrato de T-036 (docs/tasks/T-036-voice-navigation.md).
+Confirmar el estado de PR42 (T-036) en GitHub según docs/agents/merger.md. Si sigue OPEN, retomar como merger y aplicar AUTONOMY sobre el veredicto APROBADO, HEAD/base y checks vigentes. Con MERGED, registrar SHA y fecha, y en sesión implementer nueva conciliar T-036 como done en el primer avance de codex/t-037-voice-release. Comprobar la dependencia T-036, actualizar STATUS y la cola según corresponda y ejecutar el contrato de T-037 (docs/tasks/T-037-voice-release.md).
 ```

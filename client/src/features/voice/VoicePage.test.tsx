@@ -4,12 +4,14 @@ import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { server } from '../../test/msw/server'
 import { problemResponse } from '../../test/factories'
 import { AuthSessionContext, type AuthSession } from '../auth/sessionContext'
 import { voiceQueryKeys, type VoiceNoteDetail } from './api'
 import { VoicePage } from './VoicePage'
+import type { CaptureResult } from './recorder'
+import { VoiceDraftProvider } from './VoiceDraftProvider'
 
 /*
  * Integración de la pantalla /voice: VoicePage + VoiceLibrary + VoiceComposer + useVoiceDraft reales,
@@ -19,18 +21,39 @@ import { VoicePage } from './VoicePage'
 const recorderMock = vi.hoisted(() => ({ state: 'idle' }))
 
 vi.mock('./useVoiceRecorder', () => ({
-  useVoiceRecorder: () => ({
-    state: recorderMock.state,
-    result: null,
-    error: null,
-    elapsedSeconds: 0,
-    elapsedFormatted: '00:00',
-    start: vi.fn(),
-    stop: vi.fn(),
-    cancel: vi.fn(),
-    resetError: vi.fn(),
-  }),
+  useVoiceRecorder: () => {
+    const [recording, setRecording] = useState(false)
+    const [result, setResult] = useState<CaptureResult | null>(null)
+    return {
+      ...idleRecorder,
+      state: recording ? 'recording' : recorderMock.state,
+      result,
+      consumeResult: () => setResult(null),
+      start: () => setRecording(true),
+      stop: () => {
+        const capture = {
+          blob: new Blob(['audio ficticio'], { type: 'audio/webm' }),
+          durationSeconds: 1,
+          sizeBytes: 14,
+          generation: 1,
+        }
+        setRecording(false)
+        setResult(capture)
+        return Promise.resolve(capture)
+      },
+    }
+  },
 }))
+
+const idleRecorder = {
+  state: 'idle',
+  result: null,
+  error: null,
+  elapsedSeconds: 0,
+  elapsedFormatted: '00:00',
+  cancel: vi.fn(),
+  resetError: vi.fn(),
+}
 
 const NOTES_PATH = '/api/v1/voice-notes'
 const NOTE_PATH = '/api/v1/voice-notes/:id'
@@ -197,7 +220,9 @@ function renderPage() {
     return (
       <AuthSessionContext value={session}>
         <QueryClientProvider client={queryClient}>
-          <ThemeProvider theme={theme}>{children}</ThemeProvider>
+          <ThemeProvider theme={theme}>
+            <VoiceDraftProvider>{children}</VoiceDraftProvider>
+          </ThemeProvider>
         </QueryClientProvider>
       </AuthSessionContext>
     )
@@ -211,6 +236,23 @@ function renderPage() {
 function textbox(): HTMLElement {
   return screen.getByRole('textbox', { name: 'Texto de la nota', hidden: true })
 }
+
+it('un stop con resultado dispara exactamente un POST de transcripción', async () => {
+  const backend = installBackend()
+  backend.recordingEnabled = true
+  const post = vi.fn()
+  server.use(
+    mock.post('/api/v1/voice/transcriptions', () => {
+      post()
+      return HttpResponse.json({ text: 'Texto transcrito', language: 'es' })
+    }),
+  )
+  const { user } = renderPage()
+  await user.click(await screen.findByRole('button', { name: 'Grabar' }))
+  await user.click(await screen.findByRole('button', { name: 'Detener y transcribir' }))
+  await waitFor(() => expect(textbox()).toHaveValue('Texto transcrito'))
+  expect(post).toHaveBeenCalledTimes(1)
+})
 
 async function openNote(user: ReturnType<typeof userEvent.setup>, excerpt: string, text: string) {
   await user.click(await screen.findByText(excerpt))

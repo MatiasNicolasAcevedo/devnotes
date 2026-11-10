@@ -156,21 +156,23 @@ export class CaptureController {
    * Idempotente: llamar dos veces sin stop intermedio no duplica la captura.
    */
   async start(): Promise<void> {
-    if (this._state === 'recording' || this._state === 'requesting') {
+    if (this._state === 'recording' || this._state === 'requesting' || this._state === 'stopping') {
       return
     }
 
-    this._generation++
+    const generation = ++this._generation
     this._transition('requesting')
 
-    let stream: MediaStream | null = null
     try {
-      stream = await this._getUserMedia()
+      const stream = await this._getUserMedia()
+      if (generation !== this._generation) {
+        this._stopTracks(stream)
+        return
+      }
       this._stream = stream
-
-      // Si el permiso se canceló y llegó un track tardío, se detiene en S-105.
-      // Aquí asumimos que start() se llama tras permiso concedido;
-      // la cancelación se maneja con cancelRequest().
+      for (const track of stream.getTracks()) {
+        track.addEventListener('ended', this._trackEnded)
+      }
 
       const mimeType = this._selectMimeType()
       this._chunks = []
@@ -187,9 +189,7 @@ export class CaptureController {
       }
 
       this._recorder.onerror = () => {
-        if (this._state !== 'stopping') {
-          this._transition('error', undefined, new Error('Error del MediaRecorder.'))
-        }
+        this._forceStop(new Error('Error del MediaRecorder.'))
       }
 
       this._recorder.start(1000) // timeslice de 1 segundo
@@ -205,11 +205,8 @@ export class CaptureController {
         }
       }, durationMs) as unknown as number
     } catch (err) {
-      // Limpiar stream si falló después de obtenerlo.
-      if (stream) {
-        this._stopTracks(stream)
-        this._stream = null
-      }
+      if (generation !== this._generation) return
+      this._cleanup()
       const error = err instanceof Error ? err : new Error(String(err))
       if (error instanceof PermissionDeniedError) {
         this._transition('error', undefined, error)
@@ -240,17 +237,25 @@ export class CaptureController {
   }
 
   private _pendingStop: Promise<CaptureResult> | null = null
+  private _cancelStop: (() => void) | null = null
 
   private async _doStop(): Promise<CaptureResult> {
-    this._pendingStop = this._doStopInner()
+    const generation = this._generation
+    const pending = this._doStopInner()
+    this._pendingStop = pending
     try {
-      return await this._pendingStop
+      return await pending
+    } catch (error) {
+      if (generation === this._generation) {
+        this._forceStop(error instanceof Error ? error : new Error('Error al detener la captura.'))
+      }
+      throw error
     } finally {
-      this._pendingStop = null
+      if (this._pendingStop === pending) this._pendingStop = null
     }
   }
 
-  private _doStopInner(): Promise<CaptureResult> {
+  private async _doStopInner(): Promise<CaptureResult> {
     this._transition('stopping')
 
     // Cancelar timer de duración
@@ -266,18 +271,25 @@ export class CaptureController {
     }
 
     const gen = this._generation
+    // El timer puede demorarse durante una suspensión. Medir al detener evita contar la entrega de onstop.
+    const durationMs = this._now() - this._startTime
+    if (durationMs > this._maxDuration * 1000) {
+      throw new MaxDurationExceededError(this._maxDuration)
+    }
 
     // Si el recorder ya está parado (ej. onerror), ensamblar directamente.
     if (recorder.state === 'inactive') {
-      const result = this._assembleResult(gen)
+      const result = this._assembleResult(gen, durationMs)
       return Promise.resolve(result!)
     }
 
     // Esperar el último fragmento. MediaRecorder dispara dataavailable + onstop de forma asíncrona.
     return new Promise((resolve, reject) => {
+      this._cancelStop = () => reject(new DOMException('Captura cancelada.', 'AbortError'))
       recorder.onstop = () => {
+        this._cancelStop = null
         try {
-          const result = this._assembleResult(gen)
+          const result = this._assembleResult(gen, durationMs)
           resolve(result!)
         } catch (e) {
           reject(e)
@@ -287,8 +299,7 @@ export class CaptureController {
     })
   }
 
-  private _assembleResult(gen: number): CaptureResult {
-    const durationMs = this._now() - this._startTime
+  private _assembleResult(gen: number, durationMs: number): CaptureResult {
     const durationSeconds = Math.round(durationMs / 1000) / 1000
 
     const blob = new Blob(this._chunks, { type: this._recorder?.mimeType ?? 'audio/webm' })
@@ -350,21 +361,20 @@ export class CaptureController {
     this._forceStop(error)
   }
 
+  private _trackEnded = () => this._forceStop(new Error('El micrófono se desconectó.'))
+
   private _forceStop(error?: Error): void {
+    this._generation++
+    this._cancelStop?.()
+    this._cancelStop = null
     if (this._timerId !== null) {
       clearTimeout(this._timerId)
       this._timerId = null
     }
 
     const recorder = this._recorder
-    if (recorder && recorder.state !== 'inactive') {
-      // Quitar onstop para no ensamblar resultado.
-      recorder.onstop = null
-      recorder.onerror = null
-      recorder.stop()
-    }
-
     this._cleanup()
+    if (recorder && recorder.state !== 'inactive') recorder.stop()
 
     if (error) {
       this._transition('error', undefined, error)
@@ -374,6 +384,11 @@ export class CaptureController {
   }
 
   private _cleanup(): void {
+    if (this._recorder) {
+      this._recorder.ondataavailable = null
+      this._recorder.onstop = null
+      this._recorder.onerror = null
+    }
     this._recorder = null
     this._chunks = []
     if (this._stream) {
@@ -384,6 +399,7 @@ export class CaptureController {
 
   private _stopTracks(stream: MediaStream): void {
     for (const track of stream.getTracks()) {
+      track.removeEventListener('ended', this._trackEnded)
       track.stop()
     }
   }

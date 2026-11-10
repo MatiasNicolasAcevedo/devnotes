@@ -96,7 +96,7 @@ export interface VoiceDraftState {
  * - Dirty check: si el texto difiere del ACK, pide resolver antes de cambiar de nota.
  * - Conflicto 409: conserva borrador, ofrece copiar/recargar/nueva nota.
  */
-export function useVoiceDraft() {
+export function useVoiceDraft(sessionIsCurrent?: () => boolean) {
   const [state, setState] = useState<VoiceDraftState>({
     text: '',
     documentState: 'new',
@@ -116,11 +116,35 @@ export function useVoiceDraft() {
   useLayoutEffect(() => {
     committedGeneration.current = state.generation
   }, [state.generation])
+  const isCurrentGeneration = useCallback(
+    (generation: number) =>
+      committedGeneration.current === generation && sessionIsCurrent?.() !== false,
+    [sessionIsCurrent],
+  )
 
-  const transcribeMutation = useTranscribeAudio()
-  const createMutation = useCreateVoiceNote()
-  const updateMutation = useUpdateVoiceNote()
-  const deleteMutation = useDeleteVoiceNote()
+  const transcribeMutation = useTranscribeAudio(sessionIsCurrent)
+  const createMutation = useCreateVoiceNote(sessionIsCurrent)
+  const updateMutation = useUpdateVoiceNote(sessionIsCurrent)
+  const deleteMutation = useDeleteVoiceNote(sessionIsCurrent)
+  const transcription = useRef<AbortController | null>(null)
+  const { reset: resetTranscription } = transcribeMutation
+  const { reset: resetCreate } = createMutation
+  const { reset: resetUpdate } = updateMutation
+  const { reset: resetDelete } = deleteMutation
+  const stopTranscription = useCallback(() => {
+    const pending = transcription.current
+    transcription.current = null
+    pending?.abort()
+    resetTranscription()
+  }, [resetTranscription])
+
+  useLayoutEffect(
+    () => () => {
+      transcription.current?.abort()
+      transcription.current = null
+    },
+    [],
+  )
 
   const isBusy = useMemo(() => {
     return (
@@ -161,11 +185,7 @@ export function useVoiceDraft() {
       ...prev,
       text: normalized,
       documentState:
-        normalized.replace(/\s/g, '').length > 0
-          ? 'dirty'
-          : prev.documentState === 'new'
-            ? 'new'
-            : 'dirty',
+        normalized.length > 0 ? 'dirty' : prev.documentState === 'new' ? 'new' : 'dirty',
       conflict: null,
     }))
   }, [])
@@ -238,34 +258,66 @@ export function useVoiceDraft() {
   }, [])
 
   /** Inicia la transcripción del blob capturado. */
-  const transcribe = useCallback(() => {
-    const { captureResult, generation } = state
-    if (!captureResult || !captureResult.blob) return
+  const transcribe = useCallback(
+    (captureResult = state.captureResult) => {
+      const { generation } = state
+      if (!captureResult || transcription.current || sessionIsCurrent?.() === false) return
+      const controller = new AbortController()
+      transcription.current = controller
 
-    // Incrementar generación para rastrear esta operación
-    const currentGen = generation + 1
-    setState((prev) => ({
-      ...prev,
-      captureState: 'stopping',
-      generation: currentGen,
-    }))
+      // Incrementar generación para rastrear esta operación
+      const currentGen = generation + 1
+      setState((prev) => ({
+        ...prev,
+        captureState: 'stopping',
+        captureResult,
+        captureError: null,
+        generation: currentGen,
+      }))
 
-    transcribeMutation.mutate(captureResult.blob, {
-      onSuccess: (response) => {
-        applyTranscription(response.text, currentGen)
-      },
-      onError: (error) => {
-        setState((prev) => {
-          if (prev.generation !== currentGen) return prev
-          return {
-            ...prev,
-            captureState: 'error',
-            captureError: error instanceof Error ? error : new Error('Error de transcripción.'),
-          }
-        })
-      },
-    })
-  }, [state, applyTranscription, transcribeMutation])
+      transcribeMutation.mutate(
+        { file: captureResult.blob, signal: controller.signal },
+        {
+          onSuccess: (response) => {
+            if (transcription.current !== controller || sessionIsCurrent?.() === false) return
+            applyTranscription(response.text, currentGen)
+          },
+          onError: (error) => {
+            if (transcription.current !== controller || sessionIsCurrent?.() === false) return
+            setState((prev) => {
+              if (prev.generation !== currentGen) return prev
+              return {
+                ...prev,
+                captureState: 'error',
+                captureError: error instanceof Error ? error : new Error('Error de transcripción.'),
+              }
+            })
+          },
+          onSettled: () => {
+            if (transcription.current !== controller) return
+            transcription.current = null
+            resetTranscription()
+          },
+        },
+      )
+    },
+    [state, applyTranscription, transcribeMutation, sessionIsCurrent, resetTranscription],
+  )
+
+  const clearAudio = useCallback(
+    (discard = true) => {
+      stopTranscription()
+      setState((prev) => ({
+        ...prev,
+        captureState: 'idle',
+        captureResult: discard ? null : prev.captureResult,
+        captureError: null,
+        elapsedSeconds: 0,
+        elapsedFormatted: '00:00',
+      }))
+    },
+    [stopTranscription],
+  )
 
   /**
    * Guarda el borrador y resuelve con el resultado, para que quien lo invoca (p. ej. «Guardar y
@@ -277,13 +329,18 @@ export function useVoiceDraft() {
    * La respuesta solo se aplica si la generación no cambió (reset/carga de otra nota en medio).
    */
   const save = useCallback(async (): Promise<SaveOutcome> => {
-    if (isTextEmpty || createMutation.isPending || updateMutation.isPending) return 'skipped'
+    if (
+      isTextEmpty ||
+      createMutation.isPending ||
+      updateMutation.isPending ||
+      sessionIsCurrent?.() === false
+    )
+      return 'skipped'
 
     const { noteId, revision, text, generation } = state
     setState((prev) => ({ ...prev, documentState: 'saving', conflict: null }))
 
     // Solo se aplica si el borrador sigue siendo el mismo documento que inició la operación.
-    const isCurrent = () => committedGeneration.current === generation
     const applyIfCurrent = (next: (prev: VoiceDraftState) => VoiceDraftState) => {
       setState((prev) => (prev.generation === generation ? next(prev) : prev))
     }
@@ -293,7 +350,7 @@ export function useVoiceDraft() {
         !noteId || revision == null
           ? await createMutation.mutateAsync(text)
           : await updateMutation.mutateAsync({ id: noteId, text, expectedRevision: revision })
-      if (!isCurrent()) return 'stale'
+      if (!isCurrentGeneration(generation)) return 'stale'
       applyIfCurrent((prev) => ({
         ...prev,
         noteId: response.id,
@@ -302,7 +359,7 @@ export function useVoiceDraft() {
       }))
       return 'saved'
     } catch (error) {
-      if (!isCurrent()) return 'stale'
+      if (!isCurrentGeneration(generation)) return 'stale'
       if (noteId != null && isNotFound(error)) {
         applyIfCurrent((prev) => ({
           ...prev,
@@ -321,7 +378,7 @@ export function useVoiceDraft() {
       }))
       return conflict ? 'conflict' : 'error'
     }
-  }, [state, isTextEmpty, createMutation, updateMutation])
+  }, [state, isTextEmpty, createMutation, updateMutation, sessionIsCurrent, isCurrentGeneration])
 
   /**
    * Elimina la nota actual con CAS (solo guardada y clean) y espera el 204.
@@ -329,21 +386,26 @@ export function useVoiceDraft() {
    */
   const deleteNote = useCallback(async (): Promise<DeleteOutcome> => {
     const { noteId, revision, documentState, generation } = state
-    if (!noteId || revision == null || documentState !== 'clean' || deleteMutation.isPending) {
+    if (
+      !noteId ||
+      revision == null ||
+      documentState !== 'clean' ||
+      deleteMutation.isPending ||
+      sessionIsCurrent?.() === false
+    ) {
       return 'skipped'
     }
 
     setState((prev) => ({ ...prev, documentState: 'deleting', conflict: null }))
 
     // Solo se aplica si el borrador sigue siendo el mismo documento que inició la operación.
-    const isCurrent = () => committedGeneration.current === generation
     const applyIfCurrent = (next: (prev: VoiceDraftState) => VoiceDraftState) => {
       setState((prev) => (prev.generation === generation ? next(prev) : prev))
     }
 
     try {
       await deleteMutation.mutateAsync({ id: noteId, expectedRevision: revision })
-      if (!isCurrent()) return 'stale'
+      if (!isCurrentGeneration(generation)) return 'stale'
       applyIfCurrent((prev) => ({
         ...prev,
         text: '',
@@ -360,7 +422,7 @@ export function useVoiceDraft() {
       }))
       return 'deleted'
     } catch (error) {
-      if (!isCurrent()) return 'stale'
+      if (!isCurrentGeneration(generation)) return 'stale'
       let outcome: DeleteOutcome
       if (isConflict(error)) {
         applyIfCurrent((prev) => ({ ...prev, documentState: 'clean', conflict: 'delete' }))
@@ -380,7 +442,7 @@ export function useVoiceDraft() {
       }
       return outcome
     }
-  }, [state, deleteMutation])
+  }, [state, deleteMutation, sessionIsCurrent, isCurrentGeneration])
 
   /** Cierra el conflicto sin cambiar el borrador (sigue dirty; un nuevo guardado vuelve a usar CAS). */
   const dismissConflict = useCallback(() => {
@@ -414,6 +476,11 @@ export function useVoiceDraft() {
    * respuestas en vuelo del documento anterior se ignoren.
    */
   const reset = useCallback(() => {
+    stopTranscription()
+    resetCreate()
+    resetUpdate()
+    resetDelete()
+    committedGeneration.current++
     setState((prev) => ({
       text: '',
       documentState: 'new',
@@ -427,7 +494,7 @@ export function useVoiceDraft() {
       generation: prev.generation + 1,
       conflict: null,
     }))
-  }, [])
+  }, [resetCreate, resetDelete, resetUpdate, stopTranscription])
 
   /** Actualiza el estado de captura desde useVoiceRecorder. */
   const setCaptureState = useCallback(
@@ -441,8 +508,8 @@ export function useVoiceDraft() {
       setState((prev) => ({
         ...prev,
         captureState,
-        captureResult: captureResult ?? prev.captureResult,
-        captureError: captureError ?? prev.captureError,
+        captureResult: captureResult === undefined ? prev.captureResult : captureResult,
+        captureError: captureError === undefined ? prev.captureError : captureError,
         elapsedSeconds: elapsedSeconds ?? prev.elapsedSeconds,
         elapsedFormatted: elapsedFormatted ?? prev.elapsedFormatted,
       }))
@@ -455,6 +522,7 @@ export function useVoiceDraft() {
     isBusy,
     isTextEmpty,
     isDirty,
+    isCurrentGeneration,
     setText,
     loadNote,
     transcribe,
@@ -464,6 +532,7 @@ export function useVoiceDraft() {
     detachAsNewNote,
     copyToClipboard,
     reset,
+    clearAudio,
     setCaptureState,
     transcribeMutation,
     createMutation,

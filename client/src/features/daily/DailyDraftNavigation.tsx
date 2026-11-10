@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import Alert from '@mui/material/Alert'
 import Button from '@mui/material/Button'
 import Stack from '@mui/material/Stack'
@@ -15,30 +15,57 @@ function routeDate(pathname: string) {
 /** Se crea al visitar notas y permanece sobre el shell hasta terminar la sesión. */
 export function DailyDraftWorkspace({
   owner,
+  outletOverride,
+  bypassLinkFlush = false,
+  navigationRoot,
   children,
 }: {
   owner: string
+  outletOverride?: ReactNode
+  bypassLinkFlush?: boolean
+  navigationRoot?: RefObject<HTMLDivElement | null>
   children: (outlet: ReactNode) => ReactNode
 }) {
   const { pathname } = useLocation()
-  const requestedDate = routeDate(pathname)
+  const requestedDate = outletOverride === undefined ? routeDate(pathname) : null
   const [workspace, setWorkspace] = useState({ owner, initialDate: requestedDate })
   const initialDate = workspace.owner === owner ? workspace.initialDate : requestedDate
   if (workspace.owner !== owner || (!initialDate && requestedDate)) {
     setWorkspace({ owner, initialDate: requestedDate })
   }
-  if (!owner || !initialDate) return children(<Outlet />)
+  if (!owner || !initialDate) return children(outletOverride ?? <Outlet />)
   return (
     <DailyDraftProvider key={owner} owner={owner} initialDate={initialDate}>
-      <DailyDraftNavigation>{children(<DailyDraftOutlet />)}</DailyDraftNavigation>
+      <DailyDraftNavigation bypassLinkFlush={bypassLinkFlush} navigationRoot={navigationRoot}>
+        {children(
+          <DailyDraftOutlet outletOverride={outletOverride} bypassGuard={bypassLinkFlush} />,
+        )}
+      </DailyDraftNavigation>
     </DailyDraftProvider>
   )
 }
 
-function DailyDraftNavigation({ children }: { children: ReactNode }) {
+function DailyDraftNavigation({
+  children,
+  bypassLinkFlush,
+  navigationRoot,
+}: {
+  children: ReactNode
+  bypassLinkFlush: boolean
+  navigationRoot?: RefObject<HTMLDivElement | null>
+}) {
   const ctx = useDailyDraftContext()
   const navigate = useNavigate()
   const busy = useRef(false)
+  const fallbackRoot = useRef<HTMLDivElement>(null)
+  const active = useRef(false)
+
+  useEffect(() => {
+    active.current = true
+    return () => {
+      active.current = false
+    }
+  }, [])
 
   useEffect(() => {
     const handler = (event: BeforeUnloadEvent) => {
@@ -50,60 +77,78 @@ function DailyDraftNavigation({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('beforeunload', handler)
   }, [ctx.isDirty, ctx.isSaving])
 
-  const captureNavigation = (event: MouseEvent<HTMLDivElement>) => {
-    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)
-      return
-    if (!(event.target instanceof Element)) return
-    const link = event.target.closest('a[href]')
-    if (
-      !(link instanceof HTMLAnchorElement) ||
-      link.target === '_blank' ||
-      link.hasAttribute('download')
-    )
-      return
-    const destination = new URL(link.href)
-    if (destination.origin !== window.location.origin) return
-    if (ctx.navigationLocked || busy.current) {
+  useEffect(() => {
+    if (bypassLinkFlush) return
+    const root = navigationRoot?.current ?? fallbackRoot.current
+    const captureNavigation = (event: MouseEvent) => {
+      if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)
+        return
+      if (!(event.target instanceof Element)) return
+      const link = event.target.closest('a[href]')
+      if (
+        !(link instanceof HTMLAnchorElement) ||
+        link.target === '_blank' ||
+        link.hasAttribute('download')
+      )
+        return
+      const destination = new URL(link.href)
+      if (destination.origin !== window.location.origin) return
+      if (ctx.navigationLocked || busy.current) {
+        event.preventDefault()
+        event.stopPropagation()
+        return
+      }
+      if (!ctx.isDirty && !ctx.isSaving) return
       event.preventDefault()
       event.stopPropagation()
-      return
+      busy.current = true
+      void ctx
+        .flush()
+        .then(() => {
+          if (active.current)
+            void navigate(destination.pathname + destination.search + destination.hash)
+        })
+        .catch(() => {
+          // El coordinador conserva borrador y error; la ruta sigue en la nota original.
+        })
+        .finally(() => {
+          busy.current = false
+        })
     }
-    if (!ctx.isDirty && !ctx.isSaving) return
-    event.preventDefault()
-    event.stopPropagation()
-    busy.current = true
-    void ctx
-      .flush()
-      .then(() => navigate(destination.pathname + destination.search + destination.hash))
-      .catch(() => {
-        // El coordinador conserva borrador y error; la ruta sigue en la nota original.
-      })
-      .finally(() => {
-        busy.current = false
-      })
-  }
+    root?.addEventListener('click', captureNavigation, true)
+    return () => root?.removeEventListener('click', captureNavigation, true)
+  }, [bypassLinkFlush, ctx, navigate, navigationRoot])
 
-  return <div onClickCapture={captureNavigation}>{children}</div>
+  return navigationRoot ? children : <div ref={fallbackRoot}>{children}</div>
 }
 
-function DailyDraftOutlet() {
+function DailyDraftOutlet({
+  outletOverride,
+  bypassGuard,
+}: {
+  outletOverride?: ReactNode
+  bypassGuard: boolean
+}) {
   const ctx = useDailyDraftContext()
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const date = routeDate(pathname)
   const onActiveNote = date === ctx.activeDate
-  const pending = (ctx.isDirty || ctx.isSaving || ctx.navigationLocked) && !onActiveNote
+  const pending =
+    !bypassGuard && (ctx.isDirty || ctx.isSaving || ctx.navigationLocked) && !onActiveNote
   const [confirmDiscard, setConfirmDiscard] = useState(false)
 
   useEffect(() => {
+    if (outletOverride !== undefined) return
     if (!pending && date && date !== ctx.activeDate) {
       void ctx.navigateToDate(date).catch(() => {})
     }
     if (pathname === '/notes' && onActiveNote) {
       void navigate(`/notes/${ctx.activeDate}`, { replace: true })
     }
-  }, [ctx, date, pending, pathname, onActiveNote, navigate])
+  }, [ctx, date, pending, pathname, onActiveNote, navigate, outletOverride])
 
+  if (outletOverride !== undefined) return outletOverride
   if (pending)
     return (
       <Alert severity="warning">

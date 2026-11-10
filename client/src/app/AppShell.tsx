@@ -7,32 +7,56 @@ import Link from '@mui/material/Link'
 import Stack from '@mui/material/Stack'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
-import { Fragment } from 'react'
-import { Link as RouterLink } from 'react-router'
+import { useRef, type ReactNode, type RefObject } from 'react'
+import { Link as RouterLink, matchPath, useLocation } from 'react-router'
 import { SessionAlerts } from '../features/auth/SessionAlerts'
 import { SessionControls } from '../features/auth/SessionControls'
 import { useSession } from '../features/auth/sessionContext'
 import { DailyDraftWorkspace } from '../features/daily/DailyDraftNavigation'
-import type { ReactNode } from 'react'
+import { VoiceDraftNavigation } from '../features/voice/VoiceDraftNavigation'
+import { VoiceDraftProvider } from '../features/voice/VoiceDraftProvider'
 
 /**
  * Estructura común: barra superior con la sesión y contenido. Las rutas se remontan al cambiar la identidad, así que
  * el estado local de una pantalla nunca pasa de un usuario a otro.
  */
 export function AppShell() {
-  const { user } = useSession()
+  const { user, status } = useSession()
+  const { pathname } = useLocation()
+  const owner = user?.id ?? ''
+  const voiceActive = status !== 'loading' && matchPath('/voice', pathname) != null
+  const navigationRoot = useRef<HTMLDivElement>(null)
   return (
-    <DailyDraftWorkspace owner={user?.id ?? ''}>
-      {(outlet) => <AppShellContent outlet={outlet} />}
-    </DailyDraftWorkspace>
+    <AppShellContent navigationRoot={navigationRoot}>
+      <VoiceDraftProvider key={owner} owner={owner} active={voiceActive}>
+        <VoiceDraftNavigation>
+          {(outletOverride, bypassDailyLinks) => (
+            <DailyDraftWorkspace
+              owner={owner}
+              outletOverride={outletOverride}
+              bypassLinkFlush={bypassDailyLinks}
+              navigationRoot={navigationRoot}
+            >
+              {(outlet) => outlet}
+            </DailyDraftWorkspace>
+          )}
+        </VoiceDraftNavigation>
+      </VoiceDraftProvider>
+    </AppShellContent>
   )
 }
 
-function AppShellContent({ outlet }: { outlet: ReactNode }) {
-  const { status, user } = useSession()
+function AppShellContent({
+  navigationRoot,
+  children,
+}: {
+  navigationRoot: RefObject<HTMLDivElement | null>
+  children: ReactNode
+}) {
+  const { status } = useSession()
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Box ref={navigationRoot} sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <AppBar position="static" elevation={0}>
         <Toolbar sx={{ gap: 2, flexWrap: 'wrap', py: 1, minHeight: { sm: 56 } }}>
           <Link
@@ -82,7 +106,7 @@ function AppShellContent({ outlet }: { outlet: ReactNode }) {
               <Typography>Verificando sesión…</Typography>
             </Stack>
           ) : (
-            <Fragment key={user?.id ?? 'visitor'}>{outlet}</Fragment>
+            children
           )}
         </Stack>
       </Container>

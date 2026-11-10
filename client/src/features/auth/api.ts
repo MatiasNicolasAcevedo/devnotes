@@ -84,6 +84,9 @@ export async function withCsrfRenewal<T>(
  * Cierra la sesión en el server (204; anónimo con CSRF válido también es 204). Solo un 204 confirma el cierre: 403,
  * red o 5xx no lo afirman. Limpiar cache, obtener CSRF anónimo y navegar corresponde a la UI de sesión.
  */
-export function logout(): Promise<void> {
-  return withCsrfRenewal(() => http.requestVoid(LOGOUT_PATH, { method: 'POST' }))
+export function logout(sessionIsCurrent?: () => boolean): Promise<void> {
+  return withCsrfRenewal(
+    () => http.requestVoid(LOGOUT_PATH, { method: 'POST', sessionIsCurrent }),
+    () => (sessionIsCurrent?.() === false ? Promise.resolve() : renewCsrf()),
+  )
 }
