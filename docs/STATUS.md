@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-036](tasks/T-036-voice-navigation.md) · S-105 / navegación y sesión |
-| Estado | `in_progress` |
-| Acción actual | Implementer ejecuta FULL/APPLICATION para cerrar las correcciones B-1 y B-2. |
+| Estado | `in_review` |
+| Acción actual | Segunda revisión independiente de B-1 y B-2, HEAD/base publicados y gate FULL/APPLICATION. |
 | Rama / PR | codex/t-036-voice-navigation · [PR42](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42) |
 
 T-038: PR41 MERGED y conciliada como done. Evidencia del squash y checks en [T-038](tasks/T-038-reference-preview-fix.md#checkpoint-vigente).
@@ -66,5 +66,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Implementer, sesión nueva. Retomar T-036 en PR42 de MatiasNicolasAcevedo/devnotes, rama codex/t-036-voice-navigation contra main. Leer docs/agents/implementer.md y el checkpoint de docs/tasks/T-036-voice-navigation.md. Confirmar la base publicada y el resultado del FULL/APPLICATION de las correcciones B-1 y B-2, incluida la limpieza. Con gate verde, publicar en el mismo PR y dejar la segunda revisión independiente.
+Reviewer, sesión nueva. Hacer la segunda revisión independiente de T-036 en PR42 de MatiasNicolasAcevedo/devnotes según docs/agents/reviewer.md y docs/tasks/T-036-voice-navigation.md. Confirmar PR OPEN y listo para revisión, rama codex/t-036-voice-navigation contra main, HEAD publicado y verify-required vigente. Verificar base a6210050f0e4c9a8ff98df62c50dbb4aebd995de y FULL/APPLICATION de 9d54e56f06214e230b9e78e03f08603336ac5dde con las fuentes corregidas de 5858c588627c6966b33141fcc74a829a9ce49562, conservado por el cierre solo Markdown. Verificar B-1 y B-2, las dos regresiones y el comportamiento conservado de navegación, ACK, daily y sesión. Publicar el veredicto ligado a HEAD/base y aplicar AUTONOMY solo si el PR resulta elegible.
 ```

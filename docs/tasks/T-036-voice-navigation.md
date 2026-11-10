@@ -1,10 +1,10 @@
 ---
 id: T-036
-status: in_progress
+status: in_review
 priority: P1
 size: M
 executor: junie
-role: implementer
+role: reviewer
 milestone: M2
 product_cycle: I2
 spec: S-105
@@ -58,8 +58,10 @@ Atrás/Adelante y navegación por header no pierden texto, no renderizan destino
 PR42 abierto y listo para revisión en la rama `codex/t-036-voice-navigation`, HEAD de entrada `8699f85fa053dfa2b4d7931b92314840adafab50` y base publicada `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`. Los negativos `npm test -- --run src/features/voice/VoiceDraftNavigation.test.tsx -t 'ignora la recarga|descarta audio que excedió' --reporter=dot` fallaron 2/2 antes de las correcciones (`.orchestrator/t036/review-fix-red.log`).
 
 - Fuentes cerradas en `5858c588627c6966b33141fcc74a829a9ce49562`, árbol `client/src` `5810a64420b0570a5964560d406db71eab64b7b1`, sobre la base publicada anterior. B-1 invalida la recarga al desmontar el editor y verifica sesión/generación al resolver. B-2 valida el tiempo monotónico al detener, libera recursos y descarta el audio excedido con aviso.
-- Gate por ejecutar desde raíz con Git Bash/Node 24 y salida preservada. Comando `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t036-r2 STARTER_E2E_PROJECT=starter-e2e-t036-r2 STARTER_SERVER_TESTS=container bash scripts/verify.sh`. Log local `.orchestrator/t036/full-r2.log`, huellas de HEAD/base/árbol y resumen saneado en `.orchestrator/t036/full-r2-evidence.log`.
-- Ambos proyectos Compose tenían cero recursos por label antes de iniciar. El runner retira el proyecto E2E. Tras la salida, comprobar labels y retirar solo el volumen Maven y red del proyecto verify, y comprobar ambos namespaces vacíos. Siguiente paso con FULL verde y base vigente: publicar corrección y cerrar el traspaso a la segunda revisión.
+- Desde `client/`, `npm test -- --run src/features/voice/VoiceDraftNavigation.test.tsx src/features/daily/DailyDraftNavigation.test.tsx src/features/auth/AuthSession.test.tsx src/features/voice/VoicePage.test.tsx src/features/voice/recorder.test.ts src/features/voice/useVoiceRecorder.test.tsx src/features/voice/useVoiceDraft.test.tsx src/features/voice/VoiceComposer.test.tsx src/app/AppRoutes.test.tsx --reporter=dot` pasó 115/115 (`.orchestrator/t036/review-fix-green.log`). Typecheck, lint y formato de las rutas afectadas pasaron.
+- `bash scripts/verify.sh --policy origin/main` dio FULL/APPLICATION. Comando del gate `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t036-r2 STARTER_E2E_PROJECT=starter-e2e-t036-r2 STARTER_SERVER_TESTS=container bash scripts/verify.sh`. El primer arranque con `exec` sin `env` dio 127 antes de crear recursos. La invocación corregida dio exit 0 en FULL, 04:34:49Z–05:09:00Z. Docs 6 s, backend 520 s (221 Surefire + 210 Failsafe PostgreSQL, Spotless y JaCoCo), cliente 156 s (513/513, cobertura y build) y Playwright 1367 s (21 desktop + 20 mobile).
+- Árbol limpio y huellas iguales antes/después: HEAD verificado `9d54e56f06214e230b9e78e03f08603336ac5dde`, árbol `e641798c04a22b246559560be757b8c689efc9e1`, `client/src` `5810a64420b0570a5964560d406db71eab64b7b1`, misma base publicada. Evidencia saneada en `.orchestrator/t036/full-r2-evidence.log`, log `full-r2.log` SHA-256 `f999369d0ed1aac40cc245e54f95308770894735b091ce851ace7dae1125630e`. El cierre solo cambia Markdown regular y conserva el gate.
+- Ambos proyectos Compose tenían cero recursos antes y después. El runner retiró E2E. Se retiraron `starter-verify-t036-r2_default` y `starter-verify-t036-r2_m2-cache` tras cotejar sus labels exactos. Retoma: segunda revisión independiente de PR42 en sesión nueva.
 
 ## Primera revisión independiente
 
@@ -93,6 +95,8 @@ Implementación publicada en [PR42](https://github.com/MatiasNicolasAcevedo/devn
 | --- | --- | --- | --- |
 | 2026-11-10 | Un resultado persistente del grabador y la identidad variable de `draft` reactivaban la transcripción en cada render. | Consumir una vez la generación de captura en el workspace; reintento explícito y petición abortable. | `npm test -- --run src/features/voice/VoicePage.test.tsx -t 'un stop con resultado'`: rojo 11 POST cuando esperaba 1; verde con un único POST. |
 | 2026-11-10 | El primer montaje por dueño remontaba también la barra de sesión, y la salida con captura podía recibir permiso tardío. | Mantener la barra fuera del subárbol privado y conservar la captura de enlaces daily sobre el shell. Invalidar la generación del permiso y detener tracks tardíos. | `AuthSession.test.tsx`, `DailyDraftNavigation.test.tsx` y `VoiceDraftNavigation.test.tsx`. |
+| 2026-11-10 | B-1. Una recarga confirmada de conflicto aplicaba el GET después de desmontar el editor y descartar el borrador. | Invalidar la operación al desmontar y comprobar sesión y generación antes de aplicar la respuesta. | Regresión de navegación roja → verde y recarga vigente verde en `5858c58`. |
+| 2026-11-10 | B-2. Un temporizador suspendido permitía conservar audio fuera del límite. | Medir el tiempo monotónico al detener y liberar recursos con aviso si excede el máximo. | Regresión de suspensión roja → verde y transcripción explícita de audio válido verde en `5858c58`. |
 
 ## Cierre y siguiente tarea
 
