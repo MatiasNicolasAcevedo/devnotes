@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-036](tasks/T-036-voice-navigation.md) · S-105 / navegación y sesión |
-| Estado | `mergeable` |
-| Acción actual | La cuarta revisión independiente cerró B-4 sin bloqueantes y aceptó el gate sustituto del dueño. Consultar el veredicto y los checks del HEAD vigente en PR42 y confirmar el merge antes de habilitar T-037. |
-| Rama / PR | codex/t-036-voice-navigation · [PR42](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42) |
+| Tarea y contrato | [T-037](tasks/T-037-voice-release.md) · S-105 / recorrido integrado y entrega M2-RC1 |
+| Estado | `in_progress` |
+| Acción actual | Implementer: recorridos Playwright `voice:` con micrófono sintético, API/DB/OIDC reales y doble externo; después gate de cierre y evidencia VO-01…07 en VOICE-RELEASE. |
+| Rama / PR | codex/t-037-voice-release · PR pendiente |
+
+T-036: PR42 MERGED, squash `289dd66acfad5bb632ad3270a90963c17d239f96`, confirmado en GitHub el 2026-11-10 (mergedAt 2026-11-10T06:39:13Z). Conciliada como done en [T-036](tasks/T-036-voice-navigation.md#checkpoint-vigente).
 
 T-038: PR41 MERGED y conciliada como done. Evidencia del squash y checks en [T-038](tasks/T-038-reference-preview-fix.md#checkpoint-vigente).
 

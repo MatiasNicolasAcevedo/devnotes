@@ -52,9 +52,9 @@ Quince contratos de producto I1 completados (T-003 y T-014 mergeadas). T-021 MER
 
 ## Próximo · I2 / M2-RC1 voz
 
-En curso: [T-036](tasks/T-036-voice-navigation.md). Después del merge sigue T-037. [S-105 v2](specs/S-105-voice-notes.md) y [VOICE-RELEASE](VOICE-RELEASE.md) fijan el contrato y la entrega.
+En curso: [T-037](tasks/T-037-voice-release.md), última tarea de M2-RC1; al entregarla vuelve a frontera. [S-105 v2](specs/S-105-voice-notes.md) y [VOICE-RELEASE](VOICE-RELEASE.md) fijan el contrato y la entrega.
 
-El dueño decidió priorizar voz el 2026-10-31. T-017, T-027…T-035 y T-038 están conciliadas como MERGED. T-037 espera T-036 y tiene contrato completo. WIP1 y revisión independiente.
+El dueño decidió priorizar voz el 2026-10-31. T-017, T-027…T-036 y T-038 están conciliadas como MERGED. T-037 en curso con contrato completo. WIP1 y revisión independiente.
 
 | Orden | Contrato / resultado | Dependencia |
 |---|---|---|
@@ -77,6 +77,8 @@ Controles de cinco/diez por Junie tras T-030/T-035; retorno a frontera al entreg
 Hallazgo fuera de alcance de T-035 (5.ª revisión PR40, 2026-11-09), heredado de T-034 y presente en main `085dc76`: en `client/src/features/voice/VoiceComposer.tsx` el efecto que llama a `draft.transcribe()` depende de `draft` (objeto nuevo en cada render) y de `recorder.result`, que sigue fijado tras detener; cada render vuelve a transcribir, incrementa la generación y lanza otra petición hasta que llega la respuesta. Una prueba descartable con el grabador simulado devolviendo `result` en `idle` colgó el worker de Vitest (bucle de render). Riesgo: varias transcripciones por intento (S-105 §4: una sola petición) y cupo Groq. Las pruebas actuales simulan el grabador sin resultado y no lo detectan. Corregir antes de T-037, con prueba roja «un stop con resultado dispara exactamente un POST de transcripción». **Asignado a T-036** por decisión del dueño (2026-11-09): paso 4 y aceptación de su contrato. No confundir con el bucle de render del efecto de sincronización de captura, ya corregido en T-035 (8ac04b4).
 
 Prueba faltante no bloqueante de T-035 (8.ª revisión PR40, 2026-11-09, sin pérdida de datos): la guarda `if (prev.conflict != null) return prev` de `loadNote` (`client/src/features/voice/useVoiceDraft.ts:183`) no tiene prueba propia; quitarla deja la suite verde porque los casos con conflicto `update` ya son `dirty`. Solo decide con borrador `clean` y conflicto `delete`: si el 409 del DELETE llega antes que un refetch del detalle en vuelo con revisión nueva, sin la guarda el diálogo se cerraría solo y el editor mostraría la revisión remota (S-105 §7: nunca actualizar automáticamente; no hay texto sin guardar en riesgo). Añadir en VoicePage.test.tsx la variante de «B-1 … durante el borrado» liberando primero el DELETE (409) y después el GET, que exija el diálogo abierto y «Texto 1»; debe fallar al quitar la guarda.
+
+Hallazgo fuera de alcance de T-037 (2026-11-10). `DailyNoteService.nowMicros()` (`server/src/main/java/com/example/devnotes/daily/application/DailyNoteService.java`) repite el patrón que T-037 corrigió en voz: `Instant.ofEpochMilli(clock.millis()).plusNanos(...)` suma dos veces la fracción de milisegundos y adelanta `createdAt`/`updatedAt` hasta casi 1 s, en lugar de truncar a microsegundos. Las pruebas usan instantes sin fracción y no lo detectan. Riesgo: marcas de tiempo de daily y versiones desplazadas y orden temporal no fiable. Corregir con prueba unitaria roja con reloj fijo de fracción no nula, como `VoiceNoteServiceTest`.
 
 Hallazgo de pruebas daily fuera de T-036. En el cliente Linux del gate, MSW registró un PUT sin handler en el caso existente «discard no revive borrador por ACK tardío» de `useDailyNote.test.tsx`. La suite pasó 511/511. El caso depende de una espera de 100 ms y solo instala handlers GET.
 

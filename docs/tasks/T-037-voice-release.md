@@ -1,6 +1,6 @@
 ---
 id: T-037
-status: draft
+status: in_progress
 priority: P1
 size: M
 executor: junie
@@ -54,11 +54,22 @@ Iteración browser desde raíz/Git Bash, después de T-031: `DEVNOTES_VOICE_ENAB
 
 ## Checkpoint vigente
 
-2026-10-31: contrato de frontera preparado en T-017 sobre main 0d976dc2187cb2a07061c3db48130c334b1e471b. Sin implementación, PR, migración aplicada ni tests de esta tarea ejecutados. Rol/modelo/herramienta/esfuerzo del ejecutor se registran al tomarla; no heredar capacidades Junie de frontera.
+2026-11-10. `in_progress`. Implementer en sesión nueva, Claude Code (Claude Opus 5.5, `claude-opus-5-5`, PowerShell/Git Bash/Git/gh/Node 24.21.0/JDK 21/Maven/Docker; esfuerzo no expuesto). Dependencia satisfecha: `gh pr view 42 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` devolvió MERGED, squash `289dd66acfad5bb632ad3270a90963c17d239f96`, `mergedAt` 2026-11-10T06:39:13Z; T-036 conciliada como done en esta rama. Base `main` `289dd66`.
+
+Impacto. Comportamiento/API: la transcripción acepta el WebM real de MediaRecorder (antes rechazaba todo audio de navegador con 400) y `createdAt`/`updatedAt` de voz usan el instante UTC truncado a microsegundos (antes adelantado hasta casi 1 s, con orden de la lista incorrecto). Sin cambios de contrato HTTP, permisos, esquema ni UI. Harness: `scripts/e2e.sh` levanta también `voice-provider`, por lo que el perfil del diff es **STARTER**.
+
+- Hecho. `e2e/fixtures/voice-fixture.ts` (flags de micrófono sintético de Chromium, permisos `microphone`/`clipboard-*` solo para `http://localhost`, sonda de solo lectura de tracks, escenarios del doble por la red privada) y `e2e/tests/voice.spec.ts` con dos recorridos `voice:`. Tres defectos corregidos con rojo → verde; ver [Correcciones significativas](#correcciones-significativas).
+- Iteración desde la raíz con `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false STARTER_E2E_PROJECT=starter-e2e-t037-iter bash scripts/e2e.sh --grep "voice:" --project desktop|mobile`: desktop 2/2 y mobile 2/2 exit 0 con las fuentes finales del spec (logs `.orchestrator/t037/iter5.log`, `iter6.log`; el segundo recorrido desktop pasó en `iter3.log`, antes del arreglo de reloj). Cleanup propio por labels comprobado sin restos.
+- Backend dirigido desde `server/`: `VoiceTranscriptionServiceTest`, `VoiceNoteServiceTest` y `GroqTranscriptionClientTest` verdes; Failsafe `VoiceTranscriptionApiIT` 8/8, `VoiceNoteServiceIT` 24/24 y `VoiceNoteApiIT` 12/12.
+- Pendiente. Gate STARTER único con fuentes quietas: `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t037 STARTER_E2E_PROJECT=starter-e2e-t037 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter`, log en `.orchestrator/t037/starter-gate.log`. Recursos propios: proyectos Compose `starter-verify-t037` y `starter-e2e-t037`, limpiados por el propio script. Después, evidencia VO-01…07 en VOICE-RELEASE, PR y revisión independiente.
 
 ## Correcciones significativas
 
-Sin correcciones de implementación. Registrar aquí únicamente problema/causa, arreglo y prueba/SHA cuando ocurran.
+| Fecha | Problema/causa | Arreglo | Evidencia |
+| --- | --- | --- | --- |
+| 2026-11-10 | `scripts/e2e.sh` corre el runner con `--no-deps` y su `up --wait` no incluía `voice-provider`: el doble nunca arrancaba (`getaddrinfo ENOTFOUND voice-provider`). | Añadir `voice-provider` al `up --wait`; regresión estática que exige todo `depends_on` del runner en esa lista. | E2E `iter1.log` rojo; `node --test scripts/ci/e2e-arguments.test.mjs` rojo (`tooling-red.log`) → 20/20 (`tooling-green.log`). |
+| 2026-11-10 | El backend exigía una cabecera RIFF con `webm` en el offset 8; WebM es EBML, y todo audio de Chromium recibía 400 `VOICE_INVALID_REQUEST`. Los IT usaban la misma cabecera ficticia. | Leer un prefijo acotado y exigir la firma EBML con DocType `webm` dentro del tamaño declarado; RIFF, `matroska`, truncados y VINT inválidos se rechazan sin llamar al proveedor. Fixture IT con la cabecera de MediaRecorder. | E2E `iter2.log` 400; `VoiceTranscriptionServiceTest` rojo (`webm-red.log`) → verde; `VoiceTranscriptionApiIT` 8/8. |
+| 2026-11-10 | `VoiceNoteService.nowMicros()` sumaba dos veces la fracción de milisegundos y adelantaba `createdAt` hasta casi 1 s; la nota más nueva podía listarse después. | `clock.instant().truncatedTo(MICROS)` en una sola lectura. Daily repite el patrón, fuera de alcance: BACKLOG. | E2E `iter4.log` orden invertido; `VoiceNoteServiceTest` rojo `21.946Z` en vez de `20.973456Z` (`clock-red.log`) → verde; IT de voz 36/36. |
 
 ## Cierre y siguiente tarea
 
