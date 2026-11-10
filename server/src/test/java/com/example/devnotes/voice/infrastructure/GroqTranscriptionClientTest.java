@@ -136,7 +136,8 @@ class GroqTranscriptionClientTest {
     private static String checkGroqRequest(HttpExchange exchange, byte[] audio) throws IOException {
         // ISO-8859-1 preserves each byte while locating the ASCII multipart framing.
         String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.ISO_8859_1);
-        if (!"POST".equals(exchange.getRequestMethod()) || !"/transcribe".equals(exchange.getRequestURI().toString())) {
+        if (!"POST".equals(exchange.getRequestMethod())
+                || !"/transcribe".equals(exchange.getRequestURI().toString())) {
             return "wrong method or target";
         }
         if (!List.of("Bearer fake-key").equals(exchange.getRequestHeaders().get("Authorization"))) {
@@ -150,7 +151,9 @@ class GroqTranscriptionClientTest {
         String delimiter = "--" + boundary.group(1);
         String opening = delimiter + "\r\n";
         String closing = "\r\n" + delimiter + "--\r\n";
-        if (!body.startsWith(opening) || !body.endsWith(closing) || body.length() < opening.length() + closing.length()) {
+        if (!body.startsWith(opening)
+                || !body.endsWith(closing)
+                || body.length() < opening.length() + closing.length()) {
             return "invalid opening or closing multipart delimiter";
         }
 

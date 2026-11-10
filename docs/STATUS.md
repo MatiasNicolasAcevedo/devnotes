@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-048](tasks/T-048-groq-multipart-fix.md) · S-105 / multipart saliente a Groq |
-| Estado | `changes_requested` |
-| Acción actual | Implementer corrige B-1 de formato en el test del multipart, vuelve a ejecutar Spotless y la clase dirigida y publica en PR47. |
+| Estado | `in_review` |
+| Acción actual | Nueva sesión reviewer verifica el cierre de B-1 en el HEAD publicado de PR47 y emite el veredicto independiente. |
 | Rama / PR | `codex/t-048-groq-multipart-fix` · [PR47](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47) |
 
 T-039: [PR46 MERGED y conciliada como done](tasks/T-039-voice-activation.md#checkpoint-vigente). El reensayo con el dueño queda en [T-049](tasks/T-049-voice-retest.md) tras el merge de T-048. T-040 espera el reensayo favorable y su PR MERGED.
@@ -72,5 +72,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva de Junie implementer para corregir B-1 de T-048. Leer AGENTS.md, server/AGENTS.md, STATUS, el checkpoint de T-048, el veredicto de PR47, docs/agents/implementer.md y el aplazamiento de FULL en TESTING. Confirmar PR47 abierto y HEAD/base publicados. Aplicar el formato requerido por Spotless al test sin cambiar su comportamiento. Verificar spotless:check y GroqTranscriptionClientTest con Maven Wrapper/JDK 21, docs-check, diff y clasificación. Publicar en la misma rama y devolver a una nueva sesión reviewer con evidencia y verify-required del HEAD vigente. T-049 depende de T-048 MERGED. FULL integrado después de T-044 MERGED.
+Sesión nueva de Junie reviewer para la segunda revisión de T-048 en PR47. Leer AGENTS.md, server/AGENTS.md, STATUS, el checkpoint y la evidencia de B-1 de T-048, el veredicto anterior de PR47, docs/agents/reviewer.md y el aplazamiento de FULL en TESTING. Confirmar PR47 abierto contra main, HEAD/base publicados y verify-required verde sobre el HEAD vigente. Revisar el diff publicado y comprobar que la corrección desde be3f6d8 solo reformatea las dos condiciones de checkGroqRequest. Verificar spotless:check y GroqTranscriptionClientTest con Maven Wrapper/JDK 21, docs-check, diff y clasificación. Emitir el veredicto ligado a HEAD/base según el protocolo reviewer. Si es favorable y cumple AUTONOMY, seguir el protocolo merger y confirmar MERGED en GitHub antes de habilitar T-049 en otra sesión. FULL integrado después de T-044 MERGED.
 ```

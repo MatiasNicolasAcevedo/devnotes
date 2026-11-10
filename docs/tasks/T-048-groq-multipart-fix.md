@@ -1,6 +1,6 @@
 ---
 id: T-048
-status: changes_requested
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -49,7 +49,15 @@ Completar la solicitud que DevNotes envía a Groq al detener la grabación. T-03
 
 ## Checkpoint vigente
 
-La revisión independiente de [PR47](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47) confirmó el contrato HTTP y detectó un bloqueante de formato Java en el test nuevo. La siguiente sesión implementer corrige el formato en la misma rama y vuelve a publicar para revisión. FULL diferido por decisión del dueño hasta después de T-044 MERGED.
+B-1 corregido en `codex/t-048-groq-multipart-fix`. La siguiente sesión reviewer verifica el [PR47](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47), sus SHA publicados y `verify-required`, y revisa la corrección de formato. FULL diferido por decisión del dueño hasta después de T-044 MERGED.
+
+### Evidencia de corrección B-1
+
+2026-11-10. Rol implementer en Codex Desktop (GPT-6, variante y esfuerzo no expuestos), con PowerShell, Git Bash, Git, `gh`, Node y Maven Wrapper/JDK 21. Impacto limitado al formato del test, sin cambios de comportamiento, API, permisos, datos ni UI.
+
+- `gh pr view 47` y `git ls-remote` confirmaron PR abierto contra `main`, HEAD `be3f6d8e46c48d43078066f025adcca78e34c98a` y base `c5e37cc4b73ad038ac35edf29c66131416bb4a34`, los mismos SHA del [veredicto B-1](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47#issuecomment-6777375298). [verify-required SUCCESS del HEAD anterior](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42887284379/job/130078842976).
+- Desde `server/`, `./mvnw spotless:apply`, `./mvnw -q spotless:check` y `./mvnw -q test -Dtest=GroqTranscriptionClientTest` terminaron con exit 0. Surefire registró 16 pruebas, 0 fallos, 0 errores y 0 omitidas. El diff Java tiene dos cambios de saltos de línea y sangría en `checkGroqRequest`. Blobs verificados: test `e1eb08a07d641ce9d2f53e22737e0c0a7e43769f`, adaptador `76bbe99c0e55c5c13401f27341bacbe9cac0ad7c`.
+- Desde la raíz, `node scripts/docs-check.mjs`, `git diff --check` y `bash scripts/verify.sh --policy origin/main` terminaron con exit 0. Clasificación `FULL / APPLICATION` por las dos rutas Java del PR. Se aplicó el cierre temporal de TESTING.
 
 ### Evidencia de revisión independiente
 
@@ -76,6 +84,7 @@ FULL iniciado desde raíz con Git Bash explícito y Node 24.21.0: `DEVNOTES_VOIC
 | Fecha / SHA | Problema y causa | Corrección | Prueba |
 |---|---|---|---|
 | 2026-11-10 / `8699877` + prueba local | El adaptador solo enviaba `file`. | Agregar los cuatro campos de texto definidos en S-105 al mismo multipart con boundary aleatorio. | Desde `server/`, `./mvnw -q test -Dtest=GroqTranscriptionClientTest#transcribeSendsGroqMultipartContract`: rojo exit 1 (HTTP 400, `missing model part`, 1 fallo de la expectativa de transcripción), luego verde exit 0. `./mvnw -q test -Dtest=GroqTranscriptionClientTest`: 16/16, exit 0. |
+| 2026-11-10 / `be3f6d8` → blob del test `e1eb08a` | B-1. Palantir rechazaba dos condiciones en una sola línea. | Spotless repartió en varias líneas las condiciones de método/ruta y delimitadores de `checkGroqRequest`. | `./mvnw -q spotless:check` exit 0 y `./mvnw -q test -Dtest=GroqTranscriptionClientTest` 16/16, exit 0. |
 
 ## Cierre y siguiente tarea
 
