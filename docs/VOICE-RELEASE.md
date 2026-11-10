@@ -1,6 +1,6 @@
 # M2-RC1 · Entrega local y pruebas de voz
 
-Estado al 2026-11-10: **RC técnica**, SHA de entrega `aef4213db2fe7f676591811b7ee67a22757b64b0` (squash de [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44), revisión independiente cumplida), **activación externa pendiente**. La activación y las pruebas del dueño están en [T-039](tasks/T-039-voice-activation.md). Planificada el 2026-10-31. Contrato canónico [S-105 v2](specs/S-105-voice-notes.md); ejecución/evidencia [T-037](tasks/T-037-voice-release.md). Esta guía diferencia planificación, verificación técnica y aceptación del dueño.
+Estado al 2026-11-10: **RC técnica, aceptada con mejoras por el dueño**, SHA de entrega `aef4213db2fe7f676591811b7ee67a22757b64b0` (squash de [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44), revisión independiente cumplida). Grabación habilitada localmente. **Ensayo externo fallido**, con corrección y nuevo ensayo pendientes en el seguimiento de [T-039](tasks/T-039-voice-activation.md). Contrato canónico [S-105 v2](specs/S-105-voice-notes.md). Evidencia de integración en [T-037](tasks/T-037-voice-release.md).
 
 ## Qué recibirá el dueño
 
@@ -24,6 +24,14 @@ Variables implementadas por T-017/T-030: DEVNOTES_VOICE_ENABLED y GROQ_API_KEY, 
 
 Revalidar en ese momento [modelos/formato](https://console.groq.com/docs/speech-to-text), [cuota de organización](https://console.groq.com/docs/rate-limits) y [retención/ZDR](https://console.groq.com/docs/your-data). Registrar solo plan declarado, modelo, límites numéricos y controles efectivos sin identificadores privados. No cambiar plan/controles/permisos por inferencia. Si cambia un límite/modelo/política materialmente, checkpoint al dueño/frontera antes de activación, sin fallback.
 
+Revalidación pública del 2026-11-10 para T-039:
+
+| Control | Resultado público |
+| --- | --- |
+| Modelo y formato | `whisper-large-v3-turbo` y `whisper-large-v3` disponibles para transcripción multilingüe. DevNotes usa `whisper-large-v3-turbo`, español y WebM. Free admite archivos de hasta 25 MB y una duración mínima de 0,01 s. [Speech to Text](https://console.groq.com/docs/speech-to-text) |
+| Cuota Free | Para ambos modelos, 20 solicitudes por minuto, 2.000 por día, 7.200 s de audio por hora y 28.800 s por día, por organización. El panel Limits muestra los límites efectivos. [Rate Limits](https://console.groq.com/docs/rate-limits) |
+| Retención | Sin retención de inferencia por defecto, con excepciones de fiabilidad o abuso de hasta 30 días o más por obligación legal. Transcripciones admiten Zero Data Retention (ZDR) desde Data Controls. Groq indica que los datos retenidos se alojan en EE. UU. [Your Data](https://console.groq.com/docs/your-data) |
+
 El inicio local existente es:
 
 ```bash
@@ -44,7 +52,7 @@ down conserva el volumen; esta secuencia interrumpe la sesión local y se hace s
 
 ## Ensayo externo acotado
 
-Se ejecuta solo después de autorización/configuración efectiva; hoy **no realizado**. Usar la UI y la API reales de DevNotes con OIDC local ficticio; no una llamada directa al proveedor que saltee el backend. Entrada de audio sintético o TTS no personal reproducida hacia una entrada virtual elegida por el dueño, sin instalar herramientas por inferencia. Si no hay fuente sintética/entrada virtual disponible, registrar ese dato pendiente; no sustituirlo por voz personal sin autorización específica.
+Se ejecuta después de la autorización y la comprobación de la configuración. Usar la UI y la API reales de DevNotes con OIDC local ficticio. La entrada usa audio sintético o TTS no personal. Si falta una fuente sintética o una entrada virtual, dejar constancia del pendiente. El uso de voz personal corresponde a una decisión específica del dueño.
 
 | Muestra | Qué comprobar | Registro permitido |
 | --- | --- | --- |
@@ -57,25 +65,40 @@ Máximo cuatro inferencias, máximo 120 s de audio total, intento único por mue
 
 La fuente sintética controlada acredita formato/calidad mínima, no la acústica de un micrófono personal. Las pruebas posteriores del dueño cubren su dispositivo y uso cotidiano. No publicar audio, texto privado, secretos ni trazas crudas; borrar solo los ficheros ficticios propios según su ubicación comprobada.
 
+### Resultado de T-039
+
+2026-11-10, SHA `c63038d` (solo Markdown sobre `aef4213`), Edge 157.0.4341.42, OIDC ficticio y proxy nginx. El dueño declaró completada la preparación de la cuenta Free con `Inference APIs ZDR`. `GET /api/v1/voice/capabilities` autenticado devolvió HTTP 200, `recordingEnabled: true`, `reason: null`. El modelo acordado era `whisper-large-v3-turbo`. El adaptador omitió el campo obligatorio `model`, por lo que el ensayo no acredita una inferencia en ese modelo.
+
+| Muestra | Captura | Resultado | Desde Detener |
+| --- | --- | --- | --- |
+| Español breve | ~15,1 s | Se detuvo una vez. El observador falló y el resultado quedó indeterminado. | Sin medición |
+| Español técnico | ~30,4 s, WebM/Opus | HTTP 502 `VOICE_INVALID_RESPONSE`. Sin transcripción para evaluar terminología. | ~0,4 s |
+| Silencio sintético | ~4,1 s, WebM/Opus | HTTP 502 `VOICE_INVALID_RESPONSE`. No se acreditó el rechazo específico por falta de voz. | ~0,3 s |
+| Segunda nota breve | ~15,0 s, WebM/Opus | HTTP 502 `VOICE_INVALID_RESPONSE`. El recorrido con dos notas transcritas quedó bloqueado. | ~0,3 s |
+
+Cuatro detenciones, una por muestra y ~64,6 s de captura en total. Se eliminó el audio ficticio local y se cerraron los perfiles temporales. No se crearon notas en el ensayo. El [hallazgo bloqueante](BACKLOG.md#hallazgos-de-t-039) y la [bitácora de ejecución](tasks/T-039-voice-activation.md#checkpoint-vigente) conservan el diagnóstico.
+
 ## Matriz de prueba personal
 
 Sobre el SHA de entrega, Chromium de escritorio y localhost/HTTPS. El ancho375 es una prueba visual; no acredita Safari/iOS.
 
-| Caso | Resultado esperado |
-| --- | --- |
-| Abrir Voz sin configurar Groq | Mensaje útil; escribir, guardar y consultar texto siguen disponibles |
-| Negar permiso y reintentar por gesto | Mensaje claro, no indicador rojo ni micrófono huérfano |
-| Grabar/detener una idea | Rojo+Grabando solo durante captura; texto al terminar, aún sin guardar |
-| Corregir y copiar antes de guardar | Portapapeles contiene exactamente la corrección; no envío a CLI/web |
-| Guardar dos notas, recargar/reabrir | Ambas independientes, fechas/horas locales, texto exacto |
-| Editar desde dos pestañas | Segundo guardado obsoleto409; se conserva borrador para copiar/recargar |
-| Borrar/cancelar/error | Confirmación; cancelar no borra; fallo no anuncia éxito |
-| Cambiar ruta o Atrás con cambios | Guardia conserva texto; guardar espera ACK; descarte explícito |
-| Ocultar pestaña/cancelar/cerrar sesión | Micrófono se detiene; no sigue grabando ni mezcla datos |
-| Volver a notas diarias/historial/referencias | Se conservan edición, autosave, versiones y vista previa |
-| Reducir ventana a375 px | Acciones alcanzables, teclado/foco, sin overflow horizontal |
+| Caso | Resultado esperado | Resultado personal T-039 |
+| --- | --- | --- |
+| Abrir Voz sin configurar Groq | Mensaje útil; escribir, guardar y consultar texto siguen disponibles | El dueño confirmó el aviso «La transcripción de voz no está configurada» y la reapertura de la nota ficticia tras guardar y recargar (Edge, `c63038d`, stack aislado). |
+| Negar permiso y reintentar por gesto | Mensaje claro, no indicador rojo ni micrófono huérfano | El dueño confirmó el aviso y el micrófono inactivo con el permiso bloqueado. Tras volver a permitirlo, pudo grabar y cancelar desde la UI (Edge, `c63038d`). |
+| Grabar/detener una idea | Rojo+Grabando solo durante captura; texto al terminar, aún sin guardar | Bloqueado por el 502 del ensayo sintético |
+| Corregir y copiar antes de guardar | Portapapeles contiene exactamente la corrección; no envío a CLI/web | OK, el dueño corrigió el texto ficticio y confirmó la coincidencia al pegar en el Bloc de notas antes de guardar (Edge, `c63038d`). |
+| Guardar dos notas, recargar/reabrir | Ambas independientes, fechas/horas locales, texto exacto | El dueño confirmó dos entradas independientes y texto conservado tras recargar y reabrir (Edge, `c63038d`). Fecha y hora locales pendientes de confirmación. |
+| Editar desde dos pestañas | Segundo guardado obsoleto409; se conserva borrador para copiar/recargar | La captura de Edge muestra «Conflicto de edición» y conserva `Cambio B` (`c63038d`). El dueño confirmó que recargar recuperó `Cambio A`. Estado HTTP sin captura. |
+| Borrar/cancelar/error | Confirmación; cancelar no borra; fallo no anuncia éxito | El dueño confirmó que cancelar conservó la nota y que confirmar retiró solo la nota elegida. Con la ruta de detalle bloqueada temporalmente en Edge, vio el aviso de error y la nota seguía disponible tras recargar (Edge, `c63038d`). |
+| Cambiar ruta o Atrás con cambios | Guardia conserva texto; guardar espera ACK; descarte explícito | El dueño confirmó que «Volver a voz» conservó el borrador y «Guardar y continuar» permitió reabrir la nota guardada. Atrás mostró el aviso y «Descartar y continuar» volvió a Notas sin dejar la nota de descarte en el editor ni en la lista (Edge, `c63038d`). |
+| Ocultar pestaña/cancelar/cerrar sesión | Micrófono se detiene; no sigue grabando ni mezcla datos | El dueño confirmó que el micrófono se detuvo en los tres casos. Tras ocultar, Edge mostró audio pendiente de transcripción o descarte explícito. Al cerrar sesión durante una captura, desapareció el indicador de micrófono (Edge, `c63038d`). |
+| Volver a notas diarias/historial/referencias | Se conservan edición, autosave, versiones y vista previa | El dueño confirmó el recorrido. La captura de Edge muestra la versión de la nota diaria ficticia con el texto exacto y la descripción de la referencia en la vista previa (`c63038d`). |
+| Reducir ventana a375 px | Acciones alcanzables, teclado/foco, sin overflow horizontal | El dueño confirmó que la vista de Voz a 375 px no se desplazaba horizontalmente y que pudo abrir «Nueva nota» con el teclado (Edge, `c63038d`). |
 
 No requerir al dueño que repita todas las pruebas de seguridad/carga automatizadas; su ronda evalúa utilidad, dispositivo y defectos observables.
+
+**Veredicto del dueño (2026-11-10, `c63038d`, fuentes de `aef4213`): «Aceptada con mejoras».** El dueño dio por concluidas las pruebas de esta ronda y pidió volver al ensayo de voz después de corregir el 502. La fila de transcripción queda bloqueada. La verificación de voz real requiere un nuevo ensayo satisfactorio con la corrección publicada.
 
 ## Evidencia final a completar por T-037
 
@@ -87,8 +110,8 @@ La tarea conserva logs y comandos. Aquí solo figuran el enlace a la evidencia y
 | VO-01…07 por capa y dos viewports | Matriz siguiente; Playwright `voice:` 2/2 en desktop 1280 y 2/2 en mobile 375 |
 | FULL local / CI / revisión independiente | Gate STARTER (`verify.sh --starter`) exit 0 sobre `8775ac9`; CI `verify-required` verde en ese HEAD; revisión independiente APROBADA sin bloqueantes sobre `ad548bc` con `verify-required` SUCCESS. [Evidencia](tasks/T-037-voice-release.md#gate-de-cierre) |
 | Cleanup de recursos de pruebas | Proyectos `starter-verify-t037`, `starter-e2e-t037` y `starter-e2e-t037-iter` sin contenedores, volúmenes ni redes; stack persistente del dueño intacto |
-| Ensayo Groq, fecha/modelo/formato/retención/cuota | No realizado: no hay configuración ni autorización del dueño. Activación externa pendiente, sin bloquear la RC técnica; se ejecuta en [T-039](tasks/T-039-voice-activation.md) |
-| Aceptación personal del dueño | Pendiente de sus pruebas sobre `aef4213` en [T-039](tasks/T-039-voice-activation.md) |
+| Ensayo Groq, fecha/modelo/formato/retención/cuota | Configuración habilitada. Ensayo con tres HTTP 502 y una muestra indeterminada. [Resultado de T-039](#resultado-de-t-039) |
+| Aceptación personal del dueño | «Aceptada con mejoras» sobre las fuentes de `aef4213`. La transcripción real sigue bloqueada por el 502. |
 
 Matriz VO por capa. Las capas anteriores son las pruebas de las tareas citadas, todas dentro del gate de cierre. El recorrido integrado usa Chromium real con micrófono sintético, la API, la base y el OIDC propios, y el doble de Groq en la red privada, sin interceptar la API propia. Corre en `e2e/tests/voice.spec.ts`, en ambos viewports.
 
