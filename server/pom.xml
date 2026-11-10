@@ -33,6 +33,9 @@
 		<spotless.version>3.10.4</spotless.version>
 		<palantir-java-format.version>2.102.0</palantir-java-format.version>
 		<jacoco.version>0.8.15</jacoco.version>
+		<fastexcel.version>0.20.2</fastexcel.version>
+		<!-- Misma versión que resuelve fastexcel-reader; la inspección ZIP la usa directamente. -->
+		<commons-compress.version>1.28.0</commons-compress.version>
 		<!-- Umbrales heredados sin cambios; la feature de referencia los evalúa en su tarea. -->
 		<jacoco.line.minimum>0.00</jacoco.line.minimum>
 		<jacoco.branch.minimum>0.00</jacoco.branch.minimum>
@@ -78,6 +81,21 @@
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>${springdoc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.dhatim</groupId>
+			<artifactId>fastexcel</artifactId>
+			<version>${fastexcel.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.dhatim</groupId>
+			<artifactId>fastexcel-reader</artifactId>
+			<version>${fastexcel.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-compress</artifactId>
+			<version>${commons-compress.version}</version>
 		</dependency>
 
 		<dependency>
