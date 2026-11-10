@@ -1,6 +1,6 @@
 ---
 id: T-048
-status: in_progress
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-048-groq-multipart-fix
-pr: null
+pr: 47
 depends_on: [T-039]
 ---
 # T-048 · Corregir el multipart del adaptador Groq
@@ -48,6 +48,8 @@ Completar la solicitud que DevNotes envía a Groq al detener la grabación. T-03
 | Cierre temporal | Dirigidos y docs/CI | Desde la raíz, `node scripts/docs-check.mjs`, `git diff --check` y `bash scripts/verify.sh --policy origin/main` sobre el commit final. Verificar `verify-required` en el PR. | Pruebas dirigidas, docs y CI verdes. FULL integrado diferido hasta después de T-044 MERGED |
 
 ## Checkpoint vigente
+
+Corrección publicada en [PR47](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47) contra `main`. Siguiente paso: revisión independiente con la evidencia dirigida y el check `verify-required` del HEAD publicado. FULL diferido por decisión del dueño hasta después de T-044 MERGED.
 
 Contrato y conciliación de T-039 preparados el 2026-11-10 por frontera en Codex Desktop (GPT-6, variante y esfuerzo no expuestos).
 

@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-048](tasks/T-048-groq-multipart-fix.md) · S-105 / multipart saliente a Groq |
-| Estado | `in_progress` |
-| Acción actual | Regresión HTTP en rojo y verde confirmada. Implementer publica T-048 bajo el cierre temporal acordado en [TESTING](TESTING.md#aplazamiento-de-full-hasta-t-044). |
-| Rama / PR | `codex/t-048-groq-multipart-fix` · PR pendiente |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente del multipart de Groq y de la evidencia dirigida. FULL integrado después de T-044 MERGED según [TESTING](TESTING.md#aplazamiento-de-full-hasta-t-044). |
+| Rama / PR | `codex/t-048-groq-multipart-fix` · [PR47](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47) |
 
 T-039: [PR46 MERGED y conciliada como done](tasks/T-039-voice-activation.md#checkpoint-vigente). El reensayo con el dueño queda en [T-049](tasks/T-049-voice-retest.md) tras el merge de T-048. T-040 espera el reensayo favorable y su PR MERGED.
 
@@ -72,5 +72,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva de Junie implementer para T-048. Leer AGENTS.md, server/AGENTS.md, STATUS, T-048 y docs/agents/implementer.md. Confirmar PR46 MERGED contra main y partir de codex/t-048-groq-multipart-fix con la conciliación de T-039. Ejecutar primero el rojo con el doble HTTP estricto, corregir las cinco partes salientes a Groq y comprobar el verde. Registrar evidencia y pasar el gate FULL con fixtures ficticias según T-048. Publicar el PR único contra main y dejar STATUS listo para revisión independiente. T-049 coordina el reensayo externo después de T-048 MERGED.
+Sesión nueva de Junie reviewer para T-048. Leer AGENTS.md, server/AGENTS.md, STATUS, T-048, el aplazamiento de FULL en TESTING y docs/agents/reviewer.md. Confirmar PR47 abierto contra main, HEAD/base publicados y verify-required del HEAD vigente. Revisar de forma independiente las cinco partes salientes a Groq y la evidencia roja y verde. Ejecutar las pruebas dirigidas pertinentes y emitir veredicto ligado a HEAD/base según AUTONOMY. Aplicar el cierre temporal sin correr FULL, que queda para después de T-044 MERGED. Si resulta elegible, seguir el protocolo merger para PR47. T-049 coordina el reensayo externo solo después de confirmar T-048 MERGED.
 ```
