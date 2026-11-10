@@ -11,13 +11,13 @@ spec: S-105
 spec_version: 2
 branch: codex/t-036-voice-navigation
 pr: null
-depends_on: [T-035]
+depends_on: [T-035, T-038]
 ---
 # T-036 · Preservar borrador de voz al navegar y cerrar sesión
 
 ## Objetivo
 
-Preservar borrador de voz al navegar y cerrar sesión, dentro de S-105/M2-RC1. Contrato completo; draft **solo por dependencia T-035 no MERGED/conciliada**. Junie puede habilitar ready al comprobarla sin otra planificación. Siguiente: T-037 tras MERGED. Retorno a frontera al objetivo M2-RC1 o decisión fuera de contrato, no por cada tarea.
+Preservar borrador de voz al navegar y cerrar sesión, dentro de S-105/M2-RC1. Contrato completo; draft **solo por dependencias T-035 y T-038 no MERGED/conciliadas**. Junie puede habilitar ready al comprobarla sin otra planificación. Siguiente: T-037 tras MERGED. Retorno a frontera al objetivo M2-RC1 o decisión fuera de contrato, no por cada tarea.
 
 ## Alcance y decisiones resueltas
 

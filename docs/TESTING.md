@@ -30,18 +30,16 @@ La suite E2E completa ejecuta **9 specs × 2 proyectos** (desktop + mobile) = ~1
 **Nunca ejecutes la suite FULL E2E durante iteración de desarrollo.** Usa siempre `--grep` para ejecutar solo el test afectado:
 
 ```bash
-# Iteración rápida — solo el test de reference-preview, solo desktop
-docker compose -p starter-e2e-xxx -f docker-compose.yml -f compose.auth-test.yml -f docker-compose.e2e.yml \
-  --profile oidc --profile e2e run --rm --no-deps e2e npx playwright test \
-  --grep "reference preview:" --project=desktop
+# Iteración rápida — solo el test de reference-preview, solo desktop (raíz, Git Bash)
+STARTER_E2E_PROJECT=starter-e2e-xxx bash scripts/e2e.sh --grep "reference preview:" --project desktop
 
-# Con run-e2e.mjs (soporta --grep)
-node scripts/run-e2e.mjs compose --env-file scripts/fixtures/e2e.env.example -p starter-e2e-xxx \
-  -f docker-compose.yml -f compose.auth-test.yml -f docker-compose.e2e.yml \
-  --profile oidc --profile e2e --grep "reference preview:"
+# Mismo filtro en mobile
+STARTER_E2E_PROJECT=starter-e2e-xxx bash scripts/e2e.sh --grep "reference preview:" --project mobile
 ```
 
-**Regla:** Durante desarrollo, ejecuta solo el test específico con `--grep` y `--project=desktop`. La suite FULL solo se ejecuta una vez al cerrar la tarea, con stack limpio y sin editar fuentes durante la corrida.
+`scripts/e2e.sh` construye, espera readiness, exporta `STARTER_E2E_ARTIFACTS` (trace/captura en `e2e/artifacts/<proyecto>/`) y limpia solo su proyecto. No invocar `node scripts/run-e2e.mjs` ni `docker compose … playwright test` a mano: sin ese entorno falla con `required variable STARTER_E2E_ARTIFACTS is missing` o pierde el controlador de identidades. Variables de voz/Compose según la tarea.
+
+**Regla:** Durante desarrollo, ejecuta solo el test específico con `bash scripts/e2e.sh --grep "…" --project desktop`. La suite FULL solo se ejecuta una vez al cerrar la tarea, con stack limpio y sin editar fuentes durante la corrida.
 
 ## Elegir pruebas para una tarea pequeña
 Frontera especifica la capa mínima que demuestra el riesgo y el comando exacto, sin dejar nombres ficticios por resolver a Junie. Bugfix: rojo antes del arreglo. Mantener regresiones útiles; no duplicar casos en todas las capas ni añadir E2E por costumbre.

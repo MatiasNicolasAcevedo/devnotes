@@ -281,12 +281,11 @@ export function DailyEditor({
       const ed = editorRef.current
       if (!ed || !refAnchor) return
 
-      const { from, to } = refAnchor
-      // Reemplazar @consulta con el átomo reference
+      // Reemplazar @consulta por el átomo en un solo paso: insertar en `to` tras borrar
+      // usaría una posición ya desplazada (fuera de rango al final del documento).
       ed.chain()
         .focus()
-        .deleteRange({ from, to })
-        .insertContentAt(to, {
+        .insertContentAt(refAnchor, {
           type: 'reference',
           attrs: { id: item.id },
         })
