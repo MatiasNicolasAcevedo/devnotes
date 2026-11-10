@@ -60,7 +60,30 @@ XL-02. Casos mínimos:
 
 ## Checkpoint vigente
 
-`draft` por dependencia. Contrato completo (frontera, 2026-11-10).
+2026-11-10. Implementer en Claude Code de escritorio (Claude Fable 5.2, esfuerzo no expuesto), sesión distinta de la de T-040, con Git Bash, JDK 21, Maven Wrapper, Docker, Git y `gh`. Agrega el paquete `com.example.devnotes.portability.xlsx` y tres dependencias de backend. Sin cambios de API, permisos, esquema, datos ni UI: nada invoca todavía al codec.
+
+**T-041 cerrada en la rama** `codex/s-107-xlsx-portability`, con XL-02 verde. El frontmatter sigue en `draft` por la [regla de la rama compartida](../specs/S-107-xlsx-portability.md#tareas-y-dependencias); la portadora es [T-040](T-040-daily-timestamps.md) y el PR es el [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49) (draft).
+
+- Precondición: `gh pr view 49` devolvió `OPEN`, draft, `codex/s-107-xlsx-portability` → `main`, HEAD `dc40327`, que contiene `f10529f`; árbol local limpio.
+- SHA del codec: `900913b`. Toca `server/pom.xml`, `docs/DEPENDENCIES.md`, nueve clases en `portability/xlsx` y cinco archivos de prueba.
+- Dependencias: `org.dhatim:fastexcel` y `fastexcel-reader` 0.20.2, última versión en Maven Central (metadatos del 2026-06-08), Apache-2.0 según el POM padre. `fastexcel-reader` configura Aalto con `supportDTD=false` e `isSupportingExternalEntities=false`. Se declara además `org.apache.commons:commons-compress` 1.28.0, la misma versión que ya resolvía `fastexcel-reader`, porque la inspección ZIP la usa directamente. Transitivas y licencias en [DEPENDENCIES](../DEPENDENCIES.md#transitivas-relevantes-de-s-107).
+- XL-02, desde `server/` en Git Bash: `./mvnw -q test -Dtest='Xlsx*Test'` exit 0, 187 pruebas sin fallos (`XlsxTextTest` 9, `XlsxWorkbookRoundTripTest` 12, `XlsxWorkbookReaderTest` 137, `XlsxZipInspectionTest` 29). `./mvnw -q spotless:check` exit 0.
+- Fuera del comando del contrato, por riesgo de dependencias y beans nuevos: `./mvnw verify -Dit.test='DailyNoteApiIT' -Dfailsafe.failIfNoSpecifiedTests=false` corrió las 422 unitarias y `DailyNoteApiIT` 11/11 en verde, con el contexto Spring y PostgreSQL Testcontainers. El comando terminó con exit 1 en `jacoco:check` por el umbral de `daily.application` (0,68 líneas y 0,45 ramas), esperable al correr un solo IT; no acredita cobertura. Cobertura unitaria del paquete nuevo en ese informe: reader 273/278 líneas y 184/200 ramas, writer 110/112 y 16/16, inspección ZIP 59/63 y 53/64, texto 70/71 y 65/66.
+- Cierre temporal: `node scripts/docs-check.mjs` OK, `git diff --check` exit 0 y `bash scripts/verify.sh --policy origin/main` con `policy=FULL` y **`profile=STARTER`** por el cambio de POM. El FULL integrado del HEAD final debe llevar `--tooling`.
+- No ejecutado: `clean verify` completo, cliente, Playwright ni el gate FULL de la tabla. **FULL diferido** al HEAD final del PR único, según [TESTING](../TESTING.md#aplazamiento-de-full-hasta-t-044).
+- Sin recursos propios por limpiar: el contenedor de Testcontainers terminó con la corrida. No se borraron ramas, worktrees ni archivos de `.orchestrator`.
+
+Decisiones de implementación dentro del contrato, para T-042 y T-043:
+
+- **API.** `XlsxWorkbookWriter` y `XlsxWorkbookReader` son `@Component`; el reader recibe el `jakarta.validation.Validator`. `write(PortabilityRecords, Instant, OutputStream)` y una sobrecarga con `Counts` e `Iterable` por colección, que lanza `IllegalStateException` si un conteo no coincide. El writer no ordena, no cierra el stream y trunca los instantes a microsegundos: el orden de S-107 lo aporta quien llama. `read(byte[])` devuelve `XlsxWorkbookContent(exportedAt, records)`; los límites de transporte quedan en el controlador.
+- **Celdas.** El texto se escribe como cadena en línea, sin tabla de cadenas compartidas, para no acumular el libro en memoria. `version` y los conteos van como texto; el reader los acepta también como número entero.
+- **Caracteres.** Jackson no escapa U+FFFE, U+FFFF ni sustitutos sueltos, que XML 1.0 no admite: el writer los pasa a `\uXXXX` dentro de `dato_json`.
+- **Códigos.** Si la primera hoja no es `devnotes`, o faltan o difieren `formato` y `version`, el error es `IMPORT_UNSUPPORTED_FORMAT`. El resto de los problemas de hojas, filas de `devnotes`, cabeceras, fragmentos y registros es `IMPORT_INVALID_RECORD` con hoja y fila (la de la parte 1 para un registro). El nombre de hoja informado es siempre el esperado, nunca uno leído del archivo. La excepción no encadena causa.
+- **Más estricto que el mínimo.** El reader rechaza además: `<!DOCTYPE` en cualquier entrada (UTF-8 o UTF-16), nombres de entrada que solo difieren en mayúsculas, NUL o sustitutos sueltos en cualquier cadena de un registro (PostgreSQL no los guarda), título, descripción o texto de voz que no estén ya normalizados, fragmentos de más de 30 000 unidades y celdas más allá de la cabecera. Las filas totalmente vacías se saltan.
+- **`texto`.** Sigue `documentToPlainText` sin títulos: cada átomo aporta `[Referencia no disponible]`.
+- **Inventario.** `scripts/dependency-inventory.py` falla por diseño cuando cambian las dependencias directas, así que las filas nuevas de DEPENDENCIES se agregaron a mano.
+
+Siguiente: sesión nueva para [T-042](T-042-xlsx-export-api.md) en la misma rama.
 
 ## Correcciones significativas
 
