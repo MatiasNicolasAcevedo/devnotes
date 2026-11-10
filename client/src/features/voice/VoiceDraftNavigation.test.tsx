@@ -31,7 +31,7 @@ function TestNavigation() {
   )
 }
 
-function renderApp(route = VOICE) {
+function renderApp(route = VOICE, voiceNotes: object[] = []) {
   const auth = installAuthBackend({ user: buildAuthUser({ displayName: 'Persona A' }) })
   const dailyRead = vi.fn()
   const dailyWrite = vi.fn()
@@ -48,7 +48,13 @@ function renderApp(route = VOICE) {
       }),
     ),
     mock.get(LIST, () =>
-      HttpResponse.json({ content: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }),
+      HttpResponse.json({
+        content: voiceNotes,
+        page: 0,
+        size: 20,
+        totalElements: voiceNotes.length,
+        totalPages: voiceNotes.length > 0 ? 1 : 0,
+      }),
     ),
     mock.get('/api/v1/daily-notes', () =>
       HttpResponse.json({ content: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }),
@@ -336,6 +342,96 @@ describe('workspace de voz y navegación', () => {
     expect(saved).toHaveBeenCalledExactlyOnceWith({ text: 'Texto manual tras el aviso' })
     expect(post).not.toHaveBeenCalled()
   })
+
+  it.each([
+    {
+      variante: 'aviso de audio excedido',
+      aviso: /Se excedió la duración máxima/,
+      provocar: async (
+        user: ReturnType<typeof renderApp>['user'],
+        mic: ReturnType<typeof installMicrophone>,
+      ) => {
+        const now = vi.spyOn(performance, 'now')
+        await user.click(await screen.findByRole('button', { name: 'Grabar' }))
+        expect(await screen.findByText('Grabando')).toBeVisible()
+        now.mockReturnValue(performance.now() + 601_000)
+        const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true)
+        fireEvent(document, new Event('visibilitychange'))
+        await waitFor(() => expect(mic.track.stop).toHaveBeenCalledOnce())
+        hidden.mockRestore()
+      },
+    },
+    {
+      variante: 'permiso denegado',
+      aviso: /No se pudo transcribir el audio/,
+      provocar: async (
+        user: ReturnType<typeof renderApp>['user'],
+        mic: ReturnType<typeof installMicrophone>,
+      ) => {
+        mic.getUserMedia.mockRejectedValueOnce(new DOMException('Denegado', 'NotAllowedError'))
+        await user.click(await screen.findByRole('button', { name: 'Grabar' }))
+        await waitFor(() => expect(mic.getUserMedia).toHaveBeenCalledOnce())
+      },
+    },
+  ])(
+    'tras $variante abre una nota existente, la edita y la guarda con ACK',
+    async ({ aviso, provocar }) => {
+      const mic = installMicrophone()
+      const post = vi.fn()
+      const updated = vi.fn()
+      server.use(
+        mock.get(`${LIST}/${id}`, () =>
+          HttpResponse.json({
+            id,
+            text: 'Extracto existente',
+            revision: 1,
+            createdAt: '2026-11-01T12:00:00Z',
+            updatedAt: '2026-11-01T12:00:00Z',
+          }),
+        ),
+        mock.put(`${LIST}/${id}`, async ({ request }) => {
+          updated(await request.json())
+          return HttpResponse.json({
+            id,
+            text: 'Extracto existente editado',
+            revision: 2,
+            createdAt: '2026-11-01T12:00:00Z',
+            updatedAt: '2026-11-01T12:05:00Z',
+          })
+        }),
+        mock.post(TRANSCRIPTION, () => {
+          post()
+          return HttpResponse.json({ text: 'No debe transcribirse', language: 'es' })
+        }),
+      )
+      const { user } = renderApp(VOICE, [
+        {
+          id,
+          excerpt: 'Extracto existente',
+          revision: 1,
+          createdAt: '2026-11-01T12:00:00Z',
+          updatedAt: '2026-11-01T12:00:00Z',
+        },
+      ])
+      await provocar(user, mic)
+      expect(await screen.findByText(aviso)).toBeVisible()
+
+      // Abrir otra nota cambia de documento: el aviso terminado no bloquea el guardado.
+      await user.click(await screen.findByText('Extracto existente'))
+      const text = await voiceText()
+      await waitFor(() => expect(text).toHaveValue('Extracto existente'))
+      expect(screen.queryByText(aviso)).not.toBeInTheDocument()
+      await user.type(text, ' editado')
+      expect(screen.getByRole('button', { name: 'Guardar' })).toBeEnabled()
+      await user.click(screen.getByRole('button', { name: 'Guardar' }))
+      expect(await screen.findByText('Nota guardada correctamente.')).toBeVisible()
+      expect(updated).toHaveBeenCalledExactlyOnceWith({
+        text: 'Extracto existente editado',
+        expectedRevision: 1,
+      })
+      expect(post).not.toHaveBeenCalled()
+    },
+  )
 
   it('aborta la transcripción al salir, permite volver sin enviar y descarta audio explícitamente', async () => {
     const { track, getUserMedia } = installMicrophone()
