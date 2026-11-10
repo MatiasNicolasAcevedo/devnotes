@@ -9,7 +9,7 @@ depends_on: [T-014]
 branch: codex/t-020-editor-usability
 role: implementer
 executor: frontier
-pr: null
+pr: 20
 ---
 # T-020 · Editor, navegación por fecha y versiones
 

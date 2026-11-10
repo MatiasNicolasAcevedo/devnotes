@@ -9,7 +9,7 @@ depends_on: [T-024]
 branch: codex/t-025-reference-insertion
 role: implementer
 executor: junie
-pr: null
+pr: 28
 ---
 # T-025 · Buscar, insertar y resolver referencias
 

@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-034](tasks/T-034-voice-workspace.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
-| Estado | `in_review` |
-| Acción actual | Segunda revisión independiente: APROBADA sin bloqueantes. Esperando CI y merge. |
-| Rama / PR | codex/t-034-voice-workspace · [PR39](https://github.com/MatiasNicolasAcevedo/devnotes/pull/39) |
+| Tarea y contrato | [T-035](tasks/T-035-voice-library.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
+| Estado | `mergeable` |
+| Acción actual | Aprobación reconfirmada en sesión nueva no autora: diff `4234513..c71bc1a` solo Markdown, base main 085dc76, CI verify-required SUCCESS, docs-check OK. FULL/APPLICATION válido salvo `reference-preview.spec.ts` (preexistente en main 085dc76), cubierto por la excepción del dueño «Mergear con excepción», acotada a ese test. Siguiente: merge squash del HEAD final; tras MERGED, nueva sesión concilia done y hace el bugfix de reference-preview (BACKLOG) antes de T-036. Detalle en la tarea. |
+| Rama / PR | codex/t-035-voice-library · [PR40](https://github.com/MatiasNicolasAcevedo/devnotes/pull/40) |
+
+T-034: PR39 MERGED, squash `085dc763918fa63e6de6b89b98ddfc9e87805f3a`, confirmado en GitHub el 2026-11-09. Junie reviewer + merger, Qwen3.6-27B-FP8. Segunda revisión independiente APROBADA sin bloqueantes. HEAD 13d250b, base main e1648a5, CI verify-required SUCCESS, docs-check OK. Client gate OK: lint, typecheck, VoiceComposer.test.tsx 5/5, AppRoutes.test.tsx 7/7, voiceNoteTextSchema.test.ts 7/7, build OK.
 
 T-033: PR37 MERGED, squash `e1648a55b372194e6d61801aaae97ec4bf0c6a0f`, confirmado en GitHub el 2026-11-09. Junie reviewer + merger, Qwen3.6-27B-FP8. Revisión independiente APROBADA sin bloqueantes. HEAD d26b601, base main f3bbaa8, CI verify-required SUCCESS, docs-check OK. Client gate 435/435 tests OK.
 
@@ -60,5 +62,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Junie reviewer, sesión nueva: T-034 (PR39 codex/t-034-voice-workspace). Revisión independiente tras corrección de 4 bloqueantes (8a007b2). B-1 VoiceComposer.test.tsx, B-2 no-control-regex, B-3 exhaustive-deps, B-4 docs-check. Base main e1648a5.
+Implementer, sesión nueva: T-035 (PR40 codex/t-035-voice-library), corregir B-1 de la 7.ª revisión (archivos:líneas, causa y condición de cierre en docs/tasks/T-035-voice-library.md, checkpoint 2026-11-09 «Séptima revisión»). B-1: `loadNote` sin `force` (useVoiceDraft.ts) solo aplica el detalle con documentState 'new'/'clean' y sin conflicto pendiente, para que un refetch que llega durante un PUT/DELETE no pise el borrador ni descarte el 409. Pruebas rojo→verde en VoicePage.test.tsx (PUT y DELETE con GET del detalle retenido). Observaciones O-1…O-3 recomendadas en la misma corrección. Base main 085dc76. Tras publicar, la 8.ª revisión excede el límite de rondas: requiere autorización explícita del dueño.
 ```

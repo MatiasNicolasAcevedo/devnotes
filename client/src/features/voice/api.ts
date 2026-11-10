@@ -54,6 +54,8 @@ export type VoiceNotePage = z.infer<typeof voiceNotePageSchema>
 export const voiceQueryKeys = {
   all: ['voice'] as const,
   capabilities: ['voice', 'capabilities'] as const,
+  /** Prefijo de todas las páginas de la lista: es lo que invalidan las mutaciones. */
+  lists: ['voice', 'list'] as const,
   list: (params?: VoiceListParams) => ['voice', 'list', params ?? null] as const,
   detail: (id: string) => ['voice', 'detail', id] as const,
 }

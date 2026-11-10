@@ -1,4 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { ApiError } from '../../services/http'
 import {
   createVoiceNote,
   deleteVoiceNote,
@@ -48,13 +49,23 @@ export function useTranscribeAudio() {
   })
 }
 
-/** Mutación: crear nota. Invalida lista tras éxito. */
+/**
+ * La nota ya no existe en el servidor (404 en PUT/DELETE): se refresca la lista y se descarta su
+ * detalle cacheado, para que no se vuelva a abrir como si existiera.
+ */
+function forgetMissingNote(queryClient: QueryClient, id: string, error: unknown) {
+  if (!(error instanceof ApiError) || error.status !== 404) return
+  queryClient.removeQueries({ queryKey: voiceQueryKeys.detail(id), exact: true })
+  queryClient.invalidateQueries({ queryKey: voiceQueryKeys.lists })
+}
+
+/** Mutación: crear nota. Invalida todas las páginas de la lista tras éxito. */
 export function useCreateVoiceNote() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: createVoiceNote,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: voiceQueryKeys.list() })
+      queryClient.invalidateQueries({ queryKey: voiceQueryKeys.lists })
     },
   })
 }
@@ -74,8 +85,9 @@ export function useUpdateVoiceNote() {
     }) => updateVoiceNote(id, text, expectedRevision),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: voiceQueryKeys.detail(variables.id) })
-      queryClient.invalidateQueries({ queryKey: voiceQueryKeys.list() })
+      queryClient.invalidateQueries({ queryKey: voiceQueryKeys.lists })
     },
+    onError: (error, variables) => forgetMissingNote(queryClient, variables.id, error),
   })
 }
 
@@ -85,8 +97,14 @@ export function useDeleteVoiceNote() {
   return useMutation({
     mutationFn: ({ id, expectedRevision }: { id: string; expectedRevision: number }) =>
       deleteVoiceNote(id, expectedRevision),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: voiceQueryKeys.all })
+    onSuccess: (_data, variables) => {
+      // Todo lo de voz salvo el detalle borrado, que daría 404 si se volviera a pedir.
+      const deletedDetail = voiceQueryKeys.detail(variables.id)
+      queryClient.invalidateQueries({
+        queryKey: voiceQueryKeys.all,
+        predicate: (query) => !deletedDetail.every((part, index) => query.queryKey[index] === part),
+      })
     },
+    onError: (error, variables) => forgetMissingNote(queryClient, variables.id, error),
   })
 }

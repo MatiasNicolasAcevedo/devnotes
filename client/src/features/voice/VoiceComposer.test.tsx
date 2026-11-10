@@ -76,8 +76,10 @@ vi.mock('./useVoiceRecorder', () => ({
 const mockSetCaptureState = vi.fn()
 const mockSetText = vi.fn()
 const mockTranscribe = vi.fn()
-const mockSave = vi.fn()
+const mockSave = vi.fn().mockResolvedValue('saved')
 const mockCopyToClipboard = vi.fn().mockResolvedValue(true)
+const mockLoadNote = vi.fn()
+const mockDeleteNote = vi.fn().mockResolvedValue('deleted')
 
 vi.mock('./useVoiceDraft', () => {
   const voiceNoteTextSchema = z
@@ -112,17 +114,25 @@ vi.mock('./useVoiceDraft', () => {
         noteId: null,
         revision: null,
         generation: 0,
+        conflict: null,
       },
       isBusy: false,
       isTextEmpty: true,
+      isDirty: false,
       setText: mockSetText,
+      loadNote: mockLoadNote,
       transcribe: mockTranscribe,
       save: mockSave,
+      deleteNote: mockDeleteNote,
+      dismissConflict: vi.fn(),
+      detachAsNewNote: vi.fn(),
       copyToClipboard: mockCopyToClipboard,
       reset: vi.fn(),
       setCaptureState: mockSetCaptureState,
       transcribeMutation: { isPending: false, error: null },
       createMutation: { isPending: false, error: null },
+      updateMutation: { isPending: false, error: null, isError: false, reset: vi.fn() },
+      deleteMutation: { isPending: false, error: null, isError: false, reset: vi.fn() },
     }),
     voiceNoteTextSchema,
   }
