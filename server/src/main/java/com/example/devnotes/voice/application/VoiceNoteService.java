@@ -5,6 +5,7 @@ import com.example.devnotes.voice.persistence.VoiceNote;
 import com.example.devnotes.voice.persistence.VoiceNoteRepository;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -122,7 +123,8 @@ public class VoiceNoteService {
     }
 
     private Instant nowMicros() {
-        return Instant.ofEpochMilli(clock.millis()).plusNanos(clock.instant().getNano() / 1_000_000 * 1_000_000);
+        // UTC truncated to microseconds (S-105, PostgreSQL TIMESTAMPTZ precision), from a single clock reading.
+        return clock.instant().truncatedTo(ChronoUnit.MICROS);
     }
 
     private VoiceNoteView toView(VoiceNote note) {
