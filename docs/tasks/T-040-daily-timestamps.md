@@ -11,7 +11,7 @@ spec: S-107
 spec_version: 1
 branch: codex/t-040-daily-timestamps
 pr: null
-depends_on: [T-039]
+depends_on: [T-049]
 ---
 # T-040 · Marcas de tiempo de daily y versiones truncadas a microsegundos
 
@@ -19,7 +19,7 @@ depends_on: [T-039]
 
 `createdAt`/`updatedAt` de las notas diarias y `savedAt` de las versiones registran el instante real truncado a microsegundos (S-101), sin adelantarse hasta casi un segundo. Es un requisito previo de S-107: la exportación conserva estos instantes. Es un bugfix registrado en BACKLOG (hallazgo de T-037).
 
-Está en `draft` solo porque depende de T-039. La siguiente tarea es [T-041](T-041-xlsx-codec.md).
+Está en `draft` hasta que [T-049](T-049-voice-retest.md) documente un reensayo favorable con el dueño y su PR esté MERGED. La siguiente tarea es [T-041](T-041-xlsx-codec.md).
 
 ## Alcance y decisiones resueltas
 
@@ -50,7 +50,7 @@ Está en `draft` solo porque depende de T-039. La siguiente tarea es [T-041](T-0
 
 ## Checkpoint vigente
 
-`draft` por dependencia. Contrato completo (frontera, 2026-11-10).
+`draft` por dependencia de T-049. Contrato completo (frontera, 2026-11-10).
 
 ## Correcciones significativas
 

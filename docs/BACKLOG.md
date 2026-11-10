@@ -2,7 +2,7 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
-Próxima acción: [T-039](tasks/T-039-voice-activation.md), activación de Groq y pruebas personales de M2-RC1 con el dueño.
+Próxima acción: [T-048](tasks/T-048-groq-multipart-fix.md), corregir el multipart de Groq con una regresión HTTP local.
 
 ## Siguientes · plan del dueño del 2026-11-10
 
@@ -10,23 +10,24 @@ Orden decidido por el dueño: (1) activar Groq y probar M2-RC1; (2) exportar e i
 
 | Orden | Contrato / resultado | Ejecuta | Dependencia |
 |---|---|---|---|
-| 1 | [T-039](tasks/T-039-voice-activation.md) · Activación de Groq, ensayo externo y pruebas personales de M2-RC1 | Dueño con un agente de frontera | T-037 MERGED (`aef4213`) |
-| 2 | [T-040](tasks/T-040-daily-timestamps.md) · Instantes de daily y versiones a microsegundos (bugfix previo a exportar) | Junie | T-039 aceptada |
-| 3 | [T-041](tasks/T-041-xlsx-codec.md) · Codec `devnotes-xlsx` v1 y límites | Junie | T-040 MERGED |
-| 4 | [T-042](tasks/T-042-xlsx-export-api.md) · GET de exportación privada | Junie | T-041 MERGED |
-| 5 | [T-043](tasks/T-043-xlsx-import-api.md) · Vista previa e importación atómica en cuenta vacía, y proxies | Junie | T-042 MERGED |
-| 6 | [T-044](tasks/T-044-xlsx-client.md) · Pantalla «Datos»; control de cinco tras el merge | Junie | T-043 MERGED |
-| 7 | [T-045](tasks/T-045-xlsx-journey.md) · E2E de ida y vuelta y prueba del dueño | Junie y el dueño | T-044 MERGED |
-| 8 | [T-046](tasks/T-046-render-image.md) · Imagen única y smoke local con 512 MB | Junie | T-045 MERGED y aceptada |
-| 9 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | T-046 MERGED |
+| 1 | [T-048](tasks/T-048-groq-multipart-fix.md) · Corrección multipart de Groq | Junie | T-039 MERGED |
+| 2 | [T-049](tasks/T-049-voice-retest.md) · Reensayo sintético con Groq | Dueño con un agente de frontera | T-048 MERGED |
+| 3 | [T-040](tasks/T-040-daily-timestamps.md) · Instantes de daily y versiones a microsegundos (bugfix previo a exportar) | Junie | T-049 favorable y MERGED |
+| 4 | [T-041](tasks/T-041-xlsx-codec.md) · Codec `devnotes-xlsx` v1 y límites | Junie | T-040 MERGED |
+| 5 | [T-042](tasks/T-042-xlsx-export-api.md) · GET de exportación privada | Junie | T-041 MERGED |
+| 6 | [T-043](tasks/T-043-xlsx-import-api.md) · Vista previa e importación atómica en cuenta vacía, y proxies | Junie | T-042 MERGED |
+| 7 | [T-044](tasks/T-044-xlsx-client.md) · Pantalla «Datos» y control de cinco tras el merge | Junie | T-043 MERGED |
+| 8 | [T-045](tasks/T-045-xlsx-journey.md) · E2E de ida y vuelta y prueba del dueño | Junie y el dueño | T-044 MERGED |
+| 9 | [T-046](tasks/T-046-render-image.md) · Imagen única y smoke local con 512 MB | Junie | T-045 MERGED y aceptada |
+| 10 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | T-046 MERGED |
 
-Retorno a frontera: un veredicto «no aceptada» en T-039, T-045 o T-047, una decisión fuera de contrato, o el cierre de T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
+Retorno a frontera si T-049 resulta fallida o indeterminada, si el dueño emite «no aceptada» en T-045 o T-047, ante una decisión fuera de contrato o al cerrar T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
 
 ### Hallazgos de T-039
 
-- **Bloqueante para la transcripción real.** En Edge 157.0.4341.42, SHA `c63038d` (fuentes `aef4213`), iniciar sesión local, abrir Voz, grabar la muestra técnica de ~30,4 s con micrófono sintético y pulsar «Detener y transcribir». Se esperaba HTTP 200 con texto editable. DevNotes devolvió HTTP 502 `VOICE_INVALID_RESPONSE`. El silencio y la segunda nota reprodujeron el mismo 502. Al revisar `GroqTranscriptionClient`, el multipart contiene solo `file`. El estado exacto de Groq quedó sin medir. Con «Aceptada con mejoras», el dueño pidió corregir y volver a probar voz tras esta ronda. Frontera prepara el seguimiento en una tarea separada. [Evidencia del ensayo](VOICE-RELEASE.md#resultado-de-t-039)
+- **Bloqueante para la transcripción real.** En Edge 157.0.4341.42, SHA `c63038d` (fuentes `aef4213`), iniciar sesión local, abrir Voz, grabar la muestra técnica de ~30,4 s con micrófono sintético y pulsar «Detener y transcribir». Se esperaba HTTP 200 con texto editable. DevNotes devolvió HTTP 502 `VOICE_INVALID_RESPONSE`. El silencio y la segunda nota reprodujeron el mismo 502. Al revisar `GroqTranscriptionClient`, el multipart contiene solo `file`. El estado exacto de Groq quedó sin medir. Corrección en [T-048](tasks/T-048-groq-multipart-fix.md) y reensayo en [T-049](tasks/T-049-voice-retest.md). [Evidencia del ensayo](VOICE-RELEASE.md#resultado-de-t-039)
 
-  Contrato verificado el 2026-11-10. En el `POST /openai/v1/audio/transcriptions` de Groq, enviar las partes `file` (WebM), `model=whisper-large-v3-turbo`, `language=es`, `temperature=0` y `response_format=verbose_json` en el cuerpo `multipart/form-data`. `Authorization: Bearer …` y `Content-Type: multipart/form-data; boundary=…` son cabeceras del servidor y ya se construyen. `verbose_json` incluye metadatos de segmentos, incluido `no_speech_prob`, para la comprobación de silencio de S-105. La regresión debe rechazar en el doble la omisión del modelo y comprobar los valores de las partes en la solicitud corregida. [Referencia de la API de Groq](https://console.groq.com/docs/api-reference) · [Parámetros y metadatos](https://console.groq.com/docs/speech-to-text#using-the-api)
+- **Hallazgo de revisión del adaptador (2026-11-10, `c5e37cc`).** `GroqTranscriptionClient.parseResponse` consulta `no_speech_prob` solo con texto en blanco. Una respuesta con texto no vacío y todos los segmentos en el umbral o por encima podría pasar aunque S-105 exige 422. Queda fuera de la serialización saliente de T-048. Si el silencio de T-049 devuelve texto, detener el reensayo y concretar la corrección en frontera antes de declarar voz real verificada. [Regla de S-105](specs/S-105-voice-notes.md#adaptador-y-errores)
 
 ## Hechas · S-106 completada
 
@@ -78,7 +79,7 @@ Quince contratos de producto I1 completados (T-003 y T-014 mergeadas). T-021 MER
 
 ## Hechas · I2 / M2-RC1 voz
 
-M2-RC1 entregada como RC técnica: [T-037](tasks/T-037-voice-release.md) PR44 MERGED, squash `aef4213` (2026-11-10). [S-105 v2](specs/S-105-voice-notes.md) y [VOICE-RELEASE](VOICE-RELEASE.md) fijan el contrato y la entrega; la activación externa y las pruebas del dueño siguen en T-039.
+M2-RC1 entregada como RC técnica en [T-037](tasks/T-037-voice-release.md), PR44 MERGED, squash `aef4213` (2026-11-10). [T-039](tasks/T-039-voice-activation.md) cerró la primera ronda con el dueño y quedó conciliada tras PR46 MERGED. [S-105 v2](specs/S-105-voice-notes.md) y [VOICE-RELEASE](VOICE-RELEASE.md) fijan el contrato y la entrega.
 
 El dueño decidió priorizar voz el 2026-10-31. T-017 y T-027…T-038 están conciliadas como MERGED.
 
@@ -110,7 +111,7 @@ Hallazgo de pruebas daily fuera de T-036. En el cliente Linux del gate, MSW regi
 
 ## Posterior a M2-RC1
 
-Las pruebas personales del dueño sobre el SHA entregado ocurren en T-039. Frontera agrupa correcciones o mejoras a partir de los resultados, y las bloqueantes se insertan antes de T-040. Fuera de esta versión de voz: streaming, audio persistido, integración automática con CLI/daily y Safari/iOS. La portabilidad y el despliegue tienen ahora contrato propio (S-107 y S-108). Las demás opciones de ROADMAP conservan su carácter futuro.
+Fuera de esta versión de voz quedan streaming, audio persistido, integración automática con CLI/daily y Safari/iOS. La portabilidad y el despliegue tienen contrato propio (S-107 y S-108). Las demás opciones de ROADMAP conservan su carácter futuro.
 
 ## Fuera de I1
 

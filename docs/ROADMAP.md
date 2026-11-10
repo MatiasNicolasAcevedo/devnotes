@@ -47,7 +47,7 @@ Solo T-017 ready; demás draft exclusivamente por dependencia anterior. No hace 
 
 ## M2-RC1 · Activación y pruebas del dueño
 
-T-037 MERGED (`aef4213`, 2026-11-10): RC técnica entregada. [T-039](tasks/T-039-voice-activation.md) activa Groq en el stack persistente del dueño, ejecuta el ensayo externo acotado y recoge su veredicto según [VOICE-RELEASE](VOICE-RELEASE.md). Un veredicto «no aceptada» vuelve a frontera antes de M3.
+T-037 MERGED (`aef4213`, 2026-11-10) entregó la RC técnica. [T-039](tasks/T-039-voice-activation.md) documentó la activación de Groq, el fallo del ensayo y el veredicto «Aceptada con mejoras». [T-048](tasks/T-048-groq-multipart-fix.md) corrige el multipart y [T-049](tasks/T-049-voice-retest.md) reensaya con el dueño. La salida a M3 requiere T-049 favorable y MERGED, con «Voz real verificada» en [VOICE-RELEASE](VOICE-RELEASE.md).
 
 ## I3 / M3 · Portabilidad `.xlsx`
 
