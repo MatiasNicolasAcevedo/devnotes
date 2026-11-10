@@ -1,6 +1,6 @@
 ---
 id: T-048
-status: ready
+status: in_progress
 priority: P1
 size: S
 executor: junie
@@ -49,12 +49,19 @@ Completar la solicitud que DevNotes envía a Groq al detener la grabación. T-03
 
 ## Checkpoint vigente
 
-Contrato preparado el 2026-11-10 por frontera en Codex Desktop (GPT-6, variante y esfuerzo no expuestos), PowerShell, Git, `gh`, Git Bash, Node y consulta web. Base confirmada en GitHub `c5e37cc4b73ad038ac35edf29c66131416bb4a34`. La corrección afecta la solicitud saliente a Groq. Este avance documenta el contrato y concilia T-039. Junie ejecuta el rojo en esta rama.
+Contrato y conciliación de T-039 preparados el 2026-11-10 por frontera en Codex Desktop (GPT-6, variante y esfuerzo no expuestos).
+
+Sesión de implementación en Codex Desktop (GPT-6, variante y esfuerzo no expuestos), con PowerShell, Git Bash, Maven Wrapper/JDK 21, Git, `gh`, Node y Docker. Impacto en el cuerpo HTTP saliente de voz, sin cambios de API pública, permisos, persistencia ni UI. `gh pr view 46` confirmó `MERGED` contra `main`, squash `c5e37cc4b73ad038ac35edf29c66131416bb4a34`. `git ls-remote` confirmó esa base y el HEAD inicial `8699877c9491654a2f9e376d9e3596352232a228` de la rama de T-048.
+
+### Gate de cierre
+
+Checkpoint previo a FULL. Base `c5e37cc4b73ad038ac35edf29c66131416bb4a34`. Huellas Git de las fuentes: adaptador `76bbe99c0e55c5c13401f27341bacbe9cac0ad7c` y prueba `a2e71c008ab88ee29ccc3604ba23e4e4bba56417`. Comando FULL de la tabla desde la raíz con Git Bash explícito y Node 24.21.0 en PATH según SETUP. Log saneado en `.orchestrator/t048/full.log` (ignorado). Los namespaces `starter-verify-t048` y `starter-e2e-t048` estaban libres de contenedores, redes y volúmenes por label exacto. Revalidar antes del arranque. E2E usa el cleanup del harness. Para el runner de verificación, `docker compose --env-file .env.example -p starter-verify-t048 --profile verify down --volumes --remove-orphans`. Verificar ambos namespaces vacíos después y comparar huellas. Si pasa, publicar las fuentes y preparar el PR para revisión independiente.
 
 ## Correcciones significativas
 
 | Fecha / SHA | Problema y causa | Corrección | Prueba |
 |---|---|---|---|
+| 2026-11-10 / `8699877` + prueba local | El adaptador solo enviaba `file`. | Agregar los cuatro campos de texto definidos en S-105 al mismo multipart con boundary aleatorio. | Desde `server/`, `./mvnw -q test -Dtest=GroqTranscriptionClientTest#transcribeSendsGroqMultipartContract`: rojo exit 1 (HTTP 400, `missing model part`, 1 fallo de la expectativa de transcripción), luego verde exit 0. `./mvnw -q test -Dtest=GroqTranscriptionClientTest`: 16/16, exit 0. |
 
 ## Cierre y siguiente tarea
 
