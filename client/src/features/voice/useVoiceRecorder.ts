@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useSession } from '../auth/sessionContext'
 import {
   CaptureController,
@@ -40,6 +40,7 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
   const session = useSession()
 
   const controllerRef = useRef<CaptureController | null>(null)
+  const unsubscribeRef = useRef<(() => void) | null>(null)
   const elapsedRef = useRef<number>(0)
   const rafIdRef = useRef<number>(0)
   const onResultRef = useRef(onResult)
@@ -70,10 +71,12 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
       controllerRef.current = new CaptureController(controllerOptions)
       const ctrl = controllerRef.current
 
-      ctrl.subscribe((nextState, result, error) => {
+      unsubscribeRef.current = ctrl.subscribe((nextState, result, error) => {
+        if (result) onResultRef.current?.(result)
+        if (nextState === 'error') onErrorRef.current?.(error ?? new Error('Error desconocido.'))
+        if (nextState === 'requesting') elapsedRef.current = 0
         setState((prev) => {
           if (nextState === 'error') {
-            onErrorRef.current?.(error ?? new Error('Error desconocido.'))
             return {
               state: 'error',
               result: null,
@@ -83,7 +86,6 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
             }
           }
           if (nextState === 'idle' && result) {
-            onResultRef.current?.(result)
             return {
               state: 'idle',
               result,
@@ -153,64 +155,15 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
   }, [state.state, formatElapsed])
 
   // Cleanup al desmontar: detener captura y liberar recursos.
-  useEffect(() => {
+  useLayoutEffect(() => {
     return () => {
-      const ctrl = controllerRef.current
-      if (ctrl && ctrl.state !== 'idle') {
-        ctrl.dispose()
-      }
+      unsubscribeRef.current?.()
+      controllerRef.current?.dispose()
       controllerRef.current = null
       if (rafIdRef.current) {
         cancelAnimationFrame(rafIdRef.current)
         rafIdRef.current = 0
       }
-    }
-  }, [])
-
-  // Detener captura al iniciar logout (S-105: logoutPending).
-  useEffect(() => {
-    if (session.logoutPending) {
-      const ctrl = controllerRef.current
-      if (ctrl && (ctrl.state === 'recording' || ctrl.state === 'requesting')) {
-        ctrl.dispose()
-        setState((prev) => ({
-          ...prev,
-          state: 'idle',
-          result: null,
-          error: null,
-          elapsedSeconds: 0,
-          elapsedFormatted: '00:00',
-        }))
-      }
-    }
-  }, [session.logoutPending])
-
-  // Detener captura al ocultar la pestaña (S-105: pagehide conserva audio en memoria).
-  useEffect(() => {
-    const handlePageHide = () => {
-      const ctrl = controllerRef.current
-      if (ctrl && ctrl.state === 'recording') {
-        // Detener tracks pero no limpiar todo: el audio queda en chunks.
-        // El consumidor puede decidir transcribir después.
-        ctrl.dispose()
-      }
-    }
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        const ctrl = controllerRef.current
-        if (ctrl && ctrl.state === 'recording') {
-          ctrl.dispose()
-        }
-      }
-    }
-
-    window.addEventListener('pagehide', handlePageHide)
-    window.addEventListener('visibilitychange', handleVisibilityChange)
-
-    return () => {
-      window.removeEventListener('pagehide', handlePageHide)
-      window.removeEventListener('visibilitychange', handleVisibilityChange)
     }
   }, [])
 
@@ -238,29 +191,37 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
   }, [])
 
   const cancel = useCallback(() => {
-    const ctrl = controllerRef.current
-    if (!ctrl) return
-
-    if (ctrl.state === 'requesting') {
-      ctrl.cancelRequest()
-      setState((prev) => ({
-        ...prev,
-        state: 'idle',
-        result: null,
-        error: null,
-      }))
-    } else if (ctrl.state === 'recording') {
-      ctrl.dispose()
-      setState((prev) => ({
-        ...prev,
-        state: 'idle',
-        result: null,
-        error: null,
-        elapsedSeconds: 0,
-        elapsedFormatted: '00:00',
-      }))
-    }
+    controllerRef.current?.dispose()
+    setState({
+      state: 'idle',
+      result: null,
+      error: null,
+      elapsedSeconds: 0,
+      elapsedFormatted: '00:00',
+    })
   }, [])
+
+  const consumeResult = useCallback(() => {
+    setState((prev) => (prev.result ? { ...prev, result: null } : prev))
+  }, [])
+
+  useLayoutEffect(() => {
+    if (session.logoutPending) controllerRef.current?.dispose()
+  }, [session.logoutPending])
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) return
+      if (controllerRef.current?.state === 'requesting') cancel()
+      else void stop()
+    }
+    window.addEventListener('pagehide', cancel)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      window.removeEventListener('pagehide', cancel)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [cancel, stop])
 
   const resetError = useCallback(() => {
     setState((prev) => ({
@@ -275,6 +236,7 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
     start,
     stop,
     cancel,
+    consumeResult,
     resetError,
   }
 }

@@ -9,14 +9,16 @@ import {
   transcribeAudio,
   updateVoiceNote,
   type VoiceListParams,
+  type VoiceSessionCheck,
   voiceQueryKeys,
 } from './api'
 
 /** Consulta capacidades de voz. */
-export function useVoiceCapabilities() {
+export function useVoiceCapabilities(enabled = true) {
   return useQuery({
     queryKey: voiceQueryKeys.capabilities,
     queryFn: ({ signal }) => fetchVoiceCapabilities(signal),
+    enabled,
   })
 }
 
@@ -38,12 +40,17 @@ export function useVoiceNote(id: string) {
 }
 
 /** Mutación: transcribir audio a texto. Sin retry automático. */
-export function useTranscribeAudio() {
+export function useTranscribeAudio(sessionIsCurrent?: VoiceSessionCheck) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (file: Blob) => transcribeAudio(file),
+    mutationFn: (input: Blob | { file: Blob; signal: AbortSignal }) =>
+      input instanceof Blob
+        ? transcribeAudio(input)
+        : transcribeAudio(input.file, input.signal, sessionIsCurrent),
+    gcTime: 0,
+    retry: false,
     onSuccess: () => {
-      // Invalidar lista para reflejar cambios posteriores
+      if (sessionIsCurrent && !sessionIsCurrent()) return
       queryClient.invalidateQueries({ queryKey: voiceQueryKeys.all })
     },
   })
@@ -60,18 +67,19 @@ function forgetMissingNote(queryClient: QueryClient, id: string, error: unknown)
 }
 
 /** Mutación: crear nota. Invalida todas las páginas de la lista tras éxito. */
-export function useCreateVoiceNote() {
+export function useCreateVoiceNote(sessionIsCurrent?: VoiceSessionCheck) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: createVoiceNote,
+    mutationFn: (text: string) => createVoiceNote(text, sessionIsCurrent),
     onSuccess: () => {
+      if (sessionIsCurrent && !sessionIsCurrent()) return
       queryClient.invalidateQueries({ queryKey: voiceQueryKeys.lists })
     },
   })
 }
 
 /** Mutación: actualizar nota con CAS. Invalida detalle y lista. */
-export function useUpdateVoiceNote() {
+export function useUpdateVoiceNote(sessionIsCurrent?: VoiceSessionCheck) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({
@@ -82,22 +90,27 @@ export function useUpdateVoiceNote() {
       id: string
       text: string
       expectedRevision: number
-    }) => updateVoiceNote(id, text, expectedRevision),
+    }) => updateVoiceNote(id, text, expectedRevision, sessionIsCurrent),
     onSuccess: (_data, variables) => {
+      if (sessionIsCurrent && !sessionIsCurrent()) return
       queryClient.invalidateQueries({ queryKey: voiceQueryKeys.detail(variables.id) })
       queryClient.invalidateQueries({ queryKey: voiceQueryKeys.lists })
     },
-    onError: (error, variables) => forgetMissingNote(queryClient, variables.id, error),
+    onError: (error, variables) => {
+      if (sessionIsCurrent && !sessionIsCurrent()) return
+      forgetMissingNote(queryClient, variables.id, error)
+    },
   })
 }
 
 /** Mutación: eliminar nota con CAS. Invalida detalle y lista; retrocede página si se vacía. */
-export function useDeleteVoiceNote() {
+export function useDeleteVoiceNote(sessionIsCurrent?: VoiceSessionCheck) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({ id, expectedRevision }: { id: string; expectedRevision: number }) =>
-      deleteVoiceNote(id, expectedRevision),
+      deleteVoiceNote(id, expectedRevision, sessionIsCurrent),
     onSuccess: (_data, variables) => {
+      if (sessionIsCurrent && !sessionIsCurrent()) return
       // Todo lo de voz salvo el detalle borrado, que daría 404 si se volviera a pedir.
       const deletedDetail = voiceQueryKeys.detail(variables.id)
       queryClient.invalidateQueries({
@@ -105,6 +118,9 @@ export function useDeleteVoiceNote() {
         predicate: (query) => !deletedDetail.every((part, index) => query.queryKey[index] === part),
       })
     },
-    onError: (error, variables) => forgetMissingNote(queryClient, variables.id, error),
+    onError: (error, variables) => {
+      if (sessionIsCurrent && !sessionIsCurrent()) return
+      forgetMissingNote(queryClient, variables.id, error)
+    },
   })
 }

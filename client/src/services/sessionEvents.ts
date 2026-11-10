@@ -17,10 +17,13 @@ export interface SessionEvents {
   /** Devuelve la función que cancela la suscripción. */
   onUnauthorized(listener: UnauthorizedListener): () => void
   notifyUnauthorized(event: UnauthorizedEvent): void
+  onLogoutStarted(listener: () => void): () => void
+  notifyLogoutStarted(): void
 }
 
 export function createSessionEvents(): SessionEvents {
   const listeners = new Set<UnauthorizedListener>()
+  const logoutListeners = new Set<() => void>()
   return {
     onUnauthorized(listener) {
       listeners.add(listener)
@@ -31,6 +34,15 @@ export function createSessionEvents(): SessionEvents {
     notifyUnauthorized(event) {
       // Copia: un listener puede desuscribirse mientras se notifica.
       for (const listener of [...listeners]) listener(event)
+    },
+    onLogoutStarted(listener) {
+      logoutListeners.add(listener)
+      return () => {
+        logoutListeners.delete(listener)
+      }
+    },
+    notifyLogoutStarted() {
+      for (const listener of [...logoutListeners]) listener()
     },
   }
 }

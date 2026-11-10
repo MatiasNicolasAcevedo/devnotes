@@ -83,13 +83,15 @@ function createMockMediaRecorder(stream: MediaStream) {
     },
     mimeType: 'audio/webm',
     stream,
-    start: vi.fn(),
+    start: vi.fn(() => {
+      state = 'recording'
+    }),
     stop: vi.fn(() => {
       state = 'inactive'
       // Simular último fragmento
       const blob = new Blob(['chunk'], { type: 'audio/webm' })
       if (handlerDataAvailable) {
-        handlerDataAvailable(new BlobEvent('dataavailable', { data: blob }))
+        handlerDataAvailable(Object.assign(new Event('dataavailable'), { data: blob, timecode: 0 }))
       }
       if (handlerStop) {
         handlerStop()
@@ -188,14 +190,9 @@ describe('useVoiceRecorder', () => {
       await result.current.stop()
     })
 
-    // El mock stop es síncrono; el estado puede estar en 'idle' o 'stopping'
-    // dependiendo de si setState se ha propagado.
-    const finalState = result.current.state
-    expect(finalState).toBeOneOf(['idle', 'stopping'])
-    if (finalState === 'idle') {
-      expect(result.current.result).not.toBeNull()
-      expect(result.current.result?.blob.size).toBeGreaterThan(0)
-    }
+    expect(result.current.state).toBe('idle')
+    expect(result.current.result).not.toBeNull()
+    expect(result.current.result?.blob.size).toBeGreaterThan(0)
   })
 
   it('cancel en requesting vuelve a idle', async () => {
@@ -283,9 +280,7 @@ describe('useVoiceRecorder', () => {
       await result.current.stop()
     })
 
-    // El estado final es idle o stopping (mock síncrono puede completar dentro del act)
-    const finalState = result.current.state
-    expect(finalState).toBeOneOf(['idle', 'stopping'])
+    expect(result.current.state).toBe('idle')
   })
 
   it('onError se invoca al denegar permiso', async () => {
@@ -313,7 +308,9 @@ describe('useVoiceRecorder', () => {
   it('cleanup al desmontar libera controller', async () => {
     const trackStop = vi.fn()
     const customStream = createMockStream()
-    ;(customStream.getTracks as ReturnType<typeof vi.fn>).mockReturnValue([{ stop: trackStop }])
+    ;(customStream.getTracks as ReturnType<typeof vi.fn>).mockReturnValue([
+      Object.assign(new EventTarget(), { stop: trackStop }),
+    ])
     getUserMediaMock = () => Promise.resolve(customStream)
 
     const { result, unmount } = renderHook(() => useVoiceRecorder(buildControllerOptions()), {

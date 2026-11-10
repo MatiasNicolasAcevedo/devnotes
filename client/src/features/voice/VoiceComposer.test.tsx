@@ -6,6 +6,7 @@ import { server } from '../../test/msw/server'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import { AuthSessionContext, type AuthSession } from '../auth/sessionContext'
 import { z } from 'zod'
+import { VoiceDraftProvider } from './VoiceDraftProvider'
 
 const CAPABILITIES_PATH = '/api/v1/voice/capabilities'
 
@@ -38,7 +39,9 @@ function fullWrapper(queryClient: QueryClient) {
   return ({ children }: { children: React.ReactNode }) => (
     <AuthSessionContext value={defaultSession}>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        <ThemeProvider theme={theme}>
+          <VoiceDraftProvider>{children}</VoiceDraftProvider>
+        </ThemeProvider>
       </QueryClientProvider>
     </AuthSessionContext>
   )

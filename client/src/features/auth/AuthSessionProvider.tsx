@@ -42,12 +42,17 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
   const { mutateAsync: postLogout, reset: resetLogout } = logoutMutation
 
   const endSession = useCallback(
-    async (reason: 'expired' | 'logout') => {
+    async (reason: 'expired' | 'logout', owner: string) => {
+      const isCurrent = () =>
+        queryClient.getQueryData<AuthUser | null>(authQueryKeys.session)?.id === owner
+      if (!isCurrent()) return false
       // Cancelar antes de limpiar: una respuesta en vuelo no puede volver a poblar la cache.
       await queryClient.cancelQueries({ predicate: notCsrfQuery })
+      if (!isCurrent()) return false
       discardPrivateData()
       queryClient.setQueryData<AuthUser | null>(authQueryKeys.session, null)
       setSessionEnded(reason === 'expired')
+      return true
     },
     [queryClient, discardPrivateData],
   )
@@ -56,29 +61,34 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
     () =>
       sessionEvents.onUnauthorized(() => {
         // Para un visitante el 401 es la respuesta esperada; solo con un usuario conocido la sesión terminó.
-        if (queryClient.getQueryData<AuthUser | null>(authQueryKeys.session)) {
-          void endSession('expired')
-        }
+        const user = queryClient.getQueryData<AuthUser | null>(authQueryKeys.session)
+        if (user) void endSession('expired', user.id)
       }),
     [queryClient, endSession],
   )
 
   const logout = useCallback(async () => {
+    const user = queryClient.getQueryData<AuthUser | null>(authQueryKeys.session)
+    if (!user) return
+    sessionEvents.notifyLogoutStarted()
     void queryClient.cancelQueries({ predicate: notCsrfQuery })
     try {
-      await postLogout()
+      await postLogout(user.id)
     } catch {
       // El error queda en la mutación: sin 204 no se afirma el cierre. Un 401 ya lo trató el canal como expiración.
       return
     }
-    await endSession('logout')
+    if (!(await endSession('logout', user.id))) return
     resetLogout()
     // El server borró la cookie CSRF: se obtiene la anónima antes de permitir otra mutación.
     await queryClient.resetQueries({ queryKey: authQueryKeys.csrf })
-    void navigate('/login', { replace: true })
+    if (queryClient.getQueryData<AuthUser | null>(authQueryKeys.session) === null) {
+      void navigate('/login', { replace: true })
+    }
   }, [queryClient, postLogout, resetLogout, endSession, navigate])
 
   const user = session.data ?? null
+  const logoutForCurrentUser = !!user && logoutMutation.variables === user.id
   const value: AuthSession = {
     status: user
       ? 'authenticated'
@@ -95,8 +105,9 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
     retryCsrf: () => void csrf.refetch(),
     sessionEnded,
     logout: () => void logout(),
-    logoutPending: logoutMutation.isPending,
-    logoutError: isUnauthorized(logoutMutation.error) ? null : logoutMutation.error,
+    logoutPending: logoutForCurrentUser && logoutMutation.isPending,
+    logoutError:
+      logoutForCurrentUser && !isUnauthorized(logoutMutation.error) ? logoutMutation.error : null,
   }
 
   return <AuthSessionContext value={value}>{children}</AuthSessionContext>

@@ -60,6 +60,8 @@ export const voiceQueryKeys = {
   detail: (id: string) => ['voice', 'detail', id] as const,
 }
 
+export type VoiceSessionCheck = () => boolean
+
 export interface VoiceListParams {
   page?: number
   size?: number
@@ -67,11 +69,18 @@ export interface VoiceListParams {
 
 /** GET /api/v1/voice/capabilities */
 export function fetchVoiceCapabilities(signal?: AbortSignal) {
-  return http.request('/api/v1/voice/capabilities', voiceCapabilitiesSchema, { signal })
+  return http.request('/api/v1/voice/capabilities', voiceCapabilitiesSchema, {
+    signal,
+    sessionIsCurrent: () => !signal?.aborted,
+  })
 }
 
 /** POST /api/v1/voice/transcriptions — multipart con deadline 90 s combinado con señal del caller. */
-export function transcribeAudio(file: Blob, signal?: AbortSignal) {
+export function transcribeAudio(
+  file: Blob,
+  signal?: AbortSignal,
+  sessionIsCurrent?: VoiceSessionCheck,
+) {
   const fd = new FormData()
   fd.append('file', file, 'recording.webm')
   const deadline = AbortSignal.timeout(90_000)
@@ -79,6 +88,7 @@ export function transcribeAudio(file: Blob, signal?: AbortSignal) {
     method: 'POST',
     formData: fd,
     signal: signal ? AbortSignal.any([signal, deadline]) : deadline,
+    sessionIsCurrent: () => !signal?.aborted && (sessionIsCurrent?.() ?? true),
   })
 }
 
@@ -88,33 +98,51 @@ export function fetchVoiceNotes(params?: VoiceListParams, signal?: AbortSignal) 
   if (params?.page !== undefined) search.set('page', String(params.page))
   if (params?.size !== undefined) search.set('size', String(params.size))
   const path = search.toString() ? `/api/v1/voice-notes?${search}` : '/api/v1/voice-notes'
-  return http.request(path, voiceNotePageSchema, { signal })
+  return http.request(path, voiceNotePageSchema, {
+    signal,
+    sessionIsCurrent: () => !signal?.aborted,
+  })
 }
 
 /** POST /api/v1/voice-notes {text} */
-export function createVoiceNote(text: string) {
+export function createVoiceNote(text: string, sessionIsCurrent?: VoiceSessionCheck) {
   return http.request('/api/v1/voice-notes', voiceNoteDetailSchema, {
     method: 'POST',
     body: { text },
+    sessionIsCurrent,
   })
 }
 
 /** GET /api/v1/voice-notes/{id} */
 export function fetchVoiceNote(id: string, signal?: AbortSignal) {
-  return http.request(`/api/v1/voice-notes/${id}`, voiceNoteDetailSchema, { signal })
+  return http.request(`/api/v1/voice-notes/${id}`, voiceNoteDetailSchema, {
+    signal,
+    sessionIsCurrent: () => !signal?.aborted,
+  })
 }
 
 /** PUT /api/v1/voice-notes/{id} {text, expectedRevision} */
-export function updateVoiceNote(id: string, text: string, expectedRevision: number) {
+export function updateVoiceNote(
+  id: string,
+  text: string,
+  expectedRevision: number,
+  sessionIsCurrent?: VoiceSessionCheck,
+) {
   return http.request(`/api/v1/voice-notes/${id}`, voiceNoteDetailSchema, {
     method: 'PUT',
     body: { text, expectedRevision },
+    sessionIsCurrent,
   })
 }
 
 /** DELETE /api/v1/voice-notes/{id}?expectedRevision=N */
-export function deleteVoiceNote(id: string, expectedRevision: number) {
+export function deleteVoiceNote(
+  id: string,
+  expectedRevision: number,
+  sessionIsCurrent?: VoiceSessionCheck,
+) {
   return http.requestVoid(`/api/v1/voice-notes/${id}?expectedRevision=${expectedRevision}`, {
     method: 'DELETE',
+    sessionIsCurrent,
   })
 }

@@ -1,8 +1,10 @@
 import projectIdentity from '../project-identity.json'
 import { screen, within } from '@testing-library/react'
+import { http as mock } from 'msw'
 import { describe, expect, it } from 'vitest'
-import { buildAuthUser } from '../test/factories'
+import { buildAuthUser, problemResponse } from '../test/factories'
 import { installAuthBackend } from '../test/msw/authBackend'
+import { server } from '../test/msw/server'
 import { renderWithProviders } from '../test/render'
 import { AppRoutes } from './AppRoutes'
 
@@ -44,6 +46,10 @@ describe('AppRoutes', () => {
 describe('Página /voice', () => {
   it('muestra la pantalla de notas de voz con el enlace en la barra', async () => {
     installAuthBackend()
+    server.use(
+      mock.get('/api/v1/voice/capabilities', () => problemResponse(401)),
+      mock.get('/api/v1/voice-notes', () => problemResponse(401)),
+    )
     renderWithProviders(<AppRoutes />, { route: '/voice' })
 
     expect(await screen.findByRole('heading', { name: 'Notas de voz' })).toBeVisible()

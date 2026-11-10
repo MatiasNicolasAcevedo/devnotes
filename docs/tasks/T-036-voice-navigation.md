@@ -1,6 +1,6 @@
 ---
 id: T-036
-status: draft
+status: in_progress
 priority: P1
 size: M
 executor: junie
@@ -53,11 +53,20 @@ Atrás/Adelante y navegación por header no pierden texto, no renderizan destino
 
 ## Checkpoint vigente
 
-2026-10-31: contrato de frontera preparado en T-017 sobre main 0d976dc2187cb2a07061c3db48130c334b1e471b. Sin implementación, PR, migración aplicada ni tests de esta tarea ejecutados. Rol/modelo/herramienta/esfuerzo del ejecutor se registran al tomarla; no heredar capacidades Junie de frontera.
+2026-11-10. Implementer, Codex (GPT-6.1, PowerShell/Git/gh/Node/Docker, esfuerzo no expuesto). Impacto: comportamiento de navegación, ciclo de vida del borrador y mensajes de voz en la UI. Sin cambio de contrato HTTP, permisos ni persistencia.
+
+`gh pr view` confirmó PR40 (T-035) MERGED en `main` con squash `e1fbaea1ca3ae868dd2ca93569da45eab65aa413` y PR41 (T-038) MERGED en `main` con squash `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`. T-035 ya conciliada, T-038 conciliada en esta rama. Base publicada `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`, padre único `e1fbaea1ca3ae868dd2ca93569da45eab65aa413`.
+
+Implementados workspace por dueño, guardia de voz anterior al outlet diario, ACK antes de continuar, limpieza de captura y aislamiento de respuestas tardías. Los tests dirigidos de navegación, grabador, daily y sesión pasaron 45/45; evidencia local en `.orchestrator/t036-core.log`. El gate host de cliente se registra en `.orchestrator/t036-client-verify.log`.
+
+Preflight de cierre: Git Bash explícito, Node 24.21.0, Docker 28.5.1 y Compose 2.40.2. Los labels exactos de `starter-verify-t036` y `starter-e2e-t036` están libres. Gate FULL/APPLICATION con el comando del contrato, sin editar fuentes durante la corrida. La bitácora local `.orchestrator/t036/full-gate-evidence.log` identifica UTC, HEAD, base y huellas del árbol y las fuentes al entrar/salir. Cleanup: el runner E2E retira su proyecto y comprueba cero recursos; tras `verify.sh`, quitar solo la red `starter-verify-t036_default` y el volumen `starter-verify-t036_m2-cache` si tienen el label exacto del proyecto, y verificar ambos namespaces. Siguiente: publicar el commit técnico si el gate está verde y pasar el PR a revisión independiente.
 
 ## Correcciones significativas
 
-Sin correcciones de implementación. Registrar aquí únicamente problema/causa, arreglo y prueba/SHA cuando ocurran.
+| Fecha | Problema/causa | Arreglo | Evidencia |
+| --- | --- | --- | --- |
+| 2026-11-10 | Un resultado persistente del grabador y la identidad variable de `draft` reactivaban la transcripción en cada render. | Consumir una vez la generación de captura en el workspace; reintento explícito y petición abortable. | `npm test -- --run src/features/voice/VoicePage.test.tsx -t 'un stop con resultado'`: rojo 11 POST cuando esperaba 1; verde con un único POST. |
+| 2026-11-10 | El primer montaje por dueño remontaba también la barra de sesión, y la salida con captura podía recibir permiso tardío. | Mantener la barra fuera del subárbol privado y conservar la captura de enlaces daily sobre el shell. Invalidar la generación del permiso y detener tracks tardíos. | `AuthSession.test.tsx`, `DailyDraftNavigation.test.tsx` y `VoiceDraftNavigation.test.tsx`. |
 
 ## Cierre y siguiente tarea
 

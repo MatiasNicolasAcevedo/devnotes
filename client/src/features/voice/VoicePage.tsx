@@ -13,6 +13,7 @@ import type { VoiceNoteListItem } from './api'
 import { useVoiceNote } from './useVoiceNotes'
 import { VoiceComposer, type VoiceComposerHandle } from './VoiceComposer'
 import { VoiceLibrary } from './VoiceLibrary'
+import { useVoiceDraftContext } from './voiceDraftContext'
 
 /** Destino pendiente mientras se resuelve el diálogo de cambios sin guardar. */
 type PendingTarget = { kind: 'note'; id: string } | { kind: 'new' }
@@ -26,7 +27,13 @@ type PendingTarget = { kind: 'note'; id: string } | { kind: 'new' }
  * «Guardar y continuar» solo continúa tras el ACK del servidor; 409/error se quedan en la nota actual.
  */
 export function VoicePage() {
-  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const { pageEpoch } = useVoiceDraftContext()
+  return <VoicePageContent key={pageEpoch} />
+}
+
+function VoicePageContent() {
+  const { draft } = useVoiceDraftContext()
+  const [selectedId, setSelectedId] = useState(draft.state.noteId)
   const [pending, setPending] = useState<PendingTarget | null>(null)
   const [savingBeforeContinue, setSavingBeforeContinue] = useState(false)
   // Guardado/borrado en vuelo en el composer: no se cambia de documento hasta su respuesta.

@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { authQueryKeys, fetchCurrentUser, logout, renewCsrf, type AuthUser } from './api'
 
 /**
@@ -36,5 +36,14 @@ export function useCsrfToken() {
 
 /** Mutación de logout, sin reintentos ni reenvío automático. Sus efectos sobre cache y navegación los define la UI. */
 export function useLogout() {
-  return useMutation({ mutationFn: logout, retry: false })
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (owner: string | void) =>
+      logout(
+        owner === undefined
+          ? undefined
+          : () => queryClient.getQueryData<AuthUser | null>(authQueryKeys.session)?.id === owner,
+      ),
+    retry: false,
+  })
 }

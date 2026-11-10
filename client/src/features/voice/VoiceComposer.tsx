@@ -15,9 +15,9 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { ApiError } from '../../services/http'
 import { fetchVoiceNote, voiceQueryKeys, type VoiceNoteDetail } from './api'
-import { useVoiceCapabilities } from './useVoiceNotes'
-import { useVoiceRecorder } from './useVoiceRecorder'
-import { type SaveOutcome, useVoiceDraft, voiceNoteTextSchema } from './useVoiceDraft'
+import { useSession } from '../auth/sessionContext'
+import { type SaveOutcome, voiceNoteTextSchema } from './useVoiceDraft'
+import { useVoiceDraftContext } from './voiceDraftContext'
 
 interface VoiceComposerProps {
   /** Detalle de una nota seleccionada desde la lista. Al cambiar, se carga en el composer. */
@@ -62,9 +62,11 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
   ) => {
     // Mientras la nota pedida carga o falló no se escribe, graba, guarda ni borra: lo que se hiciera
     // quedaría sobre el documento anterior y el detalle entrante lo descartaría o se superpondría.
-    const editorLocked = loadingDetail || detailUnavailable
-    const { data: capabilities } = useVoiceCapabilities()
-    const draft = useVoiceDraft()
+    const { logoutPending } = useSession()
+    const editorLocked = loadingDetail || detailUnavailable || logoutPending
+    const { draft, recorder, capabilities, stopAndTranscribe } = useVoiceDraftContext()
+    const captureState = recorder.state === 'idle' ? draft.state.captureState : recorder.state
+    const captureError = recorder.error ?? draft.state.captureError
     const queryClient = useQueryClient()
 
     // Diálogo de confirmación de borrado
@@ -99,46 +101,6 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     // Errores de operación, fijados por el resultado de save()/deleteNote()
     const [saveError, setSaveError] = useState<'error' | 'gone' | null>(null)
     const [deleteError, setDeleteError] = useState<'error' | 'gone' | null>(null)
-
-    // Hook de captura de voz
-    const recorder = useVoiceRecorder({
-      maxDurationSeconds: capabilities?.maxDurationSeconds,
-      maxAudioBytes: capabilities?.maxAudioBytes,
-      mimeTypes: capabilities?.mimeTypes,
-      onResult: (result) => {
-        draft.setCaptureState('idle', result)
-      },
-      onError: (error) => {
-        draft.setCaptureState('error', null, error)
-      },
-    })
-
-    // Sincronizar estado de captura con el draft. Depende solo del callback estable: `draft` es un
-    // objeto nuevo en cada render y como dependencia provocaba un bucle de renders infinito.
-    const { setCaptureState } = draft
-    useEffect(() => {
-      setCaptureState(
-        recorder.state,
-        recorder.result,
-        recorder.error,
-        recorder.elapsedSeconds,
-        recorder.elapsedFormatted,
-      )
-    }, [
-      recorder.state,
-      recorder.result,
-      recorder.error,
-      recorder.elapsedSeconds,
-      recorder.elapsedFormatted,
-      setCaptureState,
-    ])
-
-    // Cuando hay resultado de captura, iniciar transcripción automáticamente
-    useEffect(() => {
-      if (recorder.result && recorder.state === 'idle') {
-        draft.transcribe()
-      }
-    }, [recorder.result, recorder.state, draft])
 
     // Enfocar el textarea tras transcripción exitosa
     useEffect(() => {
@@ -179,10 +141,6 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
       }
     }, [recordingEnabled, recorder])
 
-    const handleStopRecording = useCallback(() => {
-      recorder.stop()
-    }, [recorder])
-
     const handleCancelRecording = useCallback(() => {
       recorder.cancel()
     }, [recorder])
@@ -194,8 +152,9 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     }, [draft])
 
     const handleDiscardAudio = useCallback(() => {
-      draft.setCaptureState('idle', null, null)
-    }, [draft])
+      recorder.cancel()
+      draft.clearAudio()
+    }, [draft, recorder])
 
     const handleCopy = useCallback(async () => {
       setCopySuccess(false)
@@ -306,7 +265,10 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     const isDeleting = draft.deleteMutation.isPending
     // La página no cambia de documento con guardado/borrado, captura o transcripción en curso,
     // ni con audio pendiente de transcribir/descartar (S-105: no se superponen).
-    const isPersisting = isSaving || isDeleting || draft.isBusy || draft.state.captureResult != null
+    const captureBusy =
+      captureState === 'requesting' || captureState === 'recording' || captureState === 'stopping'
+    const audioPending = recorder.result != null || draft.state.captureResult != null
+    const isPersisting = isSaving || isDeleting || draft.isBusy || captureBusy || audioPending
 
     useEffect(() => {
       onBusyChange?.(isPersisting)
@@ -333,9 +295,9 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     const canRecord =
       !editorLocked &&
       recordingEnabled &&
-      draft.state.captureState === 'idle' &&
+      captureState === 'idle' &&
       draft.state.documentState === 'new' &&
-      !draft.isBusy
+      !isPersisting
 
     // Determinar si se puede guardar
     const canSave =
@@ -343,7 +305,8 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
       !draft.isTextEmpty &&
       !isSaving &&
       !isTranscribing &&
-      draft.state.captureState === 'idle' &&
+      captureState === 'idle' &&
+      !audioPending &&
       draft.state.documentState !== 'saving' &&
       !textError
 
@@ -394,7 +357,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
         )}
 
         {/* Estado de captura: solicitando permiso */}
-        {draft.state.captureState === 'requesting' && (
+        {captureState === 'requesting' && (
           <Alert severity="info">
             <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
               <CircularProgress size={20} aria-hidden />
@@ -407,18 +370,13 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
         )}
 
         {/* Estado de captura: grabando */}
-        {draft.state.captureState === 'recording' && (
+        {captureState === 'recording' && (
           <Alert
             severity="error"
             sx={{ mb: 2 }}
             action={
               <Stack direction="row" spacing={1} useFlexGap>
-                <Button
-                  size="small"
-                  color="inherit"
-                  onClick={handleStopRecording}
-                  variant="outlined"
-                >
+                <Button size="small" color="inherit" onClick={stopAndTranscribe} variant="outlined">
                   Detener y transcribir
                 </Button>
                 <Button size="small" color="inherit" onClick={handleCancelRecording}>
@@ -445,9 +403,9 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
                 component="span"
                 sx={{ fontFamily: 'monospace', fontSize: '1.1rem' }}
                 role="timer"
-                aria-label={`Tiempo de grabación: ${draft.state.elapsedFormatted}`}
+                aria-label={`Tiempo de grabación: ${recorder.elapsedFormatted}`}
               >
-                {draft.state.elapsedFormatted}
+                {recorder.elapsedFormatted}
               </Typography>
             </Stack>
           </Alert>
@@ -464,13 +422,29 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
         )}
 
         {/* Error de captura */}
-        {draft.state.captureState === 'error' && draft.state.captureError && (
+        {captureState === 'idle' && draft.state.captureResult && (
+          <Alert severity="info" sx={{ mb: 2 }}>
+            El audio está listo para transcribir.
+            <Stack direction="row" spacing={1}>
+              <Button disabled={editorLocked} onClick={handleRetryTranscription}>
+                Transcribir
+              </Button>
+              <Button onClick={handleDiscardAudio}>Descartar audio</Button>
+            </Stack>
+          </Alert>
+        )}
+        {captureState === 'error' && captureError && (
           <Alert
             severity="error"
             action={
               <Stack direction="row" spacing={1}>
                 {draft.state.captureResult && (
-                  <Button size="small" color="inherit" onClick={handleRetryTranscription}>
+                  <Button
+                    size="small"
+                    color="inherit"
+                    disabled={editorLocked}
+                    onClick={handleRetryTranscription}
+                  >
                     Reintentar transcripción
                   </Button>
                 )}
@@ -525,7 +499,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
           placeholder="Escribí tu nota o grabá audio para transcribir…"
           value={draft.state.text}
           onChange={handleTextChange}
-          disabled={editorLocked || isTranscribing || draft.state.captureState === 'recording'}
+          disabled={editorLocked || captureBusy || audioPending}
           error={!!textError}
           helperText={textError}
           slotProps={{

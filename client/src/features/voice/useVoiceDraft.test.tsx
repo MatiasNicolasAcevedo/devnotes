@@ -118,7 +118,7 @@ describe('useVoiceDraft · transcripción', () => {
     )
 
     act(() => result.current.transcribe())
-    await waitFor(() => expect(result.current.transcribeMutation.isSuccess).toBe(true))
+    await waitFor(() => expect(result.current.state.captureResult).toBeNull())
 
     expect(result.current.state.text).toBe('Texto 1')
     expect(result.current.state.noteId).toBe(ID_1)

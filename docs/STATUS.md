@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-038](tasks/T-038-reference-preview-fix.md) · S-106 / bugfix antes de T-036 |
-| Estado | `mergeable` |
-| Acción actual | Segunda revisión independiente cerró B-1 y B-2. Consultar el veredicto y los checks del HEAD vigente en PR41 y confirmar el merge antes de habilitar T-036. |
-| Rama / PR | codex/t-038-reference-preview-fix · [PR41](https://github.com/MatiasNicolasAcevedo/devnotes/pull/41) |
+| Tarea y contrato | [T-036](tasks/T-036-voice-navigation.md) · S-105 / navegación y sesión |
+| Estado | `in_progress` |
+| Acción actual | Implementar y verificar el workspace de voz sobre el outlet. |
+| Rama / PR | codex/t-036-voice-navigation · sin PR |
+
+T-038: PR41 MERGED y conciliada como done. Evidencia del squash y checks en [T-038](tasks/T-038-reference-preview-fix.md#checkpoint-vigente).
 
 T-035: PR40 MERGED, squash `e1fbaea1ca3ae868dd2ca93569da45eab65aa413`, confirmado en GitHub el 2026-11-09 (mergedAt 2026-11-10T01:39:05Z). Merge con excepción del dueño acotada a `reference-preview.spec.ts` (preexistente), corregido en T-038.
 
@@ -64,5 +66,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Confirmar el estado de PR41 (T-038) en GitHub según docs/agents/merger.md. Si sigue OPEN, retomar como merger y aplicar AUTONOMY sobre el veredicto, HEAD/base y checks vigentes. Con MERGED, registrar SHA y fecha, y en sesión implementer nueva conciliar T-038 como done en el primer avance de codex/t-036-voice-navigation. Comprobar las dependencias T-035 y T-038, actualizar STATUS y la cola según corresponda y ejecutar el contrato de T-036 (docs/tasks/T-036-voice-navigation.md).
+Implementer, sesión nueva. Retomar T-036 en codex/t-036-voice-navigation según docs/tasks/T-036-voice-navigation.md. Confirmar que la base remota contiene los squashes de PR40 y PR41 ya conciliados, comprobar el estado local y remoto de la rama y retomar el checkpoint. Completar pruebas dirigidas y gate por alcance. Publicar un único PR contra main y preparar la revisión independiente cuando el gate esté verde.
 ```

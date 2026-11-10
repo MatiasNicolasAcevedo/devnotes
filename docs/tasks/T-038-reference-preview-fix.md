@@ -1,6 +1,6 @@
 ---
 id: T-038
-status: mergeable
+status: done
 priority: P1
 size: S
 executor: junie
@@ -76,7 +76,7 @@ Huellas reconstruidas de la corrida original. `git status --short` dio vacío an
 - B-2 cerrado. El SHA-256 calculado sobre `full-gate.log` coincide con la huella registrada. El original confirma el HEAD al arrancar, las cuatro suites con exit 0 y 41 E2E aprobados (21 desktop, 20 mobile, con `reference preview:` en ambos). Las sondas del registro de implementación dieron árbol limpio a las 02:01:30Z y 02:29:56Z. El reflog, el árbol y el padre del commit coinciden con la evidencia de implementación. Se conserva ese FULL/APPLICATION: la base publicada coincide y `git diff --raw 9e89f8a HEAD` solo muestra Markdown de documentación.
 - `bash scripts/verify.sh --policy origin/main` devolvió FULL/APPLICATION. Las cuatro suites dirigidas de cliente indicadas en la primera revisión pasaron 44/44. `node scripts/docs-check.mjs` y `git diff --check` pasaron. En el HEAD de entrada, [verify-required](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42747081032) terminó SUCCESS.
 
-Retoma de merge: el veredicto de la segunda revisión, con los SHA publicados y el check del HEAD final, se registra en PR41. Aplicar AUTONOMY antes del squash y confirmar MERGED en GitHub antes de conciliar.
+Conciliación en T-036, 2026-11-10: `gh pr view 41 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` confirmó PR41 MERGED en `main`, HEAD `ea1b96c2601104b9af16f033561008c9df4477a3`, squash `a6210050f0e4c9a8ff98df62c50dbb4aebd995de` a las 03:13:52Z. `gh pr checks 41` confirmó [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42747853848/job/129604151608).
 
 ## Correcciones significativas
 
