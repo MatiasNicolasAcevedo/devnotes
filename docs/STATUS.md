@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-039](tasks/T-039-voice-activation.md) · S-105 / activación de Groq y pruebas personales de M2-RC1 |
+| Tarea y contrato | [T-048](tasks/T-048-groq-multipart-fix.md) · S-105 / multipart saliente a Groq |
 | Estado | `mergeable` |
-| Acción actual | Cerrar el PR46 según AUTONOMY tras verificar el HEAD documental y publicar el veredicto. Con MERGED confirmado, frontera prepara la corrección y el reensayo de voz en otra sesión. |
-| Rama / PR | codex/t-039-voice-activation · [PR46](https://github.com/MatiasNicolasAcevedo/devnotes/pull/46) |
+| Acción actual | Cerrar PR47 tras verificar el HEAD documental y publicar el veredicto ligado a HEAD/base. Con MERGED confirmado, la siguiente sesión de frontera concilia T-048 y toma T-049. |
+| Rama / PR | `codex/t-048-groq-multipart-fix` · [PR47](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47) |
+
+T-039: [PR46 MERGED y conciliada como done](tasks/T-039-voice-activation.md#checkpoint-vigente). El reensayo con el dueño queda en [T-049](tasks/T-049-voice-retest.md) tras el merge de T-048. T-040 espera el reensayo favorable y su PR MERGED.
 
 T-037: PR44 MERGED, squash `aef4213db2fe7f676591811b7ee67a22757b64b0`, confirmado en GitHub el 2026-11-10 (mergedAt 2026-11-10T16:37:31Z). Conciliada como done; SHA de entrega congelado en [VOICE-RELEASE](VOICE-RELEASE.md). Plan posterior del dueño (2026-11-10) en [S-107](specs/S-107-xlsx-portability.md) y [S-108](specs/S-108-render-pilot.md).
 
@@ -70,5 +72,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva de frontera para el seguimiento de voz de T-039. Leer AGENTS.md, docs/STATUS.md, T-039, VOICE-RELEASE, el hallazgo de BACKLOG y S-105 §Adaptador y errores. Confirmar en GitHub que el PR46 contra main está MERGED, con mergedAt y mergeCommit.oid, según docs/agents/merger.md. Si sigue abierto, retomar su cierre antes de preparar el seguimiento. Con MERGED confirmado, conciliar T-039 como done en el primer avance de la rama autorizada y preparar el contrato de corrección del multipart y el reensayo sintético acotado con el dueño. Fijar la regresión rojo/verde, el criterio observable para voz real y la dependencia de T-040. Dejar STATUS con la próxima acción ejecutable.
+Sesión nueva de frontera para T-049 con el dueño. Leer AGENTS.md, STATUS, el cierre de PR47, T-048, T-049 y sus referencias en VOICE-RELEASE. Confirmar en GitHub PR47 MERGED contra main con mergedAt y mergeCommit.oid según docs/agents/merger.md. Si el merge sigue pendiente, retomar su cierre según AUTONOMY antes de iniciar T-049. Con MERGED confirmado, conciliar T-048 como done en el primer avance de la rama de T-049 y coordinar el reensayo sintético según su contrato. T-040 espera T-049 favorable y MERGED. FULL integrado después de T-044 MERGED.
 ```

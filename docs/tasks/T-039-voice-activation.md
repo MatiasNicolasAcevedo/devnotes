@@ -1,6 +1,6 @@
 ---
 id: T-039
-status: mergeable
+status: done
 priority: P1
 size: S
 executor: frontier
@@ -68,6 +68,10 @@ No se fabrica ningún resultado: lo que no se ejecutó figura como pendiente. CI
 
 ## Checkpoint vigente
 
+2026-11-10. Conciliada como `done` en el primer avance de `codex/t-048-groq-multipart-fix`. `gh pr view 46 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` salió 0 y confirmó [PR46](https://github.com/MatiasNicolasAcevedo/devnotes/pull/46), base `main`, `state=MERGED`, `mergedAt=2026-11-10T19:11:25Z`, `mergeCommit.oid=c5e37cc4b73ad038ac35edf29c66131416bb4a34` y HEAD `4b9a1b06b0f05501f3838b71ef194cdc52943cd7` con [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42882513369/job/130062204202). El veredicto del dueño «Aceptada con mejoras» corresponde a esta ronda. El reensayo externo queda pendiente.
+
+### Evidencia de ejecución
+
 Ejecución del 2026-11-10. Frontera en Codex Desktop con GPT-6 (variante y esfuerzo no expuestos), PowerShell, Git, `gh`, Node, Docker, Edge y consulta web. Impacto observado: grabación habilitada por la configuración local y transcripción externa bloqueada. El PR registra evidencia en Markdown.
 
 - Base `c63038d8c8d0820396b6ea94e78f61671175a040`. `git status --short --branch` mostró main limpio antes de `git switch --create codex/t-039-voice-activation main`. `git merge-base --is-ancestor aef4213 main` salió 0. `git ls-remote --heads origin main codex/t-039-voice-activation` confirmó ese main y la ausencia de rama remota. `gh pr view 44 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName,statusCheckRollup` confirmó `MERGED`, squash `aef4213db2fe7f676591811b7ee67a22757b64b0`, `mergedAt` 2026-11-10T16:37:31Z y `verify-required` SUCCESS sobre `ad548bc`. `gh pr list --repo MatiasNicolasAcevedo/devnotes --state open` mostró solo PR38 de una conciliación anterior. `git diff --name-only aef4213..main` mostró solo Markdown.
@@ -108,4 +112,4 @@ Ejecución del 2026-11-10. Frontera en Codex Desktop con GPT-6 (variante y esfue
 
 ## Cierre y siguiente tarea
 
-Con «Aceptada con mejoras», el dueño cerró esta ronda y pidió retomar el ensayo de voz después de corregir el 502. Tras confirmar MERGED del PR documental, una sesión nueva de frontera concilia T-039 y prepara el contrato de corrección y reensayo. La dependencia de T-040 se resuelve en esa planificación.
+El dueño cerró esta ronda con «Aceptada con mejoras» y pidió retomar el ensayo de voz después de corregir el 502. Sigue [T-048](T-048-groq-multipart-fix.md) para corregir el multipart, luego [T-049](T-049-voice-retest.md) para reensayar con el dueño sobre el arreglo integrado. T-049 debe quedar favorable y MERGED antes de [T-040](T-040-daily-timestamps.md).

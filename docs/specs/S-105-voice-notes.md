@@ -3,7 +3,7 @@ id: S-105
 status: ready
 version: 2
 milestone: M2
-tasks: [T-017, T-027, T-028, T-029, T-030, T-031, T-032, T-033, T-034, T-035, T-036, T-037]
+tasks: [T-017, T-027, T-028, T-029, T-030, T-031, T-032, T-033, T-034, T-035, T-036, T-037, T-048, T-049]
 ---
 # S-105 · I2 notas de voz · contrato M2-RC1
 
@@ -85,6 +85,8 @@ DTO separado de entidad. Campos desconocidos de escritura (owner/id incluidos)40
 Creación POST sin retry automático ni promesa de idempotencia entre solicitudes distintas. Tras ACK perdido conservar texto y ofrecer refrescar/consultar lista antes de volver a crear; explicar que pudo haberse guardado. No anunciar exactamente una vez.
 
 ## Adaptador y errores
+
+El POST saliente usa `multipart/form-data` con cinco partes elegidas en el servidor. Envía `file` como `recording.webm` de tipo `audio/webm`, `model=whisper-large-v3-turbo`, `language=es`, `temperature=0` y `response_format=verbose_json`. El formato verboso incluye `no_speech_prob` por segmento. [Contrato de Groq](https://console.groq.com/docs/speech-to-text#using-the-api)
 
 RestClient con transporte JDK21, destino fijo **https://api.groq.com/openai/v1/audio/transcriptions**, sin redirects. Clave solo backend; parámetros elegidos en servidor, sin prompt por defecto, SDK nuevo, shell, ffmpeg, fallback ni modelo alternativo. HttpServer JDK inyectado solo en IT; el harness usa destino fijo http://voice-provider:8091/openai/v1/audio/transcriptions únicamente cuando perfil e2e **y** DEVNOTES_VOICE_TEST_PROVIDER=true. El flag es falso fuera del overlay E2E y se rechaza true fuera de ese perfil. No existe base URL arbitraria configurable ni parámetro de destino desde navegador. El desarrollo persistente también usa perfil e2e para OIDC ficticio: ese perfil por sí solo no habilita el doble.
 

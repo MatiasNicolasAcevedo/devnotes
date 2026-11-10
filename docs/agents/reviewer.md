@@ -1,5 +1,7 @@
 # Protocolo · reviewer
 
+Para la evidencia de cierre, consultar primero el [aplazamiento de FULL hasta T-044](../TESTING.md#aplazamiento-de-full-hasta-t-044).
+
 1. Sesión nueva, distinta de la implementación; un solo PR. Registrar rol, modelo y herramienta. Leer contrato/spec, diff completo, checks y base/HEAD publicados.
 2. Verificar el código publicado: si hay cambios locales ajenos, usar un checkout aislado (`git worktree add` del SHA del PR). No revisar solo el workspace del implementador.
 3. Comprobar perfil del diff y evidencia local del FULL de aplicación y tooling si STARTER sobre las fuentes/base publicadas, buscar bordes, efectos sobre datos y permisos, y ejecutar dirigidos/negativos de esos riesgos. Repetir FULL solo por cambio técnico/base, evidencia insuficiente o riesgo concreto, según TESTING; no duplicarlo por rutina ni por el cierre documental.

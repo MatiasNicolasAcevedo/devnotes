@@ -6,13 +6,19 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.example.devnotes.voice.config.VoiceProperties;
 import com.example.devnotes.voice.infrastructure.GroqTranscriptionClient.TranscriptionException;
 import com.example.devnotes.voice.infrastructure.GroqTranscriptionClient.TranscriptionResult;
+import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +26,10 @@ import org.springframework.mock.web.MockMultipartFile;
 import tools.jackson.databind.json.JsonMapper;
 
 class GroqTranscriptionClientTest {
+
+    private static final Pattern MULTIPART_CONTENT_TYPE =
+            Pattern.compile("multipart/form-data; boundary=([a-zA-Z0-9_-]{1,70})");
+    private static final Pattern PART_NAME = Pattern.compile("Content-Disposition: form-data; name=\"([a-z_]+)\"");
 
     private HttpServer fakeServer;
     private int port;
@@ -88,6 +98,99 @@ class GroqTranscriptionClientTest {
         assertThat(result.text()).isEqualTo("hola mundo");
         assertThat(result.language()).isEqualTo("es");
         assertThat(requestCount.get()).isOne();
+    }
+
+    @Test
+    void transcribeSendsGroqMultipartContract() {
+        byte[] audio = {0x1a, 0x45, (byte) 0xdf, (byte) 0xa3, 0, '\r', '\n', (byte) 0xff};
+        var rejection = new AtomicReference<String>();
+        fakeServer.createContext("/transcribe", exchange -> {
+            try (exchange) {
+                requestCount.incrementAndGet();
+                String problem = checkGroqRequest(exchange, audio);
+                if (problem != null) {
+                    rejection.set(problem);
+                    exchange.sendResponseHeaders(400, -1);
+                    return;
+                }
+                byte[] response = """
+                        {"text":"transcripción ficticia","language":"es","duration":1.5,
+                         "segments":[{"no_speech_prob":0.02}]}
+                        """.getBytes(StandardCharsets.UTF_8);
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
+                exchange.sendResponseHeaders(200, response.length);
+                exchange.getResponseBody().write(response);
+            }
+        });
+
+        TranscriptionResult result;
+        try {
+            result = client().transcribe(webmFile(audio), "fake-key");
+        } catch (TranscriptionException.InvalidResponse e) {
+            throw new AssertionError("Expected a transcription; fake Groq rejection: " + rejection.get(), e);
+        }
+        assertThat(result).isEqualTo(new TranscriptionResult("transcripción ficticia", "es"));
+        assertThat(requestCount.get()).isOne();
+    }
+
+    private static String checkGroqRequest(HttpExchange exchange, byte[] audio) throws IOException {
+        // ISO-8859-1 preserves each byte while locating the ASCII multipart framing.
+        String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.ISO_8859_1);
+        if (!"POST".equals(exchange.getRequestMethod())
+                || !"/transcribe".equals(exchange.getRequestURI().toString())) {
+            return "wrong method or target";
+        }
+        if (!List.of("Bearer fake-key").equals(exchange.getRequestHeaders().get("Authorization"))) {
+            return "wrong authorization";
+        }
+        String contentType = exchange.getRequestHeaders().getFirst("Content-Type");
+        var boundary = MULTIPART_CONTENT_TYPE.matcher(contentType == null ? "" : contentType);
+        if (!boundary.matches()) {
+            return "invalid multipart Content-Type or boundary";
+        }
+        String delimiter = "--" + boundary.group(1);
+        String opening = delimiter + "\r\n";
+        String closing = "\r\n" + delimiter + "--\r\n";
+        if (!body.startsWith(opening)
+                || !body.endsWith(closing)
+                || body.length() < opening.length() + closing.length()) {
+            return "invalid opening or closing multipart delimiter";
+        }
+
+        var parts = new HashMap<String, String>();
+        String content = body.substring(opening.length(), body.length() - closing.length());
+        for (String part : content.split(Pattern.quote("\r\n" + opening), -1)) {
+            String[] sections = part.split("\r\n\r\n", 2);
+            if (sections.length != 2) {
+                return "missing multipart header separator";
+            }
+            var headers = List.of(sections[0].split("\r\n", -1));
+            String name;
+            if (headers.size() == 2
+                    && headers.contains("Content-Disposition: form-data; name=\"file\"; filename=\"recording.webm\"")
+                    && headers.contains("Content-Type: audio/webm")) {
+                name = "file";
+            } else {
+                var disposition = PART_NAME.matcher(sections[0]);
+                if (!disposition.matches() || "file".equals(disposition.group(1))) {
+                    return "invalid multipart part headers";
+                }
+                name = disposition.group(1);
+            }
+            if (parts.putIfAbsent(name, sections[1]) != null) {
+                return "duplicate multipart part";
+            }
+        }
+        if (!parts.containsKey("model")) {
+            return "missing model part";
+        }
+        var expected = Map.of(
+                "file", new String(audio, StandardCharsets.ISO_8859_1),
+                "model", "whisper-large-v3-turbo",
+                "language", "es",
+                "temperature", "0",
+                "response_format", "verbose_json");
+        return parts.equals(expected) ? null : "wrong multipart parts or values";
     }
 
     @Test

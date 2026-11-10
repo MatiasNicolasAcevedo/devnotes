@@ -1,5 +1,7 @@
 # Protocolo · implementer
 
+Para el gate de cierre, consultar primero el [aplazamiento de FULL hasta T-044](../TESTING.md#aplazamiento-de-full-hasta-t-044).
+
 1. Leer AGENTS, STATUS, tarea y solo sus referencias; leer AGENTS de cada capa afectada explícitamente. Comprobar trabajo local y Git/PR/CI autorizados; retomar misma tarea/rama/PR. Si falta una decisión de producto/arquitectura, guardar el bloqueo y devolver a frontera. Corregir detalles ordinarios sin consulta.
 2. Usar rama exacta desde main o continuar la ya publicada; una tarea/PR. Registrar in_progress en tarea/STATUS y abrir draft al publicar el primer avance útil, sin commit administrativo obligatorio previo. Registrar una vez herramientas/modelo/esfuerzo reales e impacto; no atribuir ejecución Junie a frontera.
 3. Ejecutar los pasos preparados. Bugfix: test pertinente rojo antes del arreglo, luego implementación mínima y verde. No hace falta publicar el rojo. Si aparecen más capas/decisiones que las contratadas, checkpoint con evidencia y propuesta, sin ampliar alcance.

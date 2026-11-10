@@ -1,12 +1,15 @@
 package com.example.devnotes.voice.infrastructure;
 
 import com.example.devnotes.voice.config.VoiceProperties;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.UUID;
 import java.util.concurrent.Semaphore;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -65,7 +68,7 @@ public class GroqTranscriptionClient {
         byte[] bytes = readBytes(file);
 
         // Build multipart request body
-        String boundary = "----VoiceTranscriptionBoundary" + System.nanoTime();
+        String boundary = "----VoiceTranscriptionBoundary" + UUID.randomUUID();
         byte[] body = buildMultipartBody(bytes, boundary);
 
         HttpRequest request = HttpRequest.newBuilder()
@@ -114,19 +117,26 @@ public class GroqTranscriptionClient {
     }
 
     private byte[] buildMultipartBody(byte[] audioBytes, String boundary) {
-        try {
-            java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-            String preamble = ("--" + boundary + "\r\n"
-                    + "Content-Disposition: form-data; name=\"file\"; filename=\"recording.webm\"\r\n"
-                    + "Content-Type: audio/webm\r\n\r\n");
-            baos.write(preamble.getBytes("US-ASCII"));
-            baos.write(audioBytes);
-            String epilogue = ("\r\n--" + boundary + "--\r\n");
-            baos.write(epilogue.getBytes("US-ASCII"));
-            return baos.toByteArray();
-        } catch (IOException e) {
-            throw new TranscriptionException.InvalidRequest("Error al construir la solicitud multipart.", e);
-        }
+        var body = new ByteArrayOutputStream();
+        String delimiter = "--" + boundary;
+        String fileHeader = delimiter + "\r\n"
+                + "Content-Disposition: form-data; name=\"file\"; filename=\"recording.webm\"\r\n"
+                + "Content-Type: audio/webm\r\n\r\n";
+        body.writeBytes(fileHeader.getBytes(StandardCharsets.US_ASCII));
+        body.writeBytes(audioBytes);
+        body.writeBytes("\r\n".getBytes(StandardCharsets.US_ASCII));
+
+        writeTextPart(body, delimiter, "model", "whisper-large-v3-turbo");
+        writeTextPart(body, delimiter, "language", "es");
+        writeTextPart(body, delimiter, "temperature", "0");
+        writeTextPart(body, delimiter, "response_format", "verbose_json");
+        body.writeBytes((delimiter + "--\r\n").getBytes(StandardCharsets.US_ASCII));
+        return body.toByteArray();
+    }
+
+    private void writeTextPart(ByteArrayOutputStream body, String delimiter, String name, String value) {
+        String part = delimiter + "\r\nContent-Disposition: form-data; name=\"" + name + "\"\r\n\r\n" + value + "\r\n";
+        body.writeBytes(part.getBytes(StandardCharsets.US_ASCII));
     }
 
     private TranscriptionResult parseResponse(HttpResponse<byte[]> response) {

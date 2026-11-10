@@ -64,7 +64,7 @@ XL-05. Casos mínimos de componente:
 | Criterio | Capa | Comando (desde `client/`) | Resultado |
 |---|---|---|---|
 | XL-05 | Componente | `npm test -- --run src/features/portability src/app/AppRoutes.test.tsx` | Verde |
-| Gate | APPLICATION | Desde la raíz: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t044 STARTER_E2E_PROJECT=starter-e2e-t044 STARTER_SERVER_TESTS=container bash scripts/verify.sh` | Exit 0, cobertura sin bajar |
+| Gate integrado después de T-044 MERGED | FULL sobre `main` | Desde la raíz: `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t044 STARTER_E2E_PROJECT=starter-e2e-t044 STARTER_SERVER_TESTS=container bash scripts/verify.sh`. Añadir tooling si el diff acumulado es STARTER, según [TESTING](../TESTING.md#aplazamiento-de-full-hasta-t-044). | Exit 0, cobertura sin bajar |
 
 ## Checkpoint vigente
 
@@ -77,4 +77,4 @@ XL-05. Casos mínimos de componente:
 
 ## Cierre y siguiente tarea
 
-PR único y revisión independiente. Tras MERGED, control de cinco por Junie (contratos, evidencia y hallazgos a BACKLOG). Después, conciliar y tomar [T-045](T-045-xlsx-journey.md).
+PR único y revisión independiente con pruebas dirigidas, docs-check y CI según la regla temporal. Tras MERGED, ejecutar el gate integrado como parte del control de cinco por Junie (contratos, evidencia y hallazgos a BACKLOG). Con el FULL verde, conciliar y tomar [T-045](T-045-xlsx-journey.md).

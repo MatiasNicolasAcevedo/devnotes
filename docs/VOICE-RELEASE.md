@@ -1,6 +1,6 @@
 # M2-RC1 · Entrega local y pruebas de voz
 
-Estado al 2026-11-10: **RC técnica, aceptada con mejoras por el dueño**, SHA de entrega `aef4213db2fe7f676591811b7ee67a22757b64b0` (squash de [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44), revisión independiente cumplida). Grabación habilitada localmente. **Ensayo externo fallido**, con corrección y nuevo ensayo pendientes en el seguimiento de [T-039](tasks/T-039-voice-activation.md). Contrato canónico [S-105 v2](specs/S-105-voice-notes.md). Evidencia de integración en [T-037](tasks/T-037-voice-release.md).
+Estado al 2026-11-10: **RC técnica, aceptada con mejoras por el dueño**, SHA de entrega `aef4213db2fe7f676591811b7ee67a22757b64b0` (squash de [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44), revisión independiente cumplida). Grabación habilitada localmente. **Ensayo externo de T-039 fallido**. Corrección pendiente en [T-048](tasks/T-048-groq-multipart-fix.md) y reensayo pendiente en [T-049](tasks/T-049-voice-retest.md). Contrato canónico [S-105 v2](specs/S-105-voice-notes.md). Evidencia de integración en [T-037](tasks/T-037-voice-release.md).
 
 ## Qué recibirá el dueño
 
@@ -11,7 +11,7 @@ Un SHA de main con las doce tareas I2 MERGED, ruta Voz integrada con daily/refer
 | Contrato preparado | S-105/tareas y docs-check | Plan ejecutable; sin función implementada |
 | RC técnica | T-017 y T-027…T-037 MERGED, FULL válido, VO-01…07 con dobles externos | Integración local demostrada con datos ficticios |
 | Activación externa pendiente | RC técnica sin cuenta/ensayo Groq comprobados | Edición/colección disponibles; transcripción real pendiente |
-| Voz real verificada | Ensayo ficticio externo satisfactorio en la configuración del dueño | Protocolo/formato/modelo/calidad mínima demostrados en ese entorno/fecha |
+| Voz real verificada | Las cuatro muestras de [T-049](tasks/T-049-voice-retest.md#aceptación-y-pruebas) pasan con el dueño sobre el SHA corregido. Tres HTTP 200 con texto útil editable en español y un HTTP 422 `VOICE_NO_SPEECH` sin texto | Protocolo, formato, modelo y calidad mínima demostrados en ese entorno y fecha |
 | Aceptada por el dueño | Pruebas personales y veredicto explícito, con SHA | Versión aceptada para su uso local; mejoras posteriores en BACKLOG |
 
 No convertir «RC técnica» en aceptación externa ni atribuir al dueño un veredicto por tener CI verde. M2 vuelve a frontera con la entrega técnica; si el dueño aún no configuró Groq, el pendiente externo queda visible sin replanificar el software.

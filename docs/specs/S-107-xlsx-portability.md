@@ -9,7 +9,7 @@ tasks: [T-040, T-041, T-042, T-043, T-044, T-045]
 
 ## Iteración y objetivo de salida
 
-I3 / M3 · Portabilidad. Prioridad del dueño del 2026-11-10: después de la activación y las pruebas de M2-RC1 ([T-039](../tasks/T-039-voice-activation.md)) y antes del piloto en Render ([S-108](S-108-render-pilot.md)).
+I3 / M3 · Portabilidad. Sigue a la activación y las pruebas de M2-RC1, con reensayo favorable y MERGED en [T-049](../tasks/T-049-voice-retest.md). Precede al piloto en Render ([S-108](S-108-render-pilot.md)), según el orden acordado por el dueño el 2026-11-10.
 
 El usuario autenticado descarga un `.xlsx` con todos los datos de su cuenta y lo importa en una cuenta **vacía** de la misma instancia o de otra, por ejemplo de su entorno local a Render. Tras la importación ve las mismas notas diarias con sus enlaces, separadores y referencias, la misma versión guardada de cada día, las mismas notas de voz y las mismas referencias.
 
@@ -124,7 +124,7 @@ Fusión, reemplazo o importación parcial; editar en Excel; CSV u otros formatos
 
 | Tarea | Resultado observable | Depende de | Salida para continuar |
 |---|---|---|---|
-| [T-040](../tasks/T-040-daily-timestamps.md) | Marcas de tiempo de daily y versiones truncadas a microsegundos, para exportar instantes fieles | T-039 | XL-01 y MERGED |
+| [T-040](../tasks/T-040-daily-timestamps.md) | Marcas de tiempo de daily y versiones truncadas a microsegundos, para exportar instantes fieles | T-049 favorable y MERGED | XL-01 y MERGED |
 | [T-041](../tasks/T-041-xlsx-codec.md) | Codec `devnotes-xlsx` v1 con límites y negativos | T-040 | XL-02 y MERGED |
 | [T-042](../tasks/T-042-xlsx-export-api.md) | GET de exportación privada | T-041 | XL-03 y MERGED |
 | [T-043](../tasks/T-043-xlsx-import-api.md) | Vista previa e importación atómica en una cuenta vacía, y proxies | T-042 | XL-04 y MERGED |
