@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-036](tasks/T-036-voice-navigation.md) · S-105 / navegación y sesión |
 | Estado | `changes_requested` |
-| Acción actual | Tercera revisión: B-3 confirmada; nuevo bloqueante B-4 (un error de captura impide guardar una nota existente abierta después). Ronda adicional agotada: decide el dueño con frontera. |
+| Acción actual | B-4 pendiente (un error de captura impide guardar una nota existente abierta después). El dueño autorizó una corrección acotada y una revisión independiente más. Siguiente: implementer en sesión nueva. |
 | Rama / PR | codex/t-036-voice-navigation · [PR42](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42) |
 
 T-038: PR41 MERGED y conciliada como done. Evidencia del squash y checks en [T-038](tasks/T-038-reference-preview-fix.md#checkpoint-vigente).
@@ -66,5 +66,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Dueño y frontera, sesión nueva. Resolver el cierre de T-036 en PR42 de MatiasNicolasAcevedo/devnotes según el checkpoint vigente de docs/tasks/T-036-voice-navigation.md. Confirmar PR OPEN, HEAD/base publicados y el tercer veredicto CAMBIOS REQUERIDOS (B-4). Decidir si se autoriza una corrección acotada de B-4 por implementer en la misma rama, con rojo/verde y FULL/APPLICATION sobre las fuentes nuevas, y otra revisión independiente en sesión nueva. Esa revisión deberá comprobar que tras un error de captura (aviso excedido o permiso denegado) se puede abrir, editar y guardar una nota existente con ACK, conservar B-1/B-2/B-3 y publicar su veredicto ligado al HEAD/base vigentes. Aplicar AUTONOMY solo con PR elegible. T-037 espera MERGED de T-036.
+Implementer, sesión nueva. Corregir B-4 de T-036 en PR42 de MatiasNicolasAcevedo/devnotes, rama codex/t-036-voice-navigation, según el checkpoint vigente de docs/tasks/T-036-voice-navigation.md (decisión del dueño 2026-11-10). Confirmar PR OPEN, HEAD/base publicados y el tercer veredicto CAMBIOS REQUERIDOS. Primero rojo sobre 32c4ebc: con router real, tras el aviso excedido y tras un permiso denegado, abrir una nota existente, editar y guardar con un único PUT y ACK sin POST de transcripción. Luego verde sin alterar una captura en curso ni un resultado pendiente, conservando B-1/B-2/B-3, nueve suites dirigidas y FULL/APPLICATION del contrato sobre las fuentes nuevas. Publicar en PR42 y dejar la única revisión independiente adicional para otra sesión nueva. T-037 espera MERGED de T-036.
 ```

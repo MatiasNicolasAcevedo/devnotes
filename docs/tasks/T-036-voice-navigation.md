@@ -53,9 +53,12 @@ Atrás/Adelante y navegación por header no pierden texto, no renderizan destino
 
 ## Checkpoint vigente
 
-2026-11-10. `changes_requested`. La revisión independiente adicional autorizada por el dueño confirma B-3 y encuentra el bloqueante B-4. Se agotó la ronda autorizada y la salida vuelve al dueño. Los cambios locales de Render y portabilidad en `docs/DEPLOYMENT.md` y `docs/BACKLOG.md` siguen fuera de los commits de T-036.
+2026-11-10. `changes_requested`. La revisión independiente adicional autorizada por el dueño confirmó B-3 y encontró el bloqueante B-4 ([veredicto](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42#issuecomment-6760485407)). Los cambios locales de Render y portabilidad en `docs/DEPLOYMENT.md` y `docs/BACKLOG.md` siguen fuera de los commits de T-036.
 
-- **Dueño y frontera, sesión nueva.** Decidir la salida de B-4. Propuesta: una corrección acotada por implementer en la misma rama y PR42, con rojo/verde y FULL/APPLICATION sobre las fuentes nuevas. Para llegar a merge, el dueño debe autorizar otra revisión independiente en sesión nueva. Esa revisión verificará B-4 y conservará B-1/B-2/B-3, el gate y `verify-required`. T-037 espera el MERGED confirmado de T-036.
+Decisión del dueño, 2026-11-10, en el chat de la tercera revisión: respondió «Sí, autorizo» a la propuesta de una corrección acotada de B-4 y una revisión independiente más. Lo registra la sesión reviewer, sin cambiar el veredicto. El alcance es el cambio de documento tras un error de captura. La corrección se mantiene en `codex/t-036-voice-navigation` y PR42.
+
+- **Implementer, sesión nueva.** Corregir B-4 según el cierre observable de la [tercera revisión](#tercera-revisión-independiente). Primero la regresión en rojo sobre `32c4ebc`, con router real, para aviso excedido y permiso denegado. En ambas variantes, abrir una nota existente, editar y guardar con un único PUT y ACK, sin POST de transcripción. Después el verde, conservando el negativo de captura en curso y B-1/B-2/B-3. Luego las nueve suites dirigidas y FULL/APPLICATION con el comando del contrato, sobre las fuentes nuevas y con un namespace propio. Publicar en PR42.
+- **Después, reviewer independiente en otra sesión nueva.** Es la única revisión adicional autorizada por esta decisión. Verificar B-4 y conservar B-1/B-2/B-3, el gate y `verify-required`, con veredicto ligado a HEAD/base. Si el veredicto es favorable, continuar solo según AUTONOMY. Ante otro bloqueante, volver al dueño. T-037 espera el MERGED confirmado de T-036.
 
 ## Tercera revisión independiente
 
@@ -68,7 +71,7 @@ Atrás/Adelante y navegación por header no pierden texto, no renderizan destino
 - Corrección suficiente y cierre observable: limpiar el error terminado del grabador al cambiar de documento, también al abrir una nota existente. Debe hacerlo sin alterar una captura en curso ni un resultado pendiente. La regresión con router real recorre dos variantes: aviso excedido y permiso denegado. En ambas abre una nota existente, edita, guarda con un único PUT y ACK, y no envía ningún POST de transcripción. Debe fallar en `32c4ebc` y pasar con la corrección.
 - No bloqueante, igual que `main`: en el mismo documento nuevo, tras el aviso, «Guardar» sigue deshabilitado hasta «Descartar audio» o «Nueva nota». La sonda confirmó que «Descartar audio» del aviso recupera «Guardar».
 
-Se agotó la ronda adicional autorizada. Propuesta para el dueño y frontera en el checkpoint vigente.
+Se agotó la ronda adicional autorizada. La propuesta elevada al dueño y su decisión figuran en el checkpoint vigente.
 
 ## Entrega de la corrección B-3
 
