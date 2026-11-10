@@ -4,8 +4,8 @@
 |---|---|
 | Tarea y contrato | [T-040](tasks/T-040-daily-timestamps.md) · S-107 / tarea portadora de la rama compartida y del PR único |
 | Estado | `in_progress` |
-| Acción actual | T-040 en curso en la rama compartida: marcas de tiempo de daily y versiones truncadas a microsegundos (XL-01). FULL integrado diferido al HEAD final del PR único. [Checkpoint](tasks/T-040-daily-timestamps.md#checkpoint-vigente) |
-| Rama / PR | `codex/s-107-xlsx-portability` · PR único de S-107, draft por abrir con el primer avance |
+| Acción actual | T-040 cerrada en la rama compartida con XL-01 verde (`f10529f`); sigue como portadora. Próxima tarea en curso: [T-041](tasks/T-041-xlsx-codec.md), codec `devnotes-xlsx` v1, en sesión nueva de implementer. FULL integrado diferido al HEAD final del PR único. [Checkpoint](tasks/T-040-daily-timestamps.md#checkpoint-vigente) |
+| Rama / PR | `codex/s-107-xlsx-portability` · [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), draft, único de S-107 |
 
 Por decisión del dueño del 2026-11-10, T-040…T-045 comparten la rama `codex/s-107-xlsx-portability` y un único PR; FULL integrado sobre su HEAD final. Mientras dura la rama, esta tabla mantiene a T-040 como tarea portadora y nombra la tarea en curso en «Acción actual» y en el prompt. [Regla](specs/S-107-xlsx-portability.md#tareas-y-dependencias)
 
@@ -78,5 +78,17 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Implementer de T-040 en la rama codex/s-107-xlsx-portability: continuar su contrato (docs/tasks/T-040-daily-timestamps.md) desde el checkpoint vigente, con pruebas dirigidas y FULL diferido según docs/TESTING.md.
+Actuá como implementer de T-041 en MatiasNicolasAcevedo/devnotes, siguiendo AGENTS.md, docs/agents/implementer.md y docs/AUTONOMY.md. Sesión nueva: no implementaste T-040.
+
+Precondición, a comprobar sin dar nada por supuesto:
+gh pr view 49 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,isDraft,headRefName,headRefOid,baseRefName
+Debe devolver state OPEN, isDraft true, headRefName codex/s-107-xlsx-portability y baseRefName main. El HEAD remoto debe contener f10529f (arreglo de T-040) y docs/tasks/T-040-daily-timestamps.md debe registrar T-040 cerrada en la rama con XL-01 verde. Si no coincide, o el árbol local tiene cambios ajenos, detenete e informá el estado real.
+
+Luego:
+1. Continuá en la rama compartida codex/s-107-xlsx-portability, sin crear otra rama ni otro PR. T-040…T-045 van en esa rama y en el PR49, según «Tareas y dependencias» de docs/specs/S-107-xlsx-portability.md.
+2. Tomá T-041 (docs/tasks/T-041-xlsx-codec.md) y ejecutá su contrato con pruebas dirigidas y negativas (XL-02). Leé server/AGENTS.md.
+3. T-040 sigue siendo la tarea portadora: docs/STATUS.md la mantiene en «Tarea y contrato» con in_progress, y T-041 se nombra en «Acción actual» y en el prompt. El frontmatter de T-041 no pasa a in_progress; su avance y cierre van en su «Checkpoint vigente».
+4. Rige el aplazamiento de FULL de docs/TESTING.md: el FULL integrado se corre una sola vez sobre el HEAD final del PR único, al cerrar T-045.
+
+No borres ramas, worktrees ni archivos de .orchestrator; el cleanup pendiente de T-049 requiere autorización del dueño. Al cerrar T-041 en la rama (pruebas en verde, docs-check OK, commit publicado y checkpoint), dejá el prompt de la sesión siguiente para T-042 sin empezarla.
 ```
