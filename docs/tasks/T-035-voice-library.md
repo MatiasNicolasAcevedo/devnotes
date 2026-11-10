@@ -1,6 +1,6 @@
 ---
 id: T-035
-status: mergeable
+status: done
 priority: P1
 size: M
 executor: junie
@@ -52,6 +52,7 @@ Varias notas del mismo día, reload/reopen preserva texto editado; lista no expo
 
 ## Checkpoint vigente
 
+2026-11-09: **MERGED.** PR40 squash `e1fbaea1ca3ae868dd2ca93569da45eab65aa413`, mergedAt 2026-11-10T01:39:05Z, comprobado con `gh pr view 40` (state MERGED) y conciliado done por la implementer de T-038. Excepción del dueño acotada a `reference-preview.spec.ts`, preexistente; su arreglo es T-038.
 2026-11-09: PR40 publicado (467184c), in_review. Junie implementer, Qwen3.6-27B-FP8. Client gate OK: typecheck, lint, format, 456/456 tests (78.18% statements, 71.85% branches), build OK. VoiceLibrary.test.tsx 8/8, VoiceComposer.test.tsx 5/5.
 2026-11-09: Revisión independiente: CAMBIOS REQUERIDOS, 2 bloqueantes. Junie reviewer, Qwen3.6-27B-FP8. HEAD 467184c, base main 085dc76. Client gate verificado: typecheck OK, lint OK, 456/456 tests OK, build OK. Bloqueantes: B-1 diálogo de conflicto 409 nunca se abre (VoiceComposer.tsx setShowConflictDialog(true) ausente), B-2 diálogo de dirty nunca se abre al cambiar de nota (VoicePage.tsx handleSelect sin verificar isDirty, setShowDirtyDialog(true) ausente). Siguiente: corrección de bloqueantes en misma rama/PR, nueva sesión implementer.
 2026-11-09: Segunda revisión independiente: CAMBIOS REQUERIDOS, 3 bloqueantes. Junie reviewer, Qwen3.6-27B-FP8. HEAD 467184c, base main 085dc76. Client gate verificado: typecheck OK, lint OK, VoiceLibrary.test.tsx 8/8, VoiceComposer.test.tsx 5/5, build OK. Bloqueantes previos B-1 y B-2 persisten sin corrección (no hay commit de corrección en la rama). B-3 adicional: setUpdateError(true) y setDeleteError(true) nunca se invocan en VoiceComposer.tsx — los mensajes de error de actualización y borrado son invisibles. Además, loadNote() en useVoiceDraft.ts silencia el dirty (return prev) sin notificar al caller que la carga fue rechazada. VoicePage.test.tsx no existe aunque la tarea lo requiere. Siguiente: corrección de los 3 bloqueantes en misma rama/PR, nueva sesión implementer.

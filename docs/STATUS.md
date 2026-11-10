@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-035](tasks/T-035-voice-library.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
+| Tarea y contrato | [T-038](tasks/T-038-reference-preview-fix.md) · S-106 / bugfix antes de T-036 |
 | Estado | `mergeable` |
-| Acción actual | Aprobación reconfirmada en sesión nueva no autora: diff `4234513..c71bc1a` solo Markdown, base main 085dc76, CI verify-required SUCCESS, docs-check OK. FULL/APPLICATION válido salvo `reference-preview.spec.ts` (preexistente en main 085dc76), cubierto por la excepción del dueño «Mergear con excepción», acotada a ese test. Siguiente: merge squash del HEAD final; tras MERGED, nueva sesión concilia done y hace el bugfix de reference-preview (BACKLOG) antes de T-036. Detalle en la tarea. |
-| Rama / PR | codex/t-035-voice-library · [PR40](https://github.com/MatiasNicolasAcevedo/devnotes/pull/40) |
+| Acción actual | Segunda revisión independiente cerró B-1 y B-2. Consultar el veredicto y los checks del HEAD vigente en PR41 y confirmar el merge antes de habilitar T-036. |
+| Rama / PR | codex/t-038-reference-preview-fix · [PR41](https://github.com/MatiasNicolasAcevedo/devnotes/pull/41) |
+
+T-035: PR40 MERGED, squash `e1fbaea1ca3ae868dd2ca93569da45eab65aa413`, confirmado en GitHub el 2026-11-09 (mergedAt 2026-11-10T01:39:05Z). Merge con excepción del dueño acotada a `reference-preview.spec.ts` (preexistente), corregido en T-038.
 
 T-034: PR39 MERGED, squash `085dc763918fa63e6de6b89b98ddfc9e87805f3a`, confirmado en GitHub el 2026-11-09. Junie reviewer + merger, Qwen3.6-27B-FP8. Segunda revisión independiente APROBADA sin bloqueantes. HEAD 13d250b, base main e1648a5, CI verify-required SUCCESS, docs-check OK. Client gate OK: lint, typecheck, VoiceComposer.test.tsx 5/5, AppRoutes.test.tsx 7/7, voiceNoteTextSchema.test.ts 7/7, build OK.
 
@@ -62,5 +64,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Implementer, sesión nueva: T-035 (PR40 codex/t-035-voice-library), corregir B-1 de la 7.ª revisión (archivos:líneas, causa y condición de cierre en docs/tasks/T-035-voice-library.md, checkpoint 2026-11-09 «Séptima revisión»). B-1: `loadNote` sin `force` (useVoiceDraft.ts) solo aplica el detalle con documentState 'new'/'clean' y sin conflicto pendiente, para que un refetch que llega durante un PUT/DELETE no pise el borrador ni descarte el 409. Pruebas rojo→verde en VoicePage.test.tsx (PUT y DELETE con GET del detalle retenido). Observaciones O-1…O-3 recomendadas en la misma corrección. Base main 085dc76. Tras publicar, la 8.ª revisión excede el límite de rondas: requiere autorización explícita del dueño.
+Confirmar el estado de PR41 (T-038) en GitHub según docs/agents/merger.md. Si sigue OPEN, retomar como merger y aplicar AUTONOMY sobre el veredicto, HEAD/base y checks vigentes. Con MERGED, registrar SHA y fecha, y en sesión implementer nueva conciliar T-038 como done en el primer avance de codex/t-036-voice-navigation. Comprobar las dependencias T-035 y T-038, actualizar STATUS y la cola según corresponda y ejecutar el contrato de T-036 (docs/tasks/T-036-voice-navigation.md).
 ```

@@ -47,8 +47,8 @@ test('reference preview: insert, save, edit original, delete, and preview access
   await page.keyboard.type('Referencia', { delay: 100 });
   // Esperar a que el debounce expire y la búsqueda devuelva resultados en el picker.
   await expect(page.locator('[data-reference-picker]')).toBeVisible({ timeout: 10_000 });
-  // Seleccionar el primer resultado del picker.
-  await page.locator('[data-reference-picker]').getByRole('button').first().click({ force: true });
+  // Seleccionar el primer resultado del picker (clic real, con comprobaciones de accionabilidad).
+  await page.locator('[data-reference-picker]').getByRole('button', { name: /Referencia E2E/ }).click();
   // Esperar a que el picker se cierre y el átomo aparezca.
   await expect(page.locator('[data-reference-picker]')).toBeHidden({ timeout: 5_000 });
 
@@ -84,7 +84,9 @@ test('reference preview: insert, save, edit original, delete, and preview access
   const updatedRef = await updateResp.json();
   expect(updatedRef.title).toBe('Referencia Editada');
 
-  /* 7. Recargar nota y verificar título actualizado */
+  /* 7. Reabrir la nota (navegar y recargar) y verificar título actualizado */
+  await page.getByRole('link', { name: 'Notas', exact: true }).click();
+  await expect(page).toHaveURL(/\/notes/);
   await page.reload();
   await expect(page.getByText('@Referencia Editada')).toBeVisible({ timeout: 10_000 });
 
@@ -119,7 +121,9 @@ test('reference preview: insert, save, edit original, delete, and preview access
   await page.getByRole('button', { name: 'Confirmar eliminación', exact: true }).click();
   await expect(page.getByText('Elemento eliminado.', { exact: true })).toBeVisible();
 
-  /* 13. Recargar nota y verificar "Referencia no disponible" */
+  /* 13. Reabrir la nota (navegar y recargar) y verificar "Referencia no disponible" */
+  await page.getByRole('link', { name: 'Notas', exact: true }).click();
+  await expect(page).toHaveURL(/\/notes/);
   await page.reload();
   await expect(page.getByText('Referencia no disponible')).toBeVisible({ timeout: 10_000 });
 
