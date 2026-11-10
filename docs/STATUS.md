@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-036](tasks/T-036-voice-navigation.md) · S-105 / navegación y sesión |
-| Estado | `changes_requested` |
-| Acción actual | B-4 pendiente (un error de captura impide guardar una nota existente abierta después). El dueño autorizó una corrección acotada y una revisión independiente más. Siguiente: implementer en sesión nueva. |
+| Estado | `in_review` |
+| Acción actual | Corrección B-4 publicada con el gate sustituto autorizado por el dueño. Siguiente: única revisión independiente adicional, en sesión nueva. |
 | Rama / PR | codex/t-036-voice-navigation · [PR42](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42) |
 
 T-038: PR41 MERGED y conciliada como done. Evidencia del squash y checks en [T-038](tasks/T-038-reference-preview-fix.md#checkpoint-vigente).
@@ -66,5 +66,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Implementer, sesión nueva. Corregir B-4 de T-036 en PR42 de MatiasNicolasAcevedo/devnotes, rama codex/t-036-voice-navigation, según el checkpoint vigente de docs/tasks/T-036-voice-navigation.md (decisión del dueño 2026-11-10). Confirmar PR OPEN, HEAD/base publicados y el tercer veredicto CAMBIOS REQUERIDOS. Primero rojo sobre 32c4ebc: con router real, tras el aviso excedido y tras un permiso denegado, abrir una nota existente, editar y guardar con un único PUT y ACK sin POST de transcripción. Luego verde sin alterar una captura en curso ni un resultado pendiente, conservando B-1/B-2/B-3. Sin repetir FULL por excepción del dueño: aplicar el gate sustituto del checkpoint (nueve suites dirigidas y npm run verify de client), válido solo si el diff desde 8b9438b se limita a client/src/features/voice y Markdown. Publicar en PR42 y dejar la única revisión independiente adicional para otra sesión nueva. T-037 espera MERGED de T-036.
+Reviewer independiente, sesión nueva. Revisar T-036 en PR42 de MatiasNicolasAcevedo/devnotes, rama codex/t-036-voice-navigation, según el checkpoint vigente de docs/tasks/T-036-voice-navigation.md. Es la única revisión adicional autorizada por el dueño (2026-11-10). Confirmar PR OPEN, HEAD/base publicados y verify-required vigente. Verificar el rojo/verde de B-4 (tras aviso excedido y tras permiso denegado, abrir una nota existente, editar y guardar con un único PUT y ACK sin POST de transcripción) y conservar B-1/B-2/B-3. Aceptar el gate sustituto solo si el diff desde 8b9438b se limita a archivos regulares de client/src/features/voice y Markdown, con la base sin cambios, y citarlo en el veredicto. Publicar el veredicto en el PR ligado a HEAD/base. Un veredicto favorable permite continuar solo según AUTONOMY; ante otro bloqueante, volver al dueño. T-037 espera MERGED de T-036.
 ```
