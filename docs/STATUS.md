@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-038](tasks/T-038-reference-preview-fix.md) · S-106 / bugfix antes de T-036 |
-| Estado | `in_review` |
-| Acción actual | Corregida la tabla de TESTING y recuperada la evidencia de la corrida FULL/APPLICATION original. Siguiente: segunda revisión independiente sobre el HEAD publicado. Detalle en la tarea. |
+| Estado | `mergeable` |
+| Acción actual | Segunda revisión independiente cerró B-1 y B-2. Consultar el veredicto y los checks del HEAD vigente en PR41 y confirmar el merge antes de habilitar T-036. |
 | Rama / PR | codex/t-038-reference-preview-fix · [PR41](https://github.com/MatiasNicolasAcevedo/devnotes/pull/41) |
 
 T-035: PR40 MERGED, squash `e1fbaea1ca3ae868dd2ca93569da45eab65aa413`, confirmado en GitHub el 2026-11-09 (mergedAt 2026-11-10T01:39:05Z). Merge con excepción del dueño acotada a `reference-preview.spec.ts` (preexistente), corregido en T-038.
@@ -64,5 +64,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Reviewer, sesión nueva no autora: segunda revisión de T-038 (PR41, rama codex/t-038-reference-preview-fix, base main e1fbaea). Verificar HEAD/base publicados, el cierre de B-1 (tabla de TESTING) y B-2 (log original y huellas en docs/tasks/T-038-reference-preview-fix.md). Conservar el FULL/APPLICATION de 9e89f8a según TESTING si coinciden las fuentes y la base. Verificar docs-check y CI verify-required, y publicar veredicto según docs/agents/reviewer.md. Merge solo si se cumplen las condiciones de AUTONOMY.
+Confirmar el estado de PR41 (T-038) en GitHub según docs/agents/merger.md. Si sigue OPEN, retomar como merger y aplicar AUTONOMY sobre el veredicto, HEAD/base y checks vigentes. Con MERGED, registrar SHA y fecha, y en sesión implementer nueva conciliar T-038 como done en el primer avance de codex/t-036-voice-navigation. Comprobar las dependencias T-035 y T-038, actualizar STATUS y la cola según corresponda y ejecutar el contrato de T-036 (docs/tasks/T-036-voice-navigation.md).
 ```

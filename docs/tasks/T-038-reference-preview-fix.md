@@ -1,10 +1,10 @@
 ---
 id: T-038
-status: in_review
+status: mergeable
 priority: P1
 size: S
 executor: junie
-role: implementer
+role: merger
 milestone: M2
 product_cycle: I2
 spec: S-106
@@ -70,7 +70,13 @@ Huellas reconstruidas de la corrida original. `git status --short` dio vacío an
 
 ## Checkpoint vigente
 
-2026-11-10. Corrección documental a pedido del dueño. Codex (GPT-6, PowerShell/Git/gh/Node, esfuerzo no expuesto). B-1 corregido en la tabla de TESTING. B-2 atendido con el extracto saneado del log original, los estados del árbol registrados en la sesión de implementación y el reflog. Se conserva el FULL de `9e89f8a` sobre `e1fbaea` por coincidencia de fuentes técnicas y base. La corrección solo modifica Markdown. `node scripts/docs-check.mjs`, `git diff --check` y comparación técnica contra el SHA de código, OK. Retoma: segunda revisión independiente en sesión nueva sobre el HEAD publicado de PR41 y su base.
+2026-11-10. Segunda revisión independiente, Codex (GPT-6, PowerShell/Git/gh/Node/Vitest, esfuerzo no expuesto). PR41, HEAD de entrada `9c1bcd9d5c546cb85d5f2888dd917294ec549a86`, base `e1fbaea1ca3ae868dd2ca93569da45eab65aa413`. La revisión modifica solo documentación operativa, sin impacto adicional en comportamiento, API, permisos, datos ni UI.
+
+- B-1 cerrado. La tabla de TESTING y los ejemplos de iteración usan `bash scripts/e2e.sh --grep "patrón" --project desktop`, con `--project mobile` para móvil.
+- B-2 cerrado. El SHA-256 calculado sobre `full-gate.log` coincide con la huella registrada. El original confirma el HEAD al arrancar, las cuatro suites con exit 0 y 41 E2E aprobados (21 desktop, 20 mobile, con `reference preview:` en ambos). Las sondas del registro de implementación dieron árbol limpio a las 02:01:30Z y 02:29:56Z. El reflog, el árbol y el padre del commit coinciden con la evidencia de implementación. Se conserva ese FULL/APPLICATION: la base publicada coincide y `git diff --raw 9e89f8a HEAD` solo muestra Markdown de documentación.
+- `bash scripts/verify.sh --policy origin/main` devolvió FULL/APPLICATION. Las cuatro suites dirigidas de cliente indicadas en la primera revisión pasaron 44/44. `node scripts/docs-check.mjs` y `git diff --check` pasaron. En el HEAD de entrada, [verify-required](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42747081032) terminó SUCCESS.
+
+Retoma de merge: el veredicto de la segunda revisión, con los SHA publicados y el check del HEAD final, se registra en PR41. Aplicar AUTONOMY antes del squash y confirmar MERGED en GitHub antes de conciliar.
 
 ## Correcciones significativas
 
