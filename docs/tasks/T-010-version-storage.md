@@ -10,7 +10,7 @@ product_cycle: I1
 spec: S-104
 spec_version: 2
 branch: codex/t-010-version-storage
-pr: null
+pr: 15
 depends_on: [T-009]
 ---
 # T-010 · Copia manual independiente

@@ -11,7 +11,6 @@ product_cycle: I1
 spec: S-101
 spec_version: 2
 branch: codex/t-007-daily-workspace
-pr: null
 depends_on: [T-016]
 ---
 # T-007 · Espacio de notas por fecha

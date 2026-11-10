@@ -2,7 +2,7 @@
 id: T-035
 status: mergeable
 priority: P1
-size: S
+size: M
 executor: junie
 role: implementer
 milestone: M2
@@ -97,6 +97,8 @@ Observaciones no bloqueantes (recomendado resolverlas en la misma corrección): 
 - VoicePage.test.tsx pasa a integración real: el mock del composer ocultó B-1/B-2 en tres rondas.
 
 ## Correcciones significativas
+
+Nota de proceso (juez independiente, 2026-11-09): tamaño reestimado de S a M (diff final ≈ +2500/−400 en 15 archivos). Las correcciones de las rondas 4–7 se hicieron en la misma sesión implementer (Claude Opus 5.5), no «en otra sesión» como indica AUTONOMY, por continuidad pedida por el dueño; la frontera actuó además como implementer en 8ac04b4. Todos los commits figuran con autor Git «Junie» (configuración local del repo) aunque los de 8ac04b4 en adelante los hizo Claude Opus 5.5; el rol real queda registrado en cada checkpoint. Las rondas 1–3 no publicaron veredicto en el PR.
 
 Corrección 7.ª revisión (Claude Opus 5.5): B-1 revisión nueva durante guardado/borrado pisaba el borrador y descartaba el 409 — causa: regresión de A-2, `loadNote` solo excluía `dirty`; arreglo: solo `new`/`clean` sin conflicto. O-3 `detailError` con nota ya cargada. Pruebas: 3 nuevas en rojo → verde + 1 de cobertura (O-1). Nota: el «bucle de render» corregido en 8ac04b4 es el efecto de sincronización de captura; el bucle de transcripción (efecto con `draft` en VoiceComposer) sigue abierto en BACKLOG.
 
