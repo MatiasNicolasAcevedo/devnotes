@@ -1,10 +1,10 @@
 ---
 id: T-036
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 executor: junie
-role: reviewer
+role: implementer
 milestone: M2
 product_cycle: I2
 spec: S-105
@@ -53,11 +53,22 @@ Atrás/Adelante y navegación por header no pierden texto, no renderizan destino
 
 ## Checkpoint vigente
 
+2026-11-10. Primera revisión independiente, Codex (GPT-6, PowerShell/Git/gh/Node/Vitest, variante y esfuerzo no expuestos). La revisión modifica solo documentación operativa. PR42 OPEN, listo para revisión, `codex/t-036-voice-navigation` contra `main`. HEAD de entrada `bee9f75290ccbd61f476e4fbafc447cc25f3a59a`, base `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`, ambos confirmados con `gh pr view` y `git ls-remote`. [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42754005208/job/129624018128) sobre ese HEAD.
+
+- `bash scripts/verify.sh --policy origin/main` dio FULL/APPLICATION. `node scripts/docs-check.mjs` y `git diff --check` pasaron. El SHA-256 calculado sobre `.orchestrator/t036/full-gate.log` coincide con el extracto saneado. Verificadas las huellas del commit técnico `0c56492ba173a7b6e3608b80b6c9594210fc5048`, el padre/base y el cierre limitado a Markdown regular. La evidencia FULL se conserva para las fuentes revisadas.
+- Desde `client/`, `npm test -- --run src/features/voice/VoiceDraftNavigation.test.tsx src/features/daily/DailyDraftNavigation.test.tsx src/features/auth/AuthSession.test.tsx src/features/voice/VoicePage.test.tsx src/features/voice/useVoiceRecorder.test.tsx src/features/voice/useVoiceDraft.test.tsx src/features/voice/VoiceComposer.test.tsx src/app/AppRoutes.test.tsx --reporter=dot` pasó 99/99.
+- **B-1 · La recarga de un conflicto sobrevive al descarte de navegación.** `VoiceComposer.tsx` aplica el GET de «Descartar y recargar» con `draft.loadNote(fresh, { force: true })` después del await, sin comprobar que la operación sigue vigente. Sonda con router real y MSW: crear nota, provocar 409 al editar, retener el GET tras confirmar recarga, usar Atrás, pulsar «Descartar y continuar», liberar el GET y volver a Voz. El editor muestra «Respuesta tardía del detalle» donde se esperaba vacío. Cierre: invalidar o cancelar la recarga al descartar y comprobar sesión/generación antes de aplicar la respuesta. La regresión debe conservar vacío el borrador al volver y demostrar que la recarga confirmada vigente sigue funcionando.
+- **B-2 · Se conserva audio fuera del límite tras suspensión.** `recorder.ts` calcula la duración final en `_assembleResult` y valida el tamaño, pero no rechaza la duración excedida. Sonda con grabador ficticio: avanzar el reloj monotónico 601 s sin ejecutar el timer y disparar `visibilitychange` a oculto. Los tracks se detienen y la UI ofrece «Transcribir», aunque S-105 exige descartar ese audio. Cierre: validar el tiempo real al detener, liberar los recursos y mostrar aviso sin blob ni POST para audio excedido. Conservar la acción explícita para audio válido al ocultar.
+
+Retoma: implementer en sesión nueva, misma rama y PR. Reproducir ambos negativos, corregir, ejecutar dirigidos y renovar FULL/APPLICATION por el cambio técnico. El veredicto con HEAD documental y CI vigente queda en PR42.
+
+## Entrega de implementación
+
 2026-11-10. Implementer, Codex (GPT-6, PowerShell/Git/gh/Node/Docker, variante y esfuerzo no expuestos). Impacto: comportamiento de navegación, ciclo de vida del borrador y mensajes de voz en la UI. Sin cambio de contrato HTTP, permisos ni persistencia.
 
 `gh pr view` confirmó PR40 (T-035) MERGED en `main` con squash `e1fbaea1ca3ae868dd2ca93569da45eab65aa413` y PR41 (T-038) MERGED en `main` con squash `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`. T-035 ya conciliada, T-038 conciliada en esta rama. Base publicada `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`, padre único `e1fbaea1ca3ae868dd2ca93569da45eab65aa413`.
 
-Implementación publicada en [PR42](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42). Retoma: revisión independiente del HEAD publicado y la base, según [reviewer](../agents/reviewer.md). El workspace por dueño conserva el borrador en memoria, antepone la guardia de voz al outlet diario y aísla captura y respuestas por sesión.
+Implementación publicada en [PR42](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42). El workspace por dueño conserva el borrador en memoria y antepone la guardia de voz al outlet diario.
 
 ### Evidencia de implementación
 

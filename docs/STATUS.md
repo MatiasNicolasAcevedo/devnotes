@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-036](tasks/T-036-voice-navigation.md) · S-105 / navegación y sesión |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente del HEAD/base publicados y del gate FULL acreditado en T-036. |
+| Estado | `changes_requested` |
+| Acción actual | Implementer corrige B-1 y B-2 de la primera revisión independiente en el mismo PR. |
 | Rama / PR | codex/t-036-voice-navigation · [PR42](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42) |
 
 T-038: PR41 MERGED y conciliada como done. Evidencia del squash y checks en [T-038](tasks/T-038-reference-preview-fix.md#checkpoint-vigente).
@@ -66,5 +66,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Reviewer, sesión nueva. Revisar T-036 en PR42 de MatiasNicolasAcevedo/devnotes según docs/agents/reviewer.md y docs/tasks/T-036-voice-navigation.md. Confirmar PR OPEN y listo para revisión, rama codex/t-036-voice-navigation contra main, HEAD publicado y verify-required vigente. Verificar la base a6210050f0e4c9a8ff98df62c50dbb4aebd995de y la evidencia FULL/APPLICATION del commit técnico 0c56492ba173a7b6e3608b80b6c9594210fc5048, conservada por el cierre solo Markdown. Revisar navegación, ACK, convivencia con daily, captura/transcripción y aislamiento de sesión. Publicar el veredicto independiente ligado a HEAD/base y aplicar AUTONOMY solo si el PR resulta elegible.
+Implementer, sesión nueva. Retomar T-036 en PR42 de MatiasNicolasAcevedo/devnotes, rama codex/t-036-voice-navigation contra main. Leer docs/agents/implementer.md y el checkpoint de docs/tasks/T-036-voice-navigation.md. Reproducir y corregir B-1 (recarga tardía después del descarte) y B-2 (audio fuera de límite tras suspensión), con regresiones primero en rojo. Preservar ACK, aislamiento por sesión y guardias daily. Ejecutar dirigidos y FULL/APPLICATION sobre las fuentes corregidas según TESTING. Publicar en el mismo PR y dejar la segunda revisión independiente.
 ```
