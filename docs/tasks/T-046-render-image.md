@@ -19,7 +19,7 @@ depends_on: [T-045]
 
 Preparar `deploy/render/Dockerfile` y `deploy/render/compose.smoke.yml` según [DEPLOYMENT · Piloto](../DEPLOYMENT.md#piloto-de-devnotes-en-render-free) y demostrar RP-01 y RP-02 de [S-108](../specs/S-108-render-pilot.md) desde un checkout limpio. No se crean recursos en Render.
 
-Está en `draft` solo porque depende de T-045. La siguiente tarea es [T-047](T-047-render-first-deploy.md).
+Está en `draft` solo porque depende de T-045: se habilita con el PR único de S-107 MERGED y T-045 aceptada por el dueño, y su sesión concilia `done` las seis tareas T-040…T-045 en el primer avance de su rama. La siguiente tarea es [T-047](T-047-render-first-deploy.md).
 
 ## Alcance y decisiones resueltas
 

@@ -2,7 +2,7 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
-Próxima acción: revisión independiente y merge del PR de [T-049](tasks/T-049-voice-retest.md); después, [T-040](tasks/T-040-daily-timestamps.md).
+Próxima acción: [T-040](tasks/T-040-daily-timestamps.md) abre la rama compartida y el PR único de S-107, y es su tarea portadora; después, [T-041](tasks/T-041-xlsx-codec.md) en la misma rama.
 
 ## Siguientes · plan del dueño del 2026-11-10
 
@@ -10,8 +10,7 @@ Orden decidido por el dueño: (1) activar Groq y probar M2-RC1; (2) exportar e i
 
 | Orden | Contrato / resultado | Ejecuta | Dependencia |
 |---|---|---|---|
-| 2 | [T-049](tasks/T-049-voice-retest.md) · Reensayo sintético con Groq | Dueño con un agente de frontera | T-048 MERGED |
-| 3 | [T-040](tasks/T-040-daily-timestamps.md) · Instantes de daily y versiones a microsegundos (bugfix previo a exportar) | Junie | T-049 MERGED |
+| 3 | [T-040](tasks/T-040-daily-timestamps.md) · Instantes de daily y versiones a microsegundos (bugfix previo a exportar) | Junie | T-049 MERGED (PR48, `fc8fda5`) |
 | 4 | [T-041](tasks/T-041-xlsx-codec.md) · Codec `devnotes-xlsx` v1 y límites | Junie | T-040 cerrada en la rama |
 | 5 | [T-042](tasks/T-042-xlsx-export-api.md) · GET de exportación privada | Junie | T-041 cerrada en la rama |
 | 6 | [T-043](tasks/T-043-xlsx-import-api.md) · Vista previa e importación atómica en cuenta vacía, y proxies | Junie | T-042 cerrada en la rama |
@@ -32,7 +31,11 @@ Retorno a frontera si el dueño emite «no aceptada» en T-045 o T-047, ante una
 
 ### Hallazgos de T-049
 
-- **Silencio transcrito como «Gracias.» (limitación conocida, aceptada por el dueño el 2026-11-10).** En Edge 157.0.4341.42, SHA `8d787c1`, grabar 4 s de silencio sintético y pulsar «Detener y transcribir». Se esperaba HTTP 422 `VOICE_NO_SPEECH` y editor vacío. DevNotes devolvió HTTP 200 con «Gracias.». Medido: Groq responde un segmento con `no_speech_prob` 0, `avg_logprob` −0,297 y `compression_ratio` 0,529, así que ningún umbral sobre `no_speech_prob` lo rechaza. Dirección elegida por el dueño si se retoma: filtro en el backend por coincidencia del texto completo con frases de alucinación conocidas, aceptando que una nota que solo diga esa frase se rechace. Requiere versión nueva de S-105, prueba roja con la respuesta medida y un reensayo con presupuesto. Sin tarea asignada ni prioridad. [Medición](tasks/T-049-voice-retest.md#medición-de-la-respuesta-real)
+- **Silencio transcrito como «Gracias.» (limitación conocida, aceptada por el dueño el 2026-11-10).** En Edge 157.0.4341.42, SHA `8d787c1`, grabar 4 s de silencio sintético y pulsar «Detener y transcribir». Se esperaba HTTP 422 `VOICE_NO_SPEECH` y editor vacío. DevNotes devolvió HTTP 200 con «Gracias.». Medido: Groq responde un segmento con `no_speech_prob` 0, `avg_logprob` −0,297 y `compression_ratio` 0,529, así que ningún umbral sobre `no_speech_prob` lo rechaza. Dirección elegida por el dueño si se retoma: «Filtrar en el backend». Propuesta de la sesión de T-049, sin decisión del dueño sobre el detalle: coincidencia del texto completo con frases de alucinación conocidas, aceptando que una nota que solo diga esa frase se rechace. Requiere versión nueva de S-105, prueba roja con la respuesta medida y un reensayo con presupuesto. Sin tarea asignada ni prioridad. [Medición](tasks/T-049-voice-retest.md#medición-de-la-respuesta-real)
+
+- **Casos de prueba faltantes del adaptador (C-1 del veredicto del PR48, no bloqueante).** `GroqTranscriptionClientTest` no cubre texto con `segments: []` ni `no_speech_prob` no numérico o mayor que 1, que el código conserva como voz. Añadir ambos casos cuando se toque el adaptador. Sin tarea asignada.
+
+- **Cleanup pendiente de T-049 (E-4, requiere autorización del dueño).** Siguen en disco los recursos listados en [T-049](tasks/T-049-voice-retest.md#decisión-del-dueño-y-cierre-de-la-matriz), además de la rama `codex/t-049-voice-retest` (local y remota) y el worktree `.orchestrator/t049-worktree`. El checkout original pasó de `8d787c1` con HEAD separado a la rama `codex/s-107-xlsx-portability` al tomar T-040; el stack del dueño no se tocó.
 
 ## Hechas · S-106 completada
 

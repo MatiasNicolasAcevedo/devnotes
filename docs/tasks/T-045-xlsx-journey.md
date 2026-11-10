@@ -53,7 +53,7 @@ Está en `draft` solo porque depende de T-044 cerrada en la rama compartida de [
 | Criterio | Capa | Comando | Resultado |
 |---|---|---|---|
 | XL-06 | E2E real | Desde la raíz con Git Bash: `STARTER_E2E_PROJECT=starter-e2e-t045-iter bash scripts/e2e.sh --grep "portability:" --project desktop`, y luego `--project mobile` | Verde en ambos |
-| Gate integrado de S-107 | FULL sobre el HEAD final de la rama; añadir `--tooling` si el diff acumulado desde `c5e37cc4b73ad038ac35edf29c66131416bb4a34` es STARTER según `--policy` | `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t045 STARTER_E2E_PROJECT=starter-e2e-t045 STARTER_SERVER_TESTS=container bash scripts/verify.sh` | Exit 0, incluidas todas las suites E2E previas |
+| Gate integrado de S-107 | FULL sobre el HEAD final de la rama; añadir `--tooling` si el diff acumulado desde `c5e37cc4b73ad038ac35edf29c66131416bb4a34` es STARTER según `--policy` | Comando único del gate, desde la raíz con Git Bash: `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t045 STARTER_E2E_PROJECT=starter-e2e-t045 STARTER_SERVER_TESTS=container bash scripts/verify.sh` | Exit 0, incluidas todas las suites E2E previas |
 | Dueño | Manual | Exportar en su cuenta y luego importar en una cuenta vacía | Veredicto explícito del dueño con SHA |
 
 ## Checkpoint vigente
