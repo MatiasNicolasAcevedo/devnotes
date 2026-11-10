@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-040](tasks/T-040-daily-timestamps.md) · S-107 / tarea portadora de la rama compartida y del PR único |
 | Estado | `in_progress` |
-| Acción actual | T-040 cerrada en la rama compartida con XL-01 verde (`f10529f`); sigue como portadora. [T-041](tasks/T-041-xlsx-codec.md) cerrada con XL-02 verde (`900913b`), [T-042](tasks/T-042-xlsx-export-api.md) cerrada con XL-03 verde (`345514c`) y [T-043](tasks/T-043-xlsx-import-api.md) cerrada con XL-04 verde y proxies probados (`2095b1e`). Próxima tarea en curso: [T-044](tasks/T-044-xlsx-client.md), pantalla «Datos», en sesión nueva de implementer. FULL integrado diferido al HEAD final del PR único, con `--tooling` por el cambio de POM. [Checkpoint](tasks/T-043-xlsx-import-api.md#checkpoint-vigente) |
+| Acción actual | T-040 cerrada en la rama compartida con XL-01 verde (`f10529f`); sigue como portadora. [T-041](tasks/T-041-xlsx-codec.md) cerrada con XL-02 verde (`900913b`), [T-042](tasks/T-042-xlsx-export-api.md) cerrada con XL-03 verde (`345514c`), [T-043](tasks/T-043-xlsx-import-api.md) cerrada con XL-04 verde y proxies probados (`2095b1e`) y [T-044](tasks/T-044-xlsx-client.md) cerrada con XL-05 verde y gate de cliente (`b18bd04`). Próxima tarea en curso: [T-045](tasks/T-045-xlsx-journey.md), recorrido E2E, gate integrado y prueba del dueño, en sesión nueva de implementer. FULL integrado diferido al HEAD final del PR único, con `--tooling` por el cambio de POM. [Checkpoint](tasks/T-044-xlsx-client.md#checkpoint-vigente) |
 | Rama / PR | `codex/s-107-xlsx-portability` · [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), draft, único de S-107 |
 
 Por decisión del dueño del 2026-11-10, T-040…T-045 comparten la rama `codex/s-107-xlsx-portability` y un único PR; FULL integrado sobre su HEAD final. Mientras dura la rama, esta tabla mantiene a T-040 como tarea portadora y nombra la tarea en curso en «Acción actual» y en el prompt. [Regla](specs/S-107-xlsx-portability.md#tareas-y-dependencias)
@@ -78,17 +78,18 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como implementer de T-044 en MatiasNicolasAcevedo/devnotes, siguiendo AGENTS.md, docs/agents/implementer.md y docs/AUTONOMY.md. Sesión nueva: no implementaste T-040, T-041, T-042 ni T-043.
+Actuá como implementer de T-045 en MatiasNicolasAcevedo/devnotes, siguiendo AGENTS.md, docs/agents/implementer.md y docs/AUTONOMY.md. Sesión nueva: no implementaste T-040, T-041, T-042, T-043 ni T-044.
 
 Precondición, a comprobar sin dar nada por supuesto:
 gh pr view 49 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,isDraft,headRefName,headRefOid,baseRefName
-Debe devolver state OPEN, isDraft true, headRefName codex/s-107-xlsx-portability y baseRefName main. El HEAD remoto debe contener 2095b1e (vista previa e importación de T-043) y docs/tasks/T-043-xlsx-import-api.md debe registrar T-043 cerrada en la rama con XL-04 verde. Si no coincide, o el árbol local tiene cambios ajenos, detenete e informá el estado real.
+Debe devolver state OPEN, isDraft true, headRefName codex/s-107-xlsx-portability y baseRefName main. El HEAD remoto debe contener b18bd04 (pantalla «Datos» de T-044) y docs/tasks/T-044-xlsx-client.md debe registrar T-044 cerrada en la rama con XL-05 verde. Si no coincide, o el árbol local tiene cambios ajenos, detenete e informá el estado real.
 
 Luego:
 1. Continuá en la rama compartida codex/s-107-xlsx-portability, sin crear otra rama ni otro PR. T-040…T-045 van en esa rama y en el PR49, según «Tareas y dependencias» de docs/specs/S-107-xlsx-portability.md.
-2. Tomá T-044 (docs/tasks/T-044-xlsx-client.md) y ejecutá su contrato con las pruebas de componente dirigidas y sus negativos (XL-05). Leé client/AGENTS.md y las decisiones de implementación del checkpoint de T-043: forma de los errores (code, sheet, row), 413 sin code cuando rechaza el proxy o el multipart, y cuerpos exactos de import-preview e imports.
-3. T-040 sigue siendo la tarea portadora: docs/STATUS.md la mantiene en «Tarea y contrato» con in_progress, y T-044 se nombra en «Acción actual» y en el prompt. El frontmatter de T-044 no pasa a in_progress; su avance y cierre van en su «Checkpoint vigente».
-4. Rige el aplazamiento de FULL de docs/TESTING.md: el FULL integrado se corre una sola vez sobre el HEAD final del PR único, al cerrar T-045, y con --tooling porque T-041 cambió el POM (perfil STARTER).
+2. Tomá T-045 (docs/tasks/T-045-xlsx-journey.md) y ejecutá su contrato: e2e/tests/portability.spec.ts con títulos «portability:», iterando con --grep "portability:" --project desktop y luego mobile (XL-06), sin page.route ni interceptores sobre la API propia. Leé docs/TESTING.md (tiempos de E2E), docs/E2E-ITERATION.md y las decisiones de implementación del checkpoint de T-044: textos visibles de la pantalla, vista previa con accountEmpty false al reimportar (sin botón «Importar») y medición real de overflow a 375 px pendiente para el proyecto mobile.
+3. T-040 sigue siendo la tarea portadora: docs/STATUS.md la mantiene en «Tarea y contrato» con in_progress hasta el cierre de T-045, y T-045 se nombra en «Acción actual» y en el prompt. El frontmatter de T-045 no pasa a in_progress; su avance y cierre van en su «Checkpoint vigente».
+4. Con XL-06 verde y las fuentes sin cambios, corré una sola vez el FULL integrado sobre el HEAD final del PR único, con el comando único de la tabla de T-045 más --tooling (perfil STARTER: T-041 cambió el POM; confirmalo con bash scripts/verify.sh --policy desde c5e37cc4b73ad038ac35edf29c66131416bb4a34). Antes de la corrida larga guardá el checkpoint con SHA/base, comando, logs, recursos propios y cleanup.
+5. Con el gate en verde, hacé el control de avance de T-040…T-045 (contratos, evidencia y hallazgos a BACKLOG), pasá el PR49 a ready con descripción de problema/cambio/pruebas/limitaciones y dejá el prompt del revisor independiente. La prueba del dueño la hace el dueño sobre sus datos: registrá solo OK/observaciones, conteos y SHA, sin abrir ni copiar su archivo.
 
-No borres ramas, worktrees ni archivos de .orchestrator; el cleanup pendiente de T-049 requiere autorización del dueño. Al cerrar T-044 en la rama (pruebas en verde, docs-check OK, commit publicado y checkpoint), dejá el prompt de la sesión siguiente para T-045 sin empezarla.
+No borres ramas, worktrees ni archivos de .orchestrator; el cleanup pendiente de T-049 requiere autorización del dueño. No revises ni mergees el PR: la revisión es de otra sesión.
 ```
