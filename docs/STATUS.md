@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-036](tasks/T-036-voice-navigation.md) · S-105 / navegación y sesión |
-| Estado | `in_review` |
-| Acción actual | Corrección B-3 publicada con FULL/APPLICATION verde. Siguiente: única revisión independiente adicional autorizada, en sesión nueva. |
+| Estado | `changes_requested` |
+| Acción actual | Tercera revisión: B-3 confirmada; nuevo bloqueante B-4 (un error de captura impide guardar una nota existente abierta después). Ronda adicional agotada: decide el dueño con frontera. |
 | Rama / PR | codex/t-036-voice-navigation · [PR42](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42) |
 
 T-038: PR41 MERGED y conciliada como done. Evidencia del squash y checks en [T-038](tasks/T-038-reference-preview-fix.md#checkpoint-vigente).
@@ -66,5 +66,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Reviewer independiente, sesión nueva. Revisar T-036 en PR42 de MatiasNicolasAcevedo/devnotes, rama codex/t-036-voice-navigation, según el checkpoint vigente de docs/tasks/T-036-voice-navigation.md. Es la única ronda adicional autorizada por el dueño. Confirmar PR OPEN, HEAD/base publicados y verify-required vigente. Verificar el rojo/verde de B-3 (el editor vuelve a grabar y guardar tras descartar audio excedido), las regresiones de B-1/B-2 y la evidencia FULL/APPLICATION de las fuentes 8b9438b. Publicar el veredicto en el PR ligado a HEAD/base. Un veredicto favorable permite continuar solo si cumple AUTONOMY; ante otro bloqueante, volver al dueño. T-037 espera MERGED de T-036.
+Dueño y frontera, sesión nueva. Resolver el cierre de T-036 en PR42 de MatiasNicolasAcevedo/devnotes según el checkpoint vigente de docs/tasks/T-036-voice-navigation.md. Confirmar PR OPEN, HEAD/base publicados y el tercer veredicto CAMBIOS REQUERIDOS (B-4). Decidir si se autoriza una corrección acotada de B-4 por implementer en la misma rama, con rojo/verde y FULL/APPLICATION sobre las fuentes nuevas, y otra revisión independiente en sesión nueva. Esa revisión deberá comprobar que tras un error de captura (aviso excedido o permiso denegado) se puede abrir, editar y guardar una nota existente con ACK, conservar B-1/B-2/B-3 y publicar su veredicto ligado al HEAD/base vigentes. Aplicar AUTONOMY solo con PR elegible. T-037 espera MERGED de T-036.
 ```

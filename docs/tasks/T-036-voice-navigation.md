@@ -1,6 +1,6 @@
 ---
 id: T-036
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 executor: junie
@@ -53,9 +53,22 @@ Atrás/Adelante y navegación por header no pierden texto, no renderizan destino
 
 ## Checkpoint vigente
 
-2026-11-10. `in_review`. Corrección B-3 publicada en PR42 con FULL/APPLICATION verde sobre sus fuentes; evidencia en [Entrega de la corrección B-3](#entrega-de-la-corrección-b-3). Fuentes `8b9438b`, base publicada `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`; el HEAD posterior solo agrega Markdown regular. Los cambios locales de Render y portabilidad en `docs/DEPLOYMENT.md` y `docs/BACKLOG.md` siguen fuera de los commits de T-036.
+2026-11-10. `changes_requested`. La revisión independiente adicional autorizada por el dueño confirma B-3 y encuentra el bloqueante B-4. Se agotó la ronda autorizada y la salida vuelve al dueño. Los cambios locales de Render y portabilidad en `docs/DEPLOYMENT.md` y `docs/BACKLOG.md` siguen fuera de los commits de T-036.
 
-- **Reviewer independiente, sesión nueva.** Única ronda adicional autorizada por el dueño. Comprobar B-3 y las regresiones de B-1/B-2, verificar FULL y `verify-required` vigentes y publicar el veredicto ligado a HEAD/base. Un veredicto favorable permite continuar solo si cumple AUTONOMY. Ante otro bloqueante, volver al dueño. T-037 espera el MERGED confirmado de T-036.
+- **Dueño y frontera, sesión nueva.** Decidir la salida de B-4. Propuesta: una corrección acotada por implementer en la misma rama y PR42, con rojo/verde y FULL/APPLICATION sobre las fuentes nuevas. Para llegar a merge, el dueño debe autorizar otra revisión independiente en sesión nueva. Esa revisión verificará B-4 y conservará B-1/B-2/B-3, el gate y `verify-required`. T-037 espera el MERGED confirmado de T-036.
+
+## Tercera revisión independiente
+
+2026-11-10. Reviewer en sesión nueva, Claude Code (Claude Opus 5.5, `claude-opus-5-5`, PowerShell/Git Bash/Git/gh/Node/Vitest; esfuerzo no expuesto). Es el mismo modelo que la sesión implementer de B-3, pero otra sesión, y no revisa trabajo propio. Esta revisión cambia solo documentación operativa. B-4 afecta el guardado de notas de voz existentes después de un error de captura. PR42 OPEN, listo para revisión, `codex/t-036-voice-navigation` contra `main`. HEAD de entrada `32c4ebc21a80fb5021d620bdd0b19f9f5da59712` y base `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`, confirmados con `gh pr view` y `git ls-remote`. [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42765988323/job/129662481483) para el HEAD de entrada. La verificación usó un worktree aislado en ese HEAD.
+
+- Evidencia FULL/APPLICATION válida para las fuentes `8b9438b`. `git diff --raw 8b9438b 32c4ebc` muestra solo `docs/STATUS.md` y la tarea. El árbol `client/src` `857cc81f73d3af2f87830c45cf167c56e37b815e` y el árbol de `8146dc5` `496786fdb23ecca28393ae92f2f52385cd3bb3e5` coinciden con las huellas antes/después. El SHA-256 de `full-r3.log` coincide con el registrado. El log muestra exit 0 en docs, server (221 + 210), client (514/514) y e2e (41 pruebas). `bash scripts/verify.sh --policy origin/main` dio FULL/APPLICATION. `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` pasaron.
+- B-3 · rojo/verde reproducido. Se restauraron `VoiceComposer.tsx` y `useVoiceRecorder.ts` de `fbbf15c`. Así fallaron «descarta audio que excedió… y recupera el editor» (el aviso sigue tras «Nueva nota») y «resetError no altera una captura en curso» (`idle` en vez de `recording`). Con las fuentes del PR ambas pasan.
+- Regresiones. Las nueve suites dirigidas pasaron 116/116 en el HEAD: B-1 (recarga tardía ignorada y recarga vigente aplicada), B-2 (601 s descartados sin POST y transcripción explícita de audio válido), navegación, guardia daily, 401/logout y aislamiento por dueño.
+- **B-4 · Un error de captura bloquea guardar una nota existente abierta después.** Lo provoca el grabador persistente. `VoiceComposer.tsx` toma `captureState` de `recorder.state` cuando no es `idle`, y «Guardar» exige `captureState === 'idle'`. Desde B-3, solo `reset` («Nueva nota» y descartar al navegar) limpia ese error. `goTo` de una nota de la biblioteca solo llama a `dismissNotices`, y `loadNote` limpia el estado de captura del borrador, no el del grabador. La sonda temporal en `VoiceDraftNavigation.review-probe.test.tsx` usa router real y MSW. Primero provoca el aviso de 601 s o un permiso denegado (`NotAllowedError`, aviso visible). Después abre «Extracto existente», espera su texto y lo edita. «Guardar» queda deshabilitado en ambos casos (exit 1). Los controles pasan: sin error previo, o con «Nueva nota» antes de abrir la nota. En `main` (`a621005`) la misma secuencia con permiso denegado y el grabador real deja «Guardar» habilitado. Es una regresión de T-036, contraria a S-105 («Documento independiente», «Los errores no reemplazan texto»). Las sondas se retiraron.
+- Corrección suficiente y cierre observable: limpiar el error terminado del grabador al cambiar de documento, también al abrir una nota existente. Debe hacerlo sin alterar una captura en curso ni un resultado pendiente. La regresión con router real recorre dos variantes: aviso excedido y permiso denegado. En ambas abre una nota existente, edita, guarda con un único PUT y ACK, y no envía ningún POST de transcripción. Debe fallar en `32c4ebc` y pasar con la corrección.
+- No bloqueante, igual que `main`: en el mismo documento nuevo, tras el aviso, «Guardar» sigue deshabilitado hasta «Descartar audio» o «Nueva nota». La sonda confirmó que «Descartar audio» del aviso recupera «Guardar».
+
+Se agotó la ronda adicional autorizada. Propuesta para el dueño y frontera en el checkpoint vigente.
 
 ## Entrega de la corrección B-3
 
