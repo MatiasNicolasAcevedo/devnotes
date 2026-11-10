@@ -8,7 +8,7 @@ import type { ReactNode } from 'react'
 import { server } from '../../test/msw/server'
 import { problemResponse } from '../../test/factories'
 import { AuthSessionContext, type AuthSession } from '../auth/sessionContext'
-import type { VoiceNoteDetail } from './api'
+import { voiceQueryKeys, type VoiceNoteDetail } from './api'
 import { VoicePage } from './VoicePage'
 
 /*
@@ -204,7 +204,7 @@ function renderPage() {
   }
   const user = userEvent.setup()
   render(<VoicePage />, { wrapper: Wrapper })
-  return { user }
+  return { user, queryClient }
 }
 
 /** `hidden: true` porque un diálogo modal abierto marca el resto de la página como aria-hidden. */
@@ -758,6 +758,101 @@ describe('VoicePage', () => {
         ),
       )
       expect(textbox()).toHaveValue('Texto 1 editado')
+    })
+  })
+
+  describe('7.ª revisión', () => {
+    it('B-1: una revisión nueva que llega durante el guardado no pisa la edición y el 409 abre el conflicto', async () => {
+      const { user, queryClient } = renderPage()
+      await openNote(user, 'Extracto Texto 1', 'Texto 1')
+      await openNote(user, 'Extracto Texto 2', 'Texto 2')
+      backend.notes.set(ID_1, note(ID_1, 'Texto remoto', 2))
+      const get = hold()
+      backend.holdGet = get.promise
+
+      // Detalle cacheado (revisión 1) mientras el refetch está retenido.
+      await user.click(screen.getByText('Extracto Texto 1'))
+      await waitFor(() => expect(textbox()).toHaveValue('Texto 1'))
+      await user.type(textbox(), ' editado')
+      const put = hold()
+      backend.holdPut = put.promise
+      backend.nextPutStatus = 409
+      await user.click(screen.getByRole('button', { name: 'Guardar' }))
+      await waitFor(() => expect(backend.puts).toHaveLength(1))
+
+      get.release()
+      // Espera a que la revisión 2 esté en caché (y por tanto llegue al composer).
+      await waitFor(() =>
+        expect(
+          queryClient.getQueryData<VoiceNoteDetail>(voiceQueryKeys.detail(ID_1))?.revision,
+        ).toBe(2),
+      )
+      expect(textbox()).toHaveValue('Texto 1 editado')
+      put.release()
+
+      expect(await screen.findByRole('dialog', { name: 'Conflicto de edición' })).toBeVisible()
+      expect(textbox()).toHaveValue('Texto 1 editado')
+    })
+
+    it('B-1: una revisión nueva que llega durante el borrado no reemplaza la nota y el 409 abre el conflicto', async () => {
+      const { user, queryClient } = renderPage()
+      await openNote(user, 'Extracto Texto 1', 'Texto 1')
+      await openNote(user, 'Extracto Texto 2', 'Texto 2')
+      backend.notes.set(ID_1, note(ID_1, 'Texto remoto', 2))
+      const get = hold()
+      backend.holdGet = get.promise
+
+      await user.click(screen.getByText('Extracto Texto 1'))
+      await waitFor(() => expect(textbox()).toHaveValue('Texto 1'))
+      const del = hold()
+      backend.holdDelete = del.promise
+      backend.nextDeleteStatus = 409
+      await user.click(screen.getByRole('button', { name: 'Borrar' }))
+      const confirm = await screen.findByRole('dialog', { name: 'Eliminar nota' })
+      await user.click(within(confirm).getByRole('button', { name: 'Confirmar' }))
+      await waitFor(() => expect(backend.deletes).toHaveLength(1))
+
+      get.release()
+      // Espera a que la revisión 2 esté en caché (y por tanto llegue al composer).
+      await waitFor(() =>
+        expect(
+          queryClient.getQueryData<VoiceNoteDetail>(voiceQueryKeys.detail(ID_1))?.revision,
+        ).toBe(2),
+      )
+      expect(textbox()).toHaveValue('Texto 1')
+      del.release()
+
+      expect(await screen.findByRole('dialog', { name: 'Conflicto de edición' })).toBeVisible()
+      expect(textbox()).toHaveValue('Texto 1')
+    })
+
+    it('O-1: un aviso de error de borrado no pasa a la nota que se abre después', async () => {
+      const { user } = renderPage()
+      await openNote(user, 'Extracto Texto 1', 'Texto 1')
+      backend.nextDeleteStatus = 500
+      await user.click(screen.getByRole('button', { name: 'Borrar' }))
+      const confirm = await screen.findByRole('dialog', { name: 'Eliminar nota' })
+      await user.click(within(confirm).getByRole('button', { name: 'Confirmar' }))
+      expect(await screen.findByText('No se pudo borrar la nota.')).toBeVisible()
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+
+      await openNote(user, 'Extracto Texto 2', 'Texto 2')
+
+      expect(screen.queryByText('No se pudo borrar la nota.')).not.toBeInTheDocument()
+    })
+
+    it('O-3: si falla el refetch de la nota ya abierta el editor sigue usable', async () => {
+      const { user } = renderPage()
+      await editNote1(user)
+      backend.nextGetStatus = 500
+
+      // El PUT correcto invalida el detalle; su refetch falla.
+      await user.click(screen.getByRole('button', { name: 'Guardar' }))
+      expect(await screen.findByText('Nota guardada correctamente.')).toBeVisible()
+      await waitFor(() => expect(backend.detailGets.filter((id) => id === ID_1)).toHaveLength(2))
+
+      expect(screen.queryByText(/No se pudo abrir la nota/)).not.toBeInTheDocument()
+      expect(textbox()).toBeEnabled()
     })
   })
 })

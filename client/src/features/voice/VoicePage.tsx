@@ -38,7 +38,9 @@ export function VoicePage() {
   const detailQuery = useVoiceNote(selectedId ?? '')
   const selectedDetail = detailQuery.data
   const loadingDetail = selectedId != null && selectedDetail == null && detailQuery.isFetching
-  const detailError = selectedId != null && detailQuery.isError && !detailQuery.isFetching
+  // Solo bloquea si la nota nunca llegó: un refetch fallido de la nota ya abierta no la invalida.
+  const detailError =
+    selectedId != null && selectedDetail == null && detailQuery.isError && !detailQuery.isFetching
   const { refetch: refetchDetail } = detailQuery
 
   const goTo = useCallback((target: PendingTarget) => {
@@ -66,6 +68,7 @@ export function VoicePage() {
   const handleSelect = useCallback(
     (item: VoiceNoteListItem) => {
       if (item.id === selectedId) {
+        // Defensivo: con el editor bloqueado por el error no debería haber captura/guardado en curso.
         if (detailError && !composerRef.current?.isBusy) void refetchDetail()
         return
       }

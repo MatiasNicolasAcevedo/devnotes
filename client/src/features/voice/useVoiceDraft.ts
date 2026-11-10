@@ -177,7 +177,10 @@ export function useVoiceDraft() {
   const loadNote = useCallback((detail: VoiceNoteDetail, options?: { force?: boolean }) => {
     setState((prev) => {
       if (!options?.force) {
-        if (prev.documentState === 'dirty') return prev
+        // Solo sobre un documento en reposo: nunca con cambios, guardado/borrado en vuelo o conflicto
+        // pendiente (S-105 §7: nunca actualizar automáticamente sobre revisión nueva).
+        if (prev.documentState !== 'new' && prev.documentState !== 'clean') return prev
+        if (prev.conflict != null) return prev
         // Misma nota con revisión igual o anterior (p. ej. detalle cacheado): nada que cargar.
         if (
           prev.noteId === detail.id &&
