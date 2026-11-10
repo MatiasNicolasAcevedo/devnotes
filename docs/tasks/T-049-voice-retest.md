@@ -1,6 +1,6 @@
 ---
 id: T-049
-status: in_progress
+status: in_review
 priority: P1
 size: S
 executor: frontier
@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-049-voice-retest
-pr: null
+pr: 48
 depends_on: [T-048]
 ---
 # T-049 · Reensayo sintético de voz con Groq y el dueño

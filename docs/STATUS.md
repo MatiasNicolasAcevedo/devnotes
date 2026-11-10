@@ -3,11 +3,11 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-049](tasks/T-049-voice-retest.md) · S-105 / reensayo sintético con Groq |
-| Estado | `in_progress` |
-| Acción actual | Segunda ronda sobre `8d787c1` detenida: `01-breve` y `02-tecnico` favorables, `03-silencio` fuera de criterio (HTTP 200 con «Gracias.»), `04` sin intentar. Medido: Groq devuelve ese texto con `no_speech_prob` 0, fuera del alcance de la regla actual. Bloqueada en frontera/dueño: elegir otra señal de silencio para S-105. [Evidencia](tasks/T-049-voice-retest.md#segunda-ronda-sobre-8d787c1) |
-| Rama / PR | `codex/t-049-voice-retest` · PR único tras resultado favorable |
+| Estado | `in_review` |
+| Acción actual | [PR48](https://github.com/MatiasNicolasAcevedo/devnotes/pull/48) publicado para revisión independiente. Reensayo sobre `8d787c1`: tres muestras habladas favorables; silencio fuera de criterio, aceptado por el dueño como limitación conocida. [Evidencia](tasks/T-049-voice-retest.md#segunda-ronda-sobre-8d787c1) |
+| Rama / PR | `codex/t-049-voice-retest` · [PR48](https://github.com/MatiasNicolasAcevedo/devnotes/pull/48) |
 
-T-048: [PR47 MERGED y conciliada como done](tasks/T-048-groq-multipart-fix.md#checkpoint-vigente). T-040 espera T-049 favorable y MERGED. FULL integrado después de T-044 MERGED.
+T-048: [PR47 MERGED y conciliada como done](tasks/T-048-groq-multipart-fix.md#checkpoint-vigente). T-040 espera T-049 MERGED. Por decisión del dueño del 2026-11-10, T-040…T-045 comparten la rama `codex/s-107-xlsx-portability` y un único PR; FULL integrado sobre su HEAD final. [Regla](specs/S-107-xlsx-portability.md#tareas-y-dependencias)
 
 T-039: [PR46 MERGED y conciliada como done](tasks/T-039-voice-activation.md#checkpoint-vigente).
 
@@ -74,5 +74,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Frontera: retomar T-049 en codex/t-049-voice-retest (.orchestrator/t049-worktree) con el dueño. Leer AGENTS.md, STATUS y «Segunda ronda sobre 8d787c1» de T-049 con sus referencias. El silencio sintético volvió a dar HTTP 200 con «Gracias.» con la corrección de 8d787c1 activa. La medición real dio un segmento con no_speech_prob 0, avg_logprob -0,297 y compression_ratio 0,529: ese campo no sirve para rechazarlo. Decidir con el dueño otra señal de silencio para S-105 (por ejemplo, ausencia de señal detectada en el cliente antes de enviar, u otra regla en el backend) y actualizar la spec. Dejar la corrección como contrato acotado con prueba roja previa. No repetir la matriz sin esa decisión ni sin presupuesto nuevo; el conductor de la ronda está en .orchestrator/t049-synthetic-fixtures del checkout original. T-040 espera T-049 favorable y MERGED. FULL integrado después de T-044 MERGED.
+Revisor independiente, sesión nueva: revisar el PR48 de T-049 (codex/t-049-voice-retest contra main) según docs/agents/reviewer.md. Leer AGENTS.md, STATUS y T-049 desde «Corrección integrada». El cierre se apoya en la decisión del dueño de aceptar el silencio como limitación conocida; el criterio de cuatro muestras favorables no se cumple y está declarado. Tras MERGED confirmado, la sesión siguiente concilia T-049 como done y toma T-040 en la rama compartida codex/s-107-xlsx-portability: T-040…T-045 van en esa rama y en un único PR, según «Tareas y dependencias» de S-107. FULL integrado sobre el HEAD final de ese PR.
 ```
