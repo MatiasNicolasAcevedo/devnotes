@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-035](tasks/T-035-voice-library.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
 | Estado | `mergeable` |
-| Acción actual | 8.ª revisión APROBADA (acotada al diff). FULL/APPLICATION: docs/server/client OK, e2e FALLÓ 2/41 por `reference-preview.spec.ts` (daily, T-026), **preexistente en main 085dc76**. El dueño decidió **mergear con excepción** acotada a ese test; bugfix antes de T-036 (BACKLOG). Siguiente: sesión nueva reconfirma aprobación del diff Markdown posterior y mergea. Detalle en la tarea. |
+| Acción actual | Aprobación reconfirmada en sesión nueva no autora: diff `4234513..c71bc1a` solo Markdown, base main 085dc76, CI verify-required SUCCESS, docs-check OK. FULL/APPLICATION válido salvo `reference-preview.spec.ts` (preexistente en main 085dc76), cubierto por la excepción del dueño «Mergear con excepción», acotada a ese test. Siguiente: merge squash del HEAD final; tras MERGED, nueva sesión concilia done y hace el bugfix de reference-preview (BACKLOG) antes de T-036. Detalle en la tarea. |
 | Rama / PR | codex/t-035-voice-library · [PR40](https://github.com/MatiasNicolasAcevedo/devnotes/pull/40) |
 
 T-034: PR39 MERGED, squash `085dc763918fa63e6de6b89b98ddfc9e87805f3a`, confirmado en GitHub el 2026-11-09. Junie reviewer + merger, Qwen3.6-27B-FP8. Segunda revisión independiente APROBADA sin bloqueantes. HEAD 13d250b, base main e1648a5, CI verify-required SUCCESS, docs-check OK. Client gate OK: lint, typecheck, VoiceComposer.test.tsx 5/5, AppRoutes.test.tsx 7/7, voiceNoteTextSchema.test.ts 7/7, build OK.
