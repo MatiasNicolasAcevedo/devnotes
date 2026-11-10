@@ -9,7 +9,7 @@ milestone: M3
 product_cycle: I3
 spec: S-107
 spec_version: 1
-branch: codex/t-041-xlsx-codec
+branch: codex/s-107-xlsx-portability
 pr: null
 depends_on: [T-040]
 ---
@@ -19,7 +19,7 @@ depends_on: [T-040]
 
 Un codec de backend que escribe y lee el formato de [S-107](../specs/S-107-xlsx-portability.md#formato-devnotes-xlsx-versión-1) con todos sus límites, sin HTTP ni base de datos. Es la base de T-042 (exportación) y T-043 (importación).
 
-Está en `draft` solo porque depende de T-040. La siguiente tarea es [T-042](T-042-xlsx-export-api.md).
+Está en `draft` solo porque depende de T-040 cerrada en la rama compartida de [S-107](../specs/S-107-xlsx-portability.md#tareas-y-dependencias). La siguiente tarea es [T-042](T-042-xlsx-export-api.md).
 
 ## Alcance y decisiones resueltas
 
@@ -69,4 +69,4 @@ XL-02. Casos mínimos:
 
 ## Cierre y siguiente tarea
 
-PR único y revisión independiente. Tras MERGED, conciliar y tomar [T-042](T-042-xlsx-export-api.md).
+Sin PR propio: cerrar en la rama compartida con XL-02 verde, `docs-check` y commit publicado. La siguiente sesión toma [T-042](T-042-xlsx-export-api.md) en la misma rama.

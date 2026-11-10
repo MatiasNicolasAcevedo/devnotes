@@ -6,18 +6,18 @@ Próxima acción: revisión independiente y merge del PR de [T-049](tasks/T-049-
 
 ## Siguientes · plan del dueño del 2026-11-10
 
-Orden decidido por el dueño: (1) activar Groq y probar M2-RC1; (2) exportar e importar la cuenta en `.xlsx` y probarlo; (3) si todo sale bien, desplegar el piloto en Render. Contratos: [VOICE-RELEASE](VOICE-RELEASE.md), [S-107](specs/S-107-xlsx-portability.md) y [S-108](specs/S-108-render-pilot.md), con la receta técnica en [DEPLOYMENT](DEPLOYMENT.md#piloto-de-devnotes-en-render-free). Cada tarea `draft` tiene el contrato completo y espera solo a la anterior: quien concilia un MERGED habilita la siguiente sin volver a frontera. WIP 1, una sesión nueva por tarea y por revisión.
+Orden decidido por el dueño: (1) activar Groq y probar M2-RC1; (2) exportar e importar la cuenta en `.xlsx` y probarlo; (3) si todo sale bien, desplegar el piloto en Render. Contratos: [VOICE-RELEASE](VOICE-RELEASE.md), [S-107](specs/S-107-xlsx-portability.md) y [S-108](specs/S-108-render-pilot.md), con la receta técnica en [DEPLOYMENT](DEPLOYMENT.md#piloto-de-devnotes-en-render-free). Cada tarea `draft` tiene el contrato completo y espera solo a la anterior, sin volver a frontera. T-040…T-045 comparten la rama `codex/s-107-xlsx-portability` y un único PR por decisión del dueño: cada una se habilita al cerrar la anterior en la rama. [Regla](specs/S-107-xlsx-portability.md#tareas-y-dependencias). Fuera de S-107, quien concilia un MERGED habilita la siguiente. Una sesión nueva por tarea y por revisión.
 
 | Orden | Contrato / resultado | Ejecuta | Dependencia |
 |---|---|---|---|
 | 2 | [T-049](tasks/T-049-voice-retest.md) · Reensayo sintético con Groq | Dueño con un agente de frontera | T-048 MERGED |
-| 3 | [T-040](tasks/T-040-daily-timestamps.md) · Instantes de daily y versiones a microsegundos (bugfix previo a exportar) | Junie | T-049 favorable y MERGED |
-| 4 | [T-041](tasks/T-041-xlsx-codec.md) · Codec `devnotes-xlsx` v1 y límites | Junie | T-040 MERGED |
-| 5 | [T-042](tasks/T-042-xlsx-export-api.md) · GET de exportación privada | Junie | T-041 MERGED |
-| 6 | [T-043](tasks/T-043-xlsx-import-api.md) · Vista previa e importación atómica en cuenta vacía, y proxies | Junie | T-042 MERGED |
-| 7 | [T-044](tasks/T-044-xlsx-client.md) · Pantalla «Datos» y control de cinco tras el merge | Junie | T-043 MERGED |
-| 8 | [T-045](tasks/T-045-xlsx-journey.md) · E2E de ida y vuelta y prueba del dueño | Junie y el dueño | T-044 MERGED |
-| 9 | [T-046](tasks/T-046-render-image.md) · Imagen única y smoke local con 512 MB | Junie | T-045 MERGED y aceptada |
+| 3 | [T-040](tasks/T-040-daily-timestamps.md) · Instantes de daily y versiones a microsegundos (bugfix previo a exportar) | Junie | T-049 MERGED |
+| 4 | [T-041](tasks/T-041-xlsx-codec.md) · Codec `devnotes-xlsx` v1 y límites | Junie | T-040 cerrada en la rama |
+| 5 | [T-042](tasks/T-042-xlsx-export-api.md) · GET de exportación privada | Junie | T-041 cerrada en la rama |
+| 6 | [T-043](tasks/T-043-xlsx-import-api.md) · Vista previa e importación atómica en cuenta vacía, y proxies | Junie | T-042 cerrada en la rama |
+| 7 | [T-044](tasks/T-044-xlsx-client.md) · Pantalla «Datos» | Junie | T-043 cerrada en la rama |
+| 8 | [T-045](tasks/T-045-xlsx-journey.md) · E2E de ida y vuelta, FULL integrado, PR único de S-107 y prueba del dueño | Junie y el dueño | T-044 cerrada en la rama |
+| 9 | [T-046](tasks/T-046-render-image.md) · Imagen única y smoke local con 512 MB | Junie | PR único de S-107 MERGED y T-045 aceptada |
 | 10 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | T-046 MERGED |
 
 Retorno a frontera si el dueño emite «no aceptada» en T-045 o T-047, ante una decisión fuera de contrato o al cerrar T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.

@@ -9,7 +9,7 @@ milestone: M3
 product_cycle: I3
 spec: S-107
 spec_version: 1
-branch: codex/t-040-daily-timestamps
+branch: codex/s-107-xlsx-portability
 pr: null
 depends_on: [T-049]
 ---
@@ -19,7 +19,7 @@ depends_on: [T-049]
 
 `createdAt`/`updatedAt` de las notas diarias y `savedAt` de las versiones registran el instante real truncado a microsegundos (S-101), sin adelantarse hasta casi un segundo. Es un requisito previo de S-107: la exportación conserva estos instantes. Es un bugfix registrado en BACKLOG (hallazgo de T-037).
 
-Está en `draft` hasta que [T-049](T-049-voice-retest.md) documente un reensayo favorable con el dueño y su PR esté MERGED. La siguiente tarea es [T-041](T-041-xlsx-codec.md).
+Está en `draft` hasta que el PR de [T-049](T-049-voice-retest.md) esté MERGED. Abre la rama compartida y el PR único de [S-107](../specs/S-107-xlsx-portability.md#tareas-y-dependencias), y es su tarea portadora. La siguiente tarea es [T-041](T-041-xlsx-codec.md).
 
 ## Alcance y decisiones resueltas
 
@@ -59,4 +59,4 @@ Está en `draft` hasta que [T-049](T-049-voice-retest.md) documente un reensayo 
 
 ## Cierre y siguiente tarea
 
-PR único, revisión independiente y merge según AUTONOMY. Tras MERGED, la siguiente sesión concilia done, quita el hallazgo resuelto de BACKLOG y toma [T-041](T-041-xlsx-codec.md).
+Sin PR propio: abrir como draft el PR único de [S-107](../specs/S-107-xlsx-portability.md#tareas-y-dependencias) y cerrar la tarea en la rama compartida con XL-01 verde, `docs-check` y commit publicado. Como portadora, conserva el estado en vuelo y el número de PR hasta el merge. La siguiente sesión toma [T-041](T-041-xlsx-codec.md) en la misma rama. Tras el MERGED del PR único se concilian las seis tareas y se quita el hallazgo resuelto de BACKLOG.

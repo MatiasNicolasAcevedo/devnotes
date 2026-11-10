@@ -51,7 +51,7 @@ T-037 MERGED (`aef4213`, 2026-11-10) entregó la RC técnica. [T-039](tasks/T-03
 
 ## I3 / M3 · Portabilidad `.xlsx`
 
-Prioridad del dueño del 2026-11-10. [S-107](specs/S-107-xlsx-portability.md): exportar todos los datos de la cuenta (diarias, versiones, voz y referencias) e importarlos solo en una cuenta vacía, con el archivo como respaldo y migración, no como editor. Tareas T-040 → T-041 → T-042 → T-043 → T-044 (control de cinco) → T-045 (E2E de ida y vuelta y prueba del dueño). Salida: XL-01…06 y el veredicto del dueño.
+Prioridad del dueño del 2026-11-10. [S-107](specs/S-107-xlsx-portability.md): exportar todos los datos de la cuenta (diarias, versiones, voz y referencias) e importarlos solo en una cuenta vacía, con el archivo como respaldo y migración, no como editor. Tareas T-040 → T-041 → T-042 → T-043 → T-044 → T-045 (E2E de ida y vuelta y prueba del dueño), en la rama `codex/s-107-xlsx-portability` y un único PR, con FULL integrado, control de avance y revisión al final. Salida: XL-01…06 y el veredicto del dueño.
 
 ## I4 / M4 · Piloto en Render Free
 

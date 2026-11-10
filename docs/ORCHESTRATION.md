@@ -14,7 +14,7 @@ Contrato mínimo para encadenar sesiones. **No hay dispatcher instalado:** la co
 | `done` | GitHub confirma MERGED y el cierre documental está reconciliado | siguiente tarea predefinida / frontera al objetivo |
 | `blocked` | Falta dato, permiso, dependencia o solución tras intentos acotados | rol indicado por el bloqueo |
 
-- **En vuelo:** `in_progress`, `in_review`, `changes_requested`, `mergeable`, o `blocked` con `pr` asignado. Máximo una tarea en vuelo (WIP 1 tarea / 1 PR de tarea).
+- **En vuelo:** `in_progress`, `in_review`, `changes_requested`, `mergeable`, o `blocked` con `pr` asignado. Máximo una tarea en vuelo (WIP 1 tarea / 1 PR de tarea). En el PR único de S-107, la tarea portadora T-040 lleva ese estado y el número de PR.
 - `blocked` sin PR describe una tarea que espera una dependencia; no está en vuelo.
 - Máximo cinco tareas `ready`. `done` nunca se usa para un PR abierto o simplemente cerrado.
 
