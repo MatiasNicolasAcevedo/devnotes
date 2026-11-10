@@ -265,6 +265,59 @@ describe('createHttpClient', () => {
     await expect(client.request(PATH, itemSchema)).rejects.toBeInstanceOf(UnexpectedResponseError)
   })
 
+  it('requestBlob devuelve el binario y las cabeceras, y pide el tipo indicado', async () => {
+    let seen: Request | undefined
+    server.use(
+      mock.get(PATH, ({ request }) => {
+        seen = request
+        return new HttpResponse('contenido binario', {
+          headers: {
+            'Content-Type': 'application/octet-stream',
+            'Content-Disposition': 'attachment; filename="archivo.bin"',
+          },
+        })
+      }),
+    )
+
+    const { blob, headers } = await createHttpClient().requestBlob(PATH, 'application/octet-stream')
+
+    expect(await blob.text()).toBe('contenido binario')
+    expect(headers.get('Content-Disposition')).toBe('attachment; filename="archivo.bin"')
+    expect(seen?.headers.get('Accept')).toBe('application/octet-stream, application/problem+json')
+    expect(seen?.credentials).toBe('same-origin')
+  })
+
+  it('requestBlob convierte errores en ApiError, publica el 401 y propaga el aborto', async () => {
+    server.use(
+      mock.get(PATH, () => problemResponse(401, { detail: 'Se requiere iniciar sesión.' })),
+    )
+    const listener = vi.fn()
+    const client = createHttpClient({ onUnauthorized: listener })
+
+    const error = await client
+      .requestBlob(PATH, 'application/octet-stream')
+      .catch((e: unknown) => e)
+    expect(error).toBeInstanceOf(ApiError)
+    expect(error).toMatchObject({ status: 401 })
+    expect(listener).toHaveBeenCalledExactlyOnceWith({ path: PATH, method: 'GET' })
+
+    const controller = new AbortController()
+    controller.abort()
+    await expect(
+      client.requestBlob(PATH, 'application/octet-stream', { signal: controller.signal }),
+    ).rejects.toMatchObject({ name: 'AbortError' })
+  })
+
+  it('requestBlob trata un cuerpo interrumpido como error de red', async () => {
+    const broken = new Response(null, { status: 200 })
+    vi.spyOn(broken, 'blob').mockRejectedValue(new TypeError('terminated'))
+    const client = createHttpClient({ fetch: () => Promise.resolve(broken) })
+
+    await expect(client.requestBlob(PATH, 'application/octet-stream')).rejects.toBeInstanceOf(
+      NetworkError,
+    )
+  })
+
   it('propaga el aborto sin convertirlo en error de red', async () => {
     server.use(mock.get(PATH, () => new Promise<never>(() => {})))
     const controller = new AbortController()

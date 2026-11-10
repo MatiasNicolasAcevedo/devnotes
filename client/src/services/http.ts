@@ -98,6 +98,16 @@ export interface HttpClient {
   ): Promise<z.output<S>>
   /** Petición sin cuerpo de respuesta esperado (204 o cuerpo ignorado). */
   requestVoid(path: string, options?: RequestOptions): Promise<void>
+  /**
+   * Descarga binaria (p. ej. la exportación .xlsx). `accept` es el tipo de medio esperado; los errores siguen llegando
+   * como ProblemDetail. Devuelve también las cabeceras para leer `Content-Disposition`.
+   */
+  requestBlob(path: string, accept: string, options?: RequestOptions): Promise<BlobResponse>
+}
+
+export interface BlobResponse {
+  blob: Blob
+  headers: Headers
 }
 
 const SAFE_METHODS: ReadonlySet<HttpMethod> = new Set(['GET'])
@@ -111,11 +121,12 @@ export function createHttpClient(options: HttpClientOptions = {}): HttpClient {
   async function send(
     path: string,
     { method = 'GET', body, formData, signal, sessionIsCurrent }: RequestOptions,
+    accept: string = ACCEPT,
   ): Promise<Response> {
     if (body !== undefined && formData !== undefined) {
       throw new Error('body y formData son mutuamente excluyentes')
     }
-    const headers = new Headers({ Accept: ACCEPT })
+    const headers = new Headers({ Accept: accept })
     let payload: string | FormData | undefined
     if (formData !== undefined) {
       // El browser genera el boundary automáticamente; no establecer Content-Type manual.
@@ -173,6 +184,18 @@ export function createHttpClient(options: HttpClientOptions = {}): HttpClient {
       const response = await send(path, requestOptions)
       // Consume el cuerpo para liberar la conexión; su contenido no forma parte del contrato.
       await response.text()
+    },
+    async requestBlob(path, accept, requestOptions = {}) {
+      const response = await send(path, requestOptions, `${accept}, application/problem+json`)
+      let blob: Blob
+      try {
+        blob = await response.blob()
+      } catch (error) {
+        if (requestOptions.signal?.aborted) throw error
+        // La respuesta empezó pero el cuerpo no llegó completo.
+        throw new NetworkError(error)
+      }
+      return { blob, headers: response.headers }
     },
   }
 }

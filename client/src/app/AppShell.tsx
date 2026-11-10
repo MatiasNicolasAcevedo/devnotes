@@ -91,6 +91,9 @@ function AppShellContent({
             <Link component={RouterLink} to="/voice" color="inherit">
               Voz
             </Link>
+            <Link component={RouterLink} to="/data" color="inherit">
+              Datos
+            </Link>
           </Stack>
           <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', justifyContent: 'flex-end' }}>
             <SessionControls />

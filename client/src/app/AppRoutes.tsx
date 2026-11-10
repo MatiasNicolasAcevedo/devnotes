@@ -3,6 +3,7 @@ import { AuthSessionProvider } from '../features/auth/AuthSessionProvider'
 import { DailyNotesPage } from '../features/daily/DailyNotesPage'
 import { DailyHistoryPage } from '../features/daily/DailyHistoryPage'
 import { LoginPage } from '../features/auth/LoginPage'
+import { DataPage } from '../features/portability/DataPage'
 import { HomePage } from '../features/system/HomePage'
 import { ReferencePage } from '../features/reference/ReferencePage'
 import { VoicePage } from '../features/voice/VoicePage'
@@ -23,6 +24,7 @@ export function AppRoutes() {
           <Route path="history/:date" element={<DailyHistoryPage />} />
           <Route path="reference" element={<ReferencePage />} />
           <Route path="voice" element={<VoicePage />} />
+          <Route path="data" element={<DataPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
