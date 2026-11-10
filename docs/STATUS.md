@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-036](tasks/T-036-voice-navigation.md) · S-105 / navegación y sesión |
-| Estado | `in_review` |
-| Acción actual | Segunda revisión independiente de B-1 y B-2, HEAD/base publicados y gate FULL/APPLICATION. |
+| Estado | `changes_requested` |
+| Acción actual | Dueño y frontera deciden la salida de B-3 tras agotarse las dos rondas. |
 | Rama / PR | codex/t-036-voice-navigation · [PR42](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42) |
 
 T-038: PR41 MERGED y conciliada como done. Evidencia del squash y checks en [T-038](tasks/T-038-reference-preview-fix.md#checkpoint-vigente).
@@ -66,5 +66,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Reviewer, sesión nueva. Hacer la segunda revisión independiente de T-036 en PR42 de MatiasNicolasAcevedo/devnotes según docs/agents/reviewer.md y docs/tasks/T-036-voice-navigation.md. Confirmar PR OPEN y listo para revisión, rama codex/t-036-voice-navigation contra main, HEAD publicado y verify-required vigente. Verificar base a6210050f0e4c9a8ff98df62c50dbb4aebd995de y FULL/APPLICATION de 9d54e56f06214e230b9e78e03f08603336ac5dde con las fuentes corregidas de 5858c588627c6966b33141fcc74a829a9ce49562, conservado por el cierre solo Markdown. Verificar B-1 y B-2, las dos regresiones y el comportamiento conservado de navegación, ACK, daily y sesión. Publicar el veredicto ligado a HEAD/base y aplicar AUTONOMY solo si el PR resulta elegible.
+Dueño y frontera, sesión nueva. Resolver el cierre de T-036 en PR42 de MatiasNicolasAcevedo/devnotes según el checkpoint vigente de docs/tasks/T-036-voice-navigation.md. Confirmar PR OPEN, HEAD/base publicados y el segundo veredicto CAMBIOS REQUERIDOS. Decidir si se autoriza una corrección acotada de B-3 por implementer en la misma rama, con rojo/verde y FULL/APPLICATION sobre las fuentes nuevas, y una revisión independiente adicional en sesión nueva. Esa revisión deberá comprobar que el editor vuelve a grabar y guardar tras descartar audio excedido, conservar B-1/B-2 y publicar su veredicto ligado al HEAD/base vigentes. Aplicar AUTONOMY solo con PR elegible. T-037 espera MERGED de T-036.
 ```

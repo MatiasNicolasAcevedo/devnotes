@@ -1,10 +1,10 @@
 ---
 id: T-036
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 executor: junie
-role: reviewer
+role: planner
 milestone: M2
 product_cycle: I2
 spec: S-105
@@ -53,6 +53,16 @@ Atrás/Adelante y navegación por header no pierden texto, no renderizan destino
 
 ## Checkpoint vigente
 
+2026-11-10. Segunda revisión independiente, Codex (GPT-6, PowerShell/Git/gh/Node/Vitest, variante y esfuerzo no expuestos). Esta revisión cambia documentación operativa. B-3 afecta el uso del editor de voz después de descartar audio. PR42 OPEN, listo para revisión, `codex/t-036-voice-navigation` contra `main`. HEAD de entrada `eff35102682f52e3aa8aaebd7e608f405359e700` y base `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`, confirmados con `gh pr view` y `git ls-remote`. [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42760441304/job/129644600445) para el HEAD de entrada.
+
+- `bash scripts/verify.sh --policy origin/main` dio FULL/APPLICATION. El árbol de `9d54e56f06214e230b9e78e03f08603336ac5dde` y el SHA-256 del log original coinciden con el registro de abajo. `git diff --raw` entre `5858c58`, `9d54e56` y el HEAD revisado muestra únicamente cambios de Markdown regular. La base y el árbol `client/src` `5810a64420b0570a5964560d406db71eab64b7b1` coinciden. El FULL se conserva para estas fuentes, incluida la transición documental de esta revisión.
+- El comando dirigido de nueve suites de la entrega de correcciones pasó 115/115. B-1 impide que la recarga tardía repueble el borrador descartado, y la recarga confirmada vigente sigue aplicándose. B-2 descarta audio de 601 s con aviso, tracks liberados y cero POST, y el audio válido al ocultar la pestaña conserva la transcripción explícita. También pasaron navegación de header, programática y POP, espera del ACK, flush y guardia daily, limpieza por 401/logout y aislamiento de respuestas tardías por dueño. `node scripts/docs-check.mjs` y `git diff --check` pasaron.
+- **B-3 · Descartar una captura excedida deja el editor bloqueado para grabar y guardar.** En una copia temporal de `VoiceDraftNavigation.test.tsx`, al final de «descarta audio que excedió 600 s durante la suspensión», pulsar «Nueva nota» y comprobar «Grabar». Escribir texto válido y comprobar «Guardar». `npm test -- --run src/features/voice/VoiceDraftNavigation.review-probe.test.tsx -t 'descarta audio que excedió' --reporter=dot` dio exit 1 con las dos aserciones fallidas. El aviso y las aserciones de cleanup y cero POST pasaron. La sonda se retiró. `VoiceComposer.tsx` exige `captureState === 'idle'` para ambas acciones y prioriza el estado `error` del grabador persistente. «Nueva nota» reinicia el borrador, pero deja ese estado del grabador. El cierre debe permitir recuperar el editor tras el aviso, iniciar otra grabación por gesto y guardar texto manual con ACK, manteniendo el descarte sin POST de la captura inválida. La regresión debe recorrer ambas salidas en el mismo workspace.
+
+Se agotaron las dos rondas. Propuesta para el dueño y frontera: una corrección acotada por implementer en el mismo PR, rojo/verde de B-3 y FULL/APPLICATION sobre las fuentes corregidas. Para llegar a merge, el dueño debe autorizar expresamente una revisión independiente adicional que verifique B-3 y la vigencia de B-1/B-2, del gate y de `verify-required`, y emita el veredicto ligado a HEAD/base. T-037 sigue esperando el merge de T-036.
+
+## Entrega de las correcciones de revisión
+
 2026-11-10. Corrección de revisión por Codex, rol implementer (GPT-6, PowerShell/Git/gh/Node/Vitest/Docker, variante y esfuerzo no expuestos). Retoma a pedido del dueño en el chat que publicó la primera revisión. Impacto en el ciclo del borrador y el aviso de duración de voz. Sin cambios HTTP, de permisos ni de persistencia.
 
 PR42 abierto y listo para revisión en la rama `codex/t-036-voice-navigation`, HEAD de entrada `8699f85fa053dfa2b4d7931b92314840adafab50` y base publicada `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`. Los negativos `npm test -- --run src/features/voice/VoiceDraftNavigation.test.tsx -t 'ignora la recarga|descarta audio que excedió' --reporter=dot` fallaron 2/2 antes de las correcciones (`.orchestrator/t036/review-fix-red.log`).
@@ -61,7 +71,7 @@ PR42 abierto y listo para revisión en la rama `codex/t-036-voice-navigation`, H
 - Desde `client/`, `npm test -- --run src/features/voice/VoiceDraftNavigation.test.tsx src/features/daily/DailyDraftNavigation.test.tsx src/features/auth/AuthSession.test.tsx src/features/voice/VoicePage.test.tsx src/features/voice/recorder.test.ts src/features/voice/useVoiceRecorder.test.tsx src/features/voice/useVoiceDraft.test.tsx src/features/voice/VoiceComposer.test.tsx src/app/AppRoutes.test.tsx --reporter=dot` pasó 115/115 (`.orchestrator/t036/review-fix-green.log`). Typecheck, lint y formato de las rutas afectadas pasaron.
 - `bash scripts/verify.sh --policy origin/main` dio FULL/APPLICATION. Comando del gate `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t036-r2 STARTER_E2E_PROJECT=starter-e2e-t036-r2 STARTER_SERVER_TESTS=container bash scripts/verify.sh`. El primer arranque con `exec` sin `env` dio 127 antes de crear recursos. La invocación corregida dio exit 0 en FULL, 04:34:49Z–05:09:00Z. Docs 6 s, backend 520 s (221 Surefire + 210 Failsafe PostgreSQL, Spotless y JaCoCo), cliente 156 s (513/513, cobertura y build) y Playwright 1367 s (21 desktop + 20 mobile).
 - Árbol limpio y huellas iguales antes/después: HEAD verificado `9d54e56f06214e230b9e78e03f08603336ac5dde`, árbol `e641798c04a22b246559560be757b8c689efc9e1`, `client/src` `5810a64420b0570a5964560d406db71eab64b7b1`, misma base publicada. Evidencia saneada en `.orchestrator/t036/full-r2-evidence.log`, log `full-r2.log` SHA-256 `f999369d0ed1aac40cc245e54f95308770894735b091ce851ace7dae1125630e`. El cierre solo cambia Markdown regular y conserva el gate.
-- Ambos proyectos Compose tenían cero recursos antes y después. El runner retiró E2E. Se retiraron `starter-verify-t036-r2_default` y `starter-verify-t036-r2_m2-cache` tras cotejar sus labels exactos. Retoma: segunda revisión independiente de PR42 en sesión nueva.
+- Ambos proyectos Compose tenían cero recursos antes y después. El runner retiró E2E. Se retiraron `starter-verify-t036-r2_default` y `starter-verify-t036-r2_m2-cache` tras cotejar sus labels exactos.
 
 ## Primera revisión independiente
 
