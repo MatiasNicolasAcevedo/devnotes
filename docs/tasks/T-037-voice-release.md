@@ -1,6 +1,6 @@
 ---
 id: T-037
-status: mergeable
+status: done
 priority: P1
 size: M
 executor: junie
@@ -54,7 +54,7 @@ Iteración browser desde raíz/Git Bash, después de T-031: `DEVNOTES_VOICE_ENAB
 
 ## Checkpoint vigente
 
-2026-11-10. `mergeable`. La revisión independiente no encontró bloqueantes; evidencia en [Revisión independiente](#revisión-independiente). El veredicto `APROBADO` se publica en PR44 ligado al HEAD documental de esta transición y la base `289dd66acfad5bb632ad3270a90963c17d239f96`, después de la CI `verify-required` de ese HEAD. Siguiente: merge según AUTONOMY y merger; tras MERGED confirmado, sesión nueva concilia done, congela el SHA de entrega en VOICE-RELEASE y entrega al dueño/frontera la activación y las pruebas de M2-RC1.
+2026-11-10. `done`. GitHub confirma [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44) MERGED: squash `aef4213db2fe7f676591811b7ee67a22757b64b0`, `mergedAt` 2026-11-10T16:37:31Z, sobre el HEAD aprobado `ad548bc` y la base `289dd66`, con `verify-required` SUCCESS. Conciliado por frontera (Claude Code, Claude Opus 5.5) en la rama `codex/docs-portability-render-plan`. El SHA de entrega `aef4213` quedó congelado en [VOICE-RELEASE](../VOICE-RELEASE.md#evidencia-final-a-completar-por-t-037) como RC técnica con la revisión independiente cumplida y la activación externa pendiente. Siguiente: [T-039](T-039-voice-activation.md), activación de Groq y pruebas personales del dueño.
 
 Entrega del implementer: [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44), fuentes técnicas `8775ac9485e61e9a47974f1802543d95ce638fde` sobre main `289dd66acfad5bb632ad3270a90963c17d239f96`. Gate STARTER verde ([Gate de cierre](#gate-de-cierre)) y CI `verify-required` verde en ese HEAD. El cierre posterior solo cambia Markdown y conserva el gate. VOICE-RELEASE declara la entrega «en revisión» y la activación externa pendiente.
 

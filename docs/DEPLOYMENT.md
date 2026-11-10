@@ -4,7 +4,7 @@
 
 ## Piloto de DevNotes en Render Free
 
-Alcance acordado con el dueño el 2026-11-10, para preparar después de [T-037](tasks/T-037-voice-release.md) MERGED y la entrega local M2-RC1. La validación cloud usa una instancia de prueba y datos ficticios. La creación de recursos, los accesos a GitHub y Render y la configuración de Google se confirman con el dueño al iniciar la prueba.
+Alcance acordado con el dueño el 2026-11-10. Orden decidido ese mismo día: primero la activación y las pruebas de M2-RC1 ([T-039](tasks/T-039-voice-activation.md)), después la portabilidad `.xlsx` ([S-107](specs/S-107-xlsx-portability.md)) y al final este piloto ([S-108](specs/S-108-render-pilot.md), tareas T-046 y T-047). La validación cloud usa una instancia de prueba y datos ficticios. La creación de recursos, los accesos a GitHub y Render y la configuración de Google se confirman con el dueño al iniciar la prueba.
 
 ### Empaquetado
 
