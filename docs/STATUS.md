@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-038](tasks/T-038-reference-preview-fix.md) · S-106 / bugfix antes de T-036 |
-| Estado | `changes_requested` |
-| Acción actual | Revisión independiente de T-038: volver a implementer para corregir el comando de iteración en TESTING y completar la trazabilidad del FULL. Hallazgos y condiciones de cierre en la tarea. |
+| Estado | `in_review` |
+| Acción actual | Corregida la tabla de TESTING y recuperada la evidencia de la corrida FULL/APPLICATION original. Siguiente: segunda revisión independiente sobre el HEAD publicado. Detalle en la tarea. |
 | Rama / PR | codex/t-038-reference-preview-fix · [PR41](https://github.com/MatiasNicolasAcevedo/devnotes/pull/41) |
 
 T-035: PR40 MERGED, squash `e1fbaea1ca3ae868dd2ca93569da45eab65aa413`, confirmado en GitHub el 2026-11-09 (mergedAt 2026-11-10T01:39:05Z). Merge con excepción del dueño acotada a `reference-preview.spec.ts` (preexistente), corregido en T-038.
@@ -64,5 +64,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Implementer, sesión nueva: T-038 (PR41, rama codex/t-038-reference-preview-fix, base main e1fbaea). Resolver B-1 (tabla de TESTING) y B-2 (trazabilidad FULL/APPLICATION) según las condiciones de cierre de docs/tasks/T-038-reference-preview-fix.md. Conservar el gate si se recupera evidencia válida de las mismas fuentes/base. Ejecutar docs-check y publicar en la misma rama para segunda revisión independiente.
+Reviewer, sesión nueva no autora: segunda revisión de T-038 (PR41, rama codex/t-038-reference-preview-fix, base main e1fbaea). Verificar HEAD/base publicados, el cierre de B-1 (tabla de TESTING) y B-2 (log original y huellas en docs/tasks/T-038-reference-preview-fix.md). Conservar el FULL/APPLICATION de 9e89f8a según TESTING si coinciden las fuentes y la base. Verificar docs-check y CI verify-required, y publicar veredicto según docs/agents/reviewer.md. Merge solo si se cumplen las condiciones de AUTONOMY.
 ```

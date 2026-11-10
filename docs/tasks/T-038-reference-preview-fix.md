@@ -1,6 +1,6 @@
 ---
 id: T-038
-status: changes_requested
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -55,9 +55,11 @@ Bugfix preexistente decidido por el dueño el 2026-11-09 al mergear T-035 con ex
 
 Hecho: rojo ReferenceInsertion.test.tsx 0/2 (`RangeError: Position 12 out of range` y átomo desplazado a «líne|a») → 2/2 con el arreglo. Dirigidas daily 44/44. Client gate `npm run verify` exit 0: typecheck, lint, format, 499/499 tests (86.1% statements, 80.32% branches), build. E2E dirigido `scripts/e2e.sh --grep "reference preview:"` desktop **passed** y mobile **passed** (exit 0, proyecto `starter-e2e-t038`, limpiado por el script). `docs-check` OK, `git diff --check` OK.
 
-FULL **APPLICATION** (`--policy origin/main` → FULL/APPLICATION) sobre HEAD de código `9e89f8a`, base main `e1fbaea`, 2026-11-10T02:01Z–02:29Z: docs OK, server 210/210 OK (BUILD SUCCESS), client OK, e2e OK (41 passed, 0 failed, desktop + mobile, incluido `reference preview:`), exit 0. Log local fuera del repo. Cleanup: el script retiró contenedores/volúmenes E2E; quedaban `starter-verify-t038_m2-cache` y la red `starter-verify-t038_default`, retirados por nombre/label exacto; ambos namespaces quedan vacíos. PR [41](https://github.com/MatiasNicolasAcevedo/devnotes/pull/41) publicado; cierre solo documental posterior conserva el FULL (mismas fuentes/base). Siguiente: revisión independiente en sesión nueva.
+FULL **APPLICATION** (`--policy origin/main` → FULL/APPLICATION) sobre HEAD de código `9e89f8a`, base main `e1fbaea`, 2026-11-10T02:01:37Z–02:29:43Z. Exit 0 en docs (5 s), backend (448 s, Failsafe 210/210 y BUILD SUCCESS), client (108 s) y E2E (1125 s, 21 desktop + 20 mobile, incluido `reference preview:` en ambos). Extracto saneado local en `.orchestrator/t038/full-gate-evidence.log`, recuperado de `full-gate.log` (SHA-256 `cb8ac457908c2ae7ebe0adf5d24ad4cfcd332fd6e65200661c6550883e244d9b`). Cleanup: el script retiró contenedores/volúmenes E2E. El implementer retiró `starter-verify-t038_m2-cache` y `starter-verify-t038_default` por nombre/label exacto y comprobó ambos namespaces vacíos.
 
-## Checkpoint vigente
+Huellas reconstruidas de la corrida original. `git status --short` dio vacío antes del arranque y después del exit 0, antes del cierre documental. El log imprimió al arranque `HEAD 9e89f8a2892f8c8aa9a48648dca8bd827ffc544b`. El reflog de la rama ubica el mismo commit al término de la corrida, antes de `95e686b`, con árbol `7e7c91b4198e084839eb80ffcb733970a1951986` y padre `e1fbaea1ca3ae868dd2ca93569da45eab65aa413`. La comparación con el cierre documental verifica que solo cambió Markdown.
+
+## Primera revisión independiente
 
 2026-11-09. Reviewer independiente, Codex (GPT-6, CLI PowerShell/Git/gh/Vitest, esfuerzo no expuesto). PR41, HEAD revisado `95e686be3cb01e043785b28c1b6f3d406aaa9566`, base `e1fbaea1ca3ae868dd2ca93569da45eab65aa413`. Sin impacto adicional en comportamiento, API, permisos, datos ni UI por la revisión.
 
@@ -66,7 +68,9 @@ FULL **APPLICATION** (`--policy origin/main` → FULL/APPLICATION) sobre HEAD de
 1. **B-1 · Comando de iteración contradictorio.** La tabla de [TESTING](../TESTING.md#comandos) todavía presenta `node scripts/run-e2e.mjs ... --grep` como comando de iteración. «Tiempos de E2E» corrige el ejemplo y desaconseja esa invocación, que por sí sola no configura `STARTER_E2E_ARTIFACTS` ni prepara el stack. Cierre: la tabla y la sección apuntan a `bash scripts/e2e.sh --grep "patrón" --project desktop`, con `mobile` como alternativa de proyecto.
 2. **B-2 · Trazabilidad del FULL.** El resumen identifica el código, la base, las suites y el cleanup. «Log local fuera del repo» no identifica la salida saneada ni constan las huellas antes/después exigidas por [TESTING](../TESTING.md#cuándo-ejecutar-full). Cierre: referenciar el log saneado localizable y registrar las huellas de la corrida que acrediten las fuentes contra `9e89f8a` y `e1fbaea`. Conservar esa ejecución si se recupera la evidencia y coinciden fuentes/base. Si falta evidencia indispensable, revalidar según TESTING.
 
-Retoma: implementer en sesión nueva, misma rama/PR, resolver B-1 y B-2, ejecutar docs-check y publicar. Segunda revisión independiente sobre el nuevo HEAD y la base publicada.
+## Checkpoint vigente
+
+2026-11-10. Corrección documental a pedido del dueño. Codex (GPT-6, PowerShell/Git/gh/Node, esfuerzo no expuesto). B-1 corregido en la tabla de TESTING. B-2 atendido con el extracto saneado del log original, los estados del árbol registrados en la sesión de implementación y el reflog. Se conserva el FULL de `9e89f8a` sobre `e1fbaea` por coincidencia de fuentes técnicas y base. La corrección solo modifica Markdown. `node scripts/docs-check.mjs`, `git diff --check` y comparación técnica contra el SHA de código, OK. Retoma: segunda revisión independiente en sesión nueva sobre el HEAD publicado de PR41 y su base.
 
 ## Correcciones significativas
 

@@ -12,7 +12,7 @@ Desde la raíz con Git Bash, Docker Desktop Linux y Node >=24. En Windows/PowerS
 | `bash scripts/verify.sh --server` | Maven `clean verify`: Spotless, unitarios/slices Surefire, integración PostgreSQL Failsafe, JaCoCo |
 | `bash scripts/verify.sh --client` | Typecheck, lint, formato, Vitest/cobertura y build; reconstruye la imagen verify |
 | `bash scripts/verify.sh --e2e` | Solo Playwright contra API/DB/OIDC reales, saneador y cleanup |
-| `node scripts/run-e2e.mjs ... --grep "patrón"` | Solo los tests E2E que coincidan con el patrón; usa `--project=desktop` para evitar mobile. Iteración rápida, no sustituye FULL |
+| `bash scripts/e2e.sh --grep "patrón" --project desktop` | Iteración con los tests E2E que coincidan con el patrón. Usa `--project mobile` para el proyecto móvil |
 | `bash scripts/verify.sh --tooling` | Inicializador, copia compilable, CLI persistente, proxies/fallos/señales; no duplica Playwright final |
 | `bash scripts/verify.sh --starter` | FULL de aplicación + tooling, para mantenimiento de starter/entorno |
 | `bash scripts/verify.sh --fast` | Iteración parcial sin E2E; no acredita FULL |
