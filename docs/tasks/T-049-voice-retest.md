@@ -1,6 +1,6 @@
 ---
 id: T-049
-status: in_review
+status: mergeable
 priority: P1
 size: S
 executor: frontier
@@ -137,6 +137,14 @@ Con esa decisión se ejecutó `04-segunda-nota`, dentro del presupuesto original
 Resultado de la tarea: tres muestras habladas favorables (un POST y HTTP 200 cada una, 682–1.018 ms desde la detención) y silencio fuera de criterio, aceptado por el dueño como limitación conocida. Captura total de la ronda ~61 s y cinco envíos a Groq en la sesión, contando la medición. Sobre los textos, el dueño respondió «Bien» al informe que los incluía; no hizo una revisión palabra por palabra. El criterio estricto de «cuatro muestras favorables» no se cumple: VOICE-RELEASE registra «Voz real verificada para dictado en español» con la limitación de silencio explícita.
 
 Cleanup pendiente, sin borrar en esta sesión: `/tmp/t049-silence.webm` y `/tmp/t049-resp.json` dentro del contenedor del server (desaparecen al recrearlo); `r2-silence.webm` y `r2-silence-response.json` en la carpeta de fixtures; nota `[T-049-01-breve]` de la primera ronda en el volumen del dueño; cuatro WAV, perfiles `edge-*` y `edge-r2-*` (cerrados), `t049-cdp.mjs`, `r2-launch.ps1` y `r2-*.json` en `.orchestrator/t049-synthetic-fixtures/`; `.orchestrator/t049-apply.ps1` (no usado) y `.orchestrator/t049-proof`. El checkout original queda en `8d787c1` con HEAD separado y el stack del dueño activo con voz habilitada.
+
+### Revisión independiente
+
+2026-11-10. Reviewer en Claude Code de escritorio (Claude Fable 5.2, esfuerzo no expuesto), sesión distinta de la implementación, con Git Bash, JDK 21, Maven Wrapper, Node, Git y `gh`. Sin cambios de código, API, permisos, datos ni UI. Revisado el HEAD publicado `64b2afbe88aba5f2ab86711b7701980e14dfba9f` contra la base `6f423e37be71d8fd9bb48561b3a74bfcb80c2421`, con árbol limpio.
+
+- Desde `server/` en Git Bash: `./mvnw -Dtest='GroqTranscriptionClientTest,VoiceTranscriptionServiceTest' test` exit 0, 23/23 (adaptador 19, servicio 4); `./mvnw -q spotless:check` exit 0. Desde la raíz: `node scripts/docs-check.mjs` OK, `git diff --check origin/main...HEAD` exit 0, `bash scripts/verify.sh --policy origin/main` con `policy=FULL`, `profile=APPLICATION`. `verify-required` SUCCESS sobre `64b2afb`. No ejecutado: `VoiceTranscriptionApiIT`, `clean verify` ni FULL, diferido según TESTING.
+- Favorable sin bloqueantes. El código cumple la regla de S-105 sobre segmentos. El criterio de cuatro muestras favorables no se cumple y el cierre se apoya en la decisión del dueño, registrada con su cita. Observaciones no bloqueantes, con archivo y línea, en el veredicto del [PR48](https://github.com/MatiasNicolasAcevedo/devnotes/pull/48): alinear la etiqueta «Voz real verificada» y una fila obsoleta de VOICE-RELEASE, y precisar en S-107 qué muestra STATUS mientras T-040 es la tarea portadora.
+- `mergeable` no habilita el merge por sí solo: lo decide el dueño según AUTONOMY sobre el SHA del veredicto.
 
 ## Correcciones significativas
 
