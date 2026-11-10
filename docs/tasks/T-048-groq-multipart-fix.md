@@ -1,6 +1,6 @@
 ---
 id: T-048
-status: in_review
+status: changes_requested
 priority: P1
 size: S
 executor: junie
@@ -49,7 +49,17 @@ Completar la solicitud que DevNotes envía a Groq al detener la grabación. T-03
 
 ## Checkpoint vigente
 
-Corrección publicada en [PR47](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47) contra `main`. Siguiente paso: revisión independiente con la evidencia dirigida y el check `verify-required` del HEAD publicado. FULL diferido por decisión del dueño hasta después de T-044 MERGED.
+La revisión independiente de [PR47](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47) confirmó el contrato HTTP y detectó un bloqueante de formato Java en el test nuevo. La siguiente sesión implementer corrige el formato en la misma rama y vuelve a publicar para revisión. FULL diferido por decisión del dueño hasta después de T-044 MERGED.
+
+### Evidencia de revisión independiente
+
+2026-11-10. Rol reviewer en sesión separada en Codex Desktop (GPT-6, variante y esfuerzo no expuestos), con PowerShell, Git Bash, Git, `gh`, Node y Maven Wrapper/JDK 21. La revisión afecta la entrega del multipart saliente y su prueba. El cambio de estado del reviewer es documental.
+
+- `gh pr view 47` y `git ls-remote` confirmaron PR abierto contra `main`, HEAD `22cc723efa3d663e9d536e3b55d58bc902a90aa7` y base `c5e37cc4b73ad038ac35edf29c66131416bb4a34`. `gh run view 42886318454` confirmó [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42886318454/job/130075467751) en ese HEAD. El run duplicado `42886316414` del mismo SHA quedó cancelado. La consulta GraphQL devolvió cero hilos de revisión.
+- Revisión de código y doble HTTP. El POST conserva el Bearer del servidor y envía exactamente `file` (`recording.webm`, `audio/webm`, bytes intactos), `model=whisper-large-v3-turbo`, `language=es`, `temperature=0` y `response_format=verbose_json`. La cabecera y el cuerpo comparten boundary, con CRLF y delimitador final. El doble comprueba nombres y valores por parte, rechaza duplicados y usa audio y credenciales ficticios.
+- Rojo reproducido desde `server/` en una copia temporal de `8699877c9491654a2f9e376d9e3596352232a228` con la prueba publicada (blob `a2e71c008ab88ee29ccc3604ba23e4e4bba56417`). `./mvnw -q test -Dtest=GroqTranscriptionClientTest#transcribeSendsGroqMultipartContract` terminó con exit 1 y un fallo esperado. El doble devolvió 400 (`missing model part`). Se eliminó la copia temporal propia al terminar.
+- Verde en `22cc723`, desde `server/`, con `./mvnw -q test -Dtest=GroqTranscriptionClientTest#transcribeSendsGroqMultipartContract` y `./mvnw -q test -Dtest=GroqTranscriptionClientTest`, ambos exit 0. Surefire informó 16/16 en la clase completa, incluidos los negativos existentes. `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` dieron exit 0. `bash scripts/verify.sh --policy origin/main` clasificó `FULL / APPLICATION` por las dos rutas Java. El FULL integrado queda diferido por TESTING.
+- **B-1 · Formato del test.** `./mvnw -q spotless:check` dio exit 1 en `GroqTranscriptionClientTest.java`, en las condiciones de `checkGroqRequest` que validan método/ruta y delimitadores (líneas 139 y 153 de `22cc723`). El cambio introduce un fallo reproducible del chequeo de formato que corre en `verify`. Aplicar `./mvnw spotless:apply` desde `server/`, revisar que el diff de corrección se limite al formato del test y demostrar `./mvnw -q spotless:check` y la clase dirigida con exit 0. Publicar en la misma rama, verificar `verify-required` del nuevo HEAD y pasar a una nueva sesión reviewer.
 
 Contrato y conciliación de T-039 preparados el 2026-11-10 por frontera en Codex Desktop (GPT-6, variante y esfuerzo no expuestos).
 
