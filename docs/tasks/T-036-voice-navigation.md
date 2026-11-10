@@ -1,6 +1,6 @@
 ---
 id: T-036
-status: in_progress
+status: in_review
 priority: P1
 size: M
 executor: junie
@@ -53,17 +53,22 @@ Atrás/Adelante y navegación por header no pierden texto, no renderizan destino
 
 ## Checkpoint vigente
 
+2026-11-10. `in_review`. Corrección B-3 publicada en PR42 con FULL/APPLICATION verde sobre sus fuentes; evidencia en [Entrega de la corrección B-3](#entrega-de-la-corrección-b-3). Fuentes `8b9438b`, base publicada `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`; el HEAD posterior solo agrega Markdown regular. Los cambios locales de Render y portabilidad en `docs/DEPLOYMENT.md` y `docs/BACKLOG.md` siguen fuera de los commits de T-036.
+
+- **Reviewer independiente, sesión nueva.** Única ronda adicional autorizada por el dueño. Comprobar B-3 y las regresiones de B-1/B-2, verificar FULL y `verify-required` vigentes y publicar el veredicto ligado a HEAD/base. Un veredicto favorable permite continuar solo si cumple AUTONOMY. Ante otro bloqueante, volver al dueño. T-037 espera el MERGED confirmado de T-036.
+
+## Entrega de la corrección B-3
+
 2026-11-10. Decisión del dueño confirmada en el chat («si te autorizo por favor continua»), registrada por frontera con Codex (GPT-6, PowerShell/Git/gh/Node, variante y esfuerzo no expuestos). El dueño autoriza una corrección acotada de B-3 por implementer en sesión nueva y una única revisión independiente adicional en otra sesión. El alcance es la recuperación del editor de voz. La corrección se mantiene en `codex/t-036-voice-navigation` y PR42.
 
-Punto de partida confirmado con `gh pr view` y `git ls-remote`. PR42 OPEN, HEAD publicado `fbbf15c7c5b945c363b1bbd579fd845178732deb`, base `main` `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`, [segundo veredicto CAMBIOS REQUERIDOS](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42#issuecomment-6759705584) y [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42761306849/job/129647369686) para ese HEAD. Mantener `changes_requested` hasta que el implementer retome. Los cambios locales de Render y portabilidad en `docs/DEPLOYMENT.md` y `docs/BACKLOG.md` pertenecen a la planificación posterior y quedan fuera de los commits de T-036.
+2026-11-10. Implementer, Claude Code (Claude Opus 5.5, `claude-opus-5-5`, PowerShell/Git Bash/Git/gh/Node/Vitest/Docker; esfuerzo no expuesto). Impacto: recuperación del editor de voz tras el aviso de audio excedido. Sin cambios HTTP, de permisos ni de persistencia. Punto de partida confirmado con `gh pr view` y `git ls-remote`: PR42 OPEN, HEAD `fbbf15c7c5b945c363b1bbd579fd845178732deb`, base `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`, [segundo veredicto CAMBIOS REQUERIDOS](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42#issuecomment-6759705584) y `verify-required` SUCCESS para ese HEAD.
 
-Corrección B-3 en curso. Implementer, Claude Code (Claude Opus 5.5, `claude-opus-5-5`, PowerShell/Git Bash/Git/gh/Node/Vitest/Docker; esfuerzo no expuesto). Impacto: recuperación del editor de voz tras el aviso de audio excedido. Sin cambios HTTP, de permisos ni de persistencia.
-
-- Rojo/verde. Desde `client/`, `npm test -- --run src/features/voice/VoiceDraftNavigation.test.tsx -t 'descarta audio que excedió' --reporter=dot` dio exit 1 antes del arreglo, con el aviso aún visible tras «Nueva nota» (`.orchestrator/t036/b3-red.log`), y exit 0 después (`b3-green.log`). La regresión recorre en el mismo workspace: aviso, tracks liberados, cero POST, «Nueva nota», nueva grabación por gesto (segundo `getUserMedia`, tracks liberados al cancelar) y guardado manual con ACK. El negativo `useVoiceRecorder.test.tsx -t 'resetError no altera'` dio rojo sin el arreglo y verde con él.
-- Fuentes cerradas en `8b9438b`, árbol `4413632e6997965f9afb33129cbfc2725d21b1cb`, `client/src` `857cc81f73d3af2f87830c45cf167c56e37b815e`, base `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`. El `reset` del editor limpia el error terminado del grabador persistente; `resetError` solo sale de `error`.
-- Las nueve suites dirigidas de la entrega anterior pasaron 116/116 (`b3-targeted.log`), incluidas B-1 y B-2. Typecheck, lint y formato pasaron.
-- Siguiente: FULL/APPLICATION sobre el HEAD que publica este checkpoint, desde la raíz en Git Bash: `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t036-r3 STARTER_E2E_PROJECT=starter-e2e-t036-r3 STARTER_SERVER_TESTS=container bash scripts/verify.sh`. Log `.orchestrator/t036/full-r3.log`. Ambos proyectos tienen cero recursos antes de empezar; al cerrar se retiran solo los recursos con esos labels exactos. Los cambios locales de Render se apartan durante la corrida y se restauran sin commitear.
-- Después: cerrar evidencia, pasar a `in_review` y entregar a la única revisión independiente adicional autorizada. Esa revisión comprueba B-3, las regresiones de B-1/B-2, FULL y `verify-required` vigentes y publica el veredicto ligado a HEAD/base. Un veredicto favorable permite continuar solo si cumple AUTONOMY; ante otro bloqueante, volver al dueño. T-037 espera el MERGED confirmado de T-036.
+- Rojo/verde. Desde `client/`, `npm test -- --run src/features/voice/VoiceDraftNavigation.test.tsx -t 'descarta audio que excedió' --reporter=dot` dio exit 1 antes del arreglo, con el aviso aún visible tras «Nueva nota» (`.orchestrator/t036/b3-red.log`), y exit 0 después (`b3-green.log`). La regresión recorre en el mismo workspace: aviso, tracks liberados, cero POST de transcripción, «Nueva nota», nueva grabación por gesto (segundo `getUserMedia`, tracks liberados al cancelar) y guardado manual con ACK de un único POST. El negativo `useVoiceRecorder.test.tsx -t 'resetError no altera'` dio rojo sin el arreglo y verde con él.
+- Fuentes cerradas en `8b9438b` (`fix(voice): recover the editor after discarding an overlong capture`), `client/src` `857cc81f73d3af2f87830c45cf167c56e37b815e`. El `reset` del editor limpia el error terminado del grabador persistente; `resetError` solo sale de `error` y no altera una captura en curso ni un resultado pendiente.
+- Las nueve suites dirigidas de la entrega anterior pasaron 116/116 (`b3-targeted.log`), incluidas B-1 (recarga tardía ignorada y recarga vigente aplicada) y B-2 (601 s descartados con aviso y transcripción explícita del audio válido al ocultar). Typecheck, lint y formato pasaron.
+- `bash scripts/verify.sh --policy origin/main` dio FULL/APPLICATION. Gate `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t036-r3 STARTER_E2E_PROJECT=starter-e2e-t036-r3 STARTER_SERVER_TESTS=container bash scripts/verify.sh`: exit 0 en FULL, 05:36:15Z–06:02:28Z. Docs 6 s, backend 403 s (221 Surefire + 210 Failsafe PostgreSQL, Spotless y JaCoCo), cliente 114 s (514/514, 87.94 % statements y 82.48 % branches, build) y Playwright 1050 s (21 desktop + 20 mobile).
+- Árbol limpio y huellas iguales antes/después: HEAD `8146dc5e217acef071670377ebae176c3ad26397`, árbol `496786fdb23ecca28393ae92f2f52385cd3bb3e5`, `client/src` `857cc81f73d3af2f87830c45cf167c56e37b815e`, misma base publicada. Los cambios locales de Render se apartaron con `git stash` durante la corrida y se restauraron con hash verificado, sin commitear. Evidencia saneada en `.orchestrator/t036/full-r3-evidence.log`, log `full-r3.log` SHA-256 `7a70086c84d2abae2a753a9ff6e1a9740d167aef2c0d3d26595415af0832d866`. El cierre solo cambia Markdown regular y conserva el gate.
+- Ambos proyectos Compose tenían cero recursos antes y después. El runner retiró E2E. Se retiraron `starter-verify-t036-r3_default` y `starter-verify-t036-r3_m2-cache` tras cotejar sus labels exactos.
 
 ## Evidencia de la segunda revisión independiente
 

@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-036](tasks/T-036-voice-navigation.md) · S-105 / navegación y sesión |
-| Estado | `in_progress` |
-| Acción actual | Implementer corrigió B-3 (`8b9438b`) y corre FULL/APPLICATION. Después, revisión independiente adicional autorizada. |
+| Estado | `in_review` |
+| Acción actual | Corrección B-3 publicada con FULL/APPLICATION verde. Siguiente: única revisión independiente adicional autorizada, en sesión nueva. |
 | Rama / PR | codex/t-036-voice-navigation · [PR42](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42) |
 
 T-038: PR41 MERGED y conciliada como done. Evidencia del squash y checks en [T-038](tasks/T-038-reference-preview-fix.md#checkpoint-vigente).
@@ -66,5 +66,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Implementer, sesión nueva. Retomar T-036 en PR42 de MatiasNicolasAcevedo/devnotes, rama codex/t-036-voice-navigation. Leer el checkpoint vigente de docs/tasks/T-036-voice-navigation.md y confirmar PR OPEN, HEAD/base publicados y el segundo veredicto CAMBIOS REQUERIDOS. Ejecutar la corrección acotada de B-3 autorizada por el dueño, con rojo/verde para nueva grabación y guardado tras descartar audio excedido, conservar B-1/B-2 y ejecutar FULL/APPLICATION sobre las fuentes nuevas. Publicar la corrección y la evidencia en el mismo PR, separadas de los cambios locales de Render. Entregar a la única revisión independiente adicional autorizada, en otra sesión y sobre HEAD/base vigentes. T-037 espera MERGED de T-036.
+Reviewer independiente, sesión nueva. Revisar T-036 en PR42 de MatiasNicolasAcevedo/devnotes, rama codex/t-036-voice-navigation, según el checkpoint vigente de docs/tasks/T-036-voice-navigation.md. Es la única ronda adicional autorizada por el dueño. Confirmar PR OPEN, HEAD/base publicados y verify-required vigente. Verificar el rojo/verde de B-3 (el editor vuelve a grabar y guardar tras descartar audio excedido), las regresiones de B-1/B-2 y la evidencia FULL/APPLICATION de las fuentes 8b9438b. Publicar el veredicto en el PR ligado a HEAD/base. Un veredicto favorable permite continuar solo si cumple AUTONOMY; ante otro bloqueante, volver al dueño. T-037 espera MERGED de T-036.
 ```
