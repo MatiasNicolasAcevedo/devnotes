@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-039](tasks/T-039-voice-activation.md) · S-105 / activación de Groq y pruebas personales de M2-RC1 |
-| Estado | `in_review` |
-| Acción actual | Revisar la evidencia y el alcance documental de T-039. El dueño dio el veredicto «Aceptada con mejoras» y la transcripción real queda como seguimiento. |
+| Estado | `mergeable` |
+| Acción actual | Cerrar el PR46 según AUTONOMY tras verificar el HEAD documental y publicar el veredicto. Con MERGED confirmado, frontera prepara la corrección y el reensayo de voz en otra sesión. |
 | Rama / PR | codex/t-039-voice-activation · [PR46](https://github.com/MatiasNicolasAcevedo/devnotes/pull/46) |
 
 T-037: PR44 MERGED, squash `aef4213db2fe7f676591811b7ee67a22757b64b0`, confirmado en GitHub el 2026-11-10 (mergedAt 2026-11-10T16:37:31Z). Conciliada como done; SHA de entrega congelado en [VOICE-RELEASE](VOICE-RELEASE.md). Plan posterior del dueño (2026-11-10) en [S-107](specs/S-107-xlsx-portability.md) y [S-108](specs/S-108-render-pilot.md).
@@ -70,5 +70,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva de revisión independiente de T-039, PR46 contra main. Leer AGENTS.md, docs/agents/reviewer.md, T-039 y VOICE-RELEASE. Confirmar HEAD y base remotos y el perfil DOCUMENTATION. Revisar el diff, la evidencia saneada, el veredicto «Aceptada con mejoras» y el seguimiento del 502 en BACKLOG. Publicar el veredicto de revisión y aplicar AUTONOMY si el PR es elegible. Tras el merge, frontera prepara en otra sesión la corrección y el reensayo de voz.
+Sesión nueva de frontera para el seguimiento de voz de T-039. Leer AGENTS.md, docs/STATUS.md, T-039, VOICE-RELEASE, el hallazgo de BACKLOG y S-105 §Adaptador y errores. Confirmar en GitHub que el PR46 contra main está MERGED, con mergedAt y mergeCommit.oid, según docs/agents/merger.md. Si sigue abierto, retomar su cierre antes de preparar el seguimiento. Con MERGED confirmado, conciliar T-039 como done en el primer avance de la rama autorizada y preparar el contrato de corrección del multipart y el reensayo sintético acotado con el dueño. Fijar la regresión rojo/verde, el criterio observable para voz real y la dependencia de T-040. Dejar STATUS con la próxima acción ejecutable.
 ```
