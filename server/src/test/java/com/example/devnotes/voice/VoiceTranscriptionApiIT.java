@@ -149,18 +149,50 @@ class VoiceTranscriptionApiIT {
                 bodyStr);
     }
 
-    // Minimal valid WebM header (RIFF....webm)
+    // Minimal valid WebM header: EBML header with DocType "webm", as Chromium MediaRecorder writes it (T-037).
     private byte[] validWebmHeader() {
-        byte[] header = new byte[12];
-        header[0] = 'R';
-        header[1] = 'I';
-        header[2] = 'F';
-        header[3] = 'F';
-        header[8] = 'w';
-        header[9] = 'e';
-        header[10] = 'b';
-        header[11] = 'm';
-        return header;
+        return new byte[] {
+            0x1A,
+            0x45,
+            (byte) 0xDF,
+            (byte) 0xA3,
+            (byte) 0x9F,
+            0x42,
+            (byte) 0x86,
+            (byte) 0x81,
+            0x01,
+            0x42,
+            (byte) 0xF7,
+            (byte) 0x81,
+            0x01,
+            0x42,
+            (byte) 0xF2,
+            (byte) 0x81,
+            0x04,
+            0x42,
+            (byte) 0xF3,
+            (byte) 0x81,
+            0x08,
+            0x42,
+            (byte) 0x82,
+            (byte) 0x84,
+            'w',
+            'e',
+            'b',
+            'm',
+            0x42,
+            (byte) 0x87,
+            (byte) 0x81,
+            0x04,
+            0x42,
+            (byte) 0x85,
+            (byte) 0x81,
+            0x02,
+            0x18,
+            0x53,
+            (byte) 0x80,
+            0x67
+        };
     }
 
     @Test
@@ -263,7 +295,7 @@ class VoiceTranscriptionApiIT {
         var a = login();
         String boundary = "testBoundary" + System.nanoTime();
         byte[] invalidHeader = new byte[12];
-        // Not RIFF header
+        // No EBML magic
         invalidHeader[0] = 'X';
 
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();

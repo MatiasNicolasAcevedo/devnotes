@@ -285,3 +285,20 @@ test('signals and exit codes preserved: no filter persistence in global state', 
   assert.equal(r2.grepPattern, undefined);
   assert.equal(r2.playwrightArgs.length, 0);
 });
+
+// --- T-037: services the one-off Playwright runner needs ---
+// e2e.sh runs the e2e service with --no-deps, so Compose never starts its depends_on. Every dependency must be in the
+// explicit `up --wait` list; otherwise the fake Groq provider is unreachable (getaddrinfo ENOTFOUND voice-provider).
+test('e2e.sh starts every service the e2e runner depends on before its --no-deps run', async () => {
+  const { readFileSync } = await import('node:fs');
+  const overlay = readFileSync(new URL('../../docker-compose.e2e.yml', import.meta.url), 'utf8');
+  const runner = overlay.slice(overlay.indexOf('\n  e2e:\n'));
+  const dependsOn = runner.slice(runner.indexOf('depends_on:'));
+  const dependencies = [...dependsOn.matchAll(/^ {6}([a-z][a-z0-9-]*):$/gm)].map(match => match[1]);
+  assert.ok(dependencies.includes('voice-provider'), 'e2e depends on the fake provider');
+  const script = readFileSync(new URL('../e2e.sh', import.meta.url), 'utf8');
+  const up = script.split('\n').find(line => /^compose up -d --wait\b/.test(line));
+  assert.ok(up, 'e2e.sh has an explicit up --wait');
+  const started = new Set(up.split(/\s+/).slice(1).filter(word => /^[a-z][a-z0-9-]*$/.test(word)));
+  for (const service of dependencies) assert.ok(started.has(service), `e2e.sh up starts ${service}`);
+});

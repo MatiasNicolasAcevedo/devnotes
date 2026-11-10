@@ -1,10 +1,10 @@
 ---
 id: T-036
-status: mergeable
+status: done
 priority: P1
 size: M
 executor: junie
-role: implementer
+role: merger
 milestone: M2
 product_cycle: I2
 spec: S-105
@@ -53,7 +53,7 @@ Atrás/Adelante y navegación por header no pierden texto, no renderizan destino
 
 ## Checkpoint vigente
 
-2026-11-10. `mergeable`. La cuarta revisión independiente cerró B-4 sin bloqueantes nuevos y aceptó el gate sustituto; evidencia en [Cuarta revisión independiente](#cuarta-revisión-independiente). El veredicto `APROBADO` se publica en PR42 ligado al HEAD documental de esta transición y la base `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`, después de la CI `verify-required` de ese HEAD. Siguiente: merge según AUTONOMY y merger, y MERGED confirmado antes de habilitar T-037. Los cambios locales de Render y portabilidad en `docs/DEPLOYMENT.md` y `docs/BACKLOG.md` siguen fuera de los commits de T-036.
+2026-11-10. `done`. PR42 MERGED, squash `289dd66acfad5bb632ad3270a90963c17d239f96`, `mergedAt` 2026-11-10T06:39:13Z, HEAD `bafd8573dc91d32926ecfa798a092530049da920`, base `main`. Confirmado en una sesión implementer nueva de T-037 con `gh pr view 42 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` (`state` MERGED). Conciliado en el primer avance de `codex/t-037-voice-release`; T-037 queda habilitada. El historial de revisión y del gate sustituto se conserva abajo.
 
 Decisión del dueño, 2026-11-10, en el chat de la tercera revisión: respondió «Sí, autorizo» a una corrección acotada de B-4 y una revisión independiente más. Indicó además «no corramos el full de nuevo por que es muy costoso».
 

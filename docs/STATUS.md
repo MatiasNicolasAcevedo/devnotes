@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-036](tasks/T-036-voice-navigation.md) · S-105 / navegación y sesión |
+| Tarea y contrato | [T-037](tasks/T-037-voice-release.md) · S-105 / recorrido integrado y entrega M2-RC1 |
 | Estado | `mergeable` |
-| Acción actual | La cuarta revisión independiente cerró B-4 sin bloqueantes y aceptó el gate sustituto del dueño. Consultar el veredicto y los checks del HEAD vigente en PR42 y confirmar el merge antes de habilitar T-037. |
-| Rama / PR | codex/t-036-voice-navigation · [PR42](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42) |
+| Acción actual | La revisión independiente de PR44 no encontró bloqueantes: reprodujo el rojo/verde de las tres correcciones y aceptó el gate STARTER de `8775ac9`. Consultar el veredicto y los checks del HEAD vigente en PR44 y confirmar el merge. Tras MERGED, la entrega vuelve a frontera y al dueño para activación y pruebas de M2-RC1. |
+| Rama / PR | codex/t-037-voice-release · [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44) |
+
+T-036: PR42 MERGED, squash `289dd66acfad5bb632ad3270a90963c17d239f96`, confirmado en GitHub el 2026-11-10 (mergedAt 2026-11-10T06:39:13Z). Conciliada como done en [T-036](tasks/T-036-voice-navigation.md#checkpoint-vigente).
 
 T-038: PR41 MERGED y conciliada como done. Evidencia del squash y checks en [T-038](tasks/T-038-reference-preview-fix.md#checkpoint-vigente).
 
@@ -66,5 +68,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Confirmar el estado de PR42 (T-036) en GitHub según docs/agents/merger.md. Si sigue OPEN, retomar como merger y aplicar AUTONOMY sobre el veredicto APROBADO, HEAD/base y checks vigentes. Con MERGED, registrar SHA y fecha, y en sesión implementer nueva conciliar T-036 como done en el primer avance de codex/t-037-voice-release. Comprobar la dependencia T-036, actualizar STATUS y la cola según corresponda y ejecutar el contrato de T-037 (docs/tasks/T-037-voice-release.md).
+Confirmar el estado de PR44 (T-037) en GitHub según docs/agents/merger.md. Si sigue OPEN, retomar como merger y aplicar AUTONOMY sobre el veredicto APROBADO, HEAD/base y checks vigentes. Con MERGED confirmado, en sesión nueva y rama nueva desde main: conciliar T-037 como done con SHA y fecha del squash, congelar ese SHA de entrega en docs/VOICE-RELEASE.md (RC técnica, revisión independiente cumplida, activación externa pendiente), actualizar STATUS/BACKLOG y entregar al dueño/frontera la activación de Groq y las pruebas personales de M2-RC1 según VOICE-RELEASE. No comenzar otra capacidad en esa sesión.
 ```

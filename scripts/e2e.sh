@@ -59,7 +59,7 @@ mkdir -p "$STARTER_E2E_ARTIFACTS/control"
 cp scripts/fixtures/oidc.json "$STARTER_E2E_ARTIFACTS/control/oidc.json"
 install_cleanup # Before build/up: handles partial start, build failure and signals.
 compose build server client e2e
-compose up -d --wait --wait-timeout 300 db oidc server client
+compose up -d --wait --wait-timeout 300 db oidc server client voice-provider
 compose run --rm --no-deps e2e node harness/readiness.mjs
 if [[ "$E2E_MODE" == "--harness" ]]; then
   compose run --rm --no-deps e2e npm run harness
