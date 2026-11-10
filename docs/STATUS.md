@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-035](tasks/T-035-voice-library.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
 | Estado | `mergeable` |
-| Acción actual | 8.ª revisión independiente acotada al diff `614af8a..4234513` (autorizada por el dueño: «Sí, ambas»): **APROBADO** sin bloqueantes sobre HEAD 4234513 / base 085dc76. Client gate OK (497/497), docs-check OK, CI verify-required SUCCESS. Pendiente antes del merge (AUTONOMY): gate FULL/APPLICATION con el entorno exacto de la tarea y CI verde sobre el HEAD final. Prueba faltante no bloqueante a BACKLOG. Detalle en la tarea. |
+| Acción actual | 8.ª revisión APROBADA (acotada al diff). FULL/APPLICATION: docs/server/client OK, e2e FALLÓ 2/41 por `reference-preview.spec.ts` (daily, T-026), **preexistente en main 085dc76**. El dueño decidió **mergear con excepción** acotada a ese test; bugfix antes de T-036 (BACKLOG). Siguiente: sesión nueva reconfirma aprobación del diff Markdown posterior y mergea. Detalle en la tarea. |
 | Rama / PR | codex/t-035-voice-library · [PR40](https://github.com/MatiasNicolasAcevedo/devnotes/pull/40) |
 
 T-034: PR39 MERGED, squash `085dc763918fa63e6de6b89b98ddfc9e87805f3a`, confirmado en GitHub el 2026-11-09. Junie reviewer + merger, Qwen3.6-27B-FP8. Segunda revisión independiente APROBADA sin bloqueantes. HEAD 13d250b, base main e1648a5, CI verify-required SUCCESS, docs-check OK. Client gate OK: lint, typecheck, VoiceComposer.test.tsx 5/5, AppRoutes.test.tsx 7/7, voiceNoteTextSchema.test.ts 7/7, build OK.
