@@ -1,6 +1,6 @@
 ---
 id: T-036
-status: changes_requested
+status: in_progress
 priority: P1
 size: M
 executor: junie
@@ -53,6 +53,16 @@ Atrás/Adelante y navegación por header no pierden texto, no renderizan destino
 
 ## Checkpoint vigente
 
+2026-11-10. Corrección de revisión por Codex, rol implementer (GPT-6, PowerShell/Git/gh/Node/Vitest/Docker, variante y esfuerzo no expuestos). Retoma a pedido del dueño en el chat que publicó la primera revisión. Impacto en el ciclo del borrador y el aviso de duración de voz. Sin cambios HTTP, de permisos ni de persistencia.
+
+PR42 abierto y listo para revisión en la rama `codex/t-036-voice-navigation`, HEAD de entrada `8699f85fa053dfa2b4d7931b92314840adafab50` y base publicada `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`. Los negativos `npm test -- --run src/features/voice/VoiceDraftNavigation.test.tsx -t 'ignora la recarga|descarta audio que excedió' --reporter=dot` fallaron 2/2 antes de las correcciones (`.orchestrator/t036/review-fix-red.log`).
+
+- Fuentes cerradas en `5858c588627c6966b33141fcc74a829a9ce49562`, árbol `client/src` `5810a64420b0570a5964560d406db71eab64b7b1`, sobre la base publicada anterior. B-1 invalida la recarga al desmontar el editor y verifica sesión/generación al resolver. B-2 valida el tiempo monotónico al detener, libera recursos y descarta el audio excedido con aviso.
+- Gate por ejecutar desde raíz con Git Bash/Node 24 y salida preservada. Comando `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t036-r2 STARTER_E2E_PROJECT=starter-e2e-t036-r2 STARTER_SERVER_TESTS=container bash scripts/verify.sh`. Log local `.orchestrator/t036/full-r2.log`, huellas de HEAD/base/árbol y resumen saneado en `.orchestrator/t036/full-r2-evidence.log`.
+- Ambos proyectos Compose tenían cero recursos por label antes de iniciar. El runner retira el proyecto E2E. Tras la salida, comprobar labels y retirar solo el volumen Maven y red del proyecto verify, y comprobar ambos namespaces vacíos. Siguiente paso con FULL verde y base vigente: publicar corrección y cerrar el traspaso a la segunda revisión.
+
+## Primera revisión independiente
+
 2026-11-10. Primera revisión independiente, Codex (GPT-6, PowerShell/Git/gh/Node/Vitest, variante y esfuerzo no expuestos). La revisión modifica solo documentación operativa. PR42 OPEN, listo para revisión, `codex/t-036-voice-navigation` contra `main`. HEAD de entrada `bee9f75290ccbd61f476e4fbafc447cc25f3a59a`, base `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`, ambos confirmados con `gh pr view` y `git ls-remote`. [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42754005208/job/129624018128) sobre ese HEAD.
 
 - `bash scripts/verify.sh --policy origin/main` dio FULL/APPLICATION. `node scripts/docs-check.mjs` y `git diff --check` pasaron. El SHA-256 calculado sobre `.orchestrator/t036/full-gate.log` coincide con el extracto saneado. Verificadas las huellas del commit técnico `0c56492ba173a7b6e3608b80b6c9594210fc5048`, el padre/base y el cierre limitado a Markdown regular. La evidencia FULL se conserva para las fuentes revisadas.
@@ -60,7 +70,7 @@ Atrás/Adelante y navegación por header no pierden texto, no renderizan destino
 - **B-1 · La recarga de un conflicto sobrevive al descarte de navegación.** `VoiceComposer.tsx` aplica el GET de «Descartar y recargar» con `draft.loadNote(fresh, { force: true })` después del await, sin comprobar que la operación sigue vigente. Sonda con router real y MSW: crear nota, provocar 409 al editar, retener el GET tras confirmar recarga, usar Atrás, pulsar «Descartar y continuar», liberar el GET y volver a Voz. El editor muestra «Respuesta tardía del detalle» donde se esperaba vacío. Cierre: invalidar o cancelar la recarga al descartar y comprobar sesión/generación antes de aplicar la respuesta. La regresión debe conservar vacío el borrador al volver y demostrar que la recarga confirmada vigente sigue funcionando.
 - **B-2 · Se conserva audio fuera del límite tras suspensión.** `recorder.ts` calcula la duración final en `_assembleResult` y valida el tamaño, pero no rechaza la duración excedida. Sonda con grabador ficticio: avanzar el reloj monotónico 601 s sin ejecutar el timer y disparar `visibilitychange` a oculto. Los tracks se detienen y la UI ofrece «Transcribir», aunque S-105 exige descartar ese audio. Cierre: validar el tiempo real al detener, liberar los recursos y mostrar aviso sin blob ni POST para audio excedido. Conservar la acción explícita para audio válido al ocultar.
 
-Retoma: implementer en sesión nueva, misma rama y PR. Reproducir ambos negativos, corregir, ejecutar dirigidos y renovar FULL/APPLICATION por el cambio técnico. El veredicto con HEAD documental y CI vigente queda en PR42.
+El veredicto quedó publicado en [PR42](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42#issuecomment-6758979397), ligado al HEAD documental `8699f85fa053dfa2b4d7931b92314840adafab50` y la base publicada.
 
 ## Entrega de implementación
 
