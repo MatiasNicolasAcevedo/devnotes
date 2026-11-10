@@ -88,6 +88,29 @@ Ronda detenida con **3 de 4 intentos consumidos**. `04-segunda-nota` queda sin i
 
 Paso de reensayo para el dueño: dar presupuesto explícito para una ronda nueva de cuatro muestras, aplicar `8d787c167571e65ce896b8cfe217d92b39f650c2` en el stack `starter-dev-devnotes-preview-1027` desde su checkout original conservando el volumen, y repetir la matriz completa en el orden de VOICE-RELEASE para que la evidencia sea comparable. El silencio debe dar un POST, HTTP 422 `VOICE_NO_SPEECH`, mensaje visible y editor vacío. Si Groq devuelve texto con algún segmento por debajo de 0,6, el resultado seguirá fuera de criterio y vuelve a frontera con las probabilidades medidas.
 
+### Segunda ronda sobre `8d787c1`
+
+2026-11-10. Implementer en Claude Code de escritorio (Claude Fable 5.2, esfuerzo no expuesto), con PowerShell, Git Bash, Node 24.21.0, Docker, Git y `gh`. Sin cambios de código, API, permisos, persistencia ni UI. **Ronda detenida en `03-silencio`, fuera de criterio, con 3 de 4 intentos consumidos.** `04-segunda-nota` queda sin intentar.
+
+- Base: `origin/codex/t-049-voice-retest` en `c94abea` contiene `8d787c167571e65ce896b8cfe217d92b39f650c2`; `gh pr view 47` devolvió `MERGED` con `mergeCommit` `6f423e3`, ancestro de ese SHA. Entre `8d787c1` y `c94abea` solo cambian tres Markdown.
+- Autorización: el dueño dio presupuesto para la ronda de cuatro muestras y delegó la ejecución completa en esta sesión. Plan Free, ausencia de gasto nuevo y `Inference APIs ZDR` constan por sus declaraciones del mismo día en la primera ronda; no las repitió en esta sesión. La entrada fue solo audio sintético.
+- Aplicación del SHA: a pedido del dueño, esta sesión movió el checkout original a `8d787c1` (árbol limpio, HEAD separado). El dueño ejecutó en su Git Bash `dev.sh down`, `up` y `check` de `starter-dev-devnotes-preview-1027` (modo `local`, proxy `nginx`) y cargó clave e interruptor de voz en privado; la sesión no vio valores. Primer intento sin variables: capabilities `recordingEnabled: false`, `reason: disabled`, sin grabar. Segundo intento con variables: `Local API/DB/OIDC check passed`, imagen del server creada 21:02:34Z y contenedor iniciado 21:06:20Z, posteriores al commit (20:52:47Z). Volumen conservado: la colección mantuvo las cuatro notas previas, incluida `[T-049-01-breve]`.
+- Método: Edge 157.0.4341.42 con un perfil separado nuevo por muestra y el WAV como micrófono sintético (`--use-fake-device-for-media-stream`, `--use-fake-ui-for-media-stream`, `--use-file-for-fake-audio-capture=<wav>%noloop`), conducido por DevTools Protocol en loopback desde `t049-cdp.mjs` y `r2-launch.ps1` de `.orchestrator/t049-synthetic-fixtures/` (ruta ignorada). Clics reales sobre «Grabar» y «Detener y transcribir», el mismo `observe-transcription.js` y lectura de estados visibles, sin cuerpos, headers ni credenciales. Antes de la ronda: ensayo en seco de 3 s con «Cancelar grabación» (cero POST) y sonda local de niveles de `01-breve` sin envío (señal durante ~12,5 s y luego cero).
+- Antes de cada muestra: capabilities autenticado HTTP 200, `recordingEnabled: true`, `reason: null`, y observador en cero.
+
+| Muestra | Captura | Observador | Resultado |
+|---|---|---|---|
+| `01-breve` | 15,0 s, `audio/webm;codecs=opus` | 1 detención, 1 POST, HTTP 200, código `null`, 844 ms | Favorable. Texto en español con sentido y 1279; única diferencia con la fuente, una coma en lugar de punto y coma. Colección en 4 notas tras transcribir. Corrección y copia verificadas (portapapeles idéntico al editor). Guardado explícito: «Nota guardada correctamente», revisión 1, colección en 5. Nota `[T-049-R2-01-breve]` |
+| `02-tecnico` | 28,0 s, `audio/webm;codecs=opus` | 1 detención, 1 POST, HTTP 200, código `null`, 682 ms, 0 escrituras | Favorable. Conserva PostgreSQL, Spring Boot, CSRF y 1279; el deletreo «ce ese erre efe» salió como «CSRF» repetido. Sin guardar |
+| `03-silencio` | 4,0 s, `audio/webm;codecs=opus` | 1 detención, 1 POST, HTTP 200, código `null`, 421 ms, 0 escrituras | **Fuera de criterio.** Editor con «Gracias.», sin mensaje de falta de voz. Se esperaba HTTP 422 `VOICE_NO_SPEECH` y editor vacío |
+| `04-segunda-nota` | — | — | Sin intentar |
+
+Captura total ~47 s. La confirmación del dueño sobre la utilidad de los textos de `01` y `02` queda pendiente. Con la corrección activa, el resultado de silencio indica que la respuesta de Groq trae texto y al menos un segmento con `no_speech_prob` por debajo de 0,6, sin probabilidad válida, o ningún segmento; son los casos que `allSegmentsIndicateSilence` conserva como voz. Es una inferencia desde el código: las probabilidades reales siguen sin medirse, los logs del server no registran la respuesta y no se inspeccionó la clase dentro del contenedor.
+
+Vuelve a frontera/dueño según el paso de reensayo. Decisión necesaria: cómo medir de forma saneada los campos de segmento de la respuesta real para el silencio (cuesta al menos una inferencia nueva) y qué regla de S-105 aplicar a un texto alucinado con probabilidad baja. No repetir la matriz sin esa decisión y un presupuesto nuevo.
+
+Cleanup pendiente, sin borrar en esta sesión: notas `[T-049-R2-01-breve]` y `[T-049-01-breve]` en el volumen del dueño; cuatro WAV, perfiles `edge-*` y `edge-r2-*` (cerrados), `t049-cdp.mjs`, `r2-launch.ps1` y `r2-*.json` en `.orchestrator/t049-synthetic-fixtures/`; `.orchestrator/t049-apply.ps1` (no usado) y `.orchestrator/t049-proof`. El checkout original queda en `8d787c1` con HEAD separado y el stack del dueño activo con voz habilitada.
+
 ## Correcciones significativas
 
 | Fecha / SHA | Problema y causa | Corrección | Prueba |
