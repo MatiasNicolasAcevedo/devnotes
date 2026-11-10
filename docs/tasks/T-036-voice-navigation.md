@@ -1,10 +1,10 @@
 ---
 id: T-036
-status: changes_requested
+status: in_progress
 priority: P1
 size: M
 executor: junie
-role: planner
+role: implementer
 milestone: M2
 product_cycle: I2
 spec: S-105
@@ -53,13 +53,27 @@ Atrás/Adelante y navegación por header no pierden texto, no renderizan destino
 
 ## Checkpoint vigente
 
+2026-11-10. Decisión del dueño confirmada en el chat («si te autorizo por favor continua»), registrada por frontera con Codex (GPT-6, PowerShell/Git/gh/Node, variante y esfuerzo no expuestos). El dueño autoriza una corrección acotada de B-3 por implementer en sesión nueva y una única revisión independiente adicional en otra sesión. El alcance es la recuperación del editor de voz. La corrección se mantiene en `codex/t-036-voice-navigation` y PR42.
+
+Punto de partida confirmado con `gh pr view` y `git ls-remote`. PR42 OPEN, HEAD publicado `fbbf15c7c5b945c363b1bbd579fd845178732deb`, base `main` `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`, [segundo veredicto CAMBIOS REQUERIDOS](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42#issuecomment-6759705584) y [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42761306849/job/129647369686) para ese HEAD. Mantener `changes_requested` hasta que el implementer retome. Los cambios locales de Render y portabilidad en `docs/DEPLOYMENT.md` y `docs/BACKLOG.md` pertenecen a la planificación posterior y quedan fuera de los commits de T-036.
+
+Corrección B-3 en curso. Implementer, Claude Code (Claude Opus 5.5, `claude-opus-5-5`, PowerShell/Git Bash/Git/gh/Node/Vitest/Docker; esfuerzo no expuesto). Impacto: recuperación del editor de voz tras el aviso de audio excedido. Sin cambios HTTP, de permisos ni de persistencia.
+
+- Rojo/verde. Desde `client/`, `npm test -- --run src/features/voice/VoiceDraftNavigation.test.tsx -t 'descarta audio que excedió' --reporter=dot` dio exit 1 antes del arreglo, con el aviso aún visible tras «Nueva nota» (`.orchestrator/t036/b3-red.log`), y exit 0 después (`b3-green.log`). La regresión recorre en el mismo workspace: aviso, tracks liberados, cero POST, «Nueva nota», nueva grabación por gesto (segundo `getUserMedia`, tracks liberados al cancelar) y guardado manual con ACK. El negativo `useVoiceRecorder.test.tsx -t 'resetError no altera'` dio rojo sin el arreglo y verde con él.
+- Fuentes cerradas en `8b9438b`, árbol `4413632e6997965f9afb33129cbfc2725d21b1cb`, `client/src` `857cc81f73d3af2f87830c45cf167c56e37b815e`, base `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`. El `reset` del editor limpia el error terminado del grabador persistente; `resetError` solo sale de `error`.
+- Las nueve suites dirigidas de la entrega anterior pasaron 116/116 (`b3-targeted.log`), incluidas B-1 y B-2. Typecheck, lint y formato pasaron.
+- Siguiente: FULL/APPLICATION sobre el HEAD que publica este checkpoint, desde la raíz en Git Bash: `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t036-r3 STARTER_E2E_PROJECT=starter-e2e-t036-r3 STARTER_SERVER_TESTS=container bash scripts/verify.sh`. Log `.orchestrator/t036/full-r3.log`. Ambos proyectos tienen cero recursos antes de empezar; al cerrar se retiran solo los recursos con esos labels exactos. Los cambios locales de Render se apartan durante la corrida y se restauran sin commitear.
+- Después: cerrar evidencia, pasar a `in_review` y entregar a la única revisión independiente adicional autorizada. Esa revisión comprueba B-3, las regresiones de B-1/B-2, FULL y `verify-required` vigentes y publica el veredicto ligado a HEAD/base. Un veredicto favorable permite continuar solo si cumple AUTONOMY; ante otro bloqueante, volver al dueño. T-037 espera el MERGED confirmado de T-036.
+
+## Evidencia de la segunda revisión independiente
+
 2026-11-10. Segunda revisión independiente, Codex (GPT-6, PowerShell/Git/gh/Node/Vitest, variante y esfuerzo no expuestos). Esta revisión cambia documentación operativa. B-3 afecta el uso del editor de voz después de descartar audio. PR42 OPEN, listo para revisión, `codex/t-036-voice-navigation` contra `main`. HEAD de entrada `eff35102682f52e3aa8aaebd7e608f405359e700` y base `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`, confirmados con `gh pr view` y `git ls-remote`. [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42760441304/job/129644600445) para el HEAD de entrada.
 
 - `bash scripts/verify.sh --policy origin/main` dio FULL/APPLICATION. El árbol de `9d54e56f06214e230b9e78e03f08603336ac5dde` y el SHA-256 del log original coinciden con el registro de abajo. `git diff --raw` entre `5858c58`, `9d54e56` y el HEAD revisado muestra únicamente cambios de Markdown regular. La base y el árbol `client/src` `5810a64420b0570a5964560d406db71eab64b7b1` coinciden. El FULL se conserva para estas fuentes, incluida la transición documental de esta revisión.
 - El comando dirigido de nueve suites de la entrega de correcciones pasó 115/115. B-1 impide que la recarga tardía repueble el borrador descartado, y la recarga confirmada vigente sigue aplicándose. B-2 descarta audio de 601 s con aviso, tracks liberados y cero POST, y el audio válido al ocultar la pestaña conserva la transcripción explícita. También pasaron navegación de header, programática y POP, espera del ACK, flush y guardia daily, limpieza por 401/logout y aislamiento de respuestas tardías por dueño. `node scripts/docs-check.mjs` y `git diff --check` pasaron.
 - **B-3 · Descartar una captura excedida deja el editor bloqueado para grabar y guardar.** En una copia temporal de `VoiceDraftNavigation.test.tsx`, al final de «descarta audio que excedió 600 s durante la suspensión», pulsar «Nueva nota» y comprobar «Grabar». Escribir texto válido y comprobar «Guardar». `npm test -- --run src/features/voice/VoiceDraftNavigation.review-probe.test.tsx -t 'descarta audio que excedió' --reporter=dot` dio exit 1 con las dos aserciones fallidas. El aviso y las aserciones de cleanup y cero POST pasaron. La sonda se retiró. `VoiceComposer.tsx` exige `captureState === 'idle'` para ambas acciones y prioriza el estado `error` del grabador persistente. «Nueva nota» reinicia el borrador, pero deja ese estado del grabador. El cierre debe permitir recuperar el editor tras el aviso, iniciar otra grabación por gesto y guardar texto manual con ACK, manteniendo el descarte sin POST de la captura inválida. La regresión debe recorrer ambas salidas en el mismo workspace.
 
-Se agotaron las dos rondas. Propuesta para el dueño y frontera: una corrección acotada por implementer en el mismo PR, rojo/verde de B-3 y FULL/APPLICATION sobre las fuentes corregidas. Para llegar a merge, el dueño debe autorizar expresamente una revisión independiente adicional que verifique B-3 y la vigencia de B-1/B-2, del gate y de `verify-required`, y emita el veredicto ligado a HEAD/base. T-037 sigue esperando el merge de T-036.
+La segunda revisión agotó las rondas ordinarias y elevó B-3 al dueño. La decisión posterior está en el checkpoint vigente.
 
 ## Entrega de las correcciones de revisión
 
@@ -107,6 +121,7 @@ Implementación publicada en [PR42](https://github.com/MatiasNicolasAcevedo/devn
 | 2026-11-10 | El primer montaje por dueño remontaba también la barra de sesión, y la salida con captura podía recibir permiso tardío. | Mantener la barra fuera del subárbol privado y conservar la captura de enlaces daily sobre el shell. Invalidar la generación del permiso y detener tracks tardíos. | `AuthSession.test.tsx`, `DailyDraftNavigation.test.tsx` y `VoiceDraftNavigation.test.tsx`. |
 | 2026-11-10 | B-1. Una recarga confirmada de conflicto aplicaba el GET después de desmontar el editor y descartar el borrador. | Invalidar la operación al desmontar y comprobar sesión y generación antes de aplicar la respuesta. | Regresión de navegación roja → verde y recarga vigente verde en `5858c58`. |
 | 2026-11-10 | B-2. Un temporizador suspendido permitía conservar audio fuera del límite. | Medir el tiempo monotónico al detener y liberar recursos con aviso si excede el máximo. | Regresión de suspensión roja → verde y transcripción explícita de audio válido verde en `5858c58`. |
+| 2026-11-10 | B-3. «Nueva nota» reiniciaba el borrador pero dejaba el grabador persistente en `error`, y el editor exige captura `idle` para grabar y guardar. | El `reset` del editor limpia el error terminado del grabador; `resetError` solo sale de `error`. | Regresión de recuperación roja → verde y negativo de captura en curso en `8b9438b`. |
 
 ## Cierre y siguiente tarea
 
