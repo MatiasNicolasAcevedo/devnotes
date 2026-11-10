@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-035](tasks/T-035-voice-library.md) · [S-105 v2](specs/S-105-voice-notes.md) / M2-RC1 |
 | Estado | `changes_requested` |
-| Acción actual | Corrección local de la 6.ª revisión (B-1 lista sin refrescar, B-2 grabar durante carga/error del detalle, observación 404) y de 3 hallazgos de auditoría propia. Client gate OK (493/493), docs-check OK. Pendiente: publicar en PR40 y 7.ª revisión independiente con autorización del dueño. Detalle en la tarea. |
+| Acción actual | 7.ª revisión independiente (ronda extra autorizada por el dueño: «Sí, ambas») sobre 614af8a: CAMBIOS REQUERIDOS, 1 bloqueante (B-1: un detalle más nuevo que llega durante guardado/borrado pisa el borrador y se traga el 409, regresión de A-2). 6.ª revisión y A-1…A-3 resueltos y cubiertos. Pendiente: corrección por sesión implementer nueva; la 8.ª revisión requiere nueva autorización del dueño. Detalle en la tarea. |
 | Rama / PR | codex/t-035-voice-library · [PR40](https://github.com/MatiasNicolasAcevedo/devnotes/pull/40) |
 
 T-034: PR39 MERGED, squash `085dc763918fa63e6de6b89b98ddfc9e87805f3a`, confirmado en GitHub el 2026-11-09. Junie reviewer + merger, Qwen3.6-27B-FP8. Segunda revisión independiente APROBADA sin bloqueantes. HEAD 13d250b, base main e1648a5, CI verify-required SUCCESS, docs-check OK. Client gate OK: lint, typecheck, VoiceComposer.test.tsx 5/5, AppRoutes.test.tsx 7/7, voiceNoteTextSchema.test.ts 7/7, build OK.
@@ -62,5 +62,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Implementer, sesión nueva: T-035 (PR40 codex/t-035-voice-library), corregir B-1 y B-2 de la 6.ª revisión (archivos:líneas, causa y condición de cierre en docs/tasks/T-035-voice-library.md, checkpoint 2026-11-09 «Sexta revisión»). B-1: create/update invalidan el prefijo ['voice','list'] (hoy ['voice','list',null] no coincide con la key paginada) para que la nota nueva y el extracto corregido aparezcan en la lista. B-2: no ofrecer Grabar mientras carga (o falló) el detalle de la nota seleccionada y deshabilitar Reintentar del detalle con grabación en curso. Pruebas rojo→verde en VoicePage.test.tsx. Observación recomendada: tras 404 (gone) invalidar lista y quitar el detalle de la cache. Base main 085dc76. Tras publicar, la 7.ª revisión excede el límite de rondas: requiere autorización explícita del dueño.
+Implementer, sesión nueva: T-035 (PR40 codex/t-035-voice-library), corregir B-1 de la 7.ª revisión (archivos:líneas, causa y condición de cierre en docs/tasks/T-035-voice-library.md, checkpoint 2026-11-09 «Séptima revisión»). B-1: `loadNote` sin `force` (useVoiceDraft.ts) solo aplica el detalle con documentState 'new'/'clean' y sin conflicto pendiente, para que un refetch que llega durante un PUT/DELETE no pise el borrador ni descarte el 409. Pruebas rojo→verde en VoicePage.test.tsx (PUT y DELETE con GET del detalle retenido). Observaciones O-1…O-3 recomendadas en la misma corrección. Base main 085dc76. Tras publicar, la 8.ª revisión excede el límite de rondas: requiere autorización explícita del dueño.
 ```
