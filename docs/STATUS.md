@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-048](tasks/T-048-groq-multipart-fix.md) · S-105 / multipart saliente a Groq |
 | Estado | `in_progress` |
-| Acción actual | Regresión HTTP en rojo y verde confirmada. Implementer ejecuta el gate FULL con fixtures ficticias antes de publicar T-048. |
+| Acción actual | Regresión HTTP en rojo y verde confirmada. Implementer publica T-048 bajo el cierre temporal acordado en [TESTING](TESTING.md#aplazamiento-de-full-hasta-t-044). |
 | Rama / PR | `codex/t-048-groq-multipart-fix` · PR pendiente |
 
 T-039: [PR46 MERGED y conciliada como done](tasks/T-039-voice-activation.md#checkpoint-vigente). El reensayo con el dueño queda en [T-049](tasks/T-049-voice-retest.md) tras el merge de T-048. T-040 espera el reensayo favorable y su PR MERGED.

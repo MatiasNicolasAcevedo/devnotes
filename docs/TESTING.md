@@ -56,6 +56,8 @@ Frontera especifica la capa mínima que demuestra el riesgo y el comando exacto,
 Backend: `*Test`/`*Tests` usa Surefire, `*IT` Failsafe. `mvnw test` no acredita IT. Client: `tsc -b` explícito; Vite build no basta. Vitest usa cuatro workers para limitar arranques jsdom/MUI; no aumentar timeouts/retries para ocultar fallos. Playwright conserva desktop 1280 y móvil 375, datos ficticios por caso, retries 0 y export saneado fail-closed. Los tests de protocolo no imprimen tokens/claims/cookies; el fixture HTTP negativo no sustituye el login real.
 
 ## Frecuencia y alcance del gate
+Para la secuencia hasta T-044 inclusive, aplicar el [aplazamiento temporal acordado por el dueño](#aplazamiento-de-full-hasta-t-044).
+
 Dirigidos durante cada ajuste; un gate al cerrar las fuentes técnicas de la tarea, no en cada commit. Frontera deja el comando concreto; Junie no vuelve a correr la matriz del starter por una función de negocio. Ejecutar `bash scripts/verify.sh --policy origin/main` sobre commits finales y revisar también el diff sin commit antes de publicar.
 
 | Perfil del diff | Gate de cierre |
@@ -77,6 +79,12 @@ APPLICATION solo permite archivos regulares de código/tests bajo server/src, cl
 | Señales/proxies | Reenvío de señales, cleanup y matriz OIDC local de proxies | Cambios de runner/proxy/auth local; mocks para control, ensayo real para recursos/cookies |
 
 Los ensayos de herramientas se conservan fuera del gate cotidiano. Tiempos medidos y evidencia de cada cambio viven en su tarea. No ejecutar por calendario ni por cada PR de aplicación. Los tests de selección usan runners ficticios; no sustituir la API propia ni PostgreSQL en E2E, ni convertir esos resultados en aceptación de permisos/datos.
+
+### Aplazamiento de FULL hasta T-044
+
+Decisión del dueño del 2026-11-10 para avanzar hacia el piloto de despliegue. En la secuencia T-048 → T-049 → T-040 → T-041 → T-042 → T-043 → T-044, el cierre por PR usa las pruebas dirigidas y negativas del contrato según el riesgo, `node scripts/docs-check.mjs`, clasificación del diff y evidencia ligada al HEAD/base. Con esos resultados se publica para revisión independiente. Para merge siguen siendo obligatorios `verify-required` verde sobre el HEAD final, veredicto independiente y los demás requisitos de AUTONOMY. Registrar FULL como diferido incluso si la clasificación informa `FULL`. Esta regla temporal prevalece sobre los comandos FULL de cierre por tarea en esa secuencia.
+
+Después de confirmar T-044 `MERGED`, verificar el SHA integrado de `main` que incluye el squash de T-044. Clasificar el diff acumulado desde `c5e37cc4b73ad038ac35edf29c66131416bb4a34`, ejecutar el FULL local con fixtures ficticias y añadir tooling si el perfil acumulado es STARTER. Revisar la evidencia integrada en el control de cinco tareas y exigir el gate verde antes de pasar a T-045. Desde ese punto rige nuevamente el cierre ordinario por alcance. El reensayo externo del dueño sigue el contrato de T-049.
 
 ## Cuándo ejecutar FULL
 Dirigidos mientras se implementa. Un FULL de aplicación válido al cerrar fuentes técnicas y tooling si STARTER, con SHA/base, huella antes/después, comandos, logs saneados y cleanup en la tarea. No editar fuentes durante la corrida. Una transición solo Markdown conserva esa evidencia si base/fuentes técnicas coinciden; ejecutar docs-check y los checks afectados. Cambios de fuentes/base, falta de evidencia o riesgo concreto requieren revalidar lo afectado. La revisión es independiente y no repite FULL por rutina.

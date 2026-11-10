@@ -21,6 +21,8 @@ Frontera y Junie pueden leer Git/PR/CI, crear ramas, editar dentro del contrato,
 
 `AUTOMATICO_ELEGIBLE`: sesión revisora independiente, nunca autora. Exige PR contra main, diff conforme, HEAD/base publicados, veredicto `APROBADO` ligado a ambos SHA, docs-check, CI `verify-required` success del HEAD vigente, gate local válido para mismas fuentes/base y conversaciones bloqueantes resueltas. Ausente/pending/cancelled/skipped no son verde. FULL remoto manual no se requiere por rutina ni está autorizado lanzarlo automáticamente.
 
+Para el requisito de gate local en la secuencia hasta T-044 inclusive, el dueño autorizó el [cierre temporal definido en TESTING](TESTING.md#aplazamiento-de-full-hasta-t-044). El FULL integrado queda programado para después de T-044 MERGED.
+
 Squash ligado al SHA revisado; borrar solo la rama de tarea mergeada. Confirmar `MERGED`, merge SHA y fecha antes de habilitar la siguiente. Cambiar HEAD/base invalida aprobación. Reviewer publica transición documental, espera CI del nuevo HEAD y después comenta veredicto; no commitea tras aprobar. El siguiente implementer concilia done en su rama nueva. Detalle: [reviewer](agents/reviewer.md), [merger](agents/merger.md) y [TESTING](TESTING.md).
 
 ## Configuración efectiva y límites
