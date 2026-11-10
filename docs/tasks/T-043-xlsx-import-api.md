@@ -9,7 +9,7 @@ milestone: M3
 product_cycle: I3
 spec: S-107
 spec_version: 1
-branch: codex/t-043-xlsx-import-api
+branch: codex/s-107-xlsx-portability
 pr: null
 depends_on: [T-042]
 ---
@@ -19,7 +19,7 @@ depends_on: [T-042]
 
 `POST /api/v1/portability/import-preview` valida y resume el archivo sin escribir, y `POST /api/v1/portability/imports` recrea todos los datos en la cuenta vacía de la sesión, según [S-107](../specs/S-107-xlsx-portability.md#contrato-backend). Incluye las rutas en los proxies nginx y Vite.
 
-Está en `draft` solo porque depende de T-042. La siguiente tarea es [T-044](T-044-xlsx-client.md).
+Está en `draft` solo porque depende de T-042 cerrada en la rama compartida de [S-107](../specs/S-107-xlsx-portability.md#tareas-y-dependencias). La siguiente tarea es [T-044](T-044-xlsx-client.md).
 
 ## Alcance y decisiones resueltas
 
@@ -78,4 +78,4 @@ XL-04. Casos mínimos de IT con PostgreSQL:
 
 ## Cierre y siguiente tarea
 
-PR único y revisión independiente. Tras MERGED, conciliar y tomar [T-044](T-044-xlsx-client.md).
+Sin PR propio: cerrar en la rama compartida con XL-04 verde, `docs-check` y commit publicado. La siguiente sesión toma [T-044](T-044-xlsx-client.md) en la misma rama.

@@ -1,6 +1,6 @@
 # M2-RC1 · Entrega local y pruebas de voz
 
-Estado al 2026-11-10: **RC técnica, aceptada con mejoras por el dueño**, SHA de entrega `aef4213db2fe7f676591811b7ee67a22757b64b0` (squash de [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44), revisión independiente cumplida). Grabación habilitada localmente. **Ensayo externo de T-039 fallido**. Corrección pendiente en [T-048](tasks/T-048-groq-multipart-fix.md) y reensayo pendiente en [T-049](tasks/T-049-voice-retest.md). Contrato canónico [S-105 v2](specs/S-105-voice-notes.md). Evidencia de integración en [T-037](tasks/T-037-voice-release.md).
+Estado al 2026-11-10: **RC técnica, aceptada con mejoras por el dueño**, SHA de entrega `aef4213db2fe7f676591811b7ee67a22757b64b0` (squash de [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44), revisión independiente cumplida). Grabación habilitada localmente. **Ensayo externo de T-039 fallido**. La [corrección del multipart de T-048](tasks/T-048-groq-multipart-fix.md#checkpoint-vigente) está en `main`. **Voz real verificada para dictado en español** en el [reensayo de T-049](#resultado-de-t-049) sobre `8d787c1`, con el silencio como limitación conocida aceptada por el dueño. Contrato canónico [S-105 v2](specs/S-105-voice-notes.md). Evidencia de integración en [T-037](tasks/T-037-voice-release.md).
 
 ## Qué recibirá el dueño
 
@@ -78,6 +78,19 @@ La fuente sintética controlada acredita formato/calidad mínima, no la acústic
 
 Cuatro detenciones, una por muestra y ~64,6 s de captura en total. Se eliminó el audio ficticio local y se cerraron los perfiles temporales. No se crearon notas en el ensayo. El [hallazgo bloqueante](BACKLOG.md#hallazgos-de-t-039) y la [bitácora de ejecución](tasks/T-039-voice-activation.md#checkpoint-vigente) conservan el diagnóstico.
 
+### Resultado de T-049
+
+2026-11-10, SHA `8d787c167571e65ce896b8cfe217d92b39f650c2` (PR47 más la corrección de silencio por segmentos), Edge 157.0.4341.42 con perfil separado por muestra, OIDC ficticio, proxy nginx, modelo `whisper-large-v3-turbo`, entrada TTS local como micrófono sintético. Organización Free con `Inference APIs ZDR` según la declaración del dueño de ese día. Capabilities autenticado HTTP 200, `recordingEnabled: true`, `reason: null` antes de cada muestra.
+
+| Muestra | Captura | Resultado | Desde Detener |
+| --- | --- | --- | --- |
+| Español breve | 15,0 s, WebM/Opus | Un POST, HTTP 200. Texto con sentido y el identificador 1279; una coma donde la fuente tenía punto y coma. Corrección y copia exactas; la nota se creó solo al guardar. | 0,84 s |
+| Español técnico | 28,0 s, WebM/Opus | Un POST, HTTP 200. Conserva PostgreSQL, Spring Boot, CSRF y 1279; el deletreo de la sigla salió como «CSRF» repetido. | 0,68 s |
+| Silencio sintético | 4,0 s, WebM/Opus | **Fuera de criterio.** Un POST, HTTP 200 y «Gracias.» en el editor, sin aviso de falta de voz. Defecto externo de VO-02. | 0,42 s |
+| Segunda nota breve | 14,0 s, WebM/Opus | Un POST, HTTP 200. Texto idéntico a la fuente con 1280. Dos notas independientes tras guardar y reabrir; borradas solo esas dos. | 1,02 s |
+
+Una medición adicional autorizada por el dueño mostró que Groq devuelve ese «Gracias.» con un segmento de `no_speech_prob` 0 (`avg_logprob` −0,297): la heurística de S-105 sobre ese campo no puede rechazarlo. El dueño aceptó el silencio como limitación conocida porque no prevé enviar silencio, y dejó el filtro de backend en [BACKLOG](BACKLOG.md#hallazgos-de-t-049). Revisar el texto antes de guardar sigue siendo la protección frente a una frase inventada. La fuente sintética acredita formato y calidad mínima, no la acústica de un micrófono personal ni el ruido ambiente. [Bitácora](tasks/T-049-voice-retest.md#segunda-ronda-sobre-8d787c1)
+
 ## Matriz de prueba personal
 
 Sobre el SHA de entrega, Chromium de escritorio y localhost/HTTPS. El ancho375 es una prueba visual; no acredita Safari/iOS.
@@ -86,7 +99,7 @@ Sobre el SHA de entrega, Chromium de escritorio y localhost/HTTPS. El ancho375 e
 | --- | --- | --- |
 | Abrir Voz sin configurar Groq | Mensaje útil; escribir, guardar y consultar texto siguen disponibles | El dueño confirmó el aviso «La transcripción de voz no está configurada» y la reapertura de la nota ficticia tras guardar y recargar (Edge, `c63038d`, stack aislado). |
 | Negar permiso y reintentar por gesto | Mensaje claro, no indicador rojo ni micrófono huérfano | El dueño confirmó el aviso y el micrófono inactivo con el permiso bloqueado. Tras volver a permitirlo, pudo grabar y cancelar desde la UI (Edge, `c63038d`). |
-| Grabar/detener una idea | Rojo+Grabando solo durante captura; texto al terminar, aún sin guardar | Bloqueado por el 502 del ensayo sintético |
+| Grabar/detener una idea | Rojo+Grabando solo durante captura; texto al terminar, aún sin guardar | Bloqueado por el 502 en T-039. Con entrada sintética, cumplido en [T-049](#resultado-de-t-049) (`8d787c1`); con el micrófono del dueño queda para su uso cotidiano. |
 | Corregir y copiar antes de guardar | Portapapeles contiene exactamente la corrección; no envío a CLI/web | OK, el dueño corrigió el texto ficticio y confirmó la coincidencia al pegar en el Bloc de notas antes de guardar (Edge, `c63038d`). |
 | Guardar dos notas, recargar/reabrir | Ambas independientes, fechas/horas locales, texto exacto | El dueño confirmó dos entradas independientes y texto conservado tras recargar y reabrir (Edge, `c63038d`). Fecha y hora locales pendientes de confirmación. |
 | Editar desde dos pestañas | Segundo guardado obsoleto409; se conserva borrador para copiar/recargar | La captura de Edge muestra «Conflicto de edición» y conserva `Cambio B` (`c63038d`). El dueño confirmó que recargar recuperó `Cambio A`. Estado HTTP sin captura. |
@@ -110,7 +123,7 @@ La tarea conserva logs y comandos. Aquí solo figuran el enlace a la evidencia y
 | VO-01…07 por capa y dos viewports | Matriz siguiente; Playwright `voice:` 2/2 en desktop 1280 y 2/2 en mobile 375 |
 | FULL local / CI / revisión independiente | Gate STARTER (`verify.sh --starter`) exit 0 sobre `8775ac9`; CI `verify-required` verde en ese HEAD; revisión independiente APROBADA sin bloqueantes sobre `ad548bc` con `verify-required` SUCCESS. [Evidencia](tasks/T-037-voice-release.md#gate-de-cierre) |
 | Cleanup de recursos de pruebas | Proyectos `starter-verify-t037`, `starter-e2e-t037` y `starter-e2e-t037-iter` sin contenedores, volúmenes ni redes; stack persistente del dueño intacto |
-| Ensayo Groq, fecha/modelo/formato/retención/cuota | Configuración habilitada. Ensayo con tres HTTP 502 y una muestra indeterminada. [Resultado de T-039](#resultado-de-t-039) |
+| Ensayo Groq, fecha/modelo/formato/retención/cuota | T-039: tres HTTP 502 y una muestra indeterminada. [Resultado](#resultado-de-t-039). T-049: tres muestras habladas con HTTP 200 y silencio fuera de criterio, aceptado por el dueño. [Resultado](#resultado-de-t-049) |
 | Aceptación personal del dueño | «Aceptada con mejoras» sobre las fuentes de `aef4213`. La transcripción real sigue bloqueada por el 502. |
 
 Matriz VO por capa. Las capas anteriores son las pruebas de las tareas citadas, todas dentro del gate de cierre. El recorrido integrado usa Chromium real con micrófono sintético, la API, la base y el OIDC propios, y el doble de Groq en la red privada, sin interceptar la API propia. Corre en `e2e/tests/voice.spec.ts`, en ambos viewports.

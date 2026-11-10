@@ -2,32 +2,37 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
-Próxima acción: [T-048](tasks/T-048-groq-multipart-fix.md), corregir el multipart de Groq con una regresión HTTP local.
+Próxima acción: revisión independiente y merge del PR de [T-049](tasks/T-049-voice-retest.md); después, [T-040](tasks/T-040-daily-timestamps.md).
 
 ## Siguientes · plan del dueño del 2026-11-10
 
-Orden decidido por el dueño: (1) activar Groq y probar M2-RC1; (2) exportar e importar la cuenta en `.xlsx` y probarlo; (3) si todo sale bien, desplegar el piloto en Render. Contratos: [VOICE-RELEASE](VOICE-RELEASE.md), [S-107](specs/S-107-xlsx-portability.md) y [S-108](specs/S-108-render-pilot.md), con la receta técnica en [DEPLOYMENT](DEPLOYMENT.md#piloto-de-devnotes-en-render-free). Cada tarea `draft` tiene el contrato completo y espera solo a la anterior: quien concilia un MERGED habilita la siguiente sin volver a frontera. WIP 1, una sesión nueva por tarea y por revisión.
+Orden decidido por el dueño: (1) activar Groq y probar M2-RC1; (2) exportar e importar la cuenta en `.xlsx` y probarlo; (3) si todo sale bien, desplegar el piloto en Render. Contratos: [VOICE-RELEASE](VOICE-RELEASE.md), [S-107](specs/S-107-xlsx-portability.md) y [S-108](specs/S-108-render-pilot.md), con la receta técnica en [DEPLOYMENT](DEPLOYMENT.md#piloto-de-devnotes-en-render-free). Cada tarea `draft` tiene el contrato completo y espera solo a la anterior, sin volver a frontera. T-040…T-045 comparten la rama `codex/s-107-xlsx-portability` y un único PR por decisión del dueño: cada una se habilita al cerrar la anterior en la rama. [Regla](specs/S-107-xlsx-portability.md#tareas-y-dependencias). Fuera de S-107, quien concilia un MERGED habilita la siguiente. Una sesión nueva por tarea y por revisión.
 
 | Orden | Contrato / resultado | Ejecuta | Dependencia |
 |---|---|---|---|
-| 1 | [T-048](tasks/T-048-groq-multipart-fix.md) · Corrección multipart de Groq | Junie | T-039 MERGED |
 | 2 | [T-049](tasks/T-049-voice-retest.md) · Reensayo sintético con Groq | Dueño con un agente de frontera | T-048 MERGED |
-| 3 | [T-040](tasks/T-040-daily-timestamps.md) · Instantes de daily y versiones a microsegundos (bugfix previo a exportar) | Junie | T-049 favorable y MERGED |
-| 4 | [T-041](tasks/T-041-xlsx-codec.md) · Codec `devnotes-xlsx` v1 y límites | Junie | T-040 MERGED |
-| 5 | [T-042](tasks/T-042-xlsx-export-api.md) · GET de exportación privada | Junie | T-041 MERGED |
-| 6 | [T-043](tasks/T-043-xlsx-import-api.md) · Vista previa e importación atómica en cuenta vacía, y proxies | Junie | T-042 MERGED |
-| 7 | [T-044](tasks/T-044-xlsx-client.md) · Pantalla «Datos» y control de cinco tras el merge | Junie | T-043 MERGED |
-| 8 | [T-045](tasks/T-045-xlsx-journey.md) · E2E de ida y vuelta y prueba del dueño | Junie y el dueño | T-044 MERGED |
-| 9 | [T-046](tasks/T-046-render-image.md) · Imagen única y smoke local con 512 MB | Junie | T-045 MERGED y aceptada |
+| 3 | [T-040](tasks/T-040-daily-timestamps.md) · Instantes de daily y versiones a microsegundos (bugfix previo a exportar) | Junie | T-049 MERGED |
+| 4 | [T-041](tasks/T-041-xlsx-codec.md) · Codec `devnotes-xlsx` v1 y límites | Junie | T-040 cerrada en la rama |
+| 5 | [T-042](tasks/T-042-xlsx-export-api.md) · GET de exportación privada | Junie | T-041 cerrada en la rama |
+| 6 | [T-043](tasks/T-043-xlsx-import-api.md) · Vista previa e importación atómica en cuenta vacía, y proxies | Junie | T-042 cerrada en la rama |
+| 7 | [T-044](tasks/T-044-xlsx-client.md) · Pantalla «Datos» | Junie | T-043 cerrada en la rama |
+| 8 | [T-045](tasks/T-045-xlsx-journey.md) · E2E de ida y vuelta, FULL integrado, PR único de S-107 y prueba del dueño | Junie y el dueño | T-044 cerrada en la rama |
+| 9 | [T-046](tasks/T-046-render-image.md) · Imagen única y smoke local con 512 MB | Junie | PR único de S-107 MERGED y T-045 aceptada |
 | 10 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | T-046 MERGED |
 
-Retorno a frontera si T-049 resulta fallida o indeterminada, si el dueño emite «no aceptada» en T-045 o T-047, ante una decisión fuera de contrato o al cerrar T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
+Retorno a frontera si el dueño emite «no aceptada» en T-045 o T-047, ante una decisión fuera de contrato o al cerrar T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
 
 ### Hallazgos de T-039
 
 - **Bloqueante para la transcripción real.** En Edge 157.0.4341.42, SHA `c63038d` (fuentes `aef4213`), iniciar sesión local, abrir Voz, grabar la muestra técnica de ~30,4 s con micrófono sintético y pulsar «Detener y transcribir». Se esperaba HTTP 200 con texto editable. DevNotes devolvió HTTP 502 `VOICE_INVALID_RESPONSE`. El silencio y la segunda nota reprodujeron el mismo 502. Al revisar `GroqTranscriptionClient`, el multipart contiene solo `file`. El estado exacto de Groq quedó sin medir. Corrección en [T-048](tasks/T-048-groq-multipart-fix.md) y reensayo en [T-049](tasks/T-049-voice-retest.md). [Evidencia del ensayo](VOICE-RELEASE.md#resultado-de-t-039)
 
 - **Hallazgo de revisión del adaptador (2026-11-10, `c5e37cc`).** `GroqTranscriptionClient.parseResponse` consulta `no_speech_prob` solo con texto en blanco. Una respuesta con texto no vacío y todos los segmentos en el umbral o por encima podría pasar aunque S-105 exige 422. Queda fuera de la serialización saliente de T-048. Si el silencio de T-049 devuelve texto, detener el reensayo y concretar la corrección en frontera antes de declarar voz real verificada. [Regla de S-105](specs/S-105-voice-notes.md#adaptador-y-errores)
+
+- **Hallazgo de implementación del adaptador (2026-11-10, `8d787c1`).** T-049 corrigió el rechazo cuando todos los segmentos indican silencio. `GroqTranscriptionClient.parseResponse` todavía acepta texto no vacío sin segmentos o con `no_speech_prob` ausente, y S-105 pide 502 en ese caso. Requiere decisión de frontera porque cambia el resultado de respuestas que hoy dan 200. [Regla de S-105](specs/S-105-voice-notes.md#adaptador-y-errores)
+
+### Hallazgos de T-049
+
+- **Silencio transcrito como «Gracias.» (limitación conocida, aceptada por el dueño el 2026-11-10).** En Edge 157.0.4341.42, SHA `8d787c1`, grabar 4 s de silencio sintético y pulsar «Detener y transcribir». Se esperaba HTTP 422 `VOICE_NO_SPEECH` y editor vacío. DevNotes devolvió HTTP 200 con «Gracias.». Medido: Groq responde un segmento con `no_speech_prob` 0, `avg_logprob` −0,297 y `compression_ratio` 0,529, así que ningún umbral sobre `no_speech_prob` lo rechaza. Dirección elegida por el dueño si se retoma: filtro en el backend por coincidencia del texto completo con frases de alucinación conocidas, aceptando que una nota que solo diga esa frase se rechace. Requiere versión nueva de S-105, prueba roja con la respuesta medida y un reensayo con presupuesto. Sin tarea asignada ni prioridad. [Medición](tasks/T-049-voice-retest.md#medición-de-la-respuesta-real)
 
 ## Hechas · S-106 completada
 

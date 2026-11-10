@@ -1,6 +1,6 @@
 ---
 id: T-048
-status: mergeable
+status: done
 priority: P1
 size: S
 executor: junie
@@ -49,7 +49,9 @@ Completar la solicitud que DevNotes envía a Groq al detener la grabación. T-03
 
 ## Checkpoint vigente
 
-B-1 cerrado en la segunda revisión independiente del [PR47](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47). El veredicto y el merge quedan sujetos a la verificación del HEAD documental publicado sobre la misma base. La sesión de T-049 empieza tras confirmar `MERGED` en GitHub. FULL integrado diferido hasta después de T-044 MERGED.
+PR47 conciliado como `done` el 2026-11-10 en la rama de T-049. `gh pr view 47 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` devolvió exit 0, [PR47](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47) contra `main`, `state=MERGED`, `mergedAt=2026-11-10T19:49:49Z`, `mergeCommit.oid=6f423e37be71d8fd9bb48561b3a74bfcb80c2421` y HEAD `72500e476d041d7e38b1c2482b45727b4811b0ea`. `git ls-remote` confirmó el squash como `main` y `git diff --exit-code 72500e476d041d7e38b1c2482b45727b4811b0ea origin/main --` confirmó árboles idénticos. FULL integrado diferido hasta después de T-044 MERGED.
+
+El [cierre publicado](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47#issuecomment-6777610983) acredita el [veredicto APROBADO](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47#issuecomment-6777588125) para ese HEAD y la base `c5e37cc4b73ad038ac35edf29c66131416bb4a34`, con [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42888907695/job/130084490647) sobre el HEAD final.
 
 ### Evidencia de la segunda revisión independiente
 

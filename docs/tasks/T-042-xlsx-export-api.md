@@ -9,7 +9,7 @@ milestone: M3
 product_cycle: I3
 spec: S-107
 spec_version: 1
-branch: codex/t-042-xlsx-export-api
+branch: codex/s-107-xlsx-portability
 pr: null
 depends_on: [T-041]
 ---
@@ -19,7 +19,7 @@ depends_on: [T-041]
 
 `GET /api/v1/portability/export` descarga los datos de la cuenta de la sesión en el formato de T-041, según [S-107 · Contrato backend](../specs/S-107-xlsx-portability.md#contrato-backend).
 
-Está en `draft` solo porque depende de T-041. La siguiente tarea es [T-043](T-043-xlsx-import-api.md).
+Está en `draft` solo porque depende de T-041 cerrada en la rama compartida de [S-107](../specs/S-107-xlsx-portability.md#tareas-y-dependencias). La siguiente tarea es [T-043](T-043-xlsx-import-api.md).
 
 ## Alcance y decisiones resueltas
 
@@ -69,4 +69,4 @@ XL-03:
 
 ## Cierre y siguiente tarea
 
-PR único y revisión independiente. Tras MERGED, conciliar y tomar [T-043](T-043-xlsx-import-api.md).
+Sin PR propio: cerrar en la rama compartida con XL-03 verde, `docs-check` y commit publicado. La siguiente sesión toma [T-043](T-043-xlsx-import-api.md) en la misma rama.

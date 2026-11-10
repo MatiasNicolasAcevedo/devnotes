@@ -9,11 +9,11 @@ tasks: [T-040, T-041, T-042, T-043, T-044, T-045]
 
 ## Iteración y objetivo de salida
 
-I3 / M3 · Portabilidad. Sigue a la activación y las pruebas de M2-RC1, con reensayo favorable y MERGED en [T-049](../tasks/T-049-voice-retest.md). Precede al piloto en Render ([S-108](S-108-render-pilot.md)), según el orden acordado por el dueño el 2026-11-10.
+I3 / M3 · Portabilidad. Sigue a la activación y las pruebas de M2-RC1, con [T-049](../tasks/T-049-voice-retest.md) MERGED. Precede al piloto en Render ([S-108](S-108-render-pilot.md)), según el orden acordado por el dueño el 2026-11-10.
 
 El usuario autenticado descarga un `.xlsx` con todos los datos de su cuenta y lo importa en una cuenta **vacía** de la misma instancia o de otra, por ejemplo de su entorno local a Render. Tras la importación ve las mismas notas diarias con sus enlaces, separadores y referencias, la misma versión guardada de cada día, las mismas notas de voz y las mismas referencias.
 
-Criterio de salida: el recorrido de ida y vuelta de [T-045](../tasks/T-045-xlsx-journey.md) pasa con API, DB, OIDC y navegador reales en 1280 y 375 px, con datos ficticios y dos identidades. Además el dueño prueba exportar e importar con sus datos locales en su propio entorno, sin que un agente lea el archivo. Frontera no necesita intervenir entre tareas: vuelve solo ante una decisión fuera de este contrato. Tras T-045 MERGED, Junie continúa con [T-046](../tasks/T-046-render-image.md).
+Criterio de salida: el recorrido de ida y vuelta de [T-045](../tasks/T-045-xlsx-journey.md) pasa con API, DB, OIDC y navegador reales en 1280 y 375 px, con datos ficticios y dos identidades. Además el dueño prueba exportar e importar con sus datos locales en su propio entorno, sin que un agente lea el archivo. Frontera no necesita intervenir entre tareas: vuelve solo ante una decisión fuera de este contrato. Tras el PR único de S-107 MERGED, Junie continúa con [T-046](../tasks/T-046-render-image.md).
 
 ## Problema y usuario
 
@@ -124,14 +124,22 @@ Fusión, reemplazo o importación parcial; editar en Excel; CSV u otros formatos
 
 | Tarea | Resultado observable | Depende de | Salida para continuar |
 |---|---|---|---|
-| [T-040](../tasks/T-040-daily-timestamps.md) | Marcas de tiempo de daily y versiones truncadas a microsegundos, para exportar instantes fieles | T-049 favorable y MERGED | XL-01 y MERGED |
-| [T-041](../tasks/T-041-xlsx-codec.md) | Codec `devnotes-xlsx` v1 con límites y negativos | T-040 | XL-02 y MERGED |
-| [T-042](../tasks/T-042-xlsx-export-api.md) | GET de exportación privada | T-041 | XL-03 y MERGED |
-| [T-043](../tasks/T-043-xlsx-import-api.md) | Vista previa e importación atómica en una cuenta vacía, y proxies | T-042 | XL-04 y MERGED |
-| [T-044](../tasks/T-044-xlsx-client.md) | Pantalla Datos; control de cinco tareas tras su merge | T-043 | XL-05 y MERGED |
-| [T-045](../tasks/T-045-xlsx-journey.md) | Recorrido real de ida y vuelta, y prueba del dueño | T-044 | XL-06, MERGED y veredicto del dueño |
+| [T-040](../tasks/T-040-daily-timestamps.md) | Marcas de tiempo de daily y versiones truncadas a microsegundos, para exportar instantes fieles | T-049 MERGED | XL-01 verde en la rama |
+| [T-041](../tasks/T-041-xlsx-codec.md) | Codec `devnotes-xlsx` v1 con límites y negativos | T-040 | XL-02 verde en la rama |
+| [T-042](../tasks/T-042-xlsx-export-api.md) | GET de exportación privada | T-041 | XL-03 verde en la rama |
+| [T-043](../tasks/T-043-xlsx-import-api.md) | Vista previa e importación atómica en una cuenta vacía, y proxies | T-042 | XL-04 verde en la rama |
+| [T-044](../tasks/T-044-xlsx-client.md) | Pantalla Datos | T-043 | XL-05 verde en la rama |
+| [T-045](../tasks/T-045-xlsx-journey.md) | Recorrido real de ida y vuelta, y prueba del dueño | T-044 | XL-06, FULL integrado, PR único MERGED y veredicto del dueño |
 
-Todas son `draft` solo por su dependencia anterior: el contrato está completo. Junie habilita cada una al confirmar MERGED de la anterior. WIP 1 y revisión independiente.
+Todas son `draft` solo por su dependencia anterior: el contrato está completo.
+
+**Una rama y un PR para toda la spec (decisión del dueño, 2026-11-10).** T-040…T-045 comparten la rama `codex/s-107-xlsx-portability`, creada desde `main` tras T-049 MERGED, y un único PR contra `main`. Es una excepción a «una tarea, un PR» y a «rama exacta de tarea», limitada a esta spec.
+
+- Cada tarea se habilita cuando la anterior quedó cerrada en la rama: sus pruebas dirigidas y negativas en verde, `docs-check` OK, commit publicado y checkpoint en su archivo. No espera un MERGED intermedio. Sigue rigiendo una sesión nueva por tarea.
+- T-040 es la tarea portadora: lleva el estado en vuelo y el número de PR mientras dura la rama, para cumplir el WIP 1 de `docs-check`. Las demás conservan `draft` y registran su avance y cierre en su archivo. Las seis se concilian `done` juntas tras el MERGED del PR.
+- El PR se abre como draft con el primer avance y pasa a revisión al cerrar T-045. Hay una sola revisión independiente, sobre el HEAD final, y el control de avance de Junie cubre las seis tareas en ese momento. El máximo de dos rondas de revisión aplica al PR completo.
+- El FULL integrado se ejecuta una vez, sobre el HEAD final de la rama, antes de pedir la revisión. Reemplaza los gates FULL por tarea y el que estaba previsto tras T-044 MERGED. [Regla](../TESTING.md#aplazamiento-de-full-hasta-t-044)
+- Riesgo aceptado: un diff grande en una sola revisión. Si un hallazgo exige una decisión fuera de contrato, la rama se detiene y vuelve a frontera.
 
 ## Validación de planificación
 

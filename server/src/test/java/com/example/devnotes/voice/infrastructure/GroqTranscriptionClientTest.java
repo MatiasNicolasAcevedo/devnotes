@@ -320,6 +320,53 @@ class GroqTranscriptionClientTest {
     }
 
     @Test
+    void nonBlankTextWithAllSegmentsAtOrAboveThresholdReturnsNoSpeech() {
+        respondWithJson("""
+                {"text":"Gracias.","language":"es","duration":4.0,
+                 "segments":[{"no_speech_prob":0.6},{"no_speech_prob":0.9}]}
+                """);
+
+        assertThatThrownBy(() -> client().transcribe(webmFile(validWebm()), "fake-key"))
+                .isInstanceOf(TranscriptionException.NoSpeech.class);
+        assertThat(requestCount.get()).isOne();
+    }
+
+    @Test
+    void nonBlankTextWithOneSegmentBelowThresholdIsKept() {
+        respondWithJson("""
+                {"text":"Tarea 1279.","language":"es","duration":4.0,
+                 "segments":[{"no_speech_prob":0.9},{"no_speech_prob":0.59}]}
+                """);
+
+        TranscriptionResult result = client().transcribe(webmFile(validWebm()), "fake-key");
+        assertThat(result.text()).isEqualTo("Tarea 1279.");
+    }
+
+    @Test
+    void nonBlankTextWithSegmentMissingProbabilityIsKept() {
+        respondWithJson("""
+                {"text":"Tarea 1279.","language":"es","duration":4.0,
+                 "segments":[{"no_speech_prob":0.9},{"id":1}]}
+                """);
+
+        TranscriptionResult result = client().transcribe(webmFile(validWebm()), "fake-key");
+        assertThat(result.text()).isEqualTo("Tarea 1279.");
+    }
+
+    private void respondWithJson(String json) {
+        fakeServer.createContext("/transcribe", exchange -> {
+            try (exchange) {
+                requestCount.incrementAndGet();
+                exchange.getRequestBody().transferTo(java.io.OutputStream.nullOutputStream());
+                byte[] resp = json.getBytes(StandardCharsets.UTF_8);
+                exchange.getResponseHeaders().set("Content-Type", "application/json");
+                exchange.sendResponseHeaders(200, resp.length);
+                exchange.getResponseBody().write(resp);
+            }
+        });
+    }
+
+    @Test
     void malformedJsonReturnsInvalidResponse() throws Exception {
         fakeServer.createContext("/transcribe", exchange -> {
             exchange.getRequestBody().transferTo(java.io.OutputStream.nullOutputStream());

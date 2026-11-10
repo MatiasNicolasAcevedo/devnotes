@@ -2,12 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-048](tasks/T-048-groq-multipart-fix.md) · S-105 / multipart saliente a Groq |
+| Tarea y contrato | [T-049](tasks/T-049-voice-retest.md) · S-105 / reensayo sintético con Groq |
 | Estado | `mergeable` |
-| Acción actual | Cerrar PR47 tras verificar el HEAD documental y publicar el veredicto ligado a HEAD/base. Con MERGED confirmado, la siguiente sesión de frontera concilia T-048 y toma T-049. |
-| Rama / PR | `codex/t-048-groq-multipart-fix` · [PR47](https://github.com/MatiasNicolasAcevedo/devnotes/pull/47) |
+| Acción actual | [PR48](https://github.com/MatiasNicolasAcevedo/devnotes/pull/48) con [revisión independiente favorable](tasks/T-049-voice-retest.md#revisión-independiente), sin bloqueantes; el merge lo decide el dueño según AUTONOMY sobre el SHA del veredicto publicado en el PR. Reensayo sobre `8d787c1`: tres muestras habladas favorables; silencio fuera de criterio, aceptado por el dueño como limitación conocida. [Evidencia](tasks/T-049-voice-retest.md#segunda-ronda-sobre-8d787c1) |
+| Rama / PR | `codex/t-049-voice-retest` · [PR48](https://github.com/MatiasNicolasAcevedo/devnotes/pull/48) |
 
-T-039: [PR46 MERGED y conciliada como done](tasks/T-039-voice-activation.md#checkpoint-vigente). El reensayo con el dueño queda en [T-049](tasks/T-049-voice-retest.md) tras el merge de T-048. T-040 espera el reensayo favorable y su PR MERGED.
+T-048: [PR47 MERGED y conciliada como done](tasks/T-048-groq-multipart-fix.md#checkpoint-vigente). T-040 espera T-049 MERGED. Por decisión del dueño del 2026-11-10, T-040…T-045 comparten la rama `codex/s-107-xlsx-portability` y un único PR; FULL integrado sobre su HEAD final. [Regla](specs/S-107-xlsx-portability.md#tareas-y-dependencias)
+
+T-039: [PR46 MERGED y conciliada como done](tasks/T-039-voice-activation.md#checkpoint-vigente).
 
 T-037: PR44 MERGED, squash `aef4213db2fe7f676591811b7ee67a22757b64b0`, confirmado en GitHub el 2026-11-10 (mergedAt 2026-11-10T16:37:31Z). Conciliada como done; SHA de entrega congelado en [VOICE-RELEASE](VOICE-RELEASE.md). Plan posterior del dueño (2026-11-10) en [S-107](specs/S-107-xlsx-portability.md) y [S-108](specs/S-108-render-pilot.md).
 
@@ -72,5 +74,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sesión nueva de frontera para T-049 con el dueño. Leer AGENTS.md, STATUS, el cierre de PR47, T-048, T-049 y sus referencias en VOICE-RELEASE. Confirmar en GitHub PR47 MERGED contra main con mergedAt y mergeCommit.oid según docs/agents/merger.md. Si el merge sigue pendiente, retomar su cierre según AUTONOMY antes de iniciar T-049. Con MERGED confirmado, conciliar T-048 como done en el primer avance de la rama de T-049 y coordinar el reensayo sintético según su contrato. T-040 espera T-049 favorable y MERGED. FULL integrado después de T-044 MERGED.
+Dueño o merger autorizado por el dueño: el PR48 de T-049 (codex/t-049-voice-retest contra main) tiene veredicto independiente APROBADO en un comentario del PR, ligado a su HEAD y base. Antes de mergear según docs/agents/merger.md y docs/AUTONOMY.md, comprobar que el HEAD remoto sigue siendo el del veredicto y que verify-required está verde sobre ese HEAD; squash sin --admin. El cierre se apoya en la decisión del dueño de aceptar el silencio como limitación conocida; el criterio de cuatro muestras favorables no se cumple y está declarado. Las observaciones no bloqueantes del veredicto pueden resolverse en la conciliación siguiente. Tras MERGED confirmado, la sesión siguiente concilia T-049 como done y toma T-040 en la rama compartida codex/s-107-xlsx-portability: T-040…T-045 van en esa rama y en un único PR, según «Tareas y dependencias» de S-107. FULL integrado sobre el HEAD final de ese PR.
 ```

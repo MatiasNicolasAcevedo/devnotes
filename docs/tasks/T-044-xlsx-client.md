@@ -9,7 +9,7 @@ milestone: M3
 product_cycle: I3
 spec: S-107
 spec_version: 1
-branch: codex/t-044-xlsx-client
+branch: codex/s-107-xlsx-portability
 pr: null
 depends_on: [T-043]
 ---
@@ -19,7 +19,7 @@ depends_on: [T-043]
 
 La ruta `/data` permite descargar el Excel de la cuenta y, en una cuenta vacía, previsualizar e importar un archivo, según [S-107 · Frontend](../specs/S-107-xlsx-portability.md#frontend).
 
-Está en `draft` solo porque depende de T-043. Tras su merge corresponde el **control de cinco tareas** (T-040…T-044) por Junie. La siguiente tarea es [T-045](T-045-xlsx-journey.md).
+Está en `draft` solo porque depende de T-043 cerrada en la rama compartida de [S-107](../specs/S-107-xlsx-portability.md#tareas-y-dependencias). El control de avance de Junie se hace una vez, sobre las seis tareas, al cerrar T-045. La siguiente tarea es [T-045](T-045-xlsx-journey.md).
 
 ## Alcance y decisiones resueltas
 
@@ -64,7 +64,7 @@ XL-05. Casos mínimos de componente:
 | Criterio | Capa | Comando (desde `client/`) | Resultado |
 |---|---|---|---|
 | XL-05 | Componente | `npm test -- --run src/features/portability src/app/AppRoutes.test.tsx` | Verde |
-| Gate integrado después de T-044 MERGED | FULL sobre `main` | Desde la raíz: `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t044 STARTER_E2E_PROJECT=starter-e2e-t044 STARTER_SERVER_TESTS=container bash scripts/verify.sh`. Añadir tooling si el diff acumulado es STARTER, según [TESTING](../TESTING.md#aplazamiento-de-full-hasta-t-044). | Exit 0, cobertura sin bajar |
+| Gate integrado de S-107 (se ejecuta al cerrar T-045, no aquí) | FULL sobre el HEAD final de la rama compartida | Desde la raíz: `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t044 STARTER_E2E_PROJECT=starter-e2e-t044 STARTER_SERVER_TESTS=container bash scripts/verify.sh`. Añadir tooling si el diff acumulado es STARTER, según [TESTING](../TESTING.md#aplazamiento-de-full-hasta-t-044). | Exit 0, cobertura sin bajar |
 
 ## Checkpoint vigente
 
@@ -77,4 +77,4 @@ XL-05. Casos mínimos de componente:
 
 ## Cierre y siguiente tarea
 
-PR único y revisión independiente con pruebas dirigidas, docs-check y CI según la regla temporal. Tras MERGED, ejecutar el gate integrado como parte del control de cinco por Junie (contratos, evidencia y hallazgos a BACKLOG). Con el FULL verde, conciliar y tomar [T-045](T-045-xlsx-journey.md).
+Sin PR propio: cerrar en la rama compartida con XL-05 verde, `docs-check` y commit publicado. El gate integrado y el control de avance pasan al cierre de T-045. La siguiente sesión toma [T-045](T-045-xlsx-journey.md) en la misma rama.

@@ -9,7 +9,7 @@ milestone: M3
 product_cycle: I3
 spec: S-107
 spec_version: 1
-branch: codex/t-045-xlsx-journey
+branch: codex/s-107-xlsx-portability
 pr: null
 depends_on: [T-044]
 ---
@@ -19,7 +19,7 @@ depends_on: [T-044]
 
 Demostrar XL-06 en un navegador real y cerrar M3 con la prueba del dueño sobre sus propios datos locales. Esto habilita el piloto en Render, cuya siguiente tarea es [T-046](T-046-render-image.md).
 
-Está en `draft` solo porque depende de T-044.
+Está en `draft` solo porque depende de T-044 cerrada en la rama compartida de [S-107](../specs/S-107-xlsx-portability.md#tareas-y-dependencias). Cierra la rama: gate integrado, control de las seis tareas y paso del PR único a revisión.
 
 ## Alcance y decisiones resueltas
 
@@ -53,7 +53,7 @@ Está en `draft` solo porque depende de T-044.
 | Criterio | Capa | Comando | Resultado |
 |---|---|---|---|
 | XL-06 | E2E real | Desde la raíz con Git Bash: `STARTER_E2E_PROJECT=starter-e2e-t045-iter bash scripts/e2e.sh --grep "portability:" --project desktop`, y luego `--project mobile` | Verde en ambos |
-| Gate | APPLICATION | `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t045 STARTER_E2E_PROJECT=starter-e2e-t045 STARTER_SERVER_TESTS=container bash scripts/verify.sh` | Exit 0, incluidas todas las suites E2E previas |
+| Gate integrado de S-107 | FULL sobre el HEAD final de la rama; añadir `--tooling` si el diff acumulado desde `c5e37cc4b73ad038ac35edf29c66131416bb4a34` es STARTER según `--policy` | `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t045 STARTER_E2E_PROJECT=starter-e2e-t045 STARTER_SERVER_TESTS=container bash scripts/verify.sh` | Exit 0, incluidas todas las suites E2E previas |
 | Dueño | Manual | Exportar en su cuenta y luego importar en una cuenta vacía | Veredicto explícito del dueño con SHA |
 
 ## Checkpoint vigente
@@ -67,4 +67,4 @@ Está en `draft` solo porque depende de T-044.
 
 ## Cierre y siguiente tarea
 
-PR único y revisión independiente. Tras MERGED y el veredicto del dueño, M3 queda cumplida: conciliar y tomar [T-046](T-046-render-image.md). Si el dueño no acepta, vuelve a frontera con los hallazgos.
+Con XL-06 y el gate integrado en verde, Junie hace el control de avance de T-040…T-045 (contratos, evidencia y hallazgos a BACKLOG) y pasa el PR único de S-107 a revisión independiente. Tras MERGED y el veredicto del dueño, M3 queda cumplida: conciliar `done` en las seis tareas y tomar [T-046](T-046-render-image.md). Si el dueño no acepta, vuelve a frontera con los hallazgos.
