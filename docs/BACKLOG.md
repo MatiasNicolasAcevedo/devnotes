@@ -84,6 +84,9 @@ Hallazgo de pruebas daily fuera de T-036. En el cliente Linux del gate, MSW regi
 
 Pruebas personales del dueño sobre el SHA entregado; frontera agrupa correcciones/mejoras a partir de resultados. Sin nuevas capacidades ready ahora. Fuera de esta versión: streaming, audio persistido, integración automática con CLI/daily, Safari/iOS, despliegue y pagos. Opciones de ROADMAP conservan su carácter futuro.
 
+1. **Piloto en Render Free**, después de T-037 MERGED y la entrega M2-RC1. Preparar una tarea con el [alcance de despliegue acordado](DEPLOYMENT.md#piloto-de-devnotes-en-render-free) y validar la primera ejecución con el dueño.
+2. **Portabilidad por `.xlsx`**, después del piloto. Preparar la spec de exportación e importación de datos de la cuenta autenticada. Aceptación inicial de ida y vuelta entre instancias de prueba con la misma cuenta, recuperando notas diarias, enlaces, separadores y versiones. Antes de implementar, definir colecciones adicionales y política de conflictos si ya hay una nota para la misma fecha.
+
 ## Fuera de I1
 
 Además de I2 registrada, los demás objetivos opcionales de PROJECT_CONTEXT/ROADMAP siguen sin contrato ni ejecución autorizada. No usar el microensayo genérico de errorMessage como otra tarea/PR de adopción; T-001 fue la primera implementación de producto. Conservar E-01 aceptado y comprobar solo capacidades pertinentes en la superficie propia; no atribuir a Junie pruebas de frontera.
