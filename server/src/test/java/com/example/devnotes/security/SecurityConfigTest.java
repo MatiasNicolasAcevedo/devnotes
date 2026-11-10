@@ -53,6 +53,9 @@ class SecurityConfigTest {
     private com.example.devnotes.portability.application.PortabilityExportService portabilityExport;
 
     @MockitoBean
+    private com.example.devnotes.portability.application.PortabilityImportService portabilityImport;
+
+    @MockitoBean
     private IdentityService identityService;
 
     @Autowired
@@ -290,5 +293,39 @@ class SecurityConfigTest {
         }
 
         verifyNoInteractions(portabilityExport);
+    }
+
+    @Test
+    void portabilityImportsAllowOnlyAuthenticatedPostWithCsrf() throws Exception {
+        var token = mockMvc.perform(get("/api/v1/auth/csrf"))
+                .andReturn()
+                .getResponse()
+                .getCookie("XSRF-TOKEN");
+        var user = oidcLogin().oidcUser(AuthFixtures.localUser("Demo", null, false));
+
+        for (String path : new String[] {"/api/v1/portability/import-preview", "/api/v1/portability/imports"}) {
+            // No session: 401 with a CSRF token, 403 without it.
+            mockMvc.perform(post(path).cookie(token).header("X-XSRF-TOKEN", token.getValue()))
+                    .andExpect(status().isUnauthorized())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+            mockMvc.perform(post(path)).andExpect(status().isForbidden());
+            // Session without CSRF: 403.
+            mockMvc.perform(post(path).with(user)).andExpect(status().isForbidden());
+
+            for (String method : new String[] {"GET", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"}) {
+                mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request(
+                                        org.springframework.http.HttpMethod.valueOf(method), path)
+                                .with(user)
+                                .cookie(token)
+                                .header("X-XSRF-TOKEN", token.getValue()))
+                        .andExpect(status().isForbidden());
+            }
+            for (String neighbour : new String[] {path + "/", path + "/extra"}) {
+                mockMvc.perform(post(neighbour).with(user).cookie(token).header("X-XSRF-TOKEN", token.getValue()))
+                        .andExpect(status().isForbidden());
+            }
+        }
+
+        verifyNoInteractions(portabilityImport);
     }
 }

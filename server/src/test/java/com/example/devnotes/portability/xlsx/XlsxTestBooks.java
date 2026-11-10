@@ -19,38 +19,38 @@ import org.dhatim.fastexcel.Workbook;
 import org.dhatim.fastexcel.Worksheet;
 
 /** Builders of fictitious workbooks for the codec tests: raw cells and ZIP rewriting. */
-final class XlsxTestBooks {
+public final class XlsxTestBooks {
 
-    static final String REF_ID = "01900000-0000-7000-8000-000000000101";
-    static final String VOICE_ID = "01900000-0000-7000-8000-000000000201";
-    static final String DATE = "2026-10-19";
-    static final String DOC = "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\"}]}";
+    public static final String REF_ID = "01900000-0000-7000-8000-000000000101";
+    public static final String VOICE_ID = "01900000-0000-7000-8000-000000000201";
+    public static final String DATE = "2026-10-19";
+    public static final String DOC = "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\"}]}";
 
-    static final String REF_JSON =
+    public static final String REF_JSON =
             "{\"id\":\"" + REF_ID + "\",\"title\":\"Runbook\",\"description\":\"Pasos ficticios\","
                     + "\"createdAt\":\"2026-10-19T12:00:00.123456Z\",\"updatedAt\":\"2026-10-19T12:00:00.123456Z\"}";
-    static final String DAILY_JSON = "{\"date\":\"" + DATE + "\",\"content\":" + DOC
+    public static final String DAILY_JSON = "{\"date\":\"" + DATE + "\",\"content\":" + DOC
             + ",\"createdAt\":\"2026-10-19T12:00:00Z\",\"updatedAt\":\"2026-10-19T12:00:00Z\"}";
-    static final String VERSION_JSON =
+    public static final String VERSION_JSON =
             "{\"date\":\"" + DATE + "\",\"content\":" + DOC + ",\"savedAt\":\"2026-10-19T13:00:00Z\"}";
-    static final String VOICE_JSON = "{\"id\":\"" + VOICE_ID + "\",\"text\":\"Idea ficticia\\n\","
+    public static final String VOICE_JSON = "{\"id\":\"" + VOICE_ID + "\",\"text\":\"Idea ficticia\\n\","
             + "\"createdAt\":\"2026-11-01T09:00:00Z\",\"updatedAt\":\"2026-11-01T09:05:00Z\"}";
 
     private XlsxTestBooks() {}
 
     /** A formula cell for the raw builder. */
-    record Formula(String expression) {}
+    public record Formula(String expression) {}
 
     /** A sheet as mutable rows of cells: String (text), Integer (number), Formula or null (no cell). */
-    static final class RawSheet {
-        String name;
-        final List<List<Object>> rows = new ArrayList<>();
+    public static final class RawSheet {
+        public String name;
+        public final List<List<Object>> rows = new ArrayList<>();
 
         RawSheet(String name) {
             this.name = name;
         }
 
-        RawSheet row(Object... cells) {
+        public RawSheet row(Object... cells) {
             List<Object> row = new ArrayList<>();
             for (Object cell : cells) {
                 row.add(cell);
@@ -65,7 +65,7 @@ final class XlsxTestBooks {
     }
 
     /** A valid workbook with one record per collection, as mutable raw sheets. */
-    static List<RawSheet> validSheets() {
+    public static List<RawSheet> validSheets() {
         List<RawSheet> sheets = new ArrayList<>();
         sheets.add(new RawSheet("devnotes")
                 .row("formato", "devnotes-xlsx")
@@ -87,14 +87,14 @@ final class XlsxTestBooks {
         return new RawSheet(name).row(header.toArray());
     }
 
-    static RawSheet sheet(List<RawSheet> sheets, String name) {
+    public static RawSheet sheet(List<RawSheet> sheets, String name) {
         return sheets.stream()
                 .filter(sheet -> sheet.name.equals(name))
                 .findFirst()
                 .orElseThrow();
     }
 
-    static byte[] build(List<RawSheet> sheets) {
+    public static byte[] build(List<RawSheet> sheets) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
             Workbook workbook = new Workbook(out, "Test", "1.0");
@@ -125,7 +125,7 @@ final class XlsxTestBooks {
     }
 
     /** Entries of a ZIP in central-directory order, fully inflated. */
-    static Map<String, byte[]> entries(byte[] zip) {
+    public static Map<String, byte[]> entries(byte[] zip) {
         Map<String, byte[]> entries = new LinkedHashMap<>();
         try (ZipFile file = ZipFile.builder()
                 .setSeekableByteChannel(new SeekableInMemoryByteChannel(zip))
@@ -141,7 +141,7 @@ final class XlsxTestBooks {
         return entries;
     }
 
-    static byte[] zip(Map<String, byte[]> entries) {
+    public static byte[] zip(Map<String, byte[]> entries) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (ZipOutputStream zip = new ZipOutputStream(out)) {
             for (Map.Entry<String, byte[]> entry : entries.entrySet()) {
@@ -156,7 +156,7 @@ final class XlsxTestBooks {
     }
 
     /** The source ZIP with one entry added or replaced. */
-    static byte[] with(byte[] source, String name, byte[] content) {
+    public static byte[] with(byte[] source, String name, byte[] content) {
         Map<String, byte[]> entries = entries(source);
         entries.put(name, content);
         return zip(entries);
