@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-037](tasks/T-037-voice-release.md) · S-105 / recorrido integrado y entrega M2-RC1 |
-| Estado | `in_progress` |
-| Acción actual | Implementer: recorridos Playwright `voice:` con micrófono sintético, API/DB/OIDC reales y doble externo; después gate de cierre y evidencia VO-01…07 en VOICE-RELEASE. |
-| Rama / PR | codex/t-037-voice-release · PR pendiente |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente en sesión nueva de PR44: recorridos `voice:`, tres correcciones con rojo/verde y gate STARTER verde sobre `8775ac9`. Tras MERGED, la entrega vuelve a frontera y al dueño para activación y pruebas de M2-RC1. |
+| Rama / PR | codex/t-037-voice-release · [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44) |
 
 T-036: PR42 MERGED, squash `289dd66acfad5bb632ad3270a90963c17d239f96`, confirmado en GitHub el 2026-11-10 (mergedAt 2026-11-10T06:39:13Z). Conciliada como done en [T-036](tasks/T-036-voice-navigation.md#checkpoint-vigente).
 
@@ -68,5 +68,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Confirmar el estado de PR42 (T-036) en GitHub según docs/agents/merger.md. Si sigue OPEN, retomar como merger y aplicar AUTONOMY sobre el veredicto APROBADO, HEAD/base y checks vigentes. Con MERGED, registrar SHA y fecha, y en sesión implementer nueva conciliar T-036 como done en el primer avance de codex/t-037-voice-release. Comprobar la dependencia T-036, actualizar STATUS y la cola según corresponda y ejecutar el contrato de T-037 (docs/tasks/T-037-voice-release.md).
+Revisar PR44 (T-037) como reviewer independiente según docs/agents/reviewer.md, en sesión nueva y sin haber implementado la tarea. Confirmar con gh y git ls-remote el HEAD y la base vigentes, CI verify-required y que el diff desde 8775ac9 solo cambia Markdown. Verificar el contrato de docs/tasks/T-037-voice-release.md: recorridos voice: sin interceptar la API propia, las tres correcciones con rojo/verde (voice-provider en e2e.sh, cabecera EBML WebM y reloj truncado a microsegundos), el gate STARTER registrado y la matriz VO-01…07 de docs/VOICE-RELEASE.md. Emitir veredicto ligado a HEAD/base. Si es APROBADO, continuar como merger según AUTONOMY. Tras MERGED, una sesión nueva concilia T-037 como done, congela el SHA de entrega en VOICE-RELEASE y entrega al dueño/frontera la activación y las pruebas de M2-RC1.
 ```

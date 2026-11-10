@@ -1,6 +1,6 @@
 ---
 id: T-037
-status: in_progress
+status: in_review
 priority: P1
 size: M
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-037-voice-release
-pr: null
+pr: 44
 depends_on: [T-036]
 ---
 # T-037 · Recorrido integrado y entrega local M2-RC1
@@ -54,14 +54,26 @@ Iteración browser desde raíz/Git Bash, después de T-031: `DEVNOTES_VOICE_ENAB
 
 ## Checkpoint vigente
 
-2026-11-10. `in_progress`. Implementer en sesión nueva, Claude Code (Claude Opus 5.5, `claude-opus-5-5`, PowerShell/Git Bash/Git/gh/Node 24.21.0/JDK 21/Maven/Docker; esfuerzo no expuesto). Dependencia satisfecha: `gh pr view 42 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` devolvió MERGED, squash `289dd66acfad5bb632ad3270a90963c17d239f96`, `mergedAt` 2026-11-10T06:39:13Z; T-036 conciliada como done en esta rama. Base `main` `289dd66`.
+2026-11-10. `in_review`. Implementación publicada en [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44): fuentes técnicas `8775ac9485e61e9a47974f1802543d95ce638fde` sobre main `289dd66acfad5bb632ad3270a90963c17d239f96`. Gate STARTER verde ([Gate de cierre](#gate-de-cierre)) y CI `verify-required` verde en ese HEAD. El cierre posterior solo cambia Markdown y conserva el gate. Siguiente: revisión independiente en sesión nueva y después merge según AUTONOMY. VOICE-RELEASE declara la entrega «en revisión» y la activación externa pendiente.
 
-Impacto. Comportamiento/API: la transcripción acepta el WebM real de MediaRecorder (antes rechazaba todo audio de navegador con 400) y `createdAt`/`updatedAt` de voz usan el instante UTC truncado a microsegundos (antes adelantado hasta casi 1 s, con orden de la lista incorrecto). Sin cambios de contrato HTTP, permisos, esquema ni UI. Harness: `scripts/e2e.sh` levanta también `voice-provider`, por lo que el perfil del diff es **STARTER**.
+Implementer en sesión nueva, Claude Code (Claude Opus 5.5, `claude-opus-5-5`, PowerShell/Git Bash/Git/gh/Node 24.21.0/JDK 21/Maven/Docker; esfuerzo no expuesto). Dependencia satisfecha: `gh pr view 42 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` devolvió MERGED, squash `289dd66`, `mergedAt` 2026-11-10T06:39:13Z. T-036 está conciliada como done en el primer commit de esta rama.
 
-- Hecho. `e2e/fixtures/voice-fixture.ts` (flags de micrófono sintético de Chromium, permisos `microphone`/`clipboard-*` solo para `http://localhost`, sonda de solo lectura de tracks, escenarios del doble por la red privada) y `e2e/tests/voice.spec.ts` con dos recorridos `voice:`. Tres defectos corregidos con rojo → verde; ver [Correcciones significativas](#correcciones-significativas).
-- Iteración desde la raíz con `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false STARTER_E2E_PROJECT=starter-e2e-t037-iter bash scripts/e2e.sh --grep "voice:" --project desktop|mobile`: desktop 2/2 y mobile 2/2 exit 0 con las fuentes finales del spec (logs `.orchestrator/t037/iter5.log`, `iter6.log`; el segundo recorrido desktop pasó en `iter3.log`, antes del arreglo de reloj). Cleanup propio por labels comprobado sin restos.
-- Backend dirigido desde `server/`: `VoiceTranscriptionServiceTest`, `VoiceNoteServiceTest` y `GroqTranscriptionClientTest` verdes; Failsafe `VoiceTranscriptionApiIT` 8/8, `VoiceNoteServiceIT` 24/24 y `VoiceNoteApiIT` 12/12.
-- Pendiente. Gate STARTER único con fuentes quietas: `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t037 STARTER_E2E_PROJECT=starter-e2e-t037 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter`, log en `.orchestrator/t037/starter-gate.log`. Recursos propios: proyectos Compose `starter-verify-t037` y `starter-e2e-t037`, limpiados por el propio script. Después, evidencia VO-01…07 en VOICE-RELEASE, PR y revisión independiente.
+Impacto. En comportamiento y API, la transcripción acepta el WebM real de MediaRecorder; antes rechazaba todo audio de navegador con 400. `createdAt` y `updatedAt` de voz usan el instante UTC truncado a microsegundos; antes se adelantaban hasta casi 1 s y la lista podía quedar desordenada. Sin cambios de contrato HTTP, permisos, esquema ni UI. En el harness, `scripts/e2e.sh` levanta también `voice-provider`, por lo que el perfil del diff es **STARTER**.
+
+- `e2e/fixtures/voice-fixture.ts` aporta los flags de micrófono sintético de Chromium, sin archivo de audio ni voz personal. Concede `microphone` y `clipboard-*` solo a `http://localhost`, observa los tracks con una sonda de solo lectura y fija escenarios del doble por la red privada. `e2e/tests/voice.spec.ts` define dos recorridos `voice:`. La suite no usa `page.route` ni interceptores. getUserMedia, MediaRecorder y la API propia son reales.
+- Iteración desde la raíz: `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false STARTER_E2E_PROJECT=starter-e2e-t037-iter bash scripts/e2e.sh --grep "voice:" --project desktop|mobile`. Con las fuentes finales dio 2/2 en mobile (`.orchestrator/t037/iter6.log`) y el primer recorrido en desktop (`iter5.log`); el FULL cubre ambos en ambos viewports.
+- Backend dirigido desde `server/`: `VoiceTranscriptionServiceTest`, `VoiceNoteServiceTest` y `GroqTranscriptionClientTest` verdes. En Failsafe, `VoiceTranscriptionApiIT` 8/8, `VoiceNoteServiceIT` 24/24 y `VoiceNoteApiIT` 12/12.
+- Ensayo Groq externo no realizado: falta configuración y autorización del dueño. Se declara la activación pendiente sin inventar resultados, según VOICE-RELEASE.
+
+## Gate de cierre
+
+STARTER, una sola vez con fuentes quietas. `bash scripts/verify.sh --policy origin/main` dio `profile=STARTER` por `scripts/e2e.sh` y `scripts/ci/e2e-arguments.test.mjs`. Comando desde la raíz con Git Bash: `DEVNOTES_VOICE_ENABLED=false GROQ_API_KEY= DEVNOTES_VOICE_TEST_PROVIDER=false COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t037 STARTER_E2E_PROJECT=starter-e2e-t037 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter`.
+
+- Corrió de 2026-11-10T07:07:53Z a 08:07:17Z con exit 0. Antes y después: HEAD `8775ac9`, árbol `3d428ce9cea683e083b49ca8f8ae633402455b5a`, base `289dd66` y cero cambios sin commit. Log local `.orchestrator/t037/starter-gate.log`, SHA-256 `82b7fb33614e9f8b7ed993e7aee6851b8c8524afae8b8cf9b13a210244f46fa3`.
+- docs 8 s. Backend 403 s: Surefire 227/227, Failsafe 210/210 con PostgreSQL, JaCoCo, Spotless y BUILD SUCCESS. Client 116 s: typecheck, lint, formato, 516/516 con 87.94 % de statements y 82.66 % de branches, y build.
+- Tooling 1958 s, con todos los ensayos en exit 0: init-project, init-copy, guards, dev-stack nginx y vite, failures/rollback, local-copy y auth-proxies con señales. Las líneas `B1: build|up|readiness exit=N, rollback 0/0/0` son fallos inyectados por el ensayo.
+- E2E 1079 s: 45 aprobados, 23 en desktop y 22 en mobile, sin fallos. Incluyen los cuatro `voice:` y las suites de daily, versiones, referencia y vista previa.
+- Cleanup: los scripts retiraron los stacks. Se retiraron `starter-verify-t037_default` y `starter-verify-t037_m2-cache` tras cotejar el label `com.docker.compose.project=starter-verify-t037`. Los proyectos `starter-verify-t037`, `starter-e2e-t037` y `starter-e2e-t037-iter` quedaron con cero contenedores, volúmenes y redes. No se tocó `starter-dev-local-nginx`.
 
 ## Correcciones significativas
 

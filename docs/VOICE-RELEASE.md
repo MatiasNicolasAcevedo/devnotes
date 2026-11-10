@@ -1,6 +1,6 @@
 # M2-RC1 · Entrega local y pruebas de voz
 
-Estado **planificado, no ejecutado** al 2026-10-31. Contrato canónico [S-105 v2](specs/S-105-voice-notes.md); ejecución/evidencia [T-037](tasks/T-037-voice-release.md). Esta guía diferencia planificación, verificación técnica y aceptación del dueño.
+Estado al 2026-11-10: **RC técnica en revisión** ([PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44)), **activación externa pendiente**. Planificada el 2026-10-31. Contrato canónico [S-105 v2](specs/S-105-voice-notes.md); ejecución/evidencia [T-037](tasks/T-037-voice-release.md). Esta guía diferencia planificación, verificación técnica y aceptación del dueño.
 
 ## Qué recibirá el dueño
 
@@ -79,16 +79,30 @@ No requerir al dueño que repita todas las pruebas de seguridad/carga automatiza
 
 ## Evidencia final a completar por T-037
 
-No completar con «OK» hasta ejecutar. La tarea conserva logs/comandos; aquí solo el enlace a evidencia y el estado de entrega.
+La tarea conserva logs y comandos. Aquí solo figuran el enlace a la evidencia y el estado de entrega. La «RC técnica» exige además T-037 MERGED. Hasta entonces la entrega está **en revisión**.
 
-| Dato | Estado al planificar |
+| Dato | Estado al 2026-11-10 |
 | --- | --- |
-| SHA/base integrados y PR finales | Pendiente implementación |
-| VO-01…07 por capa y dos viewports | Pendiente |
-| FULL local / CI / revisión independiente | Pendiente |
-| Cleanup de recursos de pruebas | Pendiente; stack persistente ajeno al gate |
-| Ensayo Groq, fecha/modelo/formato/retención/cuota | No realizado, requiere configuración/autorización |
-| Aceptación personal del dueño | Pendiente de sus pruebas |
+| SHA/base integrados y PR finales | Fuentes `8775ac9` sobre main `289dd66` (T-017, T-027…T-036 y T-038 MERGED), [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44). SHA de entrega: el squash de PR44, a registrar tras MERGED |
+| VO-01…07 por capa y dos viewports | Matriz siguiente; Playwright `voice:` 2/2 en desktop 1280 y 2/2 en mobile 375 |
+| FULL local / CI / revisión independiente | Gate STARTER (`verify.sh --starter`) exit 0 sobre `8775ac9`; CI `verify-required` verde en ese HEAD; revisión independiente pendiente. [Evidencia](tasks/T-037-voice-release.md#gate-de-cierre) |
+| Cleanup de recursos de pruebas | Proyectos `starter-verify-t037`, `starter-e2e-t037` y `starter-e2e-t037-iter` sin contenedores, volúmenes ni redes; stack persistente del dueño intacto |
+| Ensayo Groq, fecha/modelo/formato/retención/cuota | No realizado: no hay configuración ni autorización del dueño. Activación externa pendiente, sin bloquear la RC técnica |
+| Aceptación personal del dueño | Pendiente de sus pruebas sobre el SHA de entrega |
+
+Matriz VO por capa. Las capas anteriores son las pruebas de las tareas citadas, todas dentro del gate de cierre. El recorrido integrado usa Chromium real con micrófono sintético, la API, la base y el OIDC propios, y el doble de Groq en la red privada, sin interceptar la API propia. Corre en `e2e/tests/voice.spec.ts`, en ambos viewports.
+
+| ID | Capas previas | Recorrido integrado (T-037) |
+| --- | --- | --- |
+| VO-01 | T-033 `recorder.test.ts` y `useVoiceRecorder.test.tsx` | «Grabar» muestra rojo, «Grabando» y contador. El track está activo durante la captura y terminado tras «Detener y transcribir». Cerrar sesión con captura activa termina el track sin subir audio |
+| VO-02 | T-029 `GroqTranscriptionClientTest` y `VoiceTranscriptionApiIT`; T-030 doble y proxies | El WebM real de MediaRecorder se transcribe: 200 `{text, language: "es"}` con texto en el editor, sin fila antes de Guardar. Un 429 del proveedor por nginx y backend da `VOICE_RATE_LIMITED` con `retryAfterSeconds` 30, sin texto ni reintento automático; el reintento explícito funciona. Silencio, timeout y apagado se cubren en backend y en el doble |
+| VO-03 | T-034 `VoiceComposer.test.tsx` | La corrección con espacios y salto final se copia exacta: lectura del portapapeles idéntica y aviso tras resolver Clipboard API |
+| VO-04 | T-027 `VoiceNoteServiceIT`; T-028 `VoiceNoteApiIT`; T-035 `VoiceLibrary`/`VoicePage` | Dos notas sobreviven a la recarga, con la más nueva primero. La corrección usa `expectedRevision` 1→2 y la recarga conserva el texto exacto |
+| VO-05 | T-027/T-028 negativos; T-035 componente | Cancelar no borra. Confirmar envía DELETE con `expectedRevision` 2 y recibe 204; luego GET da 404 y queda una nota |
+| VO-06 | T-028/T-029 OIDC real; T-032/T-036 componentes | Una segunda identidad OIDC simultánea recibe el mismo 404 en GET, PUT y DELETE sobre la nota ajena y ve solo la suya. Una transcripción descartada durante la navegación no escribe estado al llegar tarde. Tras logout, A recibe 401 y B sigue con 200 |
+| VO-07 | T-033/T-036 unitarias y de componente | La guardia conserva el borrador al ir a Notas y no renderiza el destino debajo. «Volver a voz» y «Descartar y continuar» funcionan. Daily, historial y referencia siguen operativos. A 375 px no hay overflow y «Nueva nota» se activa por teclado |
+
+El recorrido encontró tres defectos, corregidos en T-037 con prueba roja previa. El doble nunca arrancaba en `scripts/e2e.sh`. El backend rechazaba todo WebM real. Las marcas de tiempo de voz se adelantaban y desordenaban la lista. Los casos de micrófono sintético y el doble acreditan captura, transporte e integración, **no** la precisión ni la latencia de Whisper.
 
 ## Congelación y siguientes mejoras
 
