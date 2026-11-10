@@ -47,7 +47,7 @@ Solo T-017 ready; demás draft exclusivamente por dependencia anterior. No hace 
 
 ## M2-RC1 · Activación y pruebas del dueño
 
-T-037 MERGED (`aef4213`, 2026-11-10) entregó la RC técnica. [T-039](tasks/T-039-voice-activation.md) documentó la activación de Groq, el fallo del ensayo y el veredicto «Aceptada con mejoras». [T-048](tasks/T-048-groq-multipart-fix.md) corrige el multipart y [T-049](tasks/T-049-voice-retest.md) reensaya con el dueño. La salida a M3 requiere T-049 favorable y MERGED, con «Voz real verificada» en [VOICE-RELEASE](VOICE-RELEASE.md).
+T-037 MERGED (`aef4213`, 2026-11-10) entregó la RC técnica. [T-039](tasks/T-039-voice-activation.md) documentó la activación de Groq, el fallo del ensayo y el veredicto «Aceptada con mejoras». [T-048](tasks/T-048-groq-multipart-fix.md) corrige el multipart y [T-049](tasks/T-049-voice-retest.md) reensaya con el dueño. T-049 verificó el dictado en español sobre `8d787c1`; el silencio quedó como limitación conocida aceptada por el dueño. La salida a M3 requiere T-049 MERGED. [Resultado](VOICE-RELEASE.md#resultado-de-t-049)
 
 ## I3 / M3 · Portabilidad `.xlsx`
 

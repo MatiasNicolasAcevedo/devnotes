@@ -124,14 +124,27 @@ El dueño autorizó después una inferencia adicional de silencio para medir la 
 
 Conclusión: para silencio digital Groq devuelve texto alucinado con `no_speech_prob` 0. Ninguna regla de S-105 basada en ese campo puede rechazarlo, cualquiera sea el umbral, y `8d787c1` actúa según su contrato. `avg_logprob` tampoco separa este caso de voz real con un umbral habitual. La corrección exige otra señal, que es decisión de frontera/dueño: por ejemplo, detectar ausencia de señal en el cliente antes de enviar, o filtrar en el backend por una regla distinta. Es una sola medición con silencio digital exacto; no cubre ruido ambiente ni un micrófono real. Con esta inferencia la sesión suma cuatro envíos a Groq.
 
-Cleanup pendiente, sin borrar en esta sesión: `/tmp/t049-silence.webm` y `/tmp/t049-resp.json` dentro del contenedor del server (desaparecen al recrearlo); `r2-silence.webm` y `r2-silence-response.json` en la carpeta de fixtures; notas `[T-049-R2-01-breve]` y `[T-049-01-breve]` en el volumen del dueño; cuatro WAV, perfiles `edge-*` y `edge-r2-*` (cerrados), `t049-cdp.mjs`, `r2-launch.ps1` y `r2-*.json` en `.orchestrator/t049-synthetic-fixtures/`; `.orchestrator/t049-apply.ps1` (no usado) y `.orchestrator/t049-proof`. El checkout original queda en `8d787c1` con HEAD separado y el stack del dueño activo con voz habilitada.
+#### Decisión del dueño y cierre de la matriz
+
+Ante la medición, el dueño eligió «Filtrar en el backend» como señal futura y después quitó prioridad al silencio: «no me preocupa demasiado ver que el silencio funcione de cierta u otra manera, porque rara vez voy a enviar silencio. Yo voy a hablar lo que necesito». Pidió seguir con el plan. El silencio queda como **limitación conocida aceptada por el dueño**, con el filtro en [BACKLOG](../BACKLOG.md#hallazgos-de-t-049) sin tarea asignada. No bloquea T-040.
+
+Con esa decisión se ejecutó `04-segunda-nota`, dentro del presupuesto original de cuatro muestras y sobre el mismo stack y SHA. Capabilities HTTP 200, `recordingEnabled: true`, `reason: null`; observador en cero; colección en 5 notas.
+
+| Muestra | Captura | Observador | Resultado |
+|---|---|---|---|
+| `04-segunda-nota` | 14,0 s, `audio/webm;codecs=opus` | 1 detención, 1 POST, HTTP 200, código `null`, 1.018 ms | Favorable. Texto en español con sentido y 1280, idéntico a la fuente. Colección en 5 tras transcribir. Corrección y copia verificadas. Guardado explícito: «Nota guardada correctamente», revisión 1, colección en 6. Al reabrir, `[T-049-R2-01-breve]` y `[T-049-R2-04-segunda]` conservaron cada una su texto y revisión 1. Borradas solo esas dos por la UI con confirmación: colección en 4, con `[T-049-01-breve]` y las demás notas previas intactas |
+
+Resultado de la tarea: tres muestras habladas favorables (un POST y HTTP 200 cada una, 682–1.018 ms desde la detención) y silencio fuera de criterio, aceptado por el dueño como limitación conocida. Captura total de la ronda ~61 s y cinco envíos a Groq en la sesión, contando la medición. Sobre los textos, el dueño respondió «Bien» al informe que los incluía; no hizo una revisión palabra por palabra. El criterio estricto de «cuatro muestras favorables» no se cumple: VOICE-RELEASE registra «Voz real verificada para dictado en español» con la limitación de silencio explícita.
+
+Cleanup pendiente, sin borrar en esta sesión: `/tmp/t049-silence.webm` y `/tmp/t049-resp.json` dentro del contenedor del server (desaparecen al recrearlo); `r2-silence.webm` y `r2-silence-response.json` en la carpeta de fixtures; nota `[T-049-01-breve]` de la primera ronda en el volumen del dueño; cuatro WAV, perfiles `edge-*` y `edge-r2-*` (cerrados), `t049-cdp.mjs`, `r2-launch.ps1` y `r2-*.json` en `.orchestrator/t049-synthetic-fixtures/`; `.orchestrator/t049-apply.ps1` (no usado) y `.orchestrator/t049-proof`. El checkout original queda en `8d787c1` con HEAD separado y el stack del dueño activo con voz habilitada.
 
 ## Correcciones significativas
 
 | Fecha / SHA | Problema y causa | Corrección | Prueba |
 |---|---|---|---|
+| 2026-11-10 · sin SHA | Con `8d787c1` activo, `03-silencio` volvió a dar HTTP 200 con «Gracias.». Medido: Groq devuelve un segmento con `no_speech_prob` 0, fuera del alcance de cualquier umbral sobre ese campo. | Sin cambio de código. El dueño aceptó la limitación y dejó el filtro de backend en BACKLOG. | «Medición de la respuesta real» |
 | 2026-11-10 · `8d787c1` | `03-silencio` devolvió HTTP 200 con «Gracias.». El adaptador consultaba `no_speech_prob` solo con texto en blanco, por lo que aceptaba texto aunque todos los segmentos indicaran silencio. La respuesta real de Groq no se midió. | `parseResponse` lanza `NoSpeech` con texto en blanco o con todos los segmentos en `no_speech_prob` ≥ 0,6 (S-105). Segmentos ausentes, vacíos o sin probabilidad válida no cuentan como silencio. | Rojo y verde de `GroqTranscriptionClientTest` en «Corrección integrada» |
 
 ## Cierre y siguiente tarea
 
-Con resultado favorable, actualizar VOICE-RELEASE a «Voz real verificada» con el SHA ensayado y publicar el PR único de T-049 para revisión independiente. Si el resultado es fallido, indeterminado o pendiente, registrar causa, evidencia, intentos consumidos y la próxima decisión en STATUS, con T-040 en espera. Tras T-049 favorable y MERGED, la siguiente sesión concilia `done` y toma [T-040](T-040-daily-timestamps.md).
+Cierre con la decisión del dueño del 2026-11-10: VOICE-RELEASE registra el resultado sobre `8d787c1` con la limitación de silencio, y el PR único de T-049 va a revisión independiente. Tras T-049 MERGED, la siguiente sesión concilia `done` y toma [T-040](T-040-daily-timestamps.md) en la rama compartida de S-107.

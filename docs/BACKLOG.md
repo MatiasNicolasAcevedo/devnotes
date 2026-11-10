@@ -2,7 +2,7 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
-Próxima acción: [T-049](tasks/T-049-voice-retest.md), reensayar con Groq y el dueño tras T-048 MERGED.
+Próxima acción: revisión independiente y merge del PR de [T-049](tasks/T-049-voice-retest.md); después, [T-040](tasks/T-040-daily-timestamps.md).
 
 ## Siguientes · plan del dueño del 2026-11-10
 
@@ -20,7 +20,7 @@ Orden decidido por el dueño: (1) activar Groq y probar M2-RC1; (2) exportar e i
 | 9 | [T-046](tasks/T-046-render-image.md) · Imagen única y smoke local con 512 MB | Junie | T-045 MERGED y aceptada |
 | 10 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | T-046 MERGED |
 
-Retorno a frontera si T-049 resulta fallida o indeterminada, si el dueño emite «no aceptada» en T-045 o T-047, ante una decisión fuera de contrato o al cerrar T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
+Retorno a frontera si el dueño emite «no aceptada» en T-045 o T-047, ante una decisión fuera de contrato o al cerrar T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
 
 ### Hallazgos de T-039
 
@@ -29,6 +29,10 @@ Retorno a frontera si T-049 resulta fallida o indeterminada, si el dueño emite 
 - **Hallazgo de revisión del adaptador (2026-11-10, `c5e37cc`).** `GroqTranscriptionClient.parseResponse` consulta `no_speech_prob` solo con texto en blanco. Una respuesta con texto no vacío y todos los segmentos en el umbral o por encima podría pasar aunque S-105 exige 422. Queda fuera de la serialización saliente de T-048. Si el silencio de T-049 devuelve texto, detener el reensayo y concretar la corrección en frontera antes de declarar voz real verificada. [Regla de S-105](specs/S-105-voice-notes.md#adaptador-y-errores)
 
 - **Hallazgo de implementación del adaptador (2026-11-10, `8d787c1`).** T-049 corrigió el rechazo cuando todos los segmentos indican silencio. `GroqTranscriptionClient.parseResponse` todavía acepta texto no vacío sin segmentos o con `no_speech_prob` ausente, y S-105 pide 502 en ese caso. Requiere decisión de frontera porque cambia el resultado de respuestas que hoy dan 200. [Regla de S-105](specs/S-105-voice-notes.md#adaptador-y-errores)
+
+### Hallazgos de T-049
+
+- **Silencio transcrito como «Gracias.» (limitación conocida, aceptada por el dueño el 2026-11-10).** En Edge 157.0.4341.42, SHA `8d787c1`, grabar 4 s de silencio sintético y pulsar «Detener y transcribir». Se esperaba HTTP 422 `VOICE_NO_SPEECH` y editor vacío. DevNotes devolvió HTTP 200 con «Gracias.». Medido: Groq responde un segmento con `no_speech_prob` 0, `avg_logprob` −0,297 y `compression_ratio` 0,529, así que ningún umbral sobre `no_speech_prob` lo rechaza. Dirección elegida por el dueño si se retoma: filtro en el backend por coincidencia del texto completo con frases de alucinación conocidas, aceptando que una nota que solo diga esa frase se rechace. Requiere versión nueva de S-105, prueba roja con la respuesta medida y un reensayo con presupuesto. Sin tarea asignada ni prioridad. [Medición](tasks/T-049-voice-retest.md#medición-de-la-respuesta-real)
 
 ## Hechas · S-106 completada
 
