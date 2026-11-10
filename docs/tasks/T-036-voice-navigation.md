@@ -1,16 +1,16 @@
 ---
 id: T-036
-status: in_progress
+status: in_review
 priority: P1
 size: M
 executor: junie
-role: implementer
+role: reviewer
 milestone: M2
 product_cycle: I2
 spec: S-105
 spec_version: 2
 branch: codex/t-036-voice-navigation
-pr: null
+pr: 42
 depends_on: [T-035, T-038]
 ---
 # T-036 · Preservar borrador de voz al navegar y cerrar sesión
@@ -53,13 +53,18 @@ Atrás/Adelante y navegación por header no pierden texto, no renderizan destino
 
 ## Checkpoint vigente
 
-2026-11-10. Implementer, Codex (GPT-6.1, PowerShell/Git/gh/Node/Docker, esfuerzo no expuesto). Impacto: comportamiento de navegación, ciclo de vida del borrador y mensajes de voz en la UI. Sin cambio de contrato HTTP, permisos ni persistencia.
+2026-11-10. Implementer, Codex (GPT-6, PowerShell/Git/gh/Node/Docker, variante y esfuerzo no expuestos). Impacto: comportamiento de navegación, ciclo de vida del borrador y mensajes de voz en la UI. Sin cambio de contrato HTTP, permisos ni persistencia.
 
 `gh pr view` confirmó PR40 (T-035) MERGED en `main` con squash `e1fbaea1ca3ae868dd2ca93569da45eab65aa413` y PR41 (T-038) MERGED en `main` con squash `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`. T-035 ya conciliada, T-038 conciliada en esta rama. Base publicada `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`, padre único `e1fbaea1ca3ae868dd2ca93569da45eab65aa413`.
 
-Implementados workspace por dueño, guardia de voz anterior al outlet diario, ACK antes de continuar, limpieza de captura y aislamiento de respuestas tardías. Los tests dirigidos de navegación, grabador, daily y sesión pasaron 45/45; evidencia local en `.orchestrator/t036-core.log`. El gate host de cliente se registra en `.orchestrator/t036-client-verify.log`.
+Implementación publicada en [PR42](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42). Retoma: revisión independiente del HEAD publicado y la base, según [reviewer](../agents/reviewer.md). El workspace por dueño conserva el borrador en memoria, antepone la guardia de voz al outlet diario y aísla captura y respuestas por sesión.
 
-Preflight de cierre: Git Bash explícito, Node 24.21.0, Docker 28.5.1 y Compose 2.40.2. Los labels exactos de `starter-verify-t036` y `starter-e2e-t036` están libres. Gate FULL/APPLICATION con el comando del contrato, sin editar fuentes durante la corrida. La bitácora local `.orchestrator/t036/full-gate-evidence.log` identifica UTC, HEAD, base y huellas del árbol y las fuentes al entrar/salir. Cleanup: el runner E2E retira su proyecto y comprueba cero recursos; tras `verify.sh`, quitar solo la red `starter-verify-t036_default` y el volumen `starter-verify-t036_m2-cache` si tienen el label exacto del proyecto, y verificar ambos namespaces. Siguiente: publicar el commit técnico si el gate está verde y pasar el PR a revisión independiente.
+### Evidencia de implementación
+
+- Desde `client/`, `npm test -- --run src/features/voice/VoiceDraftNavigation.test.tsx src/features/daily/DailyDraftNavigation.test.tsx src/features/auth/AuthSession.test.tsx --reporter=dot`: 33/33, exit 0 (`.orchestrator/t036/acceptance.log`). `npm run verify` host: 511/511, typecheck, lint, formato, cobertura y build, exit 0 (`.orchestrator/t036-client-verify.log`).
+- `bash scripts/verify.sh --policy origin/main`: FULL/APPLICATION. FULL con el comando del contrato, el 2026-11-10 entre 03:37:47Z y 04:06:49Z. Docs 5 s, Maven 407 s (221 Surefire + 210 Failsafe con PostgreSQL, Spotless/JaCoCo), cliente 121 s (511/511, 87.75 % statements y 82.16 % branches), Playwright 1206 s (21 desktop + 20 mobile). Las cuatro suites y el gate completo dieron exit 0. `reference preview:` pasó en ambos proyectos.
+- Huellas iguales al inicio y al término, con árbol limpio: HEAD `0c56492ba173a7b6e3608b80b6c9594210fc5048`, árbol `8d09b1b76300ce516cc2d2f5454d2c1213c4ab2b`, `client/src` `4ed191fce1439a8a13b85e6a4ac63a69932c8495` y base `a6210050f0e4c9a8ff98df62c50dbb4aebd995de`. Evidencia saneada local en `.orchestrator/t036/full-gate-evidence.log`; log original `full-gate.log` SHA-256 `b72c841f7c0c9b3852421f1f729398fae5d53aeedd322793654b026320cbce00`. Este cierre solo modifica Markdown y conserva el gate.
+- Cleanup: el runner retiró el stack E2E. Se retiraron la red `starter-verify-t036_default` y el volumen `starter-verify-t036_m2-cache` después de verificar sus labels. Ambos proyectos tenían cero contenedores, redes y volúmenes al salir. Se verificaron `docs-check` y `git diff --check` antes de publicar.
 
 ## Correcciones significativas
 

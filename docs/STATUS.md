@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-036](tasks/T-036-voice-navigation.md) · S-105 / navegación y sesión |
-| Estado | `in_progress` |
-| Acción actual | Implementar y verificar el workspace de voz sobre el outlet. |
-| Rama / PR | codex/t-036-voice-navigation · sin PR |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente del HEAD/base publicados y del gate FULL acreditado en T-036. |
+| Rama / PR | codex/t-036-voice-navigation · [PR42](https://github.com/MatiasNicolasAcevedo/devnotes/pull/42) |
 
 T-038: PR41 MERGED y conciliada como done. Evidencia del squash y checks en [T-038](tasks/T-038-reference-preview-fix.md#checkpoint-vigente).
 
@@ -66,5 +66,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Implementer, sesión nueva. Retomar T-036 en codex/t-036-voice-navigation según docs/tasks/T-036-voice-navigation.md. Confirmar que la base remota contiene los squashes de PR40 y PR41 ya conciliados, comprobar el estado local y remoto de la rama y retomar el checkpoint. Completar pruebas dirigidas y gate por alcance. Publicar un único PR contra main y preparar la revisión independiente cuando el gate esté verde.
+Reviewer, sesión nueva. Revisar T-036 en PR42 de MatiasNicolasAcevedo/devnotes según docs/agents/reviewer.md y docs/tasks/T-036-voice-navigation.md. Confirmar PR OPEN y listo para revisión, rama codex/t-036-voice-navigation contra main, HEAD publicado y verify-required vigente. Verificar la base a6210050f0e4c9a8ff98df62c50dbb4aebd995de y la evidencia FULL/APPLICATION del commit técnico 0c56492ba173a7b6e3608b80b6c9594210fc5048, conservada por el cierre solo Markdown. Revisar navegación, ACK, convivencia con daily, captura/transcripción y aislamiento de sesión. Publicar el veredicto independiente ligado a HEAD/base y aplicar AUTONOMY solo si el PR resulta elegible.
 ```

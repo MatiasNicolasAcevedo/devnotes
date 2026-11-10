@@ -78,6 +78,8 @@ Hallazgo fuera de alcance de T-035 (5.ª revisión PR40, 2026-11-09), heredado d
 
 Prueba faltante no bloqueante de T-035 (8.ª revisión PR40, 2026-11-09, sin pérdida de datos): la guarda `if (prev.conflict != null) return prev` de `loadNote` (`client/src/features/voice/useVoiceDraft.ts:183`) no tiene prueba propia; quitarla deja la suite verde porque los casos con conflicto `update` ya son `dirty`. Solo decide con borrador `clean` y conflicto `delete`: si el 409 del DELETE llega antes que un refetch del detalle en vuelo con revisión nueva, sin la guarda el diálogo se cerraría solo y el editor mostraría la revisión remota (S-105 §7: nunca actualizar automáticamente; no hay texto sin guardar en riesgo). Añadir en VoicePage.test.tsx la variante de «B-1 … durante el borrado» liberando primero el DELETE (409) y después el GET, que exija el diálogo abierto y «Texto 1»; debe fallar al quitar la guarda.
 
+Hallazgo de pruebas daily fuera de T-036. En el cliente Linux del gate, MSW registró un PUT sin handler en el caso existente «discard no revive borrador por ACK tardío» de `useDailyNote.test.tsx`. La suite pasó 511/511. El caso depende de una espera de 100 ms y solo instala handlers GET.
+
 ## Posterior a M2-RC1
 
 Pruebas personales del dueño sobre el SHA entregado; frontera agrupa correcciones/mejoras a partir de resultados. Sin nuevas capacidades ready ahora. Fuera de esta versión: streaming, audio persistido, integración automática con CLI/daily, Safari/iOS, despliegue y pagos. Opciones de ROADMAP conservan su carácter futuro.
