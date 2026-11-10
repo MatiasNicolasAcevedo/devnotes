@@ -28,6 +28,8 @@ Retorno a frontera si T-049 resulta fallida o indeterminada, si el dueño emite 
 
 - **Hallazgo de revisión del adaptador (2026-11-10, `c5e37cc`).** `GroqTranscriptionClient.parseResponse` consulta `no_speech_prob` solo con texto en blanco. Una respuesta con texto no vacío y todos los segmentos en el umbral o por encima podría pasar aunque S-105 exige 422. Queda fuera de la serialización saliente de T-048. Si el silencio de T-049 devuelve texto, detener el reensayo y concretar la corrección en frontera antes de declarar voz real verificada. [Regla de S-105](specs/S-105-voice-notes.md#adaptador-y-errores)
 
+- **Hallazgo de implementación del adaptador (2026-11-10, `8d787c1`).** T-049 corrigió el rechazo cuando todos los segmentos indican silencio. `GroqTranscriptionClient.parseResponse` todavía acepta texto no vacío sin segmentos o con `no_speech_prob` ausente, y S-105 pide 502 en ese caso. Requiere decisión de frontera porque cambia el resultado de respuestas que hoy dan 200. [Regla de S-105](specs/S-105-voice-notes.md#adaptador-y-errores)
+
 ## Hechas · S-106 completada
 
 S-106 completa con las 5 tareas MERGED (T-022 a T-026), control de cinco por Junie cumplido. Frontera toma voz por decisión del dueño del 2026-10-31; contrato de I2 preparado.

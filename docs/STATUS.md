@@ -4,8 +4,8 @@
 |---|---|
 | Tarea y contrato | [T-049](tasks/T-049-voice-retest.md) · S-105 / reensayo sintético con Groq |
 | Estado | `in_progress` |
-| Acción actual | El dueño autorizó la ronda. Confirmar su stack con el SHA corregido, verificar capabilities y el observador, y ejecutar la matriz sintética con el dueño. |
-| Rama / PR | `codex/t-049-voice-retest` · PR documental tras resultado favorable |
+| Acción actual | Corrección de silencio integrada en `8d787c1` con pruebas dirigidas verdes. Espera presupuesto del dueño para repetir la matriz sintética sobre ese SHA. |
+| Rama / PR | `codex/t-049-voice-retest` · PR único tras resultado favorable |
 
 T-048: [PR47 MERGED y conciliada como done](tasks/T-048-groq-multipart-fix.md#checkpoint-vigente). T-040 espera T-049 favorable y MERGED. FULL integrado después de T-044 MERGED.
 
@@ -74,5 +74,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomar T-049 en codex/t-049-voice-retest con el dueño. Leer AGENTS.md, STATUS y el checkpoint de T-049 con sus referencias. Confirmar la base remota que contiene PR47 MERGED y que el stack local del dueño usa las fuentes del squash 6f423e37be71d8fd9bb48561b3a74bfcb80c2421. Con la autorización registrada, verificar capabilities autenticado y el observador antes de grabar. Ejecutar solo las muestras pendientes según el contrato, detener ante el primer resultado fuera de criterio y registrar la evidencia. Publicar el PR documental para revisión independiente si la ronda es favorable. T-040 espera T-049 favorable y MERGED. FULL integrado después de T-044 MERGED.
+Retomar T-049 en codex/t-049-voice-retest (.orchestrator/t049-worktree) con el dueño. Leer AGENTS.md, STATUS y «Corrección integrada» de T-049 con sus referencias. Confirmar que la rama remota contiene 8d787c167571e65ce896b8cfe217d92b39f650c2 sobre PR47 MERGED. Pedir al dueño presupuesto explícito para una ronda nueva de cuatro muestras sintéticas y que aplique ese SHA en su stack original conservando el volumen. Verificar capabilities autenticado y el observador en cero antes de grabar. Ejecutar las cuatro muestras de VOICE-RELEASE en orden, detener ante el primer resultado fuera de criterio y registrar la evidencia sobre ese SHA. Con ronda favorable, actualizar VOICE-RELEASE y publicar el PR único de T-049 para revisión independiente. T-040 espera T-049 favorable y MERGED. FULL integrado después de T-044 MERGED.
 ```
