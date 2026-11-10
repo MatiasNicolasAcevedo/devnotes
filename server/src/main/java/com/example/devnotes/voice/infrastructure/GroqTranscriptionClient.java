@@ -34,6 +34,7 @@ public class GroqTranscriptionClient {
     private static final int MAX_RESPONSE_BYTES = 1_048_576; // 1 MiB
     private static final int MAX_CONCURRENT = 2;
     private static final int MAX_DURATION_SECONDS = 600;
+    private static final double NO_SPEECH_THRESHOLD = 0.6;
 
     private final VoiceProperties properties;
     private final HttpClient httpClient;
@@ -180,19 +181,9 @@ public class GroqTranscriptionClient {
                 throw new TranscriptionException.InvalidResponse("El proveedor no devolvió texto.");
             }
             String text = root.get("text").asText("");
-            if (text.isBlank()) {
-                // Check for no_speech_prob in segments
-                if (root.has("segments") && root.get("segments").isArray()) {
-                    JsonNode segments = root.get("segments");
-                    for (JsonNode seg : segments) {
-                        if (seg.has("no_speech_prob")) {
-                            double prob = seg.get("no_speech_prob").asDouble(0);
-                            if (prob >= 0.6) {
-                                throw new TranscriptionException.NoSpeech("No se detectó voz en el audio.");
-                            }
-                        }
-                    }
-                }
+            // S-105: blank text, or every segment at/above the no-speech threshold, is silence
+            // even when the provider returns hallucinated text.
+            if (text.isBlank() || allSegmentsIndicateSilence(root.path("segments"))) {
                 throw new TranscriptionException.NoSpeech("No se detectó voz en el audio.");
             }
 
@@ -214,6 +205,19 @@ public class GroqTranscriptionClient {
         } catch (IOException e) {
             throw new TranscriptionException.InvalidResponse("Error al decodificar la respuesta del proveedor.", e);
         }
+    }
+
+    private static boolean allSegmentsIndicateSilence(JsonNode segments) {
+        if (!segments.isArray() || segments.isEmpty()) {
+            return false;
+        }
+        for (JsonNode segment : segments) {
+            double probability = segment.path("no_speech_prob").asDouble(Double.NaN);
+            if (!(probability >= NO_SPEECH_THRESHOLD && probability <= 1.0)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private int parseRetryAfter(HttpResponse<byte[]> response) {
