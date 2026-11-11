@@ -46,6 +46,7 @@ Del [avance de T-050](tasks/T-050-ui-adjustments.md#avance-del-implementer-2026-
 
 - **Ensayos manuales con la interfaz anterior.** `scripts/test-dev-auth.mjs` y `scripts/test-auth-ui-smoke.mjs` no están en `verify-tooling.sh` y siguen buscando el botón «Cerrar sesión» en la barra, la URL `/` tras el login, el texto «Servidor conectado» y `SystemInfoPanel.tsx`, que T-050 eliminó. Fallarán hasta adaptarlos al menú de usuario, a `/notes` y a `ServerStatus.tsx`.
 - **Prueba de voz cerca de su límite bajo carga.** `VoiceDraftNavigation.test.tsx › descarta audio que excedió 600 s…` tarda unos 1,5 s en el host y agotó los 10 s una vez dentro del gate, con el contenedor de cliente unas tres veces más lento que lo habitual; no se reprodujo en 16 corridas bajo carga ni en dos gates posteriores.
+- **Caso E2E intermitente del botón de enlace.** `daily-notes.spec.ts › T-020: visible link button…` falló una vez en desktop dentro del gate (al editar el enlace con el cursor dentro, el `href` no cambió) y pasó en mobile en esa corrida y cinco veces seguidas al repetirlo solo. Sin causa comprobada; una hipótesis sin verificar es que el ACK del guardado automático llegue entre abrir el diálogo y guardar.
 - **Perfil STARTER por archivos de `client/` fuera de `src/`.** `classify-diff.mjs` trata `client/index.html` y `client/public/` como STARTER, así que un cambio de aplicación que los toque exige tooling; el contrato de T-050 preveía solo el FULL de aplicación.
 
 ## Hechas · I3 / M3 portabilidad xlsx

@@ -182,12 +182,19 @@ Cambios de pruebas que el contrato vuelve obligatorios, sin debilitar casos:
 
 No comprobado por pruebas automáticas: el titileo y su variante `prefers-reduced-motion` (solo CSS) y que Chrome ofrezca instalar con el icono SVG; quedan para la aceptación manual del dueño.
 
-Checkpoint previo al FULL: fuentes técnicas finales en `e8428b2`, base main `915459c`; el commit de este checkpoint solo agrega Markdown. `bash scripts/verify.sh --policy main` informa `policy=FULL` y `profile=STARTER`, porque `client/index.html` y `client/public/manifest.json` quedan fuera de `client/src/`; por eso el gate es el FULL del contrato más tooling. Comando, desde la raíz en Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t050 STARTER_E2E_PROJECT=starter-e2e-t050 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter` (docs, backend, cliente, tooling y Playwright real). Recursos propios: proyectos Compose `starter-verify-t050` y `starter-e2e-t050` con `.env.example` y fixtures ficticias, y artefactos en `e2e/artifacts/starter-e2e-t050/`; el script limpia solo esos proyectos. No había otros contenedores en marcha al iniciar. Sin editar fuentes durante la corrida. Siguiente paso: con exit 0, publicar la rama, abrir el PR y pasar a `in_review`.
+Checkpoint previo al FULL: fuentes técnicas finales en el commit de la corrección de CA-03 (posterior a `e8428b2`, solo `e2e/tests/daily-notes.spec.ts`), base main `915459c`; el commit de este checkpoint solo agrega Markdown. `bash scripts/verify.sh --policy main` informa `policy=FULL` y `profile=STARTER`, porque `client/index.html` y `client/public/manifest.json` quedan fuera de `client/src/`; por eso el gate es el FULL del contrato más tooling. Comando, desde la raíz en Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t050 STARTER_E2E_PROJECT=starter-e2e-t050 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter` (docs, backend, cliente, tooling y Playwright real). Recursos propios: proyectos Compose `starter-verify-t050` y `starter-e2e-t050` con `.env.example` y fixtures ficticias, y artefactos en `e2e/artifacts/starter-e2e-t050/`; el script limpia solo esos proyectos. No había otros contenedores en marcha al iniciar. Sin editar fuentes durante la corrida. Siguiente paso: con exit 0, publicar la rama, abrir el PR y pasar a `in_review`.
 
 Intentos del gate sobre `7ff8282` (mismas fuentes de cliente y specs que `2d41cac`):
 
 1. Exit 1 en `client`: una prueba de voz ya existente agotó sus 10 s con el contenedor unas tres veces más lento (el archivo tardó 73 s contra 27 s en la corrida verde). Tarda lo mismo antes y después de T-050 y no se reprodujo; no se tocó el límite. Hallazgo en BACKLOG.
 2. Exit 1 en `tooling`, con docs, server y client en verde: `test-dev-stack.sh nginx` usaba la interfaz anterior. Corregido en `9eb67c0` y `e8428b2`.
+
+Intentos sobre `9657318`:
+
+3. Exit 1 en `tooling` a los 32 s de `test-dev-stack.sh nginx`: Docker no pudo resolver `registry-1.docker.io` al construir la imagen. Falla de red del host; el registro respondió minutos después.
+4. Docs, server, client y tooling completo en verde (`suite=tooling` 2270 s); E2E 45 de 47, exit 1:
+   - `mobile › CA-03`: la spec exigía que el separador empezara después de 48 px, y UI-06 angosta la columna de números a 40 px en angosto. La aserción usa ahora 32 px por debajo de 600 px y conserva 48 px en ancho.
+   - `desktop › T-020: visible link button`: al editar el enlace el `href` no cambió. Intermitente: el mismo caso pasó en mobile dentro de esa corrida y cinco de cinco veces seguidas al repetirlo solo en desktop. Sin causa comprobada; hallazgo en BACKLOG.
 
 ## Correcciones significativas
 
@@ -196,6 +203,7 @@ Intentos del gate sobre `7ff8282` (mismas fuentes de cliente y specs que `2d41ca
 | 2026-11-11 · `99034f8` | `useIsNarrow` leía `theme.breakpoints` de un tema nulo cuando el componente se monta sin `ThemeProvider` (pruebas del editor). | Usa `useTheme()`, que entrega el tema por defecto. | `npm test -- --run src/features/daily` exit 0 |
 | 2026-11-11 · `9eb67c0` | El arnés `e2e/harness/local-stack.mjs` buscaba el botón «Cerrar sesión», «API y base de datos disponibles» y el aviso de estado del servidor; además medía el desborde horizontal en el instante de cambiar el ancho, antes de que la aplicación pasara a angosto. | Lee el menú de usuario y el indicador de la barra, y espera con `expect.poll` a que el diseño se asiente. | `bash scripts/test-dev-stack.sh nginx` y `vite`, exit 0 |
 | 2026-11-11 · `e8428b2` | `scripts/test-dev-stack.sh` editaba `SystemInfoPanel.tsx` para el ensayo de HMR; UI-01 lo elimina. Fuera de «solo `client/` y `e2e/`». | Con autorización del dueño, la ruta pasa a `ServerStatus.tsx`, que conserva el texto «Servidor conectado» como nombre accesible. | `bash scripts/test-dev-stack.sh vite`, exit 0 |
+| 2026-11-12 · corrección de CA-03 | `daily-notes.spec.ts` CA-03 daba por fija la columna de números de 48 px; en angosto UI-06 la deja en 40 px. | El umbral depende del ancho: 32 px por debajo de 600 px, 48 px en ancho. | `bash scripts/e2e.sh --grep "CA-03:" --project mobile`, exit 0 |
 | 2026-11-11 · `2d41cac` | Tanda E2E dirigida: cuatro fallos de las specs, no del producto. El helper `saved` chocaba con variables locales; tras el login la URL ya canonizada era `/notes/<hoy>`; en Notas hay dos alertas al vencer la sesión; la página quedaba desplazada 9 px al medir el editor. | Helper `savedIndicator`, patrón `notesUrl`, filtro por texto del aviso de sesión y `scrollTo(0, 0)` antes de medir. | Tanda dirigida desktop, exit 0 |
 
 ## Cierre y siguiente tarea
