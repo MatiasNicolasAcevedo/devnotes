@@ -1,6 +1,6 @@
 ---
 id: T-040
-status: changes_requested
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -50,7 +50,7 @@ Se habilitó con el PR de [T-049](T-049-voice-retest.md) MERGED. Abre la rama co
 
 ## Checkpoint vigente
 
-**Retoma vigente.** T-040 portadora en `changes_requested` tras la [ronda independiente 2 de 2](#revisión-independiente--ronda-2-de-2). Frontera y dueño deben decidir la compatibilidad v1 para B3 y B4 y acordar la salida del límite de rondas antes de retomar el PR49. La prueba de T-045 y su archivo, y el cleanup de T-049, corresponden al dueño. M3 y T-046 siguen pendientes.
+**Retoma vigente.** T-040 portadora en `in_review` para la única ronda independiente excepcional de PR49. Fuentes publicadas en `2f3b41f08fdca5e6fb4d37b8ba977ec626dcef38`, base `fc8fda5b20946e595c153144e99d9a3d3346ac5d`. El dueño aceptó los dirigidos de B1–B4 y el recorrido Playwright de portabilidad como gate excepcional de este PR. La sesión revisora debe cotejar la evidencia, las huellas, el HEAD/base publicados y `verify-required` sobre el HEAD vigente. [Evidencia y huellas](#evidencia-dirigida-de-b3-y-b4). La prueba de T-045 y su archivo, y el cleanup de T-049, corresponden al dueño. M3 y T-046 siguen pendientes.
 
 ### Evidencia del arreglo original
 
@@ -154,6 +154,32 @@ Sondas de revisión en `.orchestrator/pr49-review-2-f1a5a86/`. `LegacyVoiceRevie
 
 **Salida propuesta al agotar las rondas.** Frontera presenta al dueño las decisiones de formato v1 de B3 y B4. Con su decisión, frontera deja el contrato en esta tarea y en S-107. Una sesión implementer aplica la corrección en el mismo PR con regresiones rojas y verdes por HTTP/PostgreSQL y un STARTER integrado sobre las fuentes finales. Para llegar a merge, el dueño debe autorizar expresamente otra revisión independiente del nuevo HEAD/base. Esa sesión verifica el cierre de ambos casos y publica un nuevo veredicto con CI verde. Se conserva la evidencia de B1/B2 y el gate de este SHA como historial de la revisión. El PR queda abierto mientras se decide la compatibilidad.
 
+### Corrección acordada · B3 y B4
+
+2026-11-11 (Argentina). Implementer en sesión nueva de Codex de escritorio, familia GPT-6, con PowerShell, Git, `gh`, Git Bash, Maven Wrapper, JDK 21, Docker/Testcontainers y Node/npm. Variante y esfuerzo sin exponer. El alcance cambia la validación de restauración v1 para voz y para documentos de diarias/versiones. Se conservan el formato, la API, los permisos por sesión/propietario, los datos de origen, los topes de B2 y la importación atómica en cuenta vacía. Alcance técnico en el códec de importación y sus regresiones.
+
+Antes de editar, `gh pr view 49` y `gh api` confirmaron PR abierto y listo, rama `codex/s-107-xlsx-portability`, HEAD `f2d89235eea885ddb0acdc68f31894a9918568b8`, base y punta de `main` `fc8fda5b20946e595c153144e99d9a3d3346ac5d`, el [veredicto publicado](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49#issuecomment-6786106689) y [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42952597039/job/130300157664) del HEAD de la revisión. Árbol local limpio con HEAD, ramas de seguimiento y merge-base coincidentes.
+
+- **B3 / XL-09.** El dueño aprobó admitir ambos órdenes de instantes válidos para toda la hoja voz en v1 y restaurar cada instante exacto. El formato carece de una marca que identifique las filas anteriores a T-037. Se conservan el formato y la precisión de instantes y el orden exigido en referencias. Convertir la sonda de voz legada en una regresión con el mismo adjunto para vista previa 200 sin escrituras e importación 201, texto e instantes exactos en B y fila de A intacta.
+- **B4 / XL-10.** El dueño aprobó que el validador de guardado determine la estructura de `content` al restaurar diarias y versiones. Se conserva íntegro el documento aceptado, incluido `marks: null`, con los campos exteriores estrictos y el rechazo de caracteres no almacenables en todo el documento. Guardar ambos documentos por API, confirmar su persistencia y restaurarlos con el mismo XLSX usado en la vista previa sin escrituras. Comparar ambos documentos completos y las filas originales de A.
+- **Revisión.** El dueño autorizó una única ronda excepcional en sesión independiente, con revisión de B3/B4, B1/B2, gate y CI en los SHA vigentes. Con `APROBADO` y las demás condiciones de AUTONOMY, el reviewer puede hacer squash ligado al HEAD revisado y confirmar MERGED. Ante otro bloqueante, registrar y devolver al dueño la decisión concreta pendiente.
+
+#### Evidencia dirigida de B3 y B4
+
+Logs de la sesión en `.orchestrator/pr49-b3-b4/`. Para el rojo, el blob del importador coincide con HEAD `f2d89235eea885ddb0acdc68f31894a9918568b8` (`a55afbedefdedfb12f16cf606b842da260efb1f1`), base `fc8fda5b20946e595c153144e99d9a3d3346ac5d`.
+
+| Alcance | Comando | Resultado |
+|---|---|---|
+| Rojo HTTP/PostgreSQL/OIDC, desde `server/` en Git Bash | `./mvnw clean integration-test failsafe:verify -Dtest=DailyNoteServiceTest -Dit.test='PortabilityImportApiIT#historicalVoiceInstantsRoundTripWithoutNormalizingTheSourceOrPreviewWrites+dailyAndVersionWithNullMarksRoundTripWithoutPreviewWrites'` | Exit 1, 2/2 fallos esperados de aserción y cero errores de ejecución. Vista previa 400 `IMPORT_INVALID_RECORD` en `voz` y `diarias`, fila 2. `server-red.log`, SHA-256 `23e56ac0f3ff42e032adab42ec92da2adde6d157061b5753b1d2e5114eed33c2`. |
+| Rojo unitario B3, desde `server/` en Git Bash | `./mvnw test -Dtest='XlsxWorkbookReaderTest#voiceNotePreservesHistoricallyInvertedInstants'` | Exit 1, el lector rechaza la voz válida, fila 2. `reader-red.log`, SHA-256 `758feced9ccff86bc7d7bd67a84c4ad15cc5d5fc56ed7d4f01cb4f008b174903`. |
+| Verde B1–B4 y formato, desde `server/` en Git Bash | `./mvnw clean integration-test failsafe:verify spotless:check -Dtest='DailyNoteServiceTest,DailyVersionServiceTest,Xlsx*Test,PortabilityExportServiceTest' -Dit.test='PortabilityImportApiIT,PortabilityExportApiIT'` | Exit 0, 196/196 Surefire, 19/19 Failsafe con PostgreSQL 18.6, HTTP y OIDC local, Spotless OK. B3/B4 prueban el mismo adjunto en los dos POST, vista previa sin escrituras, restauración exacta y origen intacto. `server-green.log`, SHA-256 `f34d86f8d6e4a405e78182459ee7d65c5f6b5b16619c41365af65cdc62bb03e3`. |
+| Cliente B2, desde `client/` | `npm test -- --run src/features/portability/DataPage.test.tsx src/features/portability/api.test.ts` | Exit 0, 80/80. `client-directed.log`, SHA-256 `6c27f58a670e46fb444d4c1e43fe8172f56c90ae79f25d7ef1b5088675196e33`. |
+| Matriz local de CI, desde raíz | `node --test 'scripts/ci/*.test.mjs'` | Exit 0, 118/118 en el host. La primera ejecución en sandbox falló al iniciar procesos hijos de Windows (`0xc0000142`). `ci-contract-host.log`. |
+
+- **Playwright dirigido.** `STARTER_E2E_PROJECT=starter-e2e-pr49-b3-b4-20261111 bash scripts/e2e.sh --grep 'portability:' --project desktop`, desde raíz con Git Bash explícito y Node en PATH según SETUP. El script comprobó ausencia inicial, usó `scripts/fixtures/e2e.env.example` y reportó 1/1 aprobado con HTTP, PostgreSQL y OIDC local, auditoría de saneado y eliminación de su stack. El wrapper devolvió 1 por un error en el listado adicional de Docker. La consulta corregida devolvió exit 0 para cada tipo y cero contenedores, redes y volúmenes con el label exacto `com.docker.compose.project=starter-e2e-pr49-b3-b4-20261111`. Logs `e2e-directed.log` (SHA-256 `5450f7619178aa2e36d0662a21886fa5f243aa9e1a58b69f944c8e866cd899b3`) y `e2e-cleanup.log`. Los cinco IDs propios de Testcontainers del rojo y el verde también quedaron ausentes en listados exit 0, registrados en `testcontainers-cleanup.log`.
+- **Huellas y clasificación.** La corrida dirigida se inició en `f2d89235eea885ddb0acdc68f31894a9918568b8` con los tres Java locales. Sus blobs `8e04dfda14faef7868e3adb2768b8c1cb8645747`, `7056bf08d59d10bc898df1d42315e1bf89acc1fe` y `2b65808cd2cf0885935d318477eca70db388cc16` coinciden con el commit técnico `2f3b41f08fdca5e6fb4d37b8ba977ec626dcef38`, árbol `f6b250f01459b45aeb4af3f8bc1a066ca1056108`. Base `fc8fda5b20946e595c153144e99d9a3d3346ac5d`. `scripts/verify.sh --policy origin/main` y `--policy c5e37cc4b73ad038ac35edf29c66131416bb4a34` con preflight de SETUP dieron FULL/STARTER. `docs-check` y `git diff --check` OK.
+- **Gate excepcional del PR49.** El 2026-11-11 el dueño indicó que no se repita FULL y respondió «Aceptar el gate excepcional y publicar». Aceptó los dirigidos de B1–B4 y el recorrido Playwright de portabilidad como evidencia de gate para publicar, revisar y habilitar el squash si se cumplen las demás condiciones de AUTONOMY. El STARTER previo de B1/B2 queda como evidencia histórica de su propio árbol. El cierre documental conserva las fuentes de `2f3b41f` y la base `fc8fda5`. La revisión verifica estas huellas, el alcance de la excepción y la CI del HEAD vigente.
+
 ## Correcciones significativas
 
 | Fecha / SHA | Problema y causa | Corrección | Prueba |
@@ -161,6 +187,8 @@ Sondas de revisión en `.orchestrator/pr49-review-2-f1a5a86/`. `LegacyVoiceRevie
 | 2026-11-10 · `f10529f` | `nowMicros()` de `DailyNoteService` y `DailyVersionService` sumaba dos veces la fracción de milisegundos y descartaba los microsegundos: con el reloj en `20:00:20.973456789Z` registraba `20:00:21.946Z`. | Una sola lectura: `clock.instant().truncatedTo(ChronoUnit.MICROS)`. | Rojo y verde de `DailyNoteServiceTest` y `DailyVersionServiceTest`; IT de daily 65/65 |
 | 2026-11-10 · `9a63da2` | B1. El códec exigía orden cronológico para instantes válidos de diarias anteriores a T-040. | Restaurar ambos instantes exactos en v1. | XL-07. GET, vista previa sin escrituras y restauración en B con documento y fechas exactos y la fila de A intacta. Los negativos de voz, referencias e instantes inválidos siguen verdes. |
 | 2026-11-10 · `9a63da2` | B2. Se emitían cabeceras de descarga antes de validar la restaurabilidad y Datos aceptaba cuerpos incompletos. | Preparar el archivo privado con los topes compartidos, inspeccionarlo antes de enviar cabeceras y servirlo con longitud exacta. Mostrar la alerta del 409 y cotejar la longitud en Datos. | XL-08. 10 000 referencias restauradas, máximos en bytes inclusivos, 409 sin adjunto en los tres excesos, cleanup en éxito, rechazo e interrupción y rechazo del blob truncado. |
+| 2026-11-11 · `2f3b41f` | B3. El orden cronológico exigido por el lector invalidaba voz escrita por el reloj anterior a T-037. | Admitir ambos órdenes en toda la hoja voz y restaurar los instantes exactos. | XL-09. Rojo y verde del lector y del IT. Texto y tiempos exactos en B, vista previa sin escrituras y fila de A intacta. |
+| 2026-11-11 · `2f3b41f` | B4. El lector rechazaba todo `null` recursivo, incluido el que admite el guardado diario. | Rechazar `null` en los campos exteriores y delegar la estructura de los dos documentos al validador de guardado. Conservar el control de caracteres en todo el árbol. | XL-10. Rojo y verde del IT con guardado por API y copia manual. Ambos documentos completos en B, con `marks: null`, vista previa sin escrituras y filas de A intactas. |
 
 ## Cierre y siguiente tarea
 

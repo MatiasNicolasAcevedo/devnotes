@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-040](tasks/T-040-daily-timestamps.md) · S-107 / tarea portadora de la rama compartida y del PR único |
-| Estado | `changes_requested` |
-| Acción actual | Frontera y dueño deciden la compatibilidad v1 de B3 y B4 y la salida del límite de rondas de PR49. [Veredicto y propuesta en T-040](tasks/T-040-daily-timestamps.md#revisión-independiente--ronda-2-de-2). |
+| Estado | `in_review` |
+| Acción actual | Reviewer independiente verifica B3/B4, conservación de B1/B2, gate excepcional aprobado por el dueño y CI vigente. [Evidencia en T-040](tasks/T-040-daily-timestamps.md#evidencia-dirigida-de-b3-y-b4). |
 | Rama / PR | `codex/s-107-xlsx-portability` · [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), abierto y listo, único de S-107 |
 
 Por decisión del dueño del 2026-11-10, T-040…T-045 comparten la rama `codex/s-107-xlsx-portability` y un único PR; FULL integrado sobre su HEAD final. Mientras dura la rama, esta tabla mantiene a T-040 como tarea portadora, con su estado de revisión, y nombra las demás tareas en «Acción actual» y en el prompt. [Regla](specs/S-107-xlsx-portability.md#tareas-y-dependencias)
@@ -78,5 +78,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera para S-107 con T-040 en changes_requested y PR49 abierto. Leé «Revisión independiente · ronda 2 de 2» en T-040 y confirmá en GitHub los SHA del veredicto publicado. Presentá al dueño la decisión de compatibilidad v1 para las fechas invertidas de voz legada (B3) y el contenido diario ya admitido por la API, incluido marks: null (B4). Con su decisión, dejá el contrato y las regresiones en T-040 y S-107. Para continuar hacia merge, acordá la corrección en el mismo PR y la autorización expresa de otra revisión independiente después del gate de las fuentes corregidas. La prueba de T-045 y su archivo quedan a cargo del dueño, al igual que el cleanup de T-049. M3 y T-046 siguen pendientes.
+Actuá como reviewer en una sesión nueva e independiente para la única ronda excepcional de S-107, con T-040 en in_review y el PR49 abierto contra main. Confirmá en GitHub el HEAD publicado, que debe incluir este cierre documental, la base fc8fda5b20946e595c153144e99d9a3d3346ac5d y verify-required SUCCESS sobre el HEAD vigente. Cotejá que las fuentes coincidan con 2f3b41f08fdca5e6fb4d37b8ba977ec626dcef38. Leé S-107, la ronda 2 y «Corrección acordada · B3 y B4» en T-040. Revisá B3 y B4, los negativos, la conservación de B1/B2 y la evidencia del gate excepcional autorizado por el dueño. El gate de este PR usa los dirigidos de B1–B4 y el Playwright de portabilidad. No repitas FULL. Seguí reviewer.md y AUTONOMY.md para publicar el veredicto ligado al HEAD final y a la base, con docs-check y CI verdes. Si emitís APROBADO y se cumplen las demás condiciones de AUTONOMY, seguí merger.md, hacé squash ligado al HEAD revisado y confirmá MERGED en GitHub. Si surge otro bloqueante, registralo y devolvé al dueño la decisión concreta pendiente. La prueba de T-045 y su archivo quedan a cargo del dueño, al igual que el cleanup de T-049. M3 y T-046 siguen pendientes.
 ```
