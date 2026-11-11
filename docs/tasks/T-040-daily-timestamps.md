@@ -1,10 +1,10 @@
 ---
 id: T-040
-status: in_review
+status: mergeable
 priority: P1
 size: S
 executor: junie
-role: implementer
+role: reviewer
 milestone: M3
 product_cycle: I3
 spec: S-107
@@ -179,6 +179,19 @@ Logs de la sesión en `.orchestrator/pr49-b3-b4/`. Para el rojo, el blob del imp
 - **Playwright dirigido.** `STARTER_E2E_PROJECT=starter-e2e-pr49-b3-b4-20261111 bash scripts/e2e.sh --grep 'portability:' --project desktop`, desde raíz con Git Bash explícito y Node en PATH según SETUP. El script comprobó ausencia inicial, usó `scripts/fixtures/e2e.env.example` y reportó 1/1 aprobado con HTTP, PostgreSQL y OIDC local, auditoría de saneado y eliminación de su stack. El wrapper devolvió 1 por un error en el listado adicional de Docker. La consulta corregida devolvió exit 0 para cada tipo y cero contenedores, redes y volúmenes con el label exacto `com.docker.compose.project=starter-e2e-pr49-b3-b4-20261111`. Logs `e2e-directed.log` (SHA-256 `5450f7619178aa2e36d0662a21886fa5f243aa9e1a58b69f944c8e866cd899b3`) y `e2e-cleanup.log`. Los cinco IDs propios de Testcontainers del rojo y el verde también quedaron ausentes en listados exit 0, registrados en `testcontainers-cleanup.log`.
 - **Huellas y clasificación.** La corrida dirigida se inició en `f2d89235eea885ddb0acdc68f31894a9918568b8` con los tres Java locales. Sus blobs `8e04dfda14faef7868e3adb2768b8c1cb8645747`, `7056bf08d59d10bc898df1d42315e1bf89acc1fe` y `2b65808cd2cf0885935d318477eca70db388cc16` coinciden con el commit técnico `2f3b41f08fdca5e6fb4d37b8ba977ec626dcef38`, árbol `f6b250f01459b45aeb4af3f8bc1a066ca1056108`. Base `fc8fda5b20946e595c153144e99d9a3d3346ac5d`. `scripts/verify.sh --policy origin/main` y `--policy c5e37cc4b73ad038ac35edf29c66131416bb4a34` con preflight de SETUP dieron FULL/STARTER. `docs-check` y `git diff --check` OK.
 - **Gate excepcional del PR49.** El 2026-11-11 el dueño indicó que no se repita FULL y respondió «Aceptar el gate excepcional y publicar». Aceptó los dirigidos de B1–B4 y el recorrido Playwright de portabilidad como evidencia de gate para publicar, revisar y habilitar el squash si se cumplen las demás condiciones de AUTONOMY. El STARTER previo de B1/B2 queda como evidencia histórica de su propio árbol. El cierre documental conserva las fuentes de `2f3b41f` y la base `fc8fda5`. La revisión verifica estas huellas, el alcance de la excepción y la CI del HEAD vigente.
+
+### Checkpoint · revisión excepcional
+
+2026-11-11 (Argentina). Reviewer independiente en Codex de escritorio, GPT-6, con PowerShell, Git, `gh`, Git Bash, Maven Wrapper, JDK 21, Docker/Testcontainers y Node/npm. Variante y esfuerzo sin exponer. Transición documental, sin cambios en comportamiento, API, permisos, persistencia ni UI.
+
+GitHub confirmó [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49) abierto y listo, HEAD `a20205bb63ec364e9ed66ee61e1ac1b05df3825e`, base y punta de `main` `fc8fda5b20946e595c153144e99d9a3d3346ac5d` y [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42955596179/job/130309806047) en ese HEAD. El checkout coincide con GitHub y el diff desde `2f3b41f08fdca5e6fb4d37b8ba977ec626dcef38` se limita a tres Markdown.
+
+- **B3 y B4.** El lector conserva los instantes invertidos de voz sin normalizarlos. Diarias y versiones delegan la estructura del documento en `DailyContent.validate` y conservan `marks: null`. Los IT reutilizan el adjunto original en ambos POST, comprueban vista previa sin escrituras, restauración exacta y filas de A intactas. Los negativos conservan el orden de referencias, la precisión y sintaxis de los instantes, los campos exteriores estrictos y el rechazo de NUL y sustitutos UTF-16 sin pareja.
+- **B1 y B2.** Se verificó la restauración exacta de diarias con instantes invertidos, la restauración de las 10 000 referencias, los máximos inclusivos de bytes y los 409 sin adjunto al superar un límite. Datos descarta el blob incompleto y muestra el error específico sin iniciar la descarga.
+- **Dirigidos independientes.** Desde `server/`, `./mvnw clean integration-test failsafe:verify spotless:check -Dtest='DailyNoteServiceTest,DailyVersionServiceTest,Xlsx*Test,PortabilityExportServiceTest' -Dit.test='PortabilityImportApiIT,PortabilityExportApiIT'` dio exit 0, 196/196 Surefire, 19/19 Failsafe con PostgreSQL 18.6, HTTP y OIDC local, y Spotless OK. Desde `client/`, `npm test -- --run src/features/portability/DataPage.test.tsx src/features/portability/api.test.ts` dio exit 0, 80/80. En `.orchestrator/pr49-review-exception/`, `server.log` tiene SHA-256 `5cde6c955d8bc406dea6241cba40a7e0aeff7812f0ea815b68fd1e10aa5d3694`, `client.log` tiene `a960c774fbdf95ed9877d85c894d05f467141c708286b6232a18a596260d14ff` y `testcontainers-cleanup.log` confirma cero resultados para los tres IDs propios.
+- **Gate excepcional.** Coinciden las cinco huellas publicadas del rojo, verde y Playwright. El log Playwright de `portability:` en desktop registra 1/1, auditoría de saneado y retiro del stack. El exit 1 del wrapper fue posterior al caso aprobado y correspondió al listado adicional de Docker. El listado corregido confirma exit 0 y cero recursos por label exacto. Se aplica la excepción del dueño a este árbol/base y se conserva el STARTER anterior como evidencia histórica. `node scripts/docs-check.mjs` y `git diff --check` pasaron.
+
+Revisión favorable. El veredicto se publica en el PR ligado al HEAD que incluye esta transición y a la base vigente, con `verify-required` verde y las conversaciones bloqueantes resueltas. El comentario de cierre del PR registra la confirmación de `MERGED` y el SHA del squash. La [prueba de T-045](T-045-xlsx-journey.md#prueba-del-dueño) y su archivo quedan a cargo del dueño. T-046 y el cierre de M3 esperan el resultado registrado y el merge confirmado. El cleanup de T-049 queda a cargo del dueño.
 
 ## Correcciones significativas
 
