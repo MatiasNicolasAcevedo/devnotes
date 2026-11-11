@@ -2,7 +2,7 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
-Próxima acción: [T-040](tasks/T-040-daily-timestamps.md) abre la rama compartida y el PR único de S-107, y es su tarea portadora; después, [T-041](tasks/T-041-xlsx-codec.md) en la misma rama.
+Próxima acción: revisión independiente del PR único de S-107 (PR49), con [T-040](tasks/T-040-daily-timestamps.md) como tarea portadora en `in_review`; T-041…T-045 están cerradas en la rama. Después, prueba del dueño de [T-045](tasks/T-045-xlsx-journey.md) y, tras el MERGED, [T-046](tasks/T-046-render-image.md).
 
 ## Siguientes · plan del dueño del 2026-11-10
 
@@ -36,6 +36,15 @@ Retorno a frontera si el dueño emite «no aceptada» en T-045 o T-047, ante una
 - **Casos de prueba faltantes del adaptador (C-1 del veredicto del PR48, no bloqueante).** `GroqTranscriptionClientTest` no cubre texto con `segments: []` ni `no_speech_prob` no numérico o mayor que 1, que el código conserva como voz. Añadir ambos casos cuando se toque el adaptador. Sin tarea asignada.
 
 - **Cleanup pendiente de T-049 (E-4, requiere autorización del dueño).** Siguen en disco los recursos listados en [T-049](tasks/T-049-voice-retest.md#decisión-del-dueño-y-cierre-de-la-matriz), además de la rama `codex/t-049-voice-retest` (local y remota) y el worktree `.orchestrator/t049-worktree`. El checkout original pasó de `8d787c1` con HEAD separado a la rama `codex/s-107-xlsx-portability` al tomar T-040; el stack del dueño no se tocó.
+
+### Hallazgos del control de S-107
+
+Del [control de avance de T-040…T-045](tasks/T-045-xlsx-journey.md#control-de-avance-de-t-040t-045) (2026-11-11). Ninguno bloquea la revisión del PR49 ni tiene tarea asignada.
+
+- **Puertos fijos de los ensayos de proxies.** `scripts/test-auth-proxies.mjs` publica `127.0.0.1:5175` y `5176` sin parámetro. Con un stack de desarrollo del dueño en el 5175, `test-auth-proxies-signals.sh` y `test-auth-proxies.sh` fallan con `port is already allocated` y cortan el gate STARTER después de unos 45 minutos, antes del E2E. Propuesta: aceptar un par de puertos por variable, como `STARTER_PORTABILITY_PROXY_PORT` en el ensayo de portabilidad, o comprobar el puerto al inicio del gate. Es un cambio de tooling del starter.
+- **Ensayo de proxies de portabilidad fuera del gate.** `scripts/test-portability-proxies.mjs`, igual que `test-voice-proxies.mjs`, no está en `verify-tooling.sh` y se corre a mano. El límite de 11 MB de nginx para las dos rutas de importación no tiene regresión automática. Decidir si entra en tooling.
+- **OpenAPI sin caso de portabilidad.** Las tres rutas están anotadas detrás del interruptor, pero `OpenApiContractIT` no las comprueba (nota de T-042).
+- **Comandos dirigidos con `-Dtest=none`.** Los comandos de contrato de T-041, T-042 y T-043 (`./mvnw -q verify -Dit.test=… -Dtest=none`) terminan en exit 1 por `jacoco:check` en un árbol limpio aunque las pruebas pasen. Los contratos futuros con un IT dirigido deberían añadir `-Djacoco.skip=true` y dejar la cobertura al `clean verify`.
 
 ## Hechas · S-106 completada
 

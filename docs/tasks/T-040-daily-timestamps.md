@@ -1,6 +1,6 @@
 ---
 id: T-040
-status: in_progress
+status: in_review
 priority: P1
 size: S
 executor: junie
@@ -64,6 +64,8 @@ Se habilitó con el PR de [T-049](T-049-voice-retest.md) MERGED. Abre la rama co
 - Sin recursos propios por limpiar: los contenedores de Testcontainers terminaron con la corrida. No se borraron ramas, worktrees ni archivos de `.orchestrator`.
 
 Siguiente: sesión nueva para [T-041](T-041-xlsx-codec.md) en la misma rama.
+
+2026-11-11. Como portadora pasa a `in_review`: T-041…T-045 quedaron cerradas en la rama, el gate integrado STARTER está en verde y el control de avance de las seis tareas está hecho, todo registrado en [T-045](T-045-xlsx-journey.md#checkpoint-vigente). El PR49 quedó listo para la revisión independiente.
 
 ## Correcciones significativas
 

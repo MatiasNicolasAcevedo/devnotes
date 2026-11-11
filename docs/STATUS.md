@@ -3,11 +3,11 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-040](tasks/T-040-daily-timestamps.md) · S-107 / tarea portadora de la rama compartida y del PR único |
-| Estado | `in_progress` |
-| Acción actual | T-040 cerrada en la rama compartida con XL-01 verde (`f10529f`); sigue como portadora. [T-041](tasks/T-041-xlsx-codec.md) cerrada con XL-02 verde (`900913b`), [T-042](tasks/T-042-xlsx-export-api.md) cerrada con XL-03 verde (`345514c`), [T-043](tasks/T-043-xlsx-import-api.md) cerrada con XL-04 verde y proxies probados (`2095b1e`) y [T-044](tasks/T-044-xlsx-client.md) cerrada con XL-05 verde y gate de cliente (`b18bd04`). Tarea en curso: [T-045](tasks/T-045-xlsx-journey.md), con XL-06 verde en desktop y mobile (`6980805`). Gate integrado sobre `37664e7` **incompleto**: docs, backend, cliente, ocho ensayos de tooling y E2E 47/47 en verde; faltan los dos ensayos de proxies, bloqueados porque el puerto 5175 del host lo ocupa el stack del dueño `starter-dev-devnotes-preview-1027`. Espera que el dueño libere el puerto. Después: esos dos ensayos, control de avance, PR a revisión y prueba del dueño. [Checkpoint](tasks/T-045-xlsx-journey.md#checkpoint-vigente) |
-| Rama / PR | `codex/s-107-xlsx-portability` · [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), draft, único de S-107 |
+| Estado | `in_review` |
+| Acción actual | Implementación de S-107 publicada y lista para revisión independiente. T-040 (`f10529f`), [T-041](tasks/T-041-xlsx-codec.md) (`900913b`), [T-042](tasks/T-042-xlsx-export-api.md) (`345514c`), [T-043](tasks/T-043-xlsx-import-api.md) (`2095b1e`), [T-044](tasks/T-044-xlsx-client.md) (`b18bd04`) y [T-045](tasks/T-045-xlsx-journey.md) (`6980805`) cerradas en la rama, con XL-01…XL-06 en verde. Gate integrado STARTER verde sobre las fuentes de `37664e7`, en tres corridas por un puerto ocupado del host, y control de avance de las seis tareas hecho. Siguiente: reviewer en sesión nueva sobre el PR49. Sigue pendiente la prueba del dueño de T-045. [Checkpoint](tasks/T-045-xlsx-journey.md#checkpoint-vigente) |
+| Rama / PR | `codex/s-107-xlsx-portability` · [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), listo para revisión, único de S-107 |
 
-Por decisión del dueño del 2026-11-10, T-040…T-045 comparten la rama `codex/s-107-xlsx-portability` y un único PR; FULL integrado sobre su HEAD final. Mientras dura la rama, esta tabla mantiene a T-040 como tarea portadora y nombra la tarea en curso en «Acción actual» y en el prompt. [Regla](specs/S-107-xlsx-portability.md#tareas-y-dependencias)
+Por decisión del dueño del 2026-11-10, T-040…T-045 comparten la rama `codex/s-107-xlsx-portability` y un único PR; FULL integrado sobre su HEAD final. Mientras dura la rama, esta tabla mantiene a T-040 como tarea portadora, con su estado de revisión, y nombra las demás tareas en «Acción actual» y en el prompt. [Regla](specs/S-107-xlsx-portability.md#tareas-y-dependencias)
 
 T-049: PR48 MERGED, squash `fc8fda5b20946e595c153144e99d9a3d3346ac5d`, confirmado en GitHub el 2026-11-10 (mergedAt 2026-11-10T21:31:31Z), HEAD `5bc1e98`, `verify-required` SUCCESS. [Conciliada como done](tasks/T-049-voice-retest.md#conciliación), con las observaciones no bloqueantes del veredicto resueltas o en BACKLOG. El cleanup de T-049 espera autorización del dueño.
 
@@ -78,17 +78,18 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como implementer de T-045 en MatiasNicolasAcevedo/devnotes, siguiendo AGENTS.md, docs/agents/implementer.md y docs/AUTONOMY.md. Retomás T-045 (portadora T-040) desde su «Checkpoint vigente»; no implementaste T-040, T-041, T-042, T-043 ni T-044.
+Actuá como reviewer del PR49 de MatiasNicolasAcevedo/devnotes (S-107, tarea portadora T-040, tareas T-040, T-041, T-042, T-043, T-044 y T-045), siguiendo AGENTS.md, docs/agents/reviewer.md, docs/AUTONOMY.md y docs/TESTING.md. Sesión nueva e independiente: no implementaste ninguna de esas tareas. Es la primera de un máximo de dos rondas para el PR completo.
 
 Precondición, a comprobar sin dar nada por supuesto:
-gh pr view 49 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,isDraft,headRefName,headRefOid,baseRefName
-Debe devolver state OPEN, isDraft true, headRefName codex/s-107-xlsx-portability y baseRefName main. El HEAD remoto debe contener 37664e7 (HEAD probado por el gate) y git diff --name-only 37664e7 HEAD debe listar solo Markdown. El puerto 127.0.0.1:5175 debe estar libre (docker ps sin el stack starter-dev-devnotes-preview-1027 publicándolo); liberarlo es del dueño: no detengas ni borres contenedores ajenos. Si algo no coincide, o el árbol local tiene cambios ajenos, detenete e informá el estado real.
+gh pr view 49 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,isDraft,headRefName,headRefOid,baseRefName,statusCheckRollup
+Debe devolver state OPEN, isDraft false, headRefName codex/s-107-xlsx-portability y baseRefName main, con verify-required en success sobre el HEAD vigente. El HEAD remoto debe contener 6980805 (recorrido E2E de T-045) y git diff --name-only 37664e7 HEAD debe listar solo Markdown: 37664e7 son las fuentes probadas por el gate integrado. Si no coincide, informá el estado real y no revises a ciegas.
 
 Luego:
-1. Continuá en la rama compartida codex/s-107-xlsx-portability y en el PR49, sin crear otra rama ni otro PR.
-2. Completá el gate integrado de T-045 sin repetir lo ya acreditado sobre 37664e7 (docs, backend, cliente, ocho ensayos de tooling y E2E 47/47): desde la raíz con Git Bash corré solo bash scripts/test-auth-proxies-signals.sh y bash scripts/test-auth-proxies.sh, con log en .orchestrator/t045/ y cleanup por labels exactos. Si cambió alguna fuente técnica desde 37664e7, revalidá lo afectado según docs/TESTING.md.
-3. Con ambos en exit 0, registrá la evidencia en el checkpoint de T-045, hacé el control de avance de T-040…T-045 (contratos, evidencia y hallazgos a BACKLOG), pasá el PR49 a ready con descripción de problema/cambio/pruebas/limitaciones, llevá T-040 y STATUS al estado de revisión y dejá el prompt del revisor independiente.
-4. La prueba del dueño la hace el dueño sobre sus datos: registrá solo OK/observaciones, conteos y SHA, sin abrir ni copiar su archivo.
+1. Registrá rol, modelo y herramienta. Leé docs/specs/S-107-xlsx-portability.md, los seis contratos docs/tasks/T-040…T-045 con sus checkpoints y el diff completo contra main en un checkout aislado del SHA del PR si el árbol local tiene cambios ajenos.
+2. Comprobá el perfil del diff (bash scripts/verify.sh --policy c5e37cc4b73ad038ac35edf29c66131416bb4a34, esperado STARTER) y la evidencia del gate integrado y del control de avance en el «Checkpoint vigente» de T-045: tres corridas sobre las mismas fuentes por un puerto ocupado del host, con logs y SHA-256 en .orchestrator/t045/. Juzgá si esa evidencia compuesta alcanza; repetí FULL solo por cambio técnico o de base, evidencia insuficiente o riesgo concreto.
+3. Buscá bordes y ejecutá dirigidos y negativos por riesgo: propiedad y fuga entre cuentas en exportar e importar, todo o nada y cuenta no vacía, límites del codec y del ZIP, CSRF/401/413, proxies de nginx y Vite, cambio de identidad en la pantalla Datos y el recorrido portability: sin interceptores sobre la API propia.
+4. No edites código del PR. Guardá solo la transición de T-040 y STATUS (mergeable o changes_requested) y BACKLOG si cambia la cola, con commit de rutas explícitas y push; después docs-check, CI del HEAD final y el veredicto APROBADO o CAMBIOS REQUERIDOS en el PR con SHA de HEAD y de base, evidencia y bloqueantes.
+5. Si aprobás, seguí con docs/agents/merger.md solo si AUTONOMY y las herramientas lo permiten. La prueba del dueño de T-045 sigue pendiente y la registra el dueño: no abras ni copies su archivo, y no declares M3 cumplida sin su veredicto.
 
-No borres ramas, worktrees ni archivos de .orchestrator; el cleanup pendiente de T-049 requiere autorización del dueño. No revises ni mergees el PR: la revisión es de otra sesión.
+No borres ramas, worktrees ni archivos de .orchestrator salvo la rama mergeada según merger; el cleanup pendiente de T-049 requiere autorización del dueño.
 ```
