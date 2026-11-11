@@ -3,6 +3,8 @@ package com.example.devnotes.portability.xlsx;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Locale;
@@ -17,7 +19,7 @@ import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
  * It reads the central directory with the same library the workbook parser uses, so both see the same
  * entries, and inflates every entry to count real bytes instead of trusting the declared sizes.
  */
-final class XlsxZipInspector {
+public final class XlsxZipInspector {
 
     private static final byte[] DOCTYPE_UTF8 = "<!DOCTYPE".getBytes(StandardCharsets.US_ASCII);
     /** Matches UTF-16 in both byte orders: the interleaved zero bytes between the ASCII letters. */
@@ -26,33 +28,51 @@ final class XlsxZipInspector {
     private XlsxZipInspector() {}
 
     static void inspect(byte[] file) {
-        if (file == null || file.length < 4 || file[0] != 'P' || file[1] != 'K' || file[2] != 3 || file[3] != 4) {
+        if (file == null) {
             throw invalid();
         }
+        requireSignature(file);
         try (ZipFile zip = ZipFile.builder()
                 .setSeekableByteChannel(new SeekableInMemoryByteChannel(file))
                 .get()) {
-            Set<String> names = new HashSet<>();
-            long total = 0;
-            int entries = 0;
-            byte[] buffer = new byte[8192];
-            for (ZipArchiveEntry entry : Collections.list(zip.getEntries())) {
-                if (++entries > XlsxFormat.MAX_ZIP_ENTRIES) {
-                    throw invalid();
-                }
-                String name = entry.getName();
-                if (!isSafeName(name) || !names.add(name.toLowerCase(Locale.ROOT))) {
-                    throw invalid();
-                }
-                if (entry.isDirectory()) {
-                    continue;
-                }
-                total = inflate(zip, entry, buffer, total);
-            }
-            if (entries == 0) {
+            inspect(zip);
+        } catch (IOException | RuntimeException e) {
+            throw invalid();
+        }
+    }
+
+    /** Checks the generated file without loading the compressed workbook into memory. */
+    public static void inspect(Path file) throws IOException {
+        try (InputStream in = Files.newInputStream(file)) {
+            requireSignature(in.readNBytes(4));
+        }
+        try (ZipFile zip = ZipFile.builder().setPath(file).get()) {
+            inspect(zip);
+        }
+    }
+
+    private static void requireSignature(byte[] bytes) {
+        if (bytes.length < 4 || bytes[0] != 'P' || bytes[1] != 'K' || bytes[2] != 3 || bytes[3] != 4) {
+            throw invalid();
+        }
+    }
+
+    private static void inspect(ZipFile zip) throws IOException {
+        Set<String> names = new HashSet<>();
+        long total = 0;
+        int entries = 0;
+        byte[] buffer = new byte[8192];
+        for (ZipArchiveEntry entry : Collections.list(zip.getEntries())) {
+            if (++entries > XlsxFormat.MAX_ZIP_ENTRIES) {
                 throw invalid();
             }
-        } catch (IOException | RuntimeException e) {
+            String name = entry.getName();
+            if (!isSafeName(name) || !names.add(name.toLowerCase(Locale.ROOT))) {
+                throw invalid();
+            }
+            total = inflate(zip, entry, buffer, total);
+        }
+        if (entries == 0) {
             throw invalid();
         }
     }

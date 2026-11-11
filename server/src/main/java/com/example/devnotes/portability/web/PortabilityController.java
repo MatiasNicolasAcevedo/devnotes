@@ -2,6 +2,7 @@ package com.example.devnotes.portability.web;
 
 import com.example.devnotes.portability.application.PortabilityExportService;
 import com.example.devnotes.portability.application.PortabilityImportService;
+import com.example.devnotes.portability.xlsx.XlsxFormat;
 import com.example.devnotes.portability.xlsx.XlsxWorkbookWriter.Counts;
 import com.example.devnotes.security.AuthOpenApi;
 import com.example.devnotes.security.LocalOidcUser;
@@ -40,9 +41,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class PortabilityController {
 
     static final String XLSX_MEDIA_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-
-    /** Largest accepted import file (S-107): 10 MiB. */
-    static final long MAX_IMPORT_BYTES = 10_485_760L;
 
     private static final String FILE_PART = "file";
     private static final String IMPORT_FORMAT = "devnotes-xlsx";
@@ -84,22 +82,29 @@ public class PortabilityController {
                     @Content(
                             mediaType = "application/problem+json",
                             schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(
+            responseCode = "409",
+            description = "EXPORT_LIMIT_EXCEEDED: la cuenta supera los límites de un respaldo restaurable",
+            content =
+                    @Content(
+                            mediaType = "application/problem+json",
+                            schema = @Schema(implementation = ProblemDetail.class)))
     public void export(Authentication authentication, HttpServletResponse response) throws IOException {
-        UUID owner = owner(authentication);
-        var file = service.prepare();
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType(XLSX_MEDIA_TYPE);
-        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.fileName() + "\"");
-        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
-        response.setHeader("X-Content-Type-Options", "nosniff");
-        try {
-            service.write(owner, file.exportedAt(), response.getOutputStream());
-        } catch (IOException | RuntimeException failure) {
-            // Before the first byte is sent, drop the download headers so the error is a plain ProblemDetail.
-            if (!response.isCommitted()) {
-                response.reset();
+        try (var file = service.prepare(owner(authentication))) {
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setContentType(XLSX_MEDIA_TYPE);
+            response.setContentLengthLong(file.size());
+            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.fileName() + "\"");
+            response.setHeader(HttpHeaders.CACHE_CONTROL, "no-store");
+            response.setHeader("X-Content-Type-Options", "nosniff");
+            try {
+                file.copyTo(response.getOutputStream());
+            } catch (IOException | RuntimeException failure) {
+                if (!response.isCommitted()) {
+                    response.reset();
+                }
+                throw failure;
             }
-            throw failure;
         }
     }
 
@@ -183,7 +188,7 @@ public class PortabilityController {
         if (!FILE_PART.equals(part.getName())) {
             throw PortabilityImportRequestException.invalidFile();
         }
-        if (part.getSize() > MAX_IMPORT_BYTES) {
+        if (part.getSize() > XlsxFormat.MAX_COMPRESSED_BYTES) {
             throw PortabilityImportRequestException.tooLarge();
         }
         if (part.getSize() < 1) {

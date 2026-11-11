@@ -188,7 +188,9 @@ class PortabilityImportServiceIT {
 
     private PortabilityRecords exported(UUID ownerId) throws IOException {
         var out = new ByteArrayOutputStream();
-        exportService.write(ownerId, EXPORTED, out);
+        try (var file = exportService.prepare(ownerId)) {
+            file.copyTo(out);
+        }
         return reader.read(out.toByteArray()).records();
     }
 

@@ -107,6 +107,19 @@ class XlsxWorkbookReaderTest {
     }
 
     @Test
+    void dailyNotePreservesHistoricallyInvertedInstants() {
+        List<RawSheet> sheets = validSheets();
+        String created = "2026-11-10T20:00:21.946Z";
+        String updated = "2026-11-10T20:00:21.002Z";
+        setRecord(sheets, "diarias", DATE, daily(DATE, DOC, created, updated));
+
+        var note = reader.read(build(sheets)).records().dailyNotes().getFirst();
+
+        assertThat(note.createdAt()).isEqualTo(Instant.parse(created));
+        assertThat(note.updatedAt()).isEqualTo(Instant.parse(updated));
+    }
+
+    @Test
     void fragmentOfExactlyThirtyThousandUnitsIsAccepted() {
         List<RawSheet> sheets = validSheets();
         String json = voice("a".repeat(40_000));
@@ -401,7 +414,7 @@ class XlsxWorkbookReaderTest {
                         "referencias",
                         REF_ID,
                         reference("t", "d", "2026-10-19T12:00:01Z", T)),
-                record("diaria con updatedAt anterior", "diarias", DATE, daily(DATE, DOC, "2026-10-19T12:00:01Z", T)),
+                record("updatedAt de diaria inválido", "diarias", DATE, daily(DATE, DOC, T, "hoy")),
                 // Reference rules (S-003/S-106)
                 record("título vacío", "referencias", REF_ID, reference("", "d", T, T)),
                 record("título solo espacios", "referencias", REF_ID, reference("   ", "d", T, T)),

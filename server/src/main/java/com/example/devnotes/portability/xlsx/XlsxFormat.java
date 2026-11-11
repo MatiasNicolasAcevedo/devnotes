@@ -3,7 +3,7 @@ package com.example.devnotes.portability.xlsx;
 import java.util.List;
 
 /** Constants of the {@code devnotes-xlsx} version 1 format (S-107). */
-final class XlsxFormat {
+public final class XlsxFormat {
 
     static final String FORMAT = "devnotes-xlsx";
     static final String VERSION = "1";
@@ -48,7 +48,8 @@ final class XlsxFormat {
     /** Maximum UTF-16 units per {@code dato_json} fragment and per readable {@code texto} cell. */
     static final int FRAGMENT_UNITS = 30_000;
 
-    static final int MAX_RECORDS = 10_000;
+    public static final int MAX_RECORDS = 10_000;
+    public static final long MAX_COMPRESSED_BYTES = 10L * 1024 * 1024;
     static final int MAX_ZIP_ENTRIES = 64;
     static final long MAX_UNCOMPRESSED_BYTES = 64L * 1024 * 1024;
 

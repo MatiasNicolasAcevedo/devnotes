@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
@@ -142,10 +143,22 @@ public final class XlsxTestBooks {
     }
 
     public static byte[] zip(Map<String, byte[]> entries) {
+        return zip(entries, null);
+    }
+
+    private static byte[] zip(Map<String, byte[]> entries, String storedEntry) {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (ZipOutputStream zip = new ZipOutputStream(out)) {
             for (Map.Entry<String, byte[]> entry : entries.entrySet()) {
-                zip.putNextEntry(new ZipEntry(entry.getKey()));
+                var part = new ZipEntry(entry.getKey());
+                if (entry.getKey().equals(storedEntry)) {
+                    CRC32 crc = new CRC32();
+                    crc.update(entry.getValue());
+                    part.setMethod(ZipEntry.STORED);
+                    part.setSize(entry.getValue().length);
+                    part.setCrc(crc.getValue());
+                }
+                zip.putNextEntry(part);
                 zip.write(entry.getValue());
                 zip.closeEntry();
             }
@@ -153,6 +166,21 @@ public final class XlsxTestBooks {
             throw new UncheckedIOException(e);
         }
         return out.toByteArray();
+    }
+
+    /** Pads a valid workbook to the selected exact limit using an ignored ZIP entry. */
+    public static byte[] atByteSize(boolean compressed, int excess) {
+        Map<String, byte[]> entries = entries(build(validSheets()));
+        String padding = "docProps/relleno.bin";
+        if (compressed) {
+            entries.put(padding, new byte[0]);
+            int overhead = zip(entries, padding).length;
+            entries.put(padding, new byte[10_485_760 - overhead + excess]);
+            return zip(entries, padding);
+        }
+        int used = entries.values().stream().mapToInt(bytes -> bytes.length).sum();
+        entries.put(padding, new byte[67_108_864 - used + excess]);
+        return zip(entries);
     }
 
     /** The source ZIP with one entry added or replaced. */

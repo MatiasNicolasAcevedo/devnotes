@@ -333,7 +333,7 @@ public class XlsxWorkbookReader {
         JsonNode content = DailyContent.validate(json.get("content")).getTree();
         Instant createdAt = instant(json, "createdAt");
         Instant updatedAt = instant(json, "updatedAt");
-        requireOrdered(createdAt, updatedAt);
+        // Versions before T-040 could persist an inverted pair. Both instants are authoritative in v1.
         return new DailyNoteRecord(date, content, createdAt, updatedAt);
     }
 

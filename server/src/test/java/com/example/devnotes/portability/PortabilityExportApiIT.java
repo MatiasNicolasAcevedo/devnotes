@@ -1,20 +1,22 @@
 package com.example.devnotes.portability;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 
 import com.example.devnotes.TestcontainersConfiguration;
-import com.example.devnotes.portability.application.PortabilityExportService;
 import com.example.devnotes.portability.xlsx.PortabilityRecords;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyNoteRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyVersionRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ReferenceRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.VoiceNoteRecord;
+import com.example.devnotes.portability.xlsx.XlsxTestBooks;
 import com.example.devnotes.portability.xlsx.XlsxWorkbookContent;
 import com.example.devnotes.portability.xlsx.XlsxWorkbookReader;
+import com.example.devnotes.portability.xlsx.XlsxWorkbookWriter;
 import com.example.devnotes.security.OidcHttpBrowser;
 import com.example.devnotes.security.OidcHttpProvider;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.http.HttpResponse;
@@ -33,6 +35,8 @@ import org.apache.commons.compress.utils.SeekableInMemoryByteChannel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -42,6 +46,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -84,8 +89,8 @@ class PortabilityExportApiIT {
     @Autowired
     private XlsxWorkbookReader reader;
 
-    @Autowired
-    private PortabilityExportService exportService;
+    @MockitoSpyBean
+    private XlsxWorkbookWriter writer;
 
     @AfterEach
     void cleanupOwnHttpWrites() {
@@ -349,6 +354,7 @@ class PortabilityExportApiIT {
 
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().allValues("Content-Type")).containsExactly(XLSX);
+        assertThat(response.headers().firstValueAsLong("Content-Length")).hasValue(response.body().length);
         assertThat(response.headers().allValues("Cache-Control")).containsExactly("no-store");
         assertThat(response.headers().allValues("X-Content-Type-Options")).containsExactly("nosniff");
         assertThat(response.headers().allValues("Content-Disposition")).hasSize(1);
@@ -358,6 +364,43 @@ class PortabilityExportApiIT {
 
         XlsxWorkbookContent workbook = reader.read(response.body());
         assertThat(workbook.records()).isEqualTo(PortabilityRecords.empty());
+    }
+
+    @Test
+    void accountWithMoreThanTenThousandReferencesGetsAProblemWithoutAnAttachment() throws Exception {
+        var a = login();
+        jdbc.update("""
+                INSERT INTO reference_item (id, owner_id, title, description, created_at, updated_at)
+                SELECT gen_random_uuid(), ?::uuid, 'Referencia ' || n, '', now(), now()
+                FROM generate_series(1, 10001) n
+                """, a.me().get("id").asString());
+
+        assertExportLimit(a.download(EXPORT));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void anOversizedWorkbookGetsAProblemWithoutAnAttachment(boolean compressed) throws Exception {
+        var a = login();
+        byte[] file = XlsxTestBooks.atByteSize(compressed, 1);
+        doAnswer(call -> {
+                    call.<OutputStream>getArgument(6).write(file);
+                    return null;
+                })
+                .when(writer)
+                .write(any(), any(), any(), any(), any(), any(), any());
+
+        assertExportLimit(a.download(EXPORT));
+    }
+
+    private static void assertExportLimit(HttpResponse<byte[]> response) throws IOException {
+        assertThat(response.statusCode()).isEqualTo(409);
+        assertThat(response.headers().firstValue("Content-Type").orElseThrow()).startsWith("application/problem+json");
+        assertThat(response.headers().allValues("Cache-Control")).containsExactly("no-store");
+        assertThat(response.headers().allValues("Content-Disposition")).isEmpty();
+        String body = new String(response.body(), StandardCharsets.UTF_8);
+        assertThat(body).doesNotStartWith("PK").doesNotContain("Referencia 10001");
+        assertThat(JSON.readTree(body).get("code").asString()).isEqualTo("EXPORT_LIMIT_EXCEEDED");
     }
 
     @Test
@@ -410,25 +453,12 @@ class PortabilityExportApiIT {
     }
 
     @Test
-    void exportReadsASingleSnapshotEvenIfTheAccountChangesWhileStreaming() throws Exception {
+    void exportReadsASingleSnapshotEvenIfTheAccountChangesAfterCounting() throws Exception {
         var a = login();
         String owner = a.me().get("id").asString();
         reference(a, "Referencia previa", "");
-        var out = new ByteArrayOutputStream();
-        // The writer streams sheet by sheet; the voice sheet is queried after the first bytes are out.
-        var concurrentWrite = new OutputStream() {
-            private boolean inserted;
-
-            @Override
-            public void write(int value) {
-                write(new byte[] {(byte) value}, 0, 1);
-            }
-
-            @Override
-            public void write(byte[] bytes, int offset, int length) {
-                if (!inserted) {
-                    inserted = true;
-                    // Another thread, so the insert commits on its own connection outside the export transaction.
+        // Commit on another connection after the counts but before the writer opens its sheet cursors.
+        doAnswer(call -> {
                     CompletableFuture.runAsync(() -> jdbc.update(
                                     "INSERT INTO voice_note (id, owner_id, text, revision, created_at, updated_at) "
                                             + "VALUES (?::uuid, ?::uuid, 'Voz tardía', 1, ?::timestamptz, ?::timestamptz)",
@@ -437,16 +467,15 @@ class PortabilityExportApiIT {
                                     TIE_INSTANT,
                                     TIE_INSTANT))
                             .join();
-                }
-                out.write(bytes, offset, length);
-            }
-        };
+                    return call.callRealMethod();
+                })
+                .doCallRealMethod()
+                .when(writer)
+                .write(any(), any(), any(), any(), any(), any(), any());
 
-        exportService.write(UUID.fromString(owner), Instant.parse(TIE_INSTANT), concurrentWrite);
-
+        PortabilityRecords records = export(a).records();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM voice_note WHERE owner_id = ?::uuid", Long.class, owner))
                 .isEqualTo(1L);
-        PortabilityRecords records = reader.read(out.toByteArray()).records();
         assertThat(records.references()).hasSize(1);
         assertThat(records.voiceNotes()).isEmpty();
         assertThat(export(a).records().voiceNotes()).hasSize(1);

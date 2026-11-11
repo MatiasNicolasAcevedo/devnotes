@@ -70,6 +70,7 @@ function installBackend(overrides: Partial<Backend> = {}): Backend {
         new HttpResponse('PK libro ficticio', {
           headers: {
             'Content-Type': XLSX_MEDIA_TYPE,
+            'Content-Length': '17',
             'Content-Disposition': 'attachment; filename="devnotes-2026-11-10.xlsx"',
           },
         })
@@ -173,7 +174,9 @@ describe('DataPage · exportar', () => {
   it('sin Content-Disposition usa el nombre de respaldo', async () => {
     const { user } = await renderData({
       exportResponse: () =>
-        new HttpResponse('PK', { headers: { 'Content-Type': XLSX_MEDIA_TYPE } }),
+        new HttpResponse('PK', {
+          headers: { 'Content-Type': XLSX_MEDIA_TYPE, 'Content-Length': '2' },
+        }),
     })
     await user.click(screen.getByRole('button', { name: 'Descargar Excel' }))
     expect(await screen.findByText('Descarga lista: devnotes.xlsx')).toBeVisible()
@@ -205,6 +208,41 @@ describe('DataPage · exportar', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(backend.exports).toBe(2)
     expect(revokeObjectURL).toHaveBeenCalledTimes(1)
+  })
+
+  it('descarta el cuerpo truncado y permite reintentar sin anunciar éxito', async () => {
+    const { user } = await renderData()
+    // Simula el cuerpo incompleto ya recibido, sin que el transporte HTTP de Node lo rechace antes.
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response('PK', { headers: { 'Content-Type': XLSX_MEDIA_TYPE, 'Content-Length': '99' } }),
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Descargar Excel' }))
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent('No se pudo descargar el Excel')
+    expect(screen.queryByText(/Descarga lista/)).not.toBeInTheDocument()
+    expect(createObjectURL).not.toHaveBeenCalled()
+    expect(anchorClick).not.toHaveBeenCalled()
+
+    await user.click(within(alert).getByRole('button', { name: 'Reintentar' }))
+    expect(await screen.findByText('Descarga lista: devnotes-2026-11-10.xlsx')).toBeVisible()
+    expect(anchorClick).toHaveBeenCalledTimes(1)
+  })
+
+  it('explica el límite de exportación sin iniciar una descarga ni anunciar éxito', async () => {
+    const { user } = await renderData({
+      exportResponse: () => problemResponse(409, { code: 'EXPORT_LIMIT_EXCEEDED' }),
+    })
+
+    await user.click(screen.getByRole('button', { name: 'Descargar Excel' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Tu cuenta supera los límites de cantidad o tamaño de un respaldo restaurable. No se generó ningún archivo.',
+    )
+    expect(screen.queryByText(/Descarga lista/)).not.toBeInTheDocument()
+    expect(createObjectURL).not.toHaveBeenCalled()
+    expect(anchorClick).not.toHaveBeenCalled()
   })
 })
 

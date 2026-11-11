@@ -1,5 +1,6 @@
 package com.example.devnotes.portability.web;
 
+import com.example.devnotes.portability.application.ExportLimitExceededException;
 import com.example.devnotes.portability.application.ImportAccountNotEmptyException;
 import com.example.devnotes.portability.xlsx.XlsxCodecException;
 import java.util.Map;
@@ -12,12 +13,12 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Import errors of S-107 as private ProblemDetail responses with {@code code} and, when known, {@code sheet}
+ * Portability errors of S-107 as private ProblemDetail responses with {@code code} and, when known, {@code sheet}
  * and {@code row}. The messages are fixed: nothing read from the file is ever echoed.
  */
 @Order(-1)
 @RestControllerAdvice(assignableTypes = PortabilityController.class)
-public class PortabilityImportExceptionHandler {
+public class PortabilityExceptionHandler {
 
     private static final Map<String, String> DETAILS = Map.of(
             "IMPORT_INVALID_FILE", "El archivo no es un libro .xlsx válido.",
@@ -25,6 +26,13 @@ public class PortabilityImportExceptionHandler {
             "IMPORT_INVALID_RECORD", "El archivo tiene un registro inválido.",
             "IMPORT_TOO_LARGE", "El archivo supera el tamaño máximo de 10 MiB.",
             "IMPORT_ACCOUNT_NOT_EMPTY", "Solo se puede importar en una cuenta sin datos.");
+
+    @ExceptionHandler(ExportLimitExceededException.class)
+    ResponseEntity<ProblemDetail> exportLimitExceeded(ExportLimitExceededException failure) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, failure.getMessage());
+        problem.setProperty("code", "EXPORT_LIMIT_EXCEEDED");
+        return response(problem);
+    }
 
     @ExceptionHandler(XlsxCodecException.class)
     ResponseEntity<ProblemDetail> invalidWorkbook(XlsxCodecException failure) {

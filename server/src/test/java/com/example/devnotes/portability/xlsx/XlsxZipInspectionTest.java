@@ -2,6 +2,7 @@ package com.example.devnotes.portability.xlsx;
 
 import static com.example.devnotes.portability.xlsx.XlsxErrorCode.IMPORT_INVALID_FILE;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 import java.io.ByteArrayInputStream;
@@ -24,7 +25,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 /** XL-02 · ZIP container limits, forbidden parts and XXE, checked before and below the XML parser. */
 class XlsxZipInspectionTest {
 
-    private static final long MAX_BYTES = 64L * 1024 * 1024;
     private static final String SHEET_NS = "http://schemas.openxmlformats.org/spreadsheetml/2006/main";
 
     private final XlsxWorkbookReader reader = XlsxTestBooks.reader();
@@ -79,37 +79,40 @@ class XlsxZipInspectionTest {
 
     @ParameterizedTest
     @ValueSource(ints = {64, 65})
-    void atMostSixtyFourEntries(int total) {
+    void atMostSixtyFourEntries(int total, @TempDir Path directory) throws IOException {
         Map<String, byte[]> entries = XlsxTestBooks.entries(valid);
         assertThat(entries.size()).isLessThan(64);
         for (int i = entries.size(); i < total; i++) {
             entries.put("docProps/relleno" + i + ".txt", new byte[] {'x'});
         }
         byte[] file = XlsxTestBooks.zip(entries);
+        Path path = Files.write(directory.resolve("respaldo.xlsx"), file);
 
         if (total == 64) {
             assertThat(reader.read(file).records().voiceNotes()).hasSize(1);
+            XlsxZipInspector.inspect(path);
         } else {
             assertInvalidFile(file);
+            assertThatThrownBy(() -> XlsxZipInspector.inspect(path)).isInstanceOf(XlsxCodecException.class);
         }
     }
 
     // ── Real inflated bytes: 64 MiB and 64 MiB + 1 ──
 
     @ParameterizedTest
-    @ValueSource(longs = {0, 1})
-    void atMostSixtyFourMebibytesOfRealInflatedBytes(long excess) {
-        Map<String, byte[]> entries = XlsxTestBooks.entries(valid);
-        long used = entries.values().stream().mapToLong(bytes -> bytes.length).sum();
+    @ValueSource(ints = {0, 1})
+    void atMostSixtyFourMebibytesOfRealInflatedBytes(int excess, @TempDir Path directory) throws IOException {
         // Zeros deflate to a few kilobytes: the limit must count inflated bytes, not the file size.
-        entries.put("docProps/relleno.bin", new byte[(int) (MAX_BYTES - used + excess)]);
-        byte[] file = XlsxTestBooks.zip(entries);
+        byte[] file = XlsxTestBooks.atByteSize(false, excess);
         assertThat(file.length).isLessThan(1024 * 1024);
+        Path path = Files.write(directory.resolve("respaldo.xlsx"), file);
 
         if (excess == 0) {
             assertThat(reader.read(file).records().voiceNotes()).hasSize(1);
+            XlsxZipInspector.inspect(path);
         } else {
             assertInvalidFile(file);
+            assertThatThrownBy(() -> XlsxZipInspector.inspect(path)).isInstanceOf(XlsxCodecException.class);
         }
     }
 

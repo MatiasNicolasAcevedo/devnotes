@@ -51,10 +51,13 @@ export function exportFilename(contentDisposition: string | null): string {
   return /^[A-Za-z0-9][A-Za-z0-9._-]{0,80}\.xlsx$/.test(name) ? name : FALLBACK_EXPORT_FILENAME
 }
 
-/** GET de la exportación. Un cuerpo vacío no es un libro: se rechaza en lugar de anunciar una descarga. */
+/** GET de la exportación. Solo se entrega un cuerpo completo con la longitud anunciada. */
 export async function downloadExport(scope: PortabilityScope = {}): Promise<ExportDownload> {
   const { blob, headers } = await http.requestBlob(EXPORT_PATH, XLSX_MEDIA_TYPE, scope)
-  if (blob.size === 0) throw new UnexpectedResponseError(`Respuesta vacía de ${EXPORT_PATH}`)
+  const length = headers.get('Content-Length')
+  if (length === null || !/^\d+$/.test(length) || blob.size === 0 || blob.size !== Number(length)) {
+    throw new UnexpectedResponseError(`Longitud de respuesta inválida de ${EXPORT_PATH}`)
+  }
   return { blob, filename: exportFilename(headers.get('Content-Disposition')) }
 }
 

@@ -15,6 +15,8 @@ import com.example.devnotes.security.OidcHttpProvider;
 import java.io.ByteArrayOutputStream;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -254,6 +256,96 @@ class PortabilityImportApiIT {
                 .isEqualTo(JSON.readTree(empty.body()).get("counts"));
         assertThat(empty.body()).doesNotContain("Runbook", "Idea ficticia");
         assertThat(rows()).isEqualTo(before);
+    }
+
+    @Test
+    void historicalDailyInstantsRoundTripWithoutNormalizingTheSourceOrPreviewWrites() throws Exception {
+        var a = login();
+        var b = login();
+        String ownerA = a.me().get("id").asString();
+        String ownerB = b.me().get("id").asString();
+        String date = "2026-11-10";
+        String document = document("Nota legada ficticia");
+        String created = "2026-11-10T20:00:21.946Z";
+        String updated = "2026-11-10T20:00:21.002Z";
+        jdbc.update("""
+                INSERT INTO daily_note (id, owner_id, note_date, content, revision, created_at, updated_at)
+                VALUES (gen_random_uuid(), ?::uuid, ?::date, ?::jsonb, 2, ?::timestamptz, ?::timestamptz)
+                """, ownerA, date, document, created, updated);
+        byte[] file = exportBytes(a);
+        List<Long> before = rows();
+
+        var preview = upload(b, PREVIEW, file);
+
+        assertThat(preview.statusCode()).as("preview: %s", preview.body()).isEqualTo(200);
+        var summary = JSON.readTree(preview.body());
+        assertThat(summary.get("accountEmpty").asBoolean()).isTrue();
+        assertThat(summary.at("/counts/dailyNotes").asInt()).isEqualTo(1);
+        assertThat(rows()).isEqualTo(before);
+
+        var imported = upload(b, IMPORTS, file);
+
+        assertThat(imported.statusCode()).isEqualTo(201);
+        assertThat(JSON.readTree(imported.body()).at("/counts/dailyNotes").asInt())
+                .isEqualTo(1);
+        record StoredNote(String date, String document, Instant createdAt, Instant updatedAt, long revision) {}
+        for (String owner : List.of(ownerA, ownerB)) {
+            var note = jdbc.queryForObject(
+                    """
+                    SELECT note_date::text, content::text, created_at, updated_at, revision
+                    FROM daily_note WHERE owner_id = ?::uuid
+                    """,
+                    (rs, row) -> new StoredNote(
+                            rs.getString(1),
+                            rs.getString(2),
+                            rs.getObject(3, OffsetDateTime.class).toInstant(),
+                            rs.getObject(4, OffsetDateTime.class).toInstant(),
+                            rs.getLong(5)),
+                    owner);
+            assertThat(note.date()).isEqualTo(date);
+            assertThat(CODEC_JSON.readTree(note.document())).isEqualTo(CODEC_JSON.readTree(document));
+            assertThat(note.createdAt()).isEqualTo(Instant.parse(created));
+            assertThat(note.updatedAt()).isEqualTo(Instant.parse(updated));
+            assertThat(note.revision()).isEqualTo(owner.equals(ownerA) ? 2L : 1L);
+        }
+    }
+
+    @Test
+    void tenThousandReferencesExportPreviewAndRestoreCompletely() throws Exception {
+        var a = login();
+        var b = login();
+        String ownerA = a.me().get("id").asString();
+        String ownerB = b.me().get("id").asString();
+        jdbc.update("""
+                INSERT INTO reference_item (id, owner_id, title, description, created_at, updated_at)
+                SELECT gen_random_uuid(), ?::uuid, 'Referencia ' || n, 'Descripción ' || n, now(), now()
+                FROM generate_series(1, 10000) n
+                """, ownerA);
+
+        var exported = a.download(EXPORT);
+        assertThat(exported.statusCode()).isEqualTo(200);
+        byte[] file = exported.body();
+        assertThat(exported.headers().firstValueAsLong("Content-Length")).hasValue(file.length);
+        List<Long> before = rows();
+
+        var preview = upload(b, PREVIEW, file);
+        assertThat(preview.statusCode()).isEqualTo(200);
+        var summary = JSON.readTree(preview.body());
+        assertThat(summary.get("accountEmpty").asBoolean()).isTrue();
+        assertThat(summary.at("/counts/references").asInt()).isEqualTo(10_000);
+        assertThat(rows()).isEqualTo(before);
+
+        var imported = upload(b, IMPORTS, file);
+        assertThat(imported.statusCode()).isEqualTo(201);
+        assertThat(JSON.readTree(imported.body()).at("/counts/references").asInt())
+                .isEqualTo(10_000);
+        String references = """
+                SELECT title, description, created_at, updated_at
+                FROM reference_item WHERE owner_id = ?::uuid ORDER BY title
+                """;
+        assertThat(jdbc.queryForList(references, ownerB))
+                .hasSize(10_000)
+                .isEqualTo(jdbc.queryForList(references, ownerA));
     }
 
     @Test

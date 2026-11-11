@@ -31,6 +31,8 @@ export const texts = {
 } as const
 
 const CODE_MESSAGES: Record<string, string> = {
+  EXPORT_LIMIT_EXCEEDED:
+    'Tu cuenta supera los límites de cantidad o tamaño de un respaldo restaurable. No se generó ningún archivo.',
   IMPORT_INVALID_FILE: 'El archivo no es un Excel exportado desde DevNotes.',
   IMPORT_UNSUPPORTED_FORMAT: 'El archivo no tiene el formato devnotes-xlsx versión 1.',
   IMPORT_INVALID_RECORD: 'El archivo tiene datos inválidos y no se puede importar.',

@@ -34,7 +34,12 @@ function xlsxFile(name = 'devnotes-2026-11-10.xlsx') {
 
 function xlsxResponse(headers: Record<string, string> = {}, body = 'PK libro ficticio') {
   return new HttpResponse(body, {
-    headers: { 'Content-Type': XLSX_MEDIA_TYPE, 'Cache-Control': 'no-store', ...headers },
+    headers: {
+      'Content-Type': XLSX_MEDIA_TYPE,
+      'Cache-Control': 'no-store',
+      'Content-Length': String(new TextEncoder().encode(body).length),
+      ...headers,
+    },
   })
 }
 
@@ -92,6 +97,17 @@ describe('downloadExport', () => {
     server.use(mock.get(EXPORT_PATH, () => xlsxResponse({}, '')))
     await expect(downloadExport()).rejects.toBeInstanceOf(UnexpectedResponseError)
   })
+
+  it.each(['99', '1', 'incorrecto', '2, 2', null])(
+    'rechaza un blob que no coincide con Content-Length %s',
+    async (length) => {
+      const headers = new Headers({ 'Content-Type': XLSX_MEDIA_TYPE })
+      if (length !== null) headers.set('Content-Length', length)
+      // Entrega el cuerpo ya recibido. El transporte HTTP de Node puede cortarlo o rechazarlo antes.
+      vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('PK', { headers }))
+      await expect(downloadExport()).rejects.toBeInstanceOf(UnexpectedResponseError)
+    },
+  )
 
   it.each([401, 403, 500])('un %i llega como ApiError', async (status) => {
     server.use(mock.get(EXPORT_PATH, () => problemResponse(status)))
@@ -261,6 +277,11 @@ describe('portabilityErrorMessage', () => {
     new ApiError(status, problem)
 
   it.each([
+    [
+      'EXPORT_LIMIT_EXCEEDED',
+      409,
+      'Tu cuenta supera los límites de cantidad o tamaño de un respaldo restaurable. No se generó ningún archivo.',
+    ],
     ['IMPORT_INVALID_FILE', 400, 'El archivo no es un Excel exportado desde DevNotes.'],
     ['IMPORT_UNSUPPORTED_FORMAT', 400, 'El archivo no tiene el formato devnotes-xlsx versión 1.'],
     ['IMPORT_INVALID_RECORD', 400, 'El archivo tiene datos inválidos y no se puede importar.'],

@@ -1,10 +1,18 @@
 package com.example.devnotes.portability.application;
 
 import com.example.devnotes.portability.persistence.PortabilityReadRepository;
+import com.example.devnotes.portability.xlsx.XlsxCodecException;
+import com.example.devnotes.portability.xlsx.XlsxFormat;
 import com.example.devnotes.portability.xlsx.XlsxWorkbookWriter;
 import com.example.devnotes.portability.xlsx.XlsxWorkbookWriter.Counts;
+import com.example.devnotes.portability.xlsx.XlsxZipInspector;
+import java.io.BufferedOutputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -16,42 +24,88 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /** Exports the account of one owner as a {@code devnotes-xlsx} workbook (S-107). */
 @Service
 public class PortabilityExportService {
 
-    /** Export instant, truncated to microseconds, and the download name derived from its UTC date. */
-    public record ExportFile(Instant exportedAt, String fileName) {}
+    /** A checked, private temporary workbook, owned by its caller until closed. */
+    public record ExportFile(Instant exportedAt, String fileName, Path path, long size) implements AutoCloseable {
+        public void copyTo(OutputStream out) throws IOException {
+            Files.copy(path, out);
+        }
+
+        @Override
+        public void close() throws IOException {
+            Files.deleteIfExists(path);
+        }
+    }
 
     private final PortabilityReadRepository repository;
     private final XlsxWorkbookWriter writer;
     private final Clock clock;
+    private final TransactionTemplate transaction;
 
-    public PortabilityExportService(PortabilityReadRepository repository, XlsxWorkbookWriter writer, Clock clock) {
+    public PortabilityExportService(
+            PortabilityReadRepository repository,
+            XlsxWorkbookWriter writer,
+            Clock clock,
+            PlatformTransactionManager transactionManager) {
         this.repository = repository;
         this.writer = writer;
         this.clock = clock;
+        this.transaction = new TransactionTemplate(transactionManager);
+        transaction.setReadOnly(true);
+        transaction.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
     }
 
-    public ExportFile prepare() {
-        Instant exportedAt = clock.instant().truncatedTo(ChronoUnit.MICROS);
-        return new ExportFile(
-                exportedAt, "devnotes-" + exportedAt.atOffset(ZoneOffset.UTC).toLocalDate() + ".xlsx");
-    }
-
-    /**
-     * Streams the workbook of {@code ownerId} to {@code out} from a single database snapshot. Each sheet is
-     * queried when the writer reaches it, so only one cursor is open at a time. The stream is not closed.
-     */
-    @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
-    public void write(UUID ownerId, Instant exportedAt, OutputStream out) throws IOException {
+    public ExportFile prepare(UUID ownerId) throws IOException {
         Objects.requireNonNull(ownerId);
+        Instant exportedAt = clock.instant().truncatedTo(ChronoUnit.MICROS);
+        String fileName = "devnotes-" + exportedAt.atOffset(ZoneOffset.UTC).toLocalDate() + ".xlsx";
+        Path path = Files.createTempFile("devnotes-export-", ".xlsx");
+        try {
+            try (OutputStream out = new ExportOutputStream(new BufferedOutputStream(Files.newOutputStream(path)))) {
+                transaction.executeWithoutResult(status -> {
+                    try {
+                        write(ownerId, exportedAt, out);
+                    } catch (IOException e) {
+                        throw new UncheckedIOException(e);
+                    }
+                });
+            } catch (UncheckedIOException e) {
+                throw e.getCause();
+            }
+            try {
+                XlsxZipInspector.inspect(path);
+            } catch (XlsxCodecException e) {
+                throw new ExportLimitExceededException();
+            }
+            return new ExportFile(exportedAt, fileName, path, Files.size(path));
+        } catch (IOException | RuntimeException | Error failure) {
+            try {
+                Files.deleteIfExists(path);
+            } catch (IOException cleanup) {
+                failure.addSuppressed(cleanup);
+            }
+            throw failure;
+        }
+    }
+
+    /** Reads the counts and streams the sheets from a single database snapshot. */
+    private void write(UUID ownerId, Instant exportedAt, OutputStream out) throws IOException {
+        Counts counts = repository.counts(ownerId);
+        if (counts.references() > XlsxFormat.MAX_RECORDS
+                || counts.dailyNotes() > XlsxFormat.MAX_RECORDS
+                || counts.dailyVersions() > XlsxFormat.MAX_RECORDS
+                || counts.voiceNotes() > XlsxFormat.MAX_RECORDS) {
+            throw new ExportLimitExceededException();
+        }
         List<Stream<?>> opened = new ArrayList<>();
         try {
-            Counts counts = repository.counts(ownerId);
             writer.write(
                     exportedAt,
                     counts,
@@ -71,5 +125,33 @@ public class PortabilityExportService {
             opened.add(stream);
             return stream.iterator();
         };
+    }
+
+    private static final class ExportOutputStream extends FilterOutputStream {
+        private long remaining = XlsxFormat.MAX_COMPRESSED_BYTES;
+
+        private ExportOutputStream(OutputStream out) {
+            super(out);
+        }
+
+        @Override
+        public void write(int value) throws IOException {
+            reserve(1);
+            out.write(value);
+        }
+
+        @Override
+        public void write(byte[] bytes, int offset, int length) throws IOException {
+            Objects.checkFromIndexSize(offset, length, bytes.length);
+            reserve(length);
+            out.write(bytes, offset, length);
+        }
+
+        private void reserve(int length) {
+            if (length > remaining) {
+                throw new ExportLimitExceededException();
+            }
+            remaining -= length;
+        }
     }
 }
