@@ -3,7 +3,7 @@ import './dailyEditor.css'
 
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react'
 import Button from '@mui/material/Button'
-import SvgIcon from '@mui/material/SvgIcon'
+import Tooltip from '@mui/material/Tooltip'
 import Document from '@tiptap/extension-document'
 import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
@@ -17,6 +17,8 @@ import { ReferencePicker } from './ReferencePicker'
 import { Reference } from './reference'
 import { Separator } from './separator'
 import type { ReferenceItem } from '../../reference/api'
+import { LinkIcon } from '../../../shared/ui/icons'
+import { useIsNarrow } from '../../../shared/ui/useIsNarrow'
 
 // Document extiende content a (paragraph|separator)+
 const DailyDocument = Document.extend({
@@ -34,6 +36,12 @@ export interface DailyEditorProps {
   'aria-label'?: string
   /** Children adicionales (p. ej. toolbar). */
   children?: ReactNode
+  /** Controles al inicio de la barra de herramientas, antes del botón de enlace. */
+  toolbarStart?: ReactNode
+  /** Controles al final de la barra, tras un espacio flexible. Un hijo de ancho completo ocupa una fila propia. */
+  toolbarEnd?: ReactNode
+  /** El área de escritura ocupa el alto libre del contenedor en lugar de una altura fija redimensionable. */
+  fillHeight?: boolean
 }
 
 export function DailyEditor({
@@ -42,7 +50,11 @@ export function DailyEditor({
   onChange,
   'aria-label': ariaLabel = 'Editor de nota diaria',
   children,
+  toolbarStart,
+  toolbarEnd,
+  fillHeight = false,
 }: DailyEditorProps) {
+  const narrow = useIsNarrow()
   const onChangeRef = useRef(onChange)
   const editorRef = useRef<ReturnType<typeof useEditor>>(null)
   const linkSelectionRef = useRef<{ from: number; to: number } | null>(null)
@@ -357,25 +369,38 @@ export function DailyEditor({
     return null
   }
 
+  const hasToolbarSlots = toolbarStart != null || toolbarEnd != null
+  const linkLabel = linkState?.isLink ? 'Editar enlace' : 'Agregar enlace'
+
   return (
-    <div className="daily-editor-wrapper" data-readonly={readOnly}>
-      {!readOnly && (
+    <div
+      className={
+        fillHeight ? 'daily-editor-wrapper daily-editor-wrapper--fill' : 'daily-editor-wrapper'
+      }
+      data-readonly={readOnly}
+    >
+      {(!readOnly || hasToolbarSlots) && (
         <div className="daily-editor-toolbar" role="group" aria-label="Herramientas del editor">
-          <Button
-            size="small"
-            variant="outlined"
-            disabled={!linkState?.canLink}
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={openLinkDialog}
-            startIcon={
-              <SvgIcon fontSize="small">
-                <path d="M3.9 12a5 5 0 0 1 5-5h3v2h-3a3 3 0 1 0 0 6h3v2h-3a5 5 0 0 1-5-5Zm4-1h8v2h-8v-2Zm4-4h3a5 5 0 0 1 0 10h-3v-2h3a3 3 0 1 0 0-6h-3V7Z" />
-              </SvgIcon>
-            }
-          >
-            {linkState?.isLink ? 'Editar enlace' : 'Agregar enlace'}
-          </Button>
-          <span className="daily-editor-help">Seleccioná texto y agregá un enlace (Ctrl+K).</span>
+          {toolbarStart}
+          {/* El span recibe el puntero cuando el botón está deshabilitado, así el tooltip sigue disponible. */}
+          <Tooltip title="Seleccioná texto y agregá un enlace (Ctrl+K)." describeChild>
+            <span className="daily-editor-tool">
+              <Button
+                size="small"
+                variant="outlined"
+                disabled={readOnly || !linkState?.canLink}
+                aria-label={linkLabel}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={openLinkDialog}
+                startIcon={narrow ? undefined : <LinkIcon />}
+                sx={narrow ? { minWidth: 0, px: 0.75 } : undefined}
+              >
+                {narrow ? <LinkIcon /> : linkState?.isLink ? 'Editar enlace' : 'Enlace'}
+              </Button>
+            </span>
+          </Tooltip>
+          <span className="daily-editor-toolbar-spacer" />
+          {toolbarEnd}
         </div>
       )}
       {pasteError && (
@@ -383,7 +408,10 @@ export function DailyEditor({
           El texto supera los límites de la nota y no se pegó.
         </div>
       )}
-      <div className="daily-editor-viewport" aria-label="Área de escritura redimensionable">
+      <div
+        className="daily-editor-viewport"
+        aria-label={fillHeight ? 'Área de escritura' : 'Área de escritura redimensionable'}
+      >
         <div
           className="daily-editor-main"
           onMouseDown={(event) => {
@@ -405,11 +433,6 @@ export function DailyEditor({
           <EditorContent editor={editor} />
         </div>
       </div>
-      {!readOnly && (
-        <div className="daily-editor-footer">
-          Arrastrá la esquina inferior derecha para cambiar la altura.
-        </div>
-      )}
       {children}
       <LinkDialog
         open={linkDialogOpen}

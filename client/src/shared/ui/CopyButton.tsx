@@ -1,4 +1,5 @@
 import Button from '@mui/material/Button'
+import IconButton from '@mui/material/IconButton'
 import SvgIcon from '@mui/material/SvgIcon'
 import Typography from '@mui/material/Typography'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,6 +12,8 @@ interface CopyButtonProps {
   'aria-label': string
   /** Texto visible del botón (opcional; por defecto solo icono). */
   children?: string
+  /** Botón de icono compacto, para barras de herramientas: sin texto ni margen de icono. */
+  iconOnly?: boolean
 }
 
 /**
@@ -19,7 +22,12 @@ interface CopyButtonProps {
  * Muestra feedback de éxito temporal y error persistente con sugerencia de copia manual.
  * No envía texto a terceros; usa la Clipboard API solo por acción de usuario.
  */
-export function CopyButton({ text, 'aria-label': ariaLabel, children }: CopyButtonProps) {
+export function CopyButton({
+  text,
+  'aria-label': ariaLabel,
+  children,
+  iconOnly = false,
+}: CopyButtonProps) {
   const { copy, result, clear } = useCopyToClipboard()
   const [showSuccess, setShowSuccess] = useState(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -63,16 +71,30 @@ export function CopyButton({ text, 'aria-label': ariaLabel, children }: CopyButt
 
   return (
     <>
-      <Button
-        ref={buttonRef}
-        size="small"
-        aria-label={ariaLabel}
-        onClick={handleCopy}
-        startIcon={showSuccess ? CheckIcon : CopyIcon}
-        title={ariaLabel}
-      >
-        {children}
-      </Button>
+      {iconOnly ? (
+        <IconButton
+          ref={buttonRef}
+          size="small"
+          color="primary"
+          aria-label={ariaLabel}
+          onClick={handleCopy}
+          title={ariaLabel}
+          sx={{ flexShrink: 0 }}
+        >
+          {showSuccess ? CheckIcon : CopyIcon}
+        </IconButton>
+      ) : (
+        <Button
+          ref={buttonRef}
+          size="small"
+          aria-label={ariaLabel}
+          onClick={handleCopy}
+          startIcon={showSuccess ? CheckIcon : CopyIcon}
+          title={ariaLabel}
+        >
+          {children}
+        </Button>
+      )}
       {showSuccess && (
         <Typography
           variant="caption"

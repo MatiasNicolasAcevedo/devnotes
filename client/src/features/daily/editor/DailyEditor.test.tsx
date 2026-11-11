@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { DailyEditor } from './DailyEditor'
 import { type DailyContent } from './dailyDocument'
@@ -206,10 +206,36 @@ describe('DailyEditor', () => {
     expect(onChange).not.toHaveBeenCalled()
   })
 
-  it('ofrece un botón de enlace con instrucciones visibles y no edita sin selección', async () => {
+  it('ofrece un botón de enlace con instrucciones en un tooltip y no edita sin selección', async () => {
     renderEditor()
-    expect(await screen.findByRole('button', { name: 'Agregar enlace' })).toBeDisabled()
-    expect(screen.getByText(/Seleccioná texto/)).toBeVisible()
+    const button = await screen.findByRole('button', { name: 'Agregar enlace' })
+    expect(button).toBeDisabled()
+    expect(screen.queryByText(/Seleccioná texto/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Arrastrá la esquina/)).not.toBeInTheDocument()
+    // Deshabilitado no recibe el puntero: el tooltip cuelga del contenedor del botón.
+    await userEvent.setup().hover(button.parentElement!)
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Seleccioná texto y agregá un enlace (Ctrl+K).',
+    )
+  })
+
+  it('coloca las ranuras al inicio y al final de la barra, alrededor del botón de enlace', async () => {
+    renderEditor({
+      toolbarStart: <button type="button">Inicio de barra</button>,
+      toolbarEnd: <button type="button">Fin de barra</button>,
+    })
+    const toolbar = await screen.findByRole('group', { name: 'Herramientas del editor' })
+    expect(
+      within(toolbar)
+        .getAllByRole('button')
+        .map((button) => button.getAttribute('aria-label') ?? button.textContent),
+    ).toEqual(['Inicio de barra', 'Agregar enlace', 'Fin de barra'])
+  })
+
+  it('en solo lectura sin ranuras no muestra la barra', async () => {
+    renderEditor({ readOnly: true })
+    await screen.findByRole('textbox')
+    expect(screen.queryByRole('group', { name: 'Herramientas del editor' })).not.toBeInTheDocument()
   })
 
   it('el clic en un enlace abre su URL de forma segura, incluso en solo lectura', async () => {

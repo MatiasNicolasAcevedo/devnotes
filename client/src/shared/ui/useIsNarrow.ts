@@ -1,4 +1,4 @@
-import type { Theme } from '@mui/material/styles'
+import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 
 /**
@@ -6,5 +6,6 @@ import useMediaQuery from '@mui/material/useMediaQuery'
  * Se resuelve en el primer render, sin pasar por el valor por defecto, para que la barra no parpadee al montar.
  */
 export function useIsNarrow(): boolean {
-  return useMediaQuery((theme: Theme) => theme.breakpoints.down('sm'), { noSsr: true })
+  const theme = useTheme()
+  return useMediaQuery(theme.breakpoints.down('sm'), { noSsr: true })
 }

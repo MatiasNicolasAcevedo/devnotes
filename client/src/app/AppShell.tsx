@@ -108,7 +108,10 @@ function AppShellContent({
   const narrow = useIsNarrow()
 
   return (
-    <Box ref={navigationRoot} sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Box
+      ref={navigationRoot}
+      sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}
+    >
       <AppBar position="static" elevation={0}>
         {/* Una sola fila de 48 px como máximo, sin salto de línea en 375 px ni en 1280 px. */}
         <Toolbar
@@ -150,7 +153,12 @@ function AppShellContent({
           <SessionControls />
         </Toolbar>
       </AppBar>
-      <Container component="main" maxWidth="lg" sx={{ flexGrow: 1, py: { xs: 1, sm: 1.5 } }}>
+      <Container
+        component="main"
+        maxWidth="lg"
+        disableGutters
+        sx={{ flexGrow: 1, px: { xs: 1, sm: 2 }, py: { xs: 1, sm: 1.5 } }}
+      >
         <Stack spacing={1}>
           <SessionAlerts />
           {status === 'loading' ? (
