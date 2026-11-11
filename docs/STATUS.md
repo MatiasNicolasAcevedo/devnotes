@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-050](tasks/T-050-ui-adjustments.md) · Interfaz compacta para usar DevNotes como app de escritorio |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente de las correcciones de PR51. El [checkpoint de T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) registra el STARTER en verde sobre `a8637a7` y base `915459c`. La [prueba de T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño) sigue pendiente. |
+| Estado | `mergeable` |
+| Acción actual | Confirmar el cierre de PR51 en GitHub según [merger](agents/merger.md). La [prueba de T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño) sigue pendiente. |
 | Rama / PR | `codex/t-050-ui-adjustments` · [PR51](https://github.com/MatiasNicolasAcevedo/devnotes/pull/51) |
 
 Orden vigente, decidido por el dueño el 2026-11-11: T-050 (ajustes de UI) → [T-046](tasks/T-046-render-image.md) → [T-047](tasks/T-047-render-first-deploy.md). T-046 espera además el veredicto del dueño en T-045, que está `blocked` solo por esa prueba.
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sos reviewer en una sesión nueva e independiente. Retomá T-050 en PR51 (https://github.com/MatiasNicolasAcevedo/devnotes/pull/51), rama codex/t-050-ui-adjustments contra main. Leé AGENTS.md, docs/STATUS.md, docs/tasks/T-050-ui-adjustments.md, client/AGENTS.md, docs/agents/reviewer.md, docs/TESTING.md y docs/AUTONOMY.md. Confirmá HEAD y base publicados, verify-required del HEAD vigente y que las fuentes coincidan con el gate STARTER de a8637a7 sobre 915459c. Revisá los tres hallazgos del veredicto anterior. Verificá la barra de visitante con readiness pendiente a 375, 600, 620 y 1280 px, el title completo más allá de los 120 puntos de código con una sola línea visible, y el cronómetro junto a «Detener» con las regresiones de captura. Publicá el veredicto ligado a HEAD y base. Si es favorable y se cumplen las condiciones de AUTONOMY, seguí docs/agents/merger.md y verificá MERGED. T-046 sigue en draft hasta T-050 MERGED y la aceptación de T-045 por el dueño.
+Consultá primero PR51 en GitHub según docs/agents/merger.md. Si sigue abierto, retomá como merger de T-050 solo con el veredicto APROBADO vigente y todas las condiciones de docs/AUTONOMY.md. Si ya está MERGED, guardá el SHA y la fecha para conciliar T-050 en la primera rama siguiente autorizada. T-046 queda en draft hasta que el dueño registre su prueba favorable de T-045. Cuando estén ambas condiciones, retomá T-046 como implementer en sesión nueva, conciliá T-050 y T-045 y seguí el contrato de docs/tasks/T-046-render-image.md.
 ```

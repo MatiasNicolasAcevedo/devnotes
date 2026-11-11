@@ -1,10 +1,10 @@
 ---
 id: T-050
-status: in_review
+status: mergeable
 priority: P1
 size: M
 executor: junie
-role: implementer
+role: merger
 milestone: M3
 product_cycle: I3
 spec: null
@@ -138,6 +138,18 @@ Pruebas de componente porque el riesgo es de presentación e interacción; E2E s
 Antes del FULL, checkpoint con SHA, base, comando, recursos propios y cleanup. Si el dueño tiene su stack en el puerto 5175, pedirle que lo detenga: ver [BACKLOG](../BACKLOG.md#hallazgos-del-control-de-s-107).
 
 ## Checkpoint vigente
+
+### Segunda revisión independiente (2026-11-11)
+
+Reviewer en Codex de escritorio con PowerShell, Git, `gh`, Git Bash, Node y Docker. Modelo de familia GPT-6, variante y esfuerzo no expuestos. PR51 abierto contra `main`, HEAD publicado `4702fe6d2f98dffa7c54881de8657b78a25bd3f1`, base publicada `915459cbabd9f3f557df4b9012c8b4db5572863c`. GitHub devolvió `verify-required` SUCCESS del HEAD en el run `43110490049`. El perfil es FULL/STARTER y las huellas de HEAD/base coinciden con las de `a8637a7`. El log local registra exit 0 en las cinco etapas y el JUnit saneado registra 49/49, incluidos los casos de barra y captura en desktop y mobile.
+
+Reensayo dirigido desde la raíz con Git Bash de Windows y Node 24: `STARTER_E2E_PROJECT=starter-e2e-t050-review2-4702fe6 bash scripts/e2e.sh --grep "T-050: visitor navigation|voice: capture" --project desktop`, exit 0, 2/2. JUnit saneado en `e2e/artifacts/starter-e2e-t050-review2-4702fe6/sanitized/junit.xml`. Fixtures ficticias, con limpieza del proyecto verificada por etiquetas exactas (`container/network/volume=0/0/0`). Desde `client/`, `npm test -- --run src/app src/features/auth src/features/system src/features/voice`, 262/262. `node scripts/docs-check.mjs` y `git diff --check`, exit 0.
+
+1. **UI-02/UI-03.** Chromium comprobó a 375, 600, 620 y 1280 px que las pestañas, el indicador de readiness pendiente y «Ingresar» están visibles en una fila de hasta 48 px, separados y dentro del viewport. La prueba demoró la petición real de readiness y comprobó su recuperación al liberarla.
+2. **UI-07.** La prueba de navegador guardó una nota de más de 120 puntos de código. Comparó el extracto real de la API con el corte esperado y el `title` con el texto completo, incluido el tramo posterior. También comprobó `nowrap`, elipsis y desborde del texto dentro del extracto. Vitest cubrió el límite con Unicode y la nota corta sin petición de detalle.
+3. **UI-08.** Chromium comprobó el avance de `mm:ss` junto a «Detener», cinco barras y una sola petición de transcripción. Las regresiones de cliente cubrieron un solo `getUserMedia`, RMS, silencio y recuperación, limpieza del `AudioContext`, cancelación y grabación sin medidor.
+
+Resultado técnico favorable. Impacto en presentación del cliente, lecturas de detalle de notas propias y pruebas E2E. La oferta de instalación de Chrome con SVG y el titileo con movimiento reducido quedan para la comprobación manual del dueño. El comentario de revisión en PR51 registra el veredicto con HEAD, base y CI después de publicar esta transición. Si GitHub confirma MERGED, el comentario de cierre conserva el resultado de `gh pr view` para conciliar T-050 en la próxima rama autorizada. T-046 espera además la aceptación del dueño en T-045.
 
 ### Corrección de la revisión (2026-11-11)
 
