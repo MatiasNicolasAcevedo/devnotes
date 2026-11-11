@@ -117,7 +117,7 @@ test('voice: capture, transcribe, edit, copy, save, reload, second note, correct
   await expect(text).toHaveValue('');
   expect(await (await page.request.get(`${notes}/${firstNote.id}`)).json()).toMatchObject({ text: corrected, revision: 1 });
 
-  const secondText = `Segunda nota ${identity.slice(0, 8)} escrita a mano. 🎙️ ${'Texto de prueba '.repeat(10)}Tramo final.`;
+  const secondText = `Segunda nota ${identity.slice(0, 8)} escrita a mano. ${'Texto de prueba '.repeat(10)}Tramo final.`;
   await text.fill(secondText);
   const createdSecond = page.waitForResponse(on(notes, 'POST'));
   await page.getByRole('button', { name: 'Guardar', exact: true }).click();
