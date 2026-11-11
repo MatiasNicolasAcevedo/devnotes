@@ -58,7 +58,7 @@ cleanup() {
   for pid in "$TASK_CHILD" "$BROWSER_PID"; do
     if [[ -n "$pid" ]]; then kill -TERM "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; fi
   done
-  if [[ -f "$task_temp/source.tsx" ]]; then cp "$task_temp/source.tsx" client/src/features/system/SystemInfoPanel.tsx || failed=1; fi
+  if [[ -f "$task_temp/source.tsx" ]]; then cp "$task_temp/source.tsx" client/src/features/system/ServerStatus.tsx || failed=1; fi
   # These namespaces were absent before the trap. Only exact project labels are eligible.
   for project in "$PROJECT" "$SENTINEL"; do
     for kind in container network volume; do
@@ -131,13 +131,13 @@ for width in 1280 375; do
   dev check "${args[@]}"
 done
 if [[ "$PROXY" == vite ]]; then
-  cp client/src/features/system/SystemInfoPanel.tsx "$task_temp/source.tsx"
-  cp "$task_temp/source.tsx" "$STARTER_LOCAL_ARTIFACTS/SystemInfoPanel.original.tsx"
+  cp client/src/features/system/ServerStatus.tsx "$task_temp/source.tsx"
+  cp "$task_temp/source.tsx" "$STARTER_LOCAL_ARTIFACTS/ServerStatus.original.tsx"
   browser_async hmr
   wait_marker hmr-ready
-  sed 's/Servidor conectado/Servidor HMR ficticio/' "$task_temp/source.tsx" > client/src/features/system/SystemInfoPanel.tsx
+  sed 's/Servidor conectado/Servidor HMR ficticio/' "$task_temp/source.tsx" > client/src/features/system/ServerStatus.tsx
   wait_marker hmr-observed
-  cp "$task_temp/source.tsx" client/src/features/system/SystemInfoPanel.tsx
+  cp "$task_temp/source.tsx" client/src/features/system/ServerStatus.tsx
   wait "$BROWSER_PID"; BROWSER_PID=''
 fi
 dev down "${args[@]}"
