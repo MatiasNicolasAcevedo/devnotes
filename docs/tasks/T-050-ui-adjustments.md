@@ -139,21 +139,55 @@ Antes del FULL, checkpoint con SHA, base, comando, recursos propios y cleanup. S
 
 ## Checkpoint vigente
 
-2026-11-11. Frontera en Claude Code de escritorio (Claude Fable 5.2, `claude-fable-5-2`, esfuerzo no expuesto), con Git Bash, Git, `gh`, Docker y Node. Contrato completo y `ready`: el dueño revisó la aplicación en su stack local, envió ocho capturas, eligió la variante A de la barra entre tres maquetas y confirmó las decisiones UI-01 a UI-09. Impacto previsto: solo UI del cliente, más un medidor de nivel local del micrófono que no cambia lo que se envía; sin cambios de API, permisos, esquema ni datos. Nada implementado todavía.
+2026-11-11. Frontera en Claude Code de escritorio (Claude Fable 5.2, `claude-fable-5-2`, esfuerzo no expuesto), con Git Bash, Git, `gh`, Docker y Node. Contrato completo y `ready`: el dueño revisó la aplicación en su stack local, envió ocho capturas, eligió la variante A de la barra entre tres maquetas y confirmó las decisiones UI-01 a UI-09. Impacto previsto: solo UI del cliente, más un medidor de nivel local del micrófono que no cambia lo que se envía; sin cambios de API, permisos, esquema ni datos.
 
-### Avance del implementer (2026-11-11, sesión interrumpida por límite de uso)
+### Avance del implementer (2026-11-11)
 
-Implementer en Claude Code de escritorio (Claude Fable 5.2, `claude-fable-5-2`), rama `codex/t-050-ui-adjustments` desde main `915459c` (PR50 MERGED). Sin push todavía.
+Implementer en Claude Code de escritorio (Claude Fable 5.2, `claude-fable-5-2`, esfuerzo no expuesto), con Git Bash, Git, `gh`, Docker y Node. Rama `codex/t-050-ui-adjustments` desde main `915459c` (PR50 MERGED, mergeado por esta sesión con autorización expresa del dueño). Impacto: solo `client/` y `e2e/`; sin cambios de server, API, permisos, esquema ni datos. El medidor de nivel lee el mismo `MediaStream` y no cambia lo que se graba ni lo que se envía.
 
-- Paso 1 hecho, commit `051f803`: rojo previo de 32 pruebas; `npm test -- --run src/app src/features/auth src/features/system` exit 0 (83 pruebas).
-- Paso 2 hecho, commit `99034f8`: rojo previo de 15 pruebas; `npm test -- --run src/features/daily` exit 0 (246 pruebas).
-- Pendiente: paso 3 (Voz, UI-07 y UI-08, nada escrito), paso 4 (manifiesto y E2E), `bash scripts/verify.sh --client`, E2E dirigidos, FULL, PR e `in_review`.
-- Para el paso 4: `daily-notes.spec.ts` comprueba `resize: vertical` y el arrastre, que UI-06 elimina; `editor-ergonomics.spec.ts` alinea el `h1` visible con la fecha; los helpers buscan el texto «Guardado», que en angosto es solo icono (`role="img"`); `system.spec.ts` busca la versión del servidor, que ya no se muestra.
+Hecho, con las pruebas primero en rojo en cada paso:
+
+| Paso | Commit | Rojo previo | Verde |
+|---|---|---|---|
+| 1 · Barra y rutas (UI-01 a UI-04) | `051f803` | 32 pruebas | `npm test -- --run src/app src/features/auth src/features/system` exit 0 |
+| 2 · Notas (UI-05 y UI-06) | `99034f8` | 15 pruebas | `npm test -- --run src/features/daily` exit 0 (246 pruebas) |
+| 3 · Voz (UI-07 y UI-08) | `8dc868c` | 28 pruebas | `npm test -- --run src/features/voice` exit 0 (174 pruebas) |
+| 4 · Manifiesto (UI-09) | `0eeb970` | import sin resolver | `npm test -- --run src/app/manifest.test.ts` exit 0 (4 pruebas) |
+| 4 · E2E | `2d41cac` | cuatro casos en la primera tanda dirigida | tandas dirigidas de abajo |
+
+- Gate de cliente: `bash scripts/verify.sh --client` exit 0 sobre `0eeb970` (typecheck, lint, formato, cobertura y build; umbrales sin tocar).
+- E2E dirigidos con `STARTER_E2E_PROJECT=starter-e2e-t050-iter bash scripts/e2e.sh --grep "…" --project <proyecto>`, exit 0:
+  - desktop: `compiled shell`, `real database outage`, los cuatro de `auth.spec.ts`, `CA-01:`, `multiline clipboard`, `voice: capture`, `voice: provider error`, `T-020: direct URL`, `CA-05: reload and logout`, `CA-06: two identities on the same date only see their own space`.
+  - mobile: `compiled shell`, `real database outage`, `visitor, real OIDC`, `logout requires CSRF`, `CA-01:`, `multiline clipboard`, `voice: capture`, `T-020: direct URL`, `CA-05: reload and logout`.
+
+Decisiones de implementación dentro del contrato:
+
+- Punto de corte en JavaScript (`useIsNarrow`, `sm` de MUI) y `matchMedia` simulado en `src/test/viewport.ts`, para probar 1280 px y 375 px en componentes.
+- Menú de usuario: el nombre es un `MenuItem` deshabilitado sin atenuar; el menú se cierra al elegir «Cerrar sesión» para no tapar un aviso de error con «Reintentar», y si se reabre durante el cierre muestra «Cerrando sesión…» deshabilitado.
+- Botones «Agregar enlace» / «Editar enlace» y «Detener»: el texto visible es el del contrato («Enlace», «Detener») y el nombre accesible conserva el anterior («Agregar enlace», «Detener y transcribir»), que contiene al visible.
+- Editor: la primera pantalla mide el alto libre de la ventana y el editor se desplaza por dentro; «Notas guardadas» queda debajo. Los avisos largos son un hijo de ancho completo de `toolbarEnd`, así la barra fija los arrastra consigo. `DailyEditor` suma `fillHeight` para no cambiar el editor de solo lectura de Historial.
+- Barras de nivel: historial de las últimas cinco muestras (una cada 100 ms) del RMS real.
+- «Cancelar grabación» se conserva junto al cronómetro.
+
+Cambios de pruebas que el contrato vuelve obligatorios, sin debilitar casos:
+
+- Componentes: se eliminan las dos pruebas de enlaces de la pantalla de inicio (`la home ofrece enlace a Notas` y `al Historial`); la navegación equivalente la cubren las pruebas de la barra. Las pruebas de `SystemInfoPanel` sobre readiness pasan a `ServerStatus.test.tsx` con los mismos casos (503, HTML, JSON inválido, DOWN, componentes, revalidación a 5 s) más el de sin red.
+- `fixtures.ts` · `layout()`: un control visible vale por su texto o por su `aria-label`, porque las barras llevan botones de icono.
+- `daily-notes.spec.ts` CA-01: la comprobación de `resize: vertical` y del arrastre se reemplaza por `resize: none`, alto que llena la ventana hasta su borde inferior y barra `sticky`.
+- `editor-ergonomics.spec.ts`: la alineación del `h1` con la fecha se reemplaza por la de los cinco controles de la barra en una fila y por la barra superior de 48 px como máximo, ahora en los dos proyectos.
+- `system.spec.ts` y `local-stack.spec.ts`: leen el indicador de la barra. La interfaz ya no consulta `/api/v1/system/info`; el contrato de esa API se sigue comprobando por petición directa. El reintento accesible por teclado se ejerce sobre el aviso de sesión, que es el que aparece con el servidor caído.
+- Tras el login la URL esperada es `/notes`, que la SPA ya canonizaba a `/notes/<hoy>`.
+
+No comprobado por pruebas automáticas: el titileo y su variante `prefers-reduced-motion` (solo CSS) y que Chrome ofrezca instalar con el icono SVG; quedan para la aceptación manual del dueño.
+
+Checkpoint previo al FULL: fuentes técnicas finales en `2d41cac`, base main `915459c`; el commit de este checkpoint solo agrega Markdown. `bash scripts/verify.sh --policy main` informa `policy=FULL` y `profile=STARTER`, porque `client/index.html` y `client/public/manifest.json` quedan fuera de `client/src/`; por eso el gate es el FULL del contrato más tooling. Comando, desde la raíz en Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t050 STARTER_E2E_PROJECT=starter-e2e-t050 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter` (docs, backend, cliente, tooling y Playwright real). Recursos propios: proyectos Compose `starter-verify-t050` y `starter-e2e-t050` con `.env.example` y fixtures ficticias, y artefactos en `e2e/artifacts/starter-e2e-t050/`; el script limpia solo esos proyectos. No había otros contenedores en marcha al iniciar. Sin editar fuentes durante la corrida. Siguiente paso: con exit 0, publicar la rama, abrir el PR y pasar a `in_review`.
 
 ## Correcciones significativas
 
 | Fecha / SHA | Problema y causa | Corrección | Prueba |
 |---|---|---|---|
+| 2026-11-11 · `99034f8` | `useIsNarrow` leía `theme.breakpoints` de un tema nulo cuando el componente se monta sin `ThemeProvider` (pruebas del editor). | Usa `useTheme()`, que entrega el tema por defecto. | `npm test -- --run src/features/daily` exit 0 |
+| 2026-11-11 · `2d41cac` | Tanda E2E dirigida: cuatro fallos de las specs, no del producto. El helper `saved` chocaba con variables locales; tras el login la URL ya canonizada era `/notes/<hoy>`; en Notas hay dos alertas al vencer la sesión; la página quedaba desplazada 9 px al medir el editor. | Helper `savedIndicator`, patrón `notesUrl`, filtro por texto del aviso de sesión y `scrollTo(0, 0)` antes de medir. | Tanda dirigida desktop, exit 0 |
 
 ## Cierre y siguiente tarea
 
