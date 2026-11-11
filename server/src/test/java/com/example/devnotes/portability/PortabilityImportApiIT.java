@@ -311,6 +311,98 @@ class PortabilityImportApiIT {
     }
 
     @Test
+    void historicalVoiceInstantsRoundTripWithoutNormalizingTheSourceOrPreviewWrites() throws Exception {
+        var a = login();
+        var b = login();
+        String ownerA = a.me().get("id").asString();
+        String ownerB = b.me().get("id").asString();
+        String text = "Nota de voz legada ficticia";
+        String created = "2026-11-10T20:00:21.946Z";
+        String updated = "2026-11-10T20:00:21.002Z";
+        jdbc.update("""
+                INSERT INTO voice_note (id, owner_id, text, revision, created_at, updated_at)
+                VALUES (gen_random_uuid(), ?::uuid, ?, 2, ?::timestamptz, ?::timestamptz)
+                """, ownerA, text, created, updated);
+        String voiceRow = "SELECT to_jsonb(v)::text FROM voice_note v WHERE owner_id = ?::uuid";
+        String original = jdbc.queryForObject(voiceRow, String.class, ownerA);
+        byte[] file = exportBytes(a);
+        List<Long> before = rows();
+
+        var preview = upload(b, PREVIEW, file);
+
+        assertThat(preview.statusCode()).as("preview: %s", preview.body()).isEqualTo(200);
+        var summary = JSON.readTree(preview.body());
+        assertThat(summary.get("accountEmpty").asBoolean()).isTrue();
+        assertThat(summary.at("/counts/voiceNotes").asInt()).isEqualTo(1);
+        assertThat(rows()).isEqualTo(before);
+
+        var imported = upload(b, IMPORTS, file);
+        assertThat(imported.statusCode()).isEqualTo(201);
+        assertThat(JSON.readTree(imported.body()).at("/counts/voiceNotes").asInt())
+                .isEqualTo(1);
+
+        var restored = JSON.readTree(jdbc.queryForObject(voiceRow, String.class, ownerB));
+        assertThat(restored.get("text").asString()).isEqualTo(text);
+        assertThat(OffsetDateTime.parse(restored.get("created_at").asString()).toInstant())
+                .isEqualTo(Instant.parse(created));
+        assertThat(OffsetDateTime.parse(restored.get("updated_at").asString()).toInstant())
+                .isEqualTo(Instant.parse(updated));
+        assertThat(restored.get("revision").asLong()).isEqualTo(1);
+        assertThat(restored.get("id")).isNotEqualTo(JSON.readTree(original).get("id"));
+        assertThat(jdbc.queryForObject(voiceRow, String.class, ownerA)).isEqualTo(original);
+    }
+
+    @Test
+    void dailyAndVersionWithNullMarksRoundTripWithoutPreviewWrites() throws Exception {
+        var a = login();
+        var b = login();
+        String ownerA = a.me().get("id").asString();
+        String ownerB = b.me().get("id").asString();
+        String date = "2026-11-10";
+        String document = """
+                {"type":"doc","content":[{"type":"paragraph","content":[
+                  {"type":"text","text":"Nota ficticia","marks":null}
+                ]}]}
+                """;
+        daily(a, date, document, 0);
+        version(a, date, 1);
+        String dailyRows = """
+                SELECT jsonb_build_object('note', n, 'version', v)::text
+                FROM daily_note n JOIN daily_version v ON v.note_id = n.id
+                WHERE n.owner_id = ?::uuid AND n.note_date = ?::date
+                """;
+        String original = jdbc.queryForObject(dailyRows, String.class, ownerA, date);
+        var source = JSON.readTree(original);
+        var expected = JSON.readTree(document);
+        assertThat(source.at("/note/content")).isEqualTo(expected);
+        assertThat(source.at("/version/content")).isEqualTo(expected);
+        byte[] file = exportBytes(a);
+        List<Long> before = rows();
+
+        var preview = upload(b, PREVIEW, file);
+
+        assertThat(preview.statusCode()).as("preview: %s", preview.body()).isEqualTo(200);
+        var summary = JSON.readTree(preview.body());
+        assertThat(summary.get("accountEmpty").asBoolean()).isTrue();
+        assertThat(summary.at("/counts/dailyNotes").asInt()).isEqualTo(1);
+        assertThat(summary.at("/counts/dailyVersions").asInt()).isEqualTo(1);
+        assertThat(rows()).isEqualTo(before);
+
+        var imported = upload(b, IMPORTS, file);
+        assertThat(imported.statusCode()).isEqualTo(201);
+        assertThat(JSON.readTree(imported.body()).get("counts")).isEqualTo(summary.get("counts"));
+
+        var restored = JSON.readTree(jdbc.queryForObject(dailyRows, String.class, ownerB, date));
+        assertThat(restored.at("/note/content")).isEqualTo(source.at("/note/content"));
+        assertThat(restored.at("/version/content")).isEqualTo(source.at("/version/content"));
+        assertThat(restored.at("/note/content/content/0/content/0/marks").isNull())
+                .isTrue();
+        assertThat(restored.at("/version/content/content/0/content/0/marks").isNull())
+                .isTrue();
+        assertThat(jdbc.queryForObject(dailyRows, String.class, ownerA, date)).isEqualTo(original);
+    }
+
+    @Test
     void tenThousandReferencesExportPreviewAndRestoreCompletely() throws Exception {
         var a = login();
         var b = login();

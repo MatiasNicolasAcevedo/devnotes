@@ -120,6 +120,19 @@ class XlsxWorkbookReaderTest {
     }
 
     @Test
+    void voiceNotePreservesHistoricallyInvertedInstants() {
+        List<RawSheet> sheets = validSheets();
+        String created = "2026-10-19T12:00:00.000002Z";
+        String updated = "2026-10-19T12:00:00.000001Z";
+        setRecord(sheets, "voz", VOICE_ID, voice("Idea", created, updated));
+
+        var note = reader.read(build(sheets)).records().voiceNotes().getFirst();
+
+        assertThat(note.createdAt()).isEqualTo(Instant.parse(created));
+        assertThat(note.updatedAt()).isEqualTo(Instant.parse(updated));
+    }
+
+    @Test
     void fragmentOfExactlyThirtyThousandUnitsIsAccepted() {
         List<RawSheet> sheets = validSheets();
         String json = voice("a".repeat(40_000));
@@ -332,16 +345,7 @@ class XlsxWorkbookReaderTest {
                 record("campo faltante", "voz", VOICE_ID, "{\"id\":\"" + VOICE_ID + "\",\"text\":\"Idea\"}"),
                 record("campo null", "voz", VOICE_ID, voice("Idea").replace("\"Idea\"", "null")),
                 record("texto numérico", "voz", VOICE_ID, voice("Idea").replace("\"Idea\"", "7")),
-                record(
-                        "null dentro del documento",
-                        "diarias",
-                        DATE,
-                        daily(
-                                DATE,
-                                "{\"type\":\"doc\",\"content\":[{\"type\":\"paragraph\",\"content\":"
-                                        + "[{\"type\":\"text\",\"text\":\"a\",\"marks\":null}]}]}",
-                                T,
-                                T)),
+                record("campo content null en diaria", "diarias", DATE, daily(DATE, "null", T, T)),
                 record(
                         "campo extra en referencia",
                         "referencias",
@@ -404,11 +408,6 @@ class XlsxWorkbookReaderTest {
                         "versiones",
                         DATE,
                         "{\"date\":\"" + DATE + "\",\"content\":" + DOC + ",\"savedAt\":\"hoy\"}"),
-                record(
-                        "voz con updatedAt anterior",
-                        "voz",
-                        VOICE_ID,
-                        voice("Idea", "2026-10-19T12:00:00.000002Z", "2026-10-19T12:00:00.000001Z")),
                 record(
                         "referencia con updatedAt anterior",
                         "referencias",

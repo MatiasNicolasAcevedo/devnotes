@@ -353,7 +353,7 @@ public class XlsxWorkbookReader {
         }
         Instant createdAt = instant(json, "createdAt");
         Instant updatedAt = instant(json, "updatedAt");
-        requireOrdered(createdAt, updatedAt);
+        // Versions before T-037 could persist an inverted pair. Both instants are authoritative in v1.
         return new VoiceNoteRecord(id, text, createdAt, updatedAt);
     }
 
@@ -363,17 +363,15 @@ public class XlsxWorkbookReader {
         }
         Iterator<String> names = json.fieldNames();
         while (names.hasNext()) {
-            if (!expected.contains(names.next())) {
+            String name = names.next();
+            if (!expected.contains(name) || json.get(name).isNull()) {
                 throw new RecordRejected();
             }
         }
     }
 
-    /** No {@code null} anywhere, and no text PostgreSQL would refuse (NUL, unpaired surrogates). */
+    /** Reject text PostgreSQL would refuse (NUL, unpaired surrogates), including property names. */
     private static void requireStorable(JsonNode node) {
-        if (node.isNull()) {
-            throw new RecordRejected();
-        }
         if (node.isTextual() && XlsxText.hasUnstorableChar(node.textValue())) {
             throw new RecordRejected();
         }
