@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-040](tasks/T-040-daily-timestamps.md) · S-107 / tarea portadora de la rama compartida y del PR único |
-| Estado | `in_review` |
-| Acción actual | Ronda independiente 2 de 2 de PR49. B1 y B2 publicados y STARTER integrado en verde. [Evidencia en T-040](tasks/T-040-daily-timestamps.md#gate-integrado-de-la-corrección). Sigue pendiente la prueba del dueño de T-045. |
+| Estado | `changes_requested` |
+| Acción actual | Frontera y dueño deciden la compatibilidad v1 de B3 y B4 y la salida del límite de rondas de PR49. [Veredicto y propuesta en T-040](tasks/T-040-daily-timestamps.md#revisión-independiente--ronda-2-de-2). |
 | Rama / PR | `codex/s-107-xlsx-portability` · [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), abierto y listo, único de S-107 |
 
 Por decisión del dueño del 2026-11-10, T-040…T-045 comparten la rama `codex/s-107-xlsx-portability` y un único PR; FULL integrado sobre su HEAD final. Mientras dura la rama, esta tabla mantiene a T-040 como tarea portadora, con su estado de revisión, y nombra las demás tareas en «Acción actual» y en el prompt. [Regla](specs/S-107-xlsx-portability.md#tareas-y-dependencias)
@@ -78,5 +78,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como reviewer independiente en sesión nueva para S-107, ronda 2 de 2, con T-040 en in_review como portadora. Revisá el PR49 abierto y listo de MatiasNicolasAcevedo/devnotes, rama codex/s-107-xlsx-portability contra main. Confirmá en GitHub el HEAD publicado, la base fc8fda5b20946e595c153144e99d9a3d3346ac5d y verify-required SUCCESS del HEAD vigente. Comprobá que conserva las fuentes del STARTER integrado de 9a63da24cc36b6b90d5140945ba6af63c808bde0. Seguí AGENTS.md, docs/agents/reviewer.md, docs/AUTONOMY.md y docs/TESTING.md. Revisá el diff acumulado de S-107 y verificá B1/XL-07 y B2/XL-08 con «Corrección acordada · B1 y B2» y la evidencia de T-040. Publicá el veredicto ligado a HEAD/base y registrá la próxima acción según el protocolo. Si queda un bloqueante, devolvé la decisión a frontera/dueño según el límite de rondas. La prueba de T-045 y su archivo quedan a cargo del dueño, al igual que el cleanup de T-049. M3 y T-046 siguen pendientes.
+Actuá como frontera para S-107 con T-040 en changes_requested y PR49 abierto. Leé «Revisión independiente · ronda 2 de 2» en T-040 y confirmá en GitHub los SHA del veredicto publicado. Presentá al dueño la decisión de compatibilidad v1 para las fechas invertidas de voz legada (B3) y el contenido diario ya admitido por la API, incluido marks: null (B4). Con su decisión, dejá el contrato y las regresiones en T-040 y S-107. Para continuar hacia merge, acordá la corrección en el mismo PR y la autorización expresa de otra revisión independiente después del gate de las fuentes corregidas. La prueba de T-045 y su archivo quedan a cargo del dueño, al igual que el cleanup de T-049. M3 y T-046 siguen pendientes.
 ```
