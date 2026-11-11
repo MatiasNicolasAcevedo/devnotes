@@ -1,6 +1,6 @@
 ---
 id: T-045
-status: draft
+status: blocked
 priority: P1
 size: M
 executor: junie
@@ -58,6 +58,8 @@ Está en `draft` solo porque depende de T-044 cerrada en la rama compartida de [
 
 ## Checkpoint vigente
 
+**Retoma vigente (2026-11-11).** El código y el recorrido E2E entraron a `main` con el [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49) MERGED: squash `ff02bbd933418cec46f34b25715313580753d0ee`, `mergedAt` 2026-11-11T04:02:14Z. La tarea queda `blocked` por una sola condición: la [prueba del dueño](#prueba-del-dueño). Al registrar su veredicto favorable pasa a `done` con `pr: 49`; hasta entonces el frontmatter conserva `pr: null` para no contar como tarea en vuelo. Lo que sigue es el historial de la rama compartida, anterior al merge.
+
 2026-11-10. Implementer en Claude Code de escritorio (Claude Fable 5.2, `claude-fable-5-2`, esfuerzo no expuesto), sesión distinta de las de T-040…T-044, con Git Bash, Docker, Node 24.21.0, Git y `gh`. Impacto: solo pruebas; agrega `e2e/tests/portability.spec.ts`. Sin cambios de comportamiento, API, permisos, esquema, datos ni UI.
 
 **T-045 cerrada en la rama** `codex/s-107-xlsx-portability`, con XL-06 y el gate integrado en verde y el control de avance hecho. Falta la prueba del dueño. El frontmatter sigue en `draft` por la [regla de la rama compartida](../specs/S-107-xlsx-portability.md#tareas-y-dependencias); la portadora es [T-040](T-040-daily-timestamps.md) y el PR es el [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), listo para revisión independiente.
@@ -110,7 +112,7 @@ Hecho por esta sesión antes de pedir la revisión, sobre los contratos, los che
 
 ### Prueba del dueño
 
-**Pendiente.** La hace el dueño en su entorno, sobre el SHA del PR49: exportar su cuenta, abrir el archivo en Excel para leerlo e importarlo en una segunda cuenta vacía de su instancia local o en un stack descartable propio. Aquí se registra solo «OK/observaciones», conteos y SHA; ningún agente abre ni copia el archivo.
+**Pendiente.** La hace el dueño en su entorno, sobre `main` en `ff02bbd` o posterior, en el stack local `starter-dev-local-nginx` (base nueva desde el 2026-11-11, con datos ficticios creados por él): exportar su cuenta, abrir el archivo en Excel para leerlo e importarlo en una segunda cuenta vacía de su instancia local o en un stack descartable propio. Aquí se registra solo «OK/observaciones», conteos y SHA; ningún agente abre ni copia el archivo.
 
 ## Correcciones significativas
 

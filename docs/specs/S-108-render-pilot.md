@@ -37,7 +37,7 @@ Dominio propio, plan pago, backups automáticos, ping de actividad (solo se eval
 
 | Tarea | Resultado observable | Depende de | Salida para continuar |
 |---|---|---|---|
-| [T-046](../tasks/T-046-render-image.md) | Imagen única y smoke local con métricas | T-045 | RP-01, RP-02 y MERGED |
+| [T-046](../tasks/T-046-render-image.md) | Imagen única y smoke local con métricas | T-045 aceptada y [T-050](../tasks/T-050-ui-adjustments.md) MERGED (orden del dueño, 2026-11-11) | RP-01, RP-02 y MERGED |
 | [T-047](../tasks/T-047-render-first-deploy.md) | Primer deploy, migración de datos y aceptación del dueño | T-046 | RP-03, RP-04 y evidencia en DEPLOYMENT |
 
 ## Validación de planificación

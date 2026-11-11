@@ -47,15 +47,21 @@ Solo T-017 ready; demás draft exclusivamente por dependencia anterior. No hace 
 
 ## M2-RC1 · Activación y pruebas del dueño
 
-T-037 MERGED (`aef4213`, 2026-11-10) entregó la RC técnica. [T-039](tasks/T-039-voice-activation.md) documentó la activación de Groq, el fallo del ensayo y el veredicto «Aceptada con mejoras». [T-048](tasks/T-048-groq-multipart-fix.md) corrige el multipart y [T-049](tasks/T-049-voice-retest.md) reensaya con el dueño. T-049 verificó el dictado en español sobre `8d787c1`; el silencio quedó como limitación conocida aceptada por el dueño. La salida a M3 requiere T-049 MERGED. [Resultado](VOICE-RELEASE.md#resultado-de-t-049)
+T-037 MERGED (`aef4213`, 2026-11-10) entregó la RC técnica. [T-039](tasks/T-039-voice-activation.md) documentó la activación de Groq, el fallo del ensayo y el veredicto «Aceptada con mejoras». [T-048](tasks/T-048-groq-multipart-fix.md) corrige el multipart y [T-049](tasks/T-049-voice-retest.md) reensaya con el dueño. T-049 verificó el dictado en español sobre `8d787c1`; el silencio quedó como limitación conocida aceptada por el dueño. T-049 MERGED (PR48, `fc8fda5`, 2026-11-10) cerró el hito y habilitó M3. [Resultado](VOICE-RELEASE.md#resultado-de-t-049)
 
 ## I3 / M3 · Portabilidad `.xlsx`
 
-Prioridad del dueño del 2026-11-10. [S-107](specs/S-107-xlsx-portability.md): exportar todos los datos de la cuenta (diarias, versiones, voz y referencias) e importarlos solo en una cuenta vacía, con el archivo como respaldo y migración, no como editor. Tareas T-040 → T-041 → T-042 → T-043 → T-044 → T-045 (E2E de ida y vuelta y prueba del dueño), en la rama `codex/s-107-xlsx-portability` y un único PR, con FULL integrado, control de avance y revisión al final. Salida: XL-01…06 y el veredicto del dueño.
+Prioridad del dueño del 2026-11-10. [S-107](specs/S-107-xlsx-portability.md): exportar todos los datos de la cuenta (diarias, versiones, voz y referencias) e importarlos solo en una cuenta vacía, con el archivo como respaldo y migración, no como editor. Tareas T-040 → T-041 → T-042 → T-043 → T-044 → T-045 (E2E de ida y vuelta y prueba del dueño), en la rama `codex/s-107-xlsx-portability` y un único PR, con gate integrado, control de avance y revisión al final. Salida: XL-01…10 y el veredicto del dueño.
+
+Estado al 2026-11-11: PR49 MERGED (squash `ff02bbd`), con XL-07…10 agregados durante la revisión. T-040…T-044 `done`. Falta solo la prueba del dueño de T-045 para dar M3 por cumplida.
+
+## I3 posterior · Ajustes de UI
+
+Pedido del dueño del 2026-11-11: una única tarea, [T-050](tasks/T-050-ui-adjustments.md), que compacta la interfaz para usar DevNotes como app instalada en una ventana chica y en el teléfono: sin pantalla de inicio, barra superior de una fila, controles de Notas en la barra del editor, Voz en dos mitades con señales de grabación y manifiesto de instalación. Alcance acordado con el dueño sobre capturas y maquetas (UI-01 a UI-09); Junie implementa en su propio PR. Solo `client/` y `e2e/`, sin cambios de API, permisos ni datos.
 
 ## I4 / M4 · Piloto en Render Free
 
-Último paso del plan del 2026-11-10, solo si M3 sale bien. [S-108](specs/S-108-render-pilot.md) con la receta de [DEPLOYMENT](DEPLOYMENT.md#piloto-de-devnotes-en-render-free): T-046 (imagen única y smoke local con 512 MB) → T-047 (primer deploy con Google real, migración `.xlsx` y aceptación del dueño). Los recursos, secretos y gastos quedan reservados al dueño. **Frontera vuelve al cerrar T-047**, o antes por un veredicto negativo o una decisión fuera de contrato.
+Último paso del plan del 2026-11-10, solo si M3 sale bien y después de T-050 MERGED. [S-108](specs/S-108-render-pilot.md) con la receta de [DEPLOYMENT](DEPLOYMENT.md#piloto-de-devnotes-en-render-free): T-046 (imagen única y smoke local con 512 MB) → T-047 (primer deploy con Google real, migración `.xlsx` y aceptación del dueño). Los recursos, secretos y gastos quedan reservados al dueño. **Frontera vuelve al cerrar T-047**, o antes por un veredicto negativo o una decisión fuera de contrato.
 
 ## Objetivos futuros sin contrato de ejecución
 

@@ -1,6 +1,6 @@
 ---
 id: T-041
-status: draft
+status: done
 priority: P1
 size: M
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I3
 spec: S-107
 spec_version: 1
 branch: codex/s-107-xlsx-portability
-pr: null
+pr: 49
 depends_on: [T-040]
 ---
 # T-041 · Codec del libro `devnotes-xlsx` v1
@@ -59,6 +59,8 @@ XL-02. Casos mínimos:
 | Gate | Según `bash scripts/verify.sh --policy origin/main` (cambia el POM; APPLICATION o STARTER según el clasificador) | Desde la raíz: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t041 STARTER_E2E_PROJECT=starter-e2e-t041 STARTER_SERVER_TESTS=container bash scripts/verify.sh` (añadir `--tooling` si el perfil es STARTER) | Exit 0; cobertura JaCoCo sin bajar |
 
 ## Checkpoint vigente
+
+**Conciliada como `done` (2026-11-11).** [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), único de S-107, MERGED: squash `ff02bbd933418cec46f34b25715313580753d0ee`, `mergedAt` 2026-11-11T04:02:14Z, HEAD revisado `706c494f6582c698226e4d4d79ae8b2594d7a91e`, confirmado con `gh pr view 49`. Lo que sigue es el historial de la rama compartida, anterior al merge.
 
 2026-11-10. Implementer en Claude Code de escritorio (Claude Fable 5.2, esfuerzo no expuesto), sesión distinta de la de T-040, con Git Bash, JDK 21, Maven Wrapper, Docker, Git y `gh`. Agrega el paquete `com.example.devnotes.portability.xlsx` y tres dependencias de backend. Sin cambios de API, permisos, esquema, datos ni UI: nada invoca todavía al codec.
 

@@ -1,6 +1,6 @@
 ---
 id: T-042
-status: draft
+status: done
 priority: P1
 size: M
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I3
 spec: S-107
 spec_version: 1
 branch: codex/s-107-xlsx-portability
-pr: null
+pr: 49
 depends_on: [T-041]
 ---
 # T-042 · Exportación privada en `.xlsx`
@@ -59,6 +59,8 @@ XL-03:
 | Gate | APPLICATION (confirmar con `--policy`) | Desde la raíz: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t042 STARTER_E2E_PROJECT=starter-e2e-t042 STARTER_SERVER_TESTS=container bash scripts/verify.sh` | Exit 0 |
 
 ## Checkpoint vigente
+
+**Conciliada como `done` (2026-11-11).** [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), único de S-107, MERGED: squash `ff02bbd933418cec46f34b25715313580753d0ee`, `mergedAt` 2026-11-11T04:02:14Z, HEAD revisado `706c494f6582c698226e4d4d79ae8b2594d7a91e`, confirmado con `gh pr view 49`. Lo que sigue es el historial de la rama compartida, anterior al merge.
 
 2026-11-10. Implementer en Claude Code de escritorio (Claude Fable 5.2, esfuerzo no expuesto), sesión distinta de las de T-040 y T-041, con Git Bash, JDK 21, Maven Wrapper, Docker, Git y `gh`. Impacto: una ruta de API nueva, GET `/api/v1/portability/export`, y su regla en la allowlist de `SecurityConfig`, solo para sesión autenticada. Sin cambios de esquema, datos, dependencias ni UI.
 

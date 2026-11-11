@@ -2,14 +2,18 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-040](tasks/T-040-daily-timestamps.md) · S-107 / tarea portadora de la rama compartida y del PR único |
-| Estado | `mergeable` |
-| Acción actual | Revisión excepcional favorable. Confirmar veredicto y CI del HEAD final y consultar el cierre del PR. La prueba de T-045 queda a cargo del dueño. [Evidencia en T-040](tasks/T-040-daily-timestamps.md#checkpoint--revisión-excepcional). |
-| Rama / PR | `codex/s-107-xlsx-portability` · [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), único de S-107 |
+| Tarea y contrato | [T-050](tasks/T-050-ui-adjustments.md) · Interfaz compacta para usar DevNotes como app de escritorio |
+| Estado | `ready` |
+| Acción actual | Contrato de T-050 completo y acordado con el dueño (UI-01 a UI-09, variante A de la barra). Falta mergear el PR de documentación; después, una sesión nueva de implementer toma T-050 en su rama. La [prueba de T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño) sigue pendiente; el dueño la pospuso el 2026-11-11 y no bloquea T-050. |
+| Rama / PR | `codex/docs-s107-reconcile-ui-plan` · PR de documentación por abrir, sin tarea propia |
 
-Por decisión del dueño del 2026-11-10, T-040…T-045 comparten la rama `codex/s-107-xlsx-portability` y un único PR; FULL integrado sobre su HEAD final. Mientras dura la rama, esta tabla mantiene a T-040 como tarea portadora, con su estado de revisión, y nombra las demás tareas en «Acción actual» y en el prompt. [Regla](specs/S-107-xlsx-portability.md#tareas-y-dependencias)
+Orden vigente, decidido por el dueño el 2026-11-11: T-050 (ajustes de UI) → [T-046](tasks/T-046-render-image.md) → [T-047](tasks/T-047-render-first-deploy.md). T-046 espera además el veredicto del dueño en T-045, que está `blocked` solo por esa prueba.
 
-T-049: PR48 MERGED, squash `fc8fda5b20946e595c153144e99d9a3d3346ac5d`, confirmado en GitHub el 2026-11-10 (mergedAt 2026-11-10T21:31:31Z), HEAD `5bc1e98`, `verify-required` SUCCESS. [Conciliada como done](tasks/T-049-voice-retest.md#conciliación), con las observaciones no bloqueantes del veredicto resueltas o en BACKLOG. El cleanup de T-049 espera autorización del dueño.
+S-107 (T-040…T-045): [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49) MERGED, squash `ff02bbd933418cec46f34b25715313580753d0ee`, confirmado en GitHub el 2026-11-11 (mergedAt 2026-11-11T04:02:14Z), HEAD revisado `706c494`. T-040…T-044 conciliadas como done; la rama compartida terminó y rige otra vez «una tarea, un PR».
+
+Limpieza del 2026-11-11, autorizada por el dueño: PR38 cerrado sin merge por obsoleto (T-033 y T-034 ya estaban conciliadas en main) y su rama borrada; cleanup de T-049 hecho (worktree, rama local y remota, fixtures y pruebas en `.orchestrator`); retirados los stacks locales `starter-dev-devnotes-preview-1027` y un volumen `starter-dev-local-nginx` creado desde WSL, con sus datos ficticios. El stack local del dueño pasa a ser `starter-dev-local-nginx`, el nombre que ya usaban AGENTS y VOICE-RELEASE.
+
+T-049: PR48 MERGED, squash `fc8fda5b20946e595c153144e99d9a3d3346ac5d`, confirmado en GitHub el 2026-11-10 (mergedAt 2026-11-10T21:31:31Z), HEAD `5bc1e98`, `verify-required` SUCCESS. [Conciliada como done](tasks/T-049-voice-retest.md#conciliación), con las observaciones no bloqueantes del veredicto resueltas o en BACKLOG.
 
 T-048: [PR47 MERGED y conciliada como done](tasks/T-048-groq-multipart-fix.md#checkpoint-vigente).
 
@@ -78,5 +82,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Consultá el checkpoint de revisión excepcional de T-040 y el veredicto de PR49. Confirmá `MERGED` en GitHub según merger.md y recuperá el SHA del squash y la fecha del comentario de cierre. Si sigue abierto, retomá únicamente el merge cuando el APROBADO coincida con HEAD/base y se cumpla AUTONOMY.md. El dueño hace la prueba de T-045 en su entorno y aporta solo el resultado, los conteos y el SHA. El archivo y el cleanup de T-049 quedan a su cargo. Con MERGED y prueba satisfactoria registrada, conciliá T-040…T-045 en la siguiente rama y tomá T-046 según su contrato. Hasta entonces M3 y T-046 siguen pendientes.
+Sos implementer. Confirmá en GitHub que el PR de documentación de la rama codex/docs-s107-reconcile-ui-plan está MERGED; si sigue abierto, detenete y avisá al dueño. Con MERGED, creá codex/t-050-ui-adjustments desde main y ejecutá T-050 según su contrato: leé client/AGENTS.md, seguí los cuatro pasos en orden con las pruebas primero en rojo, usá solo E2E dirigidos durante la iteración y el FULL una vez al cierre. No toques server ni la API. Al terminar, publicá el PR, dejá T-050 en in_review y el prompt de revisión aquí. T-046 sigue en draft hasta T-050 MERGED y T-045 aceptada por el dueño.
 ```
