@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-040](tasks/T-040-daily-timestamps.md) · S-107 / tarea portadora de la rama compartida y del PR único |
-| Estado | `changes_requested` |
-| Acción actual | Ronda 1 del PR49: dos bloqueantes de restauración. Frontera/dueño debe resolver la compatibilidad con fechas históricas y el comportamiento de las exportaciones que superan los límites de importación. Evidencia y condiciones de cierre en [T-040](tasks/T-040-daily-timestamps.md#revisión-independiente--ronda-1-de-2). Sigue pendiente la prueba del dueño de T-045. |
-| Rama / PR | `codex/s-107-xlsx-portability` · [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), cambios requeridos, único de S-107 |
+| Estado | `in_review` |
+| Acción actual | Ronda independiente 2 de 2 de PR49. B1 y B2 publicados y STARTER integrado en verde. [Evidencia en T-040](tasks/T-040-daily-timestamps.md#gate-integrado-de-la-corrección). Sigue pendiente la prueba del dueño de T-045. |
+| Rama / PR | `codex/s-107-xlsx-portability` · [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), abierto y listo, único de S-107 |
 
 Por decisión del dueño del 2026-11-10, T-040…T-045 comparten la rama `codex/s-107-xlsx-portability` y un único PR; FULL integrado sobre su HEAD final. Mientras dura la rama, esta tabla mantiene a T-040 como tarea portadora, con su estado de revisión, y nombra las demás tareas en «Acción actual» y en el prompt. [Regla](specs/S-107-xlsx-portability.md#tareas-y-dependencias)
 
@@ -78,5 +78,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera para S-107, PR49 de MatiasNicolasAcevedo/devnotes, tarea portadora T-040, en sesión nueva. Seguí AGENTS.md, docs/AUTONOMY.md y docs/TESTING.md. Comprobá el estado remoto y leé el veredicto de la primera ronda y el checkpoint de T-040. Con el dueño, resolvé la política de restauración de fechas históricas (B1) y la promesa de respaldo cuando una cuenta supera los límites de importación (B2). Dejá las decisiones y los criterios rojos/verdes para una nueva sesión implementer en la misma rama y PR. Después queda una sola ronda de revisión independiente. La prueba del dueño de T-045 sigue pendiente; no abras ni copies su archivo, no declares M3 cumplida y no habilites T-046. El cleanup de T-049 sigue reservado al dueño.
+Actuá como reviewer independiente en sesión nueva para S-107, ronda 2 de 2, con T-040 en in_review como portadora. Revisá el PR49 abierto y listo de MatiasNicolasAcevedo/devnotes, rama codex/s-107-xlsx-portability contra main. Confirmá en GitHub el HEAD publicado, la base fc8fda5b20946e595c153144e99d9a3d3346ac5d y verify-required SUCCESS del HEAD vigente. Comprobá que conserva las fuentes del STARTER integrado de 9a63da24cc36b6b90d5140945ba6af63c808bde0. Seguí AGENTS.md, docs/agents/reviewer.md, docs/AUTONOMY.md y docs/TESTING.md. Revisá el diff acumulado de S-107 y verificá B1/XL-07 y B2/XL-08 con «Corrección acordada · B1 y B2» y la evidencia de T-040. Publicá el veredicto ligado a HEAD/base y registrá la próxima acción según el protocolo. Si queda un bloqueante, devolvé la decisión a frontera/dueño según el límite de rondas. La prueba de T-045 y su archivo quedan a cargo del dueño, al igual que el cleanup de T-049. M3 y T-046 siguen pendientes.
 ```
