@@ -141,6 +141,15 @@ Antes del FULL, checkpoint con SHA, base, comando, recursos propios y cleanup. S
 
 2026-11-11. Frontera en Claude Code de escritorio (Claude Fable 5.2, `claude-fable-5-2`, esfuerzo no expuesto), con Git Bash, Git, `gh`, Docker y Node. Contrato completo y `ready`: el dueño revisó la aplicación en su stack local, envió ocho capturas, eligió la variante A de la barra entre tres maquetas y confirmó las decisiones UI-01 a UI-09. Impacto previsto: solo UI del cliente, más un medidor de nivel local del micrófono que no cambia lo que se envía; sin cambios de API, permisos, esquema ni datos. Nada implementado todavía.
 
+### Avance del implementer (2026-11-11, sesión interrumpida por límite de uso)
+
+Implementer en Claude Code de escritorio (Claude Fable 5.2, `claude-fable-5-2`), rama `codex/t-050-ui-adjustments` desde main `915459c` (PR50 MERGED). Sin push todavía.
+
+- Paso 1 hecho, commit `051f803`: rojo previo de 32 pruebas; `npm test -- --run src/app src/features/auth src/features/system` exit 0 (83 pruebas).
+- Paso 2 hecho, commit `99034f8`: rojo previo de 15 pruebas; `npm test -- --run src/features/daily` exit 0 (246 pruebas).
+- Pendiente: paso 3 (Voz, UI-07 y UI-08, nada escrito), paso 4 (manifiesto y E2E), `bash scripts/verify.sh --client`, E2E dirigidos, FULL, PR e `in_review`.
+- Para el paso 4: `daily-notes.spec.ts` comprueba `resize: vertical` y el arrastre, que UI-06 elimina; `editor-ergonomics.spec.ts` alinea el `h1` visible con la fecha; los helpers buscan el texto «Guardado», que en angosto es solo icono (`role="img"`); `system.spec.ts` busca la versión del servidor, que ya no se muestra.
+
 ## Correcciones significativas
 
 | Fecha / SHA | Problema y causa | Corrección | Prueba |
