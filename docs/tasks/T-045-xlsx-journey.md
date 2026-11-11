@@ -112,7 +112,9 @@ Hecho por esta sesión antes de pedir la revisión, sobre los contratos, los che
 
 ### Prueba del dueño
 
-**Pendiente.** La hace el dueño en su entorno, sobre `main` en `ff02bbd` o posterior, en el stack local `starter-dev-local-nginx` (base nueva desde el 2026-11-11, con datos ficticios creados por él): exportar su cuenta, abrir el archivo en Excel para leerlo e importarlo en una segunda cuenta vacía de su instancia local o en un stack descartable propio. Aquí se registra solo «OK/observaciones», conteos y SHA; ningún agente abre ni copia el archivo.
+**Pospuesta por el dueño (2026-11-11).** Pidió dejar para otro momento el recorrido manual de exportación, lectura en Excel e importación. T-045 sigue `blocked` por aceptación, con conteos y SHA de la prueba pendientes. El dueño habilitó avanzar en [T-046](T-046-render-image.md) en borrador.
+
+Al retomarla, el dueño la hace en su entorno, sobre `main` en `ff02bbd` o posterior, en el stack local `starter-dev-local-nginx` (base nueva desde el 2026-11-11, con datos ficticios creados por él). Exporta su cuenta, abre el archivo en Excel para leerlo e importa en una segunda cuenta vacía de su instancia local o en un stack descartable propio. Aquí registra el resultado, los conteos y el SHA.
 
 ## Correcciones significativas
 
@@ -122,4 +124,4 @@ Hecho por esta sesión antes de pedir la revisión, sobre los contratos, los che
 
 ## Cierre y siguiente tarea
 
-Con XL-06 y el gate integrado en verde, Junie hace el control de avance de T-040…T-045 (contratos, evidencia y hallazgos a BACKLOG) y pasa el PR único de S-107 a revisión independiente. Tras MERGED y el veredicto del dueño, M3 queda cumplida: conciliar `done` en las seis tareas y tomar [T-046](T-046-render-image.md). Si el dueño no acepta, vuelve a frontera con los hallazgos.
+PR49 MERGED y T-040…T-044 conciliadas. Con la aceptación del dueño, conciliar T-045 como `done` y cerrar M3. Hasta entonces, [T-046](T-046-render-image.md) se mantiene en borrador. Si el dueño no acepta, vuelve a frontera con los hallazgos.

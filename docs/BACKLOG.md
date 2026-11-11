@@ -2,7 +2,7 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
-Próxima acción: implementar [T-050](tasks/T-050-ui-adjustments.md) (interfaz compacta, contrato `ready`) tras mergear el PR de documentación. La prueba del dueño de [T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño) sigue pendiente y pospuesta por él. Después, [T-046](tasks/T-046-render-image.md).
+Próxima acción: preparar [T-046](tasks/T-046-render-image.md) en borrador. La prueba del dueño de [T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño) sigue pospuesta.
 
 ## Siguientes · plan del dueño del 2026-11-10, ajustado el 2026-11-11
 
@@ -10,10 +10,9 @@ Del plan original quedan hechos la activación de Groq y la portabilidad `.xlsx`
 
 | Orden | Contrato / resultado | Ejecuta | Dependencia |
 |---|---|---|---|
-| 1 | [T-045](tasks/T-045-xlsx-journey.md) · Solo falta la prueba del dueño: exportar e importar en una cuenta vacía. Pospuesta por él el 2026-11-11; no bloquea T-050 | Dueño | Código MERGED en PR49 |
-| 2 | [T-050](tasks/T-050-ui-adjustments.md) · Interfaz compacta para usar DevNotes como app de escritorio | Junie | Contrato `ready`; PR de documentación MERGED |
-| 3 | [T-046](tasks/T-046-render-image.md) · Imagen única y smoke local con 512 MB | Junie | T-045 aceptada y T-050 MERGED |
-| 4 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | T-046 MERGED |
+| 1 | [T-046](tasks/T-046-render-image.md) · Imagen única y smoke local con 512 MB | Implementer | T-050 MERGED. T-045 aceptada para salir de borrador |
+| 2 | [T-045](tasks/T-045-xlsx-journey.md) · Prueba del dueño de exportar e importar en una cuenta vacía, pospuesta | Dueño | Código MERGED en PR49 |
+| 3 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | T-046 MERGED |
 
 Retorno a frontera si el dueño emite «no aceptada» en T-045 o T-047, ante una decisión fuera de contrato o al cerrar T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
 
@@ -52,7 +51,7 @@ Del [avance de T-050](tasks/T-050-ui-adjustments.md#avance-del-implementer-2026-
 
 ## Hechas · I3 / M3 portabilidad xlsx
 
-[S-107](specs/S-107-xlsx-portability.md) entró a `main` con el PR único [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), MERGED el 2026-11-11, squash `ff02bbd`. M3 se da por cumplida cuando el dueño registre su veredicto en T-045.
+[S-107](specs/S-107-xlsx-portability.md) entró a `main` con el PR único [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), MERGED el 2026-11-11, squash `ff02bbd`. M3 se da por cumplida con la aceptación del dueño en T-045. [T-050](tasks/T-050-ui-adjustments.md) entró a `main` con PR51.
 
 - [T-040](tasks/T-040-daily-timestamps.md): instantes de daily y versiones a microsegundos, más las correcciones B1…B4 de la revisión.
 - [T-041](tasks/T-041-xlsx-codec.md): codec `devnotes-xlsx` v1 y límites.

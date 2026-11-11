@@ -1,0 +1,17 @@
+**
+!client/package.json
+!client/package-lock.json
+!client/index.html
+!client/tsconfig*.json
+!client/vite.config.ts
+!client/src/**
+!client/public/**
+!client/nginx.conf
+!client/19-public-origin.sh
+!server/.mvn/**
+!server/mvnw
+!server/pom.xml
+!server/src/main/**
+!deploy/render/entrypoint.sh
+**/.env
+**/.env.*

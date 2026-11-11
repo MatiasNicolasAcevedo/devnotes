@@ -19,7 +19,7 @@ depends_on: [T-045, T-050]
 
 Preparar `deploy/render/Dockerfile` y `deploy/render/compose.smoke.yml` según [DEPLOYMENT · Piloto](../DEPLOYMENT.md#piloto-de-devnotes-en-render-free) y demostrar RP-01 y RP-02 de [S-108](../specs/S-108-render-pilot.md) desde un checkout limpio. No se crean recursos en Render.
 
-Está en `draft` solo por sus dependencias: se habilita con [T-045](T-045-xlsx-journey.md) aceptada por el dueño y [T-050](T-050-ui-adjustments.md) MERGED, para que la imagen del piloto incluya los ajustes de UI. El PR único de S-107 ya está MERGED y T-040…T-044 conciliadas. La siguiente tarea es [T-047](T-047-render-first-deploy.md).
+El dueño autorizó el avance técnico en `draft` tras el merge de [T-050](T-050-ui-adjustments.md), con la aceptación de [T-045](T-045-xlsx-journey.md#prueba-del-dueño) pospuesta. El PR queda en borrador hasta esa aceptación. La siguiente tarea es [T-047](T-047-render-first-deploy.md).
 
 ## Alcance y decisiones resueltas
 
@@ -62,12 +62,15 @@ Cleanup: `down --volumes` solo del proyecto de smoke, tras verificar los labels 
 
 ## Checkpoint vigente
 
-`draft` por dependencia. Contrato completo (frontera, 2026-11-10). El 2026-11-11 el dueño antepuso T-050; el resto del contrato no cambia.
+Implementer en Codex, familia GPT-6, variante y esfuerzo no expuestos. Herramientas de esta sesión: PowerShell, Git, `gh`, Git Bash, Node y Docker. Cambios de empaquetado y operación local, con el contrato de origen compartido entre ambos nginx.
+
+Base verificada en GitHub: `main` en `d230ee19e4a171bb73cf669c3fe4ced36b60a61c`. El primer avance concilia T-050 y la postergación de T-045. Para el smoke usar el checkout de ese avance, proyecto `devnotes-render-smoke-t046a`, app en 18080, OIDC en 18090 y logs locales en `e2e/artifacts/t046-smoke-a.log`. Correr `docker compose --env-file .env.example -p devnotes-render-smoke-t046a -f deploy/render/compose.smoke.yml up -d --build --wait --wait-timeout 300` y medir desde el inicio del contenedor. Al terminar, comprobar las etiquetas del proyecto y aplicar `down --volumes` solo a esos recursos. Siguiente paso: RP-01 y RP-02.
 
 ## Correcciones significativas
 
 | Fecha / SHA | Problema y causa | Corrección | Prueba |
 |---|---|---|---|
+| 2026-11-11 | El ensayo de caída de Java se quedaba esperando. `kill -0` con los dos PID devuelve éxito mientras uno siga vivo. | Comprobar cada PID por separado. | `scripts/ci/test-render-entrypoint.sh` |
 
 ## Cierre y siguiente tarea
 

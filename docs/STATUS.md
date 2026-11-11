@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-050](tasks/T-050-ui-adjustments.md) · Interfaz compacta para usar DevNotes como app de escritorio |
-| Estado | `mergeable` |
-| Acción actual | Confirmar el cierre de PR51 en GitHub según [merger](agents/merger.md). La [prueba de T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño) sigue pendiente. |
-| Rama / PR | `codex/t-050-ui-adjustments` · [PR51](https://github.com/MatiasNicolasAcevedo/devnotes/pull/51) |
+| Tarea y contrato | [T-046](tasks/T-046-render-image.md) · Imagen única para Render y smoke local con métricas |
+| Estado | `draft` |
+| Acción actual | Preparar la imagen y verificar RP-01/RP-02 en local. La [aceptación de T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño) mantiene el PR en borrador. |
+| Rama / PR | `codex/t-046-render-image` |
 
-Orden vigente, decidido por el dueño el 2026-11-11: T-050 (ajustes de UI) → [T-046](tasks/T-046-render-image.md) → [T-047](tasks/T-047-render-first-deploy.md). T-046 espera además el veredicto del dueño en T-045, que está `blocked` solo por esa prueba.
+[T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED. El dueño pospuso T-045 y autorizó el avance de T-046 en borrador. [T-047](tasks/T-047-render-first-deploy.md) queda después de T-046 MERGED.
 
 PR de documentación: [PR50](https://github.com/MatiasNicolasAcevedo/devnotes/pull/50) MERGED, squash `915459cbabd9f3f557df4b9012c8b4db5572863c`, confirmado en GitHub el 2026-11-11 (mergedAt 2026-11-11T05:34:34Z), HEAD `484d4d6`, `verify-required` SUCCESS; lo mergeó el implementer de T-050 con autorización expresa del dueño en esa sesión.
 
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Consultá primero PR51 en GitHub según docs/agents/merger.md. Si sigue abierto, retomá como merger de T-050 solo con el veredicto APROBADO vigente y todas las condiciones de docs/AUTONOMY.md. Si ya está MERGED, guardá el SHA y la fecha para conciliar T-050 en la primera rama siguiente autorizada. T-046 queda en draft hasta que el dueño registre su prueba favorable de T-045. Cuando estén ambas condiciones, retomá T-046 como implementer en sesión nueva, conciliá T-050 y T-045 y seguí el contrato de docs/tasks/T-046-render-image.md.
+Retomá T-046 como implementer en codex/t-046-render-image. Verificá en GitHub la base main, el HEAD publicado y el estado del PR si ya existe. Seguí el checkpoint de docs/tasks/T-046-render-image.md para acreditar RP-01, RP-02 y el gate STARTER. Mantené el PR en borrador mientras esté pendiente la aceptación de T-045 y dejá la evidencia en T-046.
 ```

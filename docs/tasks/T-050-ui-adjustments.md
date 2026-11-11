@@ -1,6 +1,6 @@
 ---
 id: T-050
-status: mergeable
+status: done
 priority: P1
 size: M
 executor: junie
@@ -139,6 +139,10 @@ Antes del FULL, checkpoint con SHA, base, comando, recursos propios y cleanup. S
 
 ## Checkpoint vigente
 
+**Conciliada como `done` (2026-11-11).** `gh pr view 51 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName,statusCheckRollup` (exit 0) confirmó [PR51](https://github.com/MatiasNicolasAcevedo/devnotes/pull/51) `MERGED` en `main`, `mergedAt: 2026-11-11T22:26:17Z`, squash `d230ee19e4a171bb73cf669c3fe4ced36b60a61c`, HEAD `967a129251c2cc8fbd6d0fdff4f3ecfb615bcff6` y [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43111488658/job/130828371589). Siguiente tarea [T-046](T-046-render-image.md), autorizada en borrador por el dueño.
+
+## Historial de revisión y verificación
+
 ### Segunda revisión independiente (2026-11-11)
 
 Reviewer en Codex de escritorio con PowerShell, Git, `gh`, Git Bash, Node y Docker. Modelo de familia GPT-6, variante y esfuerzo no expuestos. PR51 abierto contra `main`, HEAD publicado `4702fe6d2f98dffa7c54881de8657b78a25bd3f1`, base publicada `915459cbabd9f3f557df4b9012c8b4db5572863c`. GitHub devolvió `verify-required` SUCCESS del HEAD en el run `43110490049`. El perfil es FULL/STARTER y las huellas de HEAD/base coinciden con las de `a8637a7`. El log local registra exit 0 en las cinco etapas y el JUnit saneado registra 49/49, incluidos los casos de barra y captura en desktop y mobile.
@@ -262,4 +266,4 @@ Al emitir ese veredicto la evidencia de gate era parcial. El JUnit saneado del i
 
 ## Cierre y siguiente tarea
 
-PR propio y revisión independiente. Tras MERGED, conciliar y tomar [T-046](T-046-render-image.md) si [T-045](T-045-xlsx-journey.md#prueba-del-dueño) ya tiene el veredicto del dueño; si no, STATUS queda esperando esa prueba.
+PR51 MERGED y conciliado. Continúa [T-046](T-046-render-image.md) en borrador mientras el dueño tiene pendiente la [prueba de T-045](T-045-xlsx-journey.md#prueba-del-dueño).
