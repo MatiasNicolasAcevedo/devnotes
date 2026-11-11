@@ -1,6 +1,6 @@
 ---
 id: T-040
-status: mergeable
+status: done
 priority: P1
 size: S
 executor: junie
@@ -49,6 +49,8 @@ Se habilitó con el PR de [T-049](T-049-voice-retest.md) MERGED. Abre la rama co
 | Gate | APPLICATION | Desde la raíz con Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t040 STARTER_E2E_PROJECT=starter-e2e-t040 STARTER_SERVER_TESTS=container bash scripts/verify.sh` | Exit 0; los IT de daily siguen verdes |
 
 ## Checkpoint vigente
+
+**Conciliada como `done` (2026-11-11).** [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), único de S-107, MERGED: squash `ff02bbd933418cec46f34b25715313580753d0ee`, `mergedAt` 2026-11-11T04:02:14Z, HEAD revisado `706c494f6582c698226e4d4d79ae8b2594d7a91e`, confirmado con `gh pr view 49`. Lo que sigue es el historial de la rama compartida, anterior al merge.
 
 **Retoma vigente.** T-040 portadora en `in_review` para la única ronda independiente excepcional de PR49. Fuentes publicadas en `2f3b41f08fdca5e6fb4d37b8ba977ec626dcef38`, base `fc8fda5b20946e595c153144e99d9a3d3346ac5d`. El dueño aceptó los dirigidos de B1–B4 y el recorrido Playwright de portabilidad como gate excepcional de este PR. La sesión revisora debe cotejar la evidencia, las huellas, el HEAD/base publicados y `verify-required` sobre el HEAD vigente. [Evidencia y huellas](#evidencia-dirigida-de-b3-y-b4). La prueba de T-045 y su archivo, y el cleanup de T-049, corresponden al dueño. M3 y T-046 siguen pendientes.
 
@@ -205,4 +207,4 @@ Revisión favorable. El veredicto se publica en el PR ligado al HEAD que incluye
 
 ## Cierre y siguiente tarea
 
-Como portadora del [PR único de S-107](../specs/S-107-xlsx-portability.md#tareas-y-dependencias), T-040 conserva el estado en vuelo y el número de PR hasta el merge. Tras el MERGED se concilian las seis tareas y se quita el hallazgo resuelto de BACKLOG. Para continuar con T-046 también se exige la prueba satisfactoria registrada por el dueño.
+PR49 MERGED el 2026-11-11 (squash `ff02bbd`). T-040…T-044 quedaron conciliadas como `done` y el hallazgo resuelto salió de BACKLOG. [T-045](T-045-xlsx-journey.md#prueba-del-dueño) sigue `blocked` solo por la prueba del dueño, que también condiciona T-046. La tarea siguiente en la cola es [T-050](T-050-ui-adjustments.md).

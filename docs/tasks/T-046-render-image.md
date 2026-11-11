@@ -11,7 +11,7 @@ spec: S-108
 spec_version: 1
 branch: codex/t-046-render-image
 pr: null
-depends_on: [T-045]
+depends_on: [T-045, T-050]
 ---
 # T-046 · Imagen única para Render y smoke local con métricas
 
@@ -19,7 +19,7 @@ depends_on: [T-045]
 
 Preparar `deploy/render/Dockerfile` y `deploy/render/compose.smoke.yml` según [DEPLOYMENT · Piloto](../DEPLOYMENT.md#piloto-de-devnotes-en-render-free) y demostrar RP-01 y RP-02 de [S-108](../specs/S-108-render-pilot.md) desde un checkout limpio. No se crean recursos en Render.
 
-Está en `draft` solo porque depende de T-045: se habilita con el PR único de S-107 MERGED y T-045 aceptada por el dueño, y su sesión concilia `done` las seis tareas T-040…T-045 en el primer avance de su rama. La siguiente tarea es [T-047](T-047-render-first-deploy.md).
+Está en `draft` solo por sus dependencias: se habilita con [T-045](T-045-xlsx-journey.md) aceptada por el dueño y [T-050](T-050-ui-adjustments.md) MERGED, para que la imagen del piloto incluya los ajustes de UI. El PR único de S-107 ya está MERGED y T-040…T-044 conciliadas. La siguiente tarea es [T-047](T-047-render-first-deploy.md).
 
 ## Alcance y decisiones resueltas
 
@@ -62,7 +62,7 @@ Cleanup: `down --volumes` solo del proyecto de smoke, tras verificar los labels 
 
 ## Checkpoint vigente
 
-`draft` por dependencia. Contrato completo (frontera, 2026-11-10).
+`draft` por dependencia. Contrato completo (frontera, 2026-11-10). El 2026-11-11 el dueño antepuso T-050; el resto del contrato no cambia.
 
 ## Correcciones significativas
 

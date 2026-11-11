@@ -1,6 +1,6 @@
 ---
 id: T-043
-status: draft
+status: done
 priority: P1
 size: M
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I3
 spec: S-107
 spec_version: 1
 branch: codex/s-107-xlsx-portability
-pr: null
+pr: 49
 depends_on: [T-042]
 ---
 # T-043 · Vista previa e importación atómica en una cuenta vacía
@@ -68,6 +68,8 @@ XL-04. Casos mínimos de IT con PostgreSQL:
 | Gate | El que devuelva `bash scripts/verify.sh --policy origin/main` | Desde la raíz: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t043 STARTER_E2E_PROJECT=starter-e2e-t043 STARTER_SERVER_TESTS=container bash scripts/verify.sh` (con `--tooling` si es STARTER) | Exit 0 |
 
 ## Checkpoint vigente
+
+**Conciliada como `done` (2026-11-11).** [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), único de S-107, MERGED: squash `ff02bbd933418cec46f34b25715313580753d0ee`, `mergedAt` 2026-11-11T04:02:14Z, HEAD revisado `706c494f6582c698226e4d4d79ae8b2594d7a91e`, confirmado con `gh pr view 49`. Lo que sigue es el historial de la rama compartida, anterior al merge.
 
 2026-11-10. Implementer en Claude Code de escritorio (Claude Fable 5.2, esfuerzo no expuesto), sesión distinta de las de T-040, T-041 y T-042, con Git Bash, JDK 21, Maven Wrapper, Docker, Node 24, Git y `gh`. Impacto: dos rutas de API nuevas, POST `/api/v1/portability/import-preview` y POST `/api/v1/portability/imports`, con su regla en la allowlist de `SecurityConfig` (sesión y CSRF); la segunda escribe en `reference_item`, `daily_note`, `daily_version` y `voice_note` de la cuenta de la sesión. Dos `location` nuevas en nginx y una entrada en el proxy de Vite. Sin cambios de esquema, dependencias ni UI.
 

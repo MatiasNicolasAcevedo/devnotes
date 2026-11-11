@@ -1,6 +1,6 @@
 ---
 id: T-044
-status: draft
+status: done
 priority: P1
 size: M
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I3
 spec: S-107
 spec_version: 1
 branch: codex/s-107-xlsx-portability
-pr: null
+pr: 49
 depends_on: [T-043]
 ---
 # T-044 · Pantalla «Datos»: exportar e importar
@@ -67,6 +67,8 @@ XL-05. Casos mínimos de componente:
 | Gate integrado de S-107 (se ejecuta al cerrar T-045, no aquí) | FULL sobre el HEAD final de la rama compartida | Comando único en [T-045](T-045-xlsx-journey.md#aceptación-y-pruebas); no se ejecuta en esta tarea. | Exit 0, cobertura sin bajar |
 
 ## Checkpoint vigente
+
+**Conciliada como `done` (2026-11-11).** [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), único de S-107, MERGED: squash `ff02bbd933418cec46f34b25715313580753d0ee`, `mergedAt` 2026-11-11T04:02:14Z, HEAD revisado `706c494f6582c698226e4d4d79ae8b2594d7a91e`, confirmado con `gh pr view 49`. Lo que sigue es el historial de la rama compartida, anterior al merge.
 
 2026-11-10. Implementer en Claude Code de escritorio (Claude Fable 5.2, esfuerzo no expuesto), sesión distinta de las de T-040…T-043, con Git Bash, Node 24, npm, Git y `gh`. Impacto: ruta de UI nueva `/data` con el enlace «Datos» en la barra; consume las tres rutas de portabilidad ya existentes. El cliente HTTP único gana `requestBlob` para respuestas binarias. Sin cambios de API, permisos, esquema, datos ni dependencias.
 

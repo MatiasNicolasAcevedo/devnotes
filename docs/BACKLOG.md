@@ -2,22 +2,18 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
-Próxima acción: revisión independiente del PR único de S-107 (PR49), con [T-040](tasks/T-040-daily-timestamps.md) como tarea portadora en `in_review`; T-041…T-045 están cerradas en la rama. Después, prueba del dueño de [T-045](tasks/T-045-xlsx-journey.md) y, tras el MERGED, [T-046](tasks/T-046-render-image.md).
+Próxima acción: frontera completa con el dueño el contrato de [T-050](tasks/T-050-ui-adjustments.md) (ajustes mínimos de UI) y el dueño hace la prueba pendiente de [T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño). Después, [T-046](tasks/T-046-render-image.md).
 
-## Siguientes · plan del dueño del 2026-11-10
+## Siguientes · plan del dueño del 2026-11-10, ajustado el 2026-11-11
 
-Orden decidido por el dueño: (1) activar Groq y probar M2-RC1; (2) exportar e importar la cuenta en `.xlsx` y probarlo; (3) si todo sale bien, desplegar el piloto en Render. Contratos: [VOICE-RELEASE](VOICE-RELEASE.md), [S-107](specs/S-107-xlsx-portability.md) y [S-108](specs/S-108-render-pilot.md), con la receta técnica en [DEPLOYMENT](DEPLOYMENT.md#piloto-de-devnotes-en-render-free). Cada tarea `draft` tiene el contrato completo y espera solo a la anterior, sin volver a frontera. T-040…T-045 comparten la rama `codex/s-107-xlsx-portability` y un único PR por decisión del dueño: cada una se habilita al cerrar la anterior en la rama. [Regla](specs/S-107-xlsx-portability.md#tareas-y-dependencias). Fuera de S-107, quien concilia un MERGED habilita la siguiente. Una sesión nueva por tarea y por revisión.
+Del plan original quedan hechos la activación de Groq y la portabilidad `.xlsx` (ver [Hechas · I3](#hechas--i3--m3-portabilidad-xlsx)). El 2026-11-11 el dueño antepuso al despliegue una única tarea de ajustes de UI. Contratos: [S-108](specs/S-108-render-pilot.md), con la receta técnica en [DEPLOYMENT](DEPLOYMENT.md#piloto-de-devnotes-en-render-free). Una tarea y un PR por vez, con sesión nueva por tarea y por revisión; quien concilia un MERGED habilita la siguiente.
 
 | Orden | Contrato / resultado | Ejecuta | Dependencia |
 |---|---|---|---|
-| 3 | [T-040](tasks/T-040-daily-timestamps.md) · Instantes de daily y versiones a microsegundos (bugfix previo a exportar) | Junie | T-049 MERGED (PR48, `fc8fda5`) |
-| 4 | [T-041](tasks/T-041-xlsx-codec.md) · Codec `devnotes-xlsx` v1 y límites | Junie | T-040 cerrada en la rama |
-| 5 | [T-042](tasks/T-042-xlsx-export-api.md) · GET de exportación privada | Junie | T-041 cerrada en la rama |
-| 6 | [T-043](tasks/T-043-xlsx-import-api.md) · Vista previa e importación atómica en cuenta vacía, y proxies | Junie | T-042 cerrada en la rama |
-| 7 | [T-044](tasks/T-044-xlsx-client.md) · Pantalla «Datos» | Junie | T-043 cerrada en la rama |
-| 8 | [T-045](tasks/T-045-xlsx-journey.md) · E2E de ida y vuelta, FULL integrado, PR único de S-107 y prueba del dueño | Junie y el dueño | T-044 cerrada en la rama |
-| 9 | [T-046](tasks/T-046-render-image.md) · Imagen única y smoke local con 512 MB | Junie | PR único de S-107 MERGED y T-045 aceptada |
-| 10 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | T-046 MERGED |
+| 1 | [T-045](tasks/T-045-xlsx-journey.md) · Solo falta la prueba del dueño: exportar e importar en una cuenta vacía | Dueño | Código MERGED en PR49 |
+| 2 | [T-050](tasks/T-050-ui-adjustments.md) · Ajustes mínimos de UI | Frontera define; Junie implementa | Contrato por completar con el dueño |
+| 3 | [T-046](tasks/T-046-render-image.md) · Imagen única y smoke local con 512 MB | Junie | T-045 aceptada y T-050 MERGED |
+| 4 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | T-046 MERGED |
 
 Retorno a frontera si el dueño emite «no aceptada» en T-045 o T-047, ante una decisión fuera de contrato o al cerrar T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
 
@@ -35,16 +31,26 @@ Retorno a frontera si el dueño emite «no aceptada» en T-045 o T-047, ante una
 
 - **Casos de prueba faltantes del adaptador (C-1 del veredicto del PR48, no bloqueante).** `GroqTranscriptionClientTest` no cubre texto con `segments: []` ni `no_speech_prob` no numérico o mayor que 1, que el código conserva como voz. Añadir ambos casos cuando se toque el adaptador. Sin tarea asignada.
 
-- **Cleanup pendiente de T-049 (E-4, requiere autorización del dueño).** Siguen en disco los recursos listados en [T-049](tasks/T-049-voice-retest.md#decisión-del-dueño-y-cierre-de-la-matriz), además de la rama `codex/t-049-voice-retest` (local y remota) y el worktree `.orchestrator/t049-worktree`. El checkout original pasó de `8d787c1` con HEAD separado a la rama `codex/s-107-xlsx-portability` al tomar T-040; el stack del dueño no se tocó.
-
 ### Hallazgos del control de S-107
 
-Del [control de avance de T-040…T-045](tasks/T-045-xlsx-journey.md#control-de-avance-de-t-040t-045) (2026-11-11). Ninguno bloquea la revisión del PR49 ni tiene tarea asignada.
+Del [control de avance de T-040…T-045](tasks/T-045-xlsx-journey.md#control-de-avance-de-t-040t-045) (2026-11-11). Ninguno bloqueó el PR49 ni tiene tarea asignada.
 
 - **Puertos fijos de los ensayos de proxies.** `scripts/test-auth-proxies.mjs` publica `127.0.0.1:5175` y `5176` sin parámetro. Con un stack de desarrollo del dueño en el 5175, `test-auth-proxies-signals.sh` y `test-auth-proxies.sh` fallan con `port is already allocated` y cortan el gate STARTER después de unos 45 minutos, antes del E2E. Propuesta: aceptar un par de puertos por variable, como `STARTER_PORTABILITY_PROXY_PORT` en el ensayo de portabilidad, o comprobar el puerto al inicio del gate. Es un cambio de tooling del starter.
 - **Ensayo de proxies de portabilidad fuera del gate.** `scripts/test-portability-proxies.mjs`, igual que `test-voice-proxies.mjs`, no está en `verify-tooling.sh` y se corre a mano. El límite de 11 MB de nginx para las dos rutas de importación no tiene regresión automática. Decidir si entra en tooling.
 - **OpenAPI sin caso de portabilidad.** Las tres rutas están anotadas detrás del interruptor, pero `OpenApiContractIT` no las comprueba (nota de T-042).
 - **Comandos dirigidos con `-Dtest=none`.** Los comandos de contrato de T-041, T-042 y T-043 (`./mvnw -q verify -Dit.test=… -Dtest=none`) terminan en exit 1 por `jacoco:check` en un árbol limpio aunque las pruebas pasen. Los contratos futuros con un IT dirigido deberían añadir `-Djacoco.skip=true` y dejar la cobertura al `clean verify`.
+
+## Hechas · I3 / M3 portabilidad xlsx
+
+[S-107](specs/S-107-xlsx-portability.md) entró a `main` con el PR único [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), MERGED el 2026-11-11, squash `ff02bbd`. M3 se da por cumplida cuando el dueño registre su veredicto en T-045.
+
+- [T-040](tasks/T-040-daily-timestamps.md): instantes de daily y versiones a microsegundos, más las correcciones B1…B4 de la revisión.
+- [T-041](tasks/T-041-xlsx-codec.md): codec `devnotes-xlsx` v1 y límites.
+- [T-042](tasks/T-042-xlsx-export-api.md): GET de exportación privada.
+- [T-043](tasks/T-043-xlsx-import-api.md): vista previa e importación atómica en cuenta vacía, y proxies.
+- [T-044](tasks/T-044-xlsx-client.md): pantalla «Datos».
+
+Previas del mismo plan: [T-039](tasks/T-039-voice-activation.md), [T-048](tasks/T-048-groq-multipart-fix.md) y [T-049](tasks/T-049-voice-retest.md), activación y reensayo de Groq (PR46, PR47 y PR48 MERGED).
 
 ## Hechas · S-106 completada
 
@@ -121,8 +127,6 @@ Controles de cinco/diez por Junie tras T-030/T-035; retorno a frontera al entreg
 Hallazgo fuera de alcance de T-035 (5.ª revisión PR40, 2026-11-09), heredado de T-034 y presente en main `085dc76`: en `client/src/features/voice/VoiceComposer.tsx` el efecto que llama a `draft.transcribe()` depende de `draft` (objeto nuevo en cada render) y de `recorder.result`, que sigue fijado tras detener; cada render vuelve a transcribir, incrementa la generación y lanza otra petición hasta que llega la respuesta. Una prueba descartable con el grabador simulado devolviendo `result` en `idle` colgó el worker de Vitest (bucle de render). Riesgo: varias transcripciones por intento (S-105 §4: una sola petición) y cupo Groq. Las pruebas actuales simulan el grabador sin resultado y no lo detectan. Corregir antes de T-037, con prueba roja «un stop con resultado dispara exactamente un POST de transcripción». **Asignado a T-036** por decisión del dueño (2026-11-09): paso 4 y aceptación de su contrato. No confundir con el bucle de render del efecto de sincronización de captura, ya corregido en T-035 (8ac04b4).
 
 Prueba faltante no bloqueante de T-035 (8.ª revisión PR40, 2026-11-09, sin pérdida de datos): la guarda `if (prev.conflict != null) return prev` de `loadNote` (`client/src/features/voice/useVoiceDraft.ts:183`) no tiene prueba propia; quitarla deja la suite verde porque los casos con conflicto `update` ya son `dirty`. Solo decide con borrador `clean` y conflicto `delete`: si el 409 del DELETE llega antes que un refetch del detalle en vuelo con revisión nueva, sin la guarda el diálogo se cerraría solo y el editor mostraría la revisión remota (S-105 §7: nunca actualizar automáticamente; no hay texto sin guardar en riesgo). Añadir en VoicePage.test.tsx la variante de «B-1 … durante el borrado» liberando primero el DELETE (409) y después el GET, que exija el diálogo abierto y «Texto 1»; debe fallar al quitar la guarda.
-
-Hallazgo fuera de alcance de T-037 (2026-11-10), **asignado a [T-040](tasks/T-040-daily-timestamps.md)** por planificación de frontera del 2026-11-10, que también incluye `DailyVersionService`. `DailyNoteService.nowMicros()` (`server/src/main/java/com/example/devnotes/daily/application/DailyNoteService.java`) repite el patrón que T-037 corrigió en voz: `Instant.ofEpochMilli(clock.millis()).plusNanos(...)` suma dos veces la fracción de milisegundos y adelanta `createdAt`/`updatedAt` hasta casi 1 s, en lugar de truncar a microsegundos. Las pruebas usan instantes sin fracción y no lo detectan. Riesgo: marcas de tiempo de daily y versiones desplazadas y orden temporal no fiable. Corregir con prueba unitaria roja con reloj fijo de fracción no nula, como `VoiceNoteServiceTest`.
 
 Hallazgo de pruebas daily fuera de T-036. En el cliente Linux del gate, MSW registró un PUT sin handler en el caso existente «discard no revive borrador por ACK tardío» de `useDailyNote.test.tsx`. La suite pasó 511/511. El caso depende de una espera de 100 ms y solo instala handlers GET.
 
