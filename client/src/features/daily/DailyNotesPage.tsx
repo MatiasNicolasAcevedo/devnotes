@@ -3,6 +3,7 @@ import AlertTitle from '@mui/material/AlertTitle'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
+import IconButton from '@mui/material/IconButton'
 import Link from '@mui/material/Link'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
@@ -10,9 +11,9 @@ import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
+import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { Link as RouterLink, useNavigate, useParams } from 'react-router'
 import { useSession } from '../../features/auth/sessionContext'
 import { useDailyDraftContext } from '../../features/daily/DailyDraftProvider'
@@ -20,8 +21,12 @@ import { listDailyNotes, type DailyNoteListItem } from '../../features/daily/api
 import { DailyEditor } from '../../features/daily/editor/DailyEditor'
 import { documentToPlainText, emptyDocument } from '../../features/daily/editor/dailyDocument'
 import type { DailyContent } from '../../features/daily/editor/dailyDocument'
-import { SaveDailyVersion } from '../../features/daily/SaveDailyVersion'
+import { SaveDailyVersion, SaveDailyVersionNotices } from '../../features/daily/SaveDailyVersion'
+import { SaveStatusIndicator } from '../../features/daily/SaveStatusIndicator'
 import { CopyButton } from '../../shared/ui/CopyButton'
+import { CalendarIcon, TodayIcon } from '../../shared/ui/icons'
+import { useIsNarrow } from '../../shared/ui/useIsNarrow'
+import { visuallyHidden } from '../../shared/ui/visuallyHidden'
 import { useSaveDailyVersion } from '../../features/daily/useSaveDailyVersion'
 import { isValidIsoDate } from './dateUtils'
 
@@ -30,7 +35,7 @@ import { isValidIsoDate } from './dateUtils'
 function DailyNotesInvalidDate({ date }: { date: string }) {
   return (
     <Stack spacing={2}>
-      <Typography variant="h5" component="h1">
+      <Typography component="h1" sx={visuallyHidden}>
         Notas diarias
       </Typography>
       <Alert severity="error">
@@ -51,7 +56,7 @@ function DailyNotesInvalidDate({ date }: { date: string }) {
 function DailyNotesLoginRequired() {
   return (
     <Stack spacing={2}>
-      <Typography variant="h5" component="h1">
+      <Typography component="h1" sx={visuallyHidden}>
         Notas diarias
       </Typography>
       <Alert severity="info">Inicia sesión para acceder a tus notas.</Alert>
@@ -79,6 +84,8 @@ function DailyNotesInner() {
   // Refs para evitar closures stale en callbacks
   const navigateToDateRef = useRef(navigateToDate)
   const navigatingRef = useRef(false)
+  const dateInputRef = useRef<HTMLInputElement>(null)
+  const narrow = useIsNarrow()
   useEffect(() => {
     navigateToDateRef.current = navigateToDate
   }, [navigateToDate])
@@ -155,98 +162,153 @@ function DailyNotesInner() {
   }
 
   const targetDate = activeDate
+  const notePlainText = content ? documentToPlainText(content) : ''
+  const [, month, day] = targetDate.split('-')
+  const shortDate = `${day}/${month}`
 
-  // Indicador de guardado
-  let saveIndicator: React.ReactNode
-  if (status === 'saving') {
-    saveIndicator = (
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-        <CircularProgress size={16} aria-hidden />
-        <Typography variant="caption">Guardando…</Typography>
-      </Stack>
-    )
-  } else if (status === 'saved') {
-    saveIndicator = (
-      <Typography variant="caption" color="success.main">
-        Guardado
-      </Typography>
-    )
-  } else if (status === 'error') {
-    saveIndicator = (
-      <Alert severity="error" sx={{ width: 'fit-content' }}>
-        Error al guardar.{' '}
-        <Link component="button" onClick={retry}>
-          Reintentar
-        </Link>
-      </Alert>
-    )
-  } else if (status === 'conflict') {
-    saveIndicator = (
-      <Alert severity="warning">
-        <AlertTitle>Conflicto de guardado</AlertTitle>
-        Otra sesión modificó esta nota. Recarga para ver el estado actual.
-      </Alert>
-    )
-  } else if (isDirty) {
-    saveIndicator = <Typography variant="caption">Sin guardar</Typography>
-  } else {
-    saveIndicator = null
+  // Abre el selector nativo; si el navegador no lo ofrece o lo rechaza, el foco queda en el input para escribirla.
+  const openDatePicker = () => {
+    const input = dateInputRef.current
+    if (!input) return
+    try {
+      if (typeof input.showPicker === 'function') {
+        input.showPicker()
+        return
+      }
+    } catch {
+      // showPicker exige un gesto del usuario y puede lanzar; se cae al foco.
+    }
+    input.focus()
   }
 
-  const notePlainText = content ? documentToPlainText(content) : ''
+  const toolbarStart = (
+    <>
+      <Box
+        component="span"
+        sx={{
+          position: 'relative',
+          display: 'inline-flex',
+          flexShrink: 0,
+          borderRadius: 1,
+          '&:focus-within': { outline: '2px solid', outlineColor: 'primary.main' },
+        }}
+      >
+        <Button
+          size="small"
+          color="inherit"
+          startIcon={<CalendarIcon />}
+          aria-label={`Cambiar fecha (${shortDate})`}
+          disabled={saveVersion.isLocked}
+          onClick={openDatePicker}
+          sx={{ minWidth: 0 }}
+        >
+          {shortDate}
+        </Button>
+        {/* Oculto a la vista pero operable: conserva la etiqueta, el teclado y el selector nativo. */}
+        <Box
+          component="input"
+          ref={dateInputRef}
+          type="date"
+          aria-label="Fecha"
+          value={targetDate}
+          disabled={saveVersion.isLocked}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            if (isValidIsoDate(event.target.value)) {
+              void handleNavigateToDate(event.target.value)
+            }
+          }}
+          sx={{ ...visuallyHidden, left: 0, bottom: 0, margin: 0, opacity: 0, colorScheme: 'dark' }}
+        />
+      </Box>
+      {narrow ? (
+        <Tooltip title="Ir a hoy">
+          <IconButton
+            component={RouterLink}
+            to="/notes"
+            size="small"
+            color="primary"
+            aria-label="Ir a hoy"
+            sx={{ flexShrink: 0 }}
+          >
+            <TodayIcon />
+          </IconButton>
+        </Tooltip>
+      ) : (
+        <Button component={RouterLink} to="/notes" size="small" sx={{ minWidth: 0, flexShrink: 0 }}>
+          Hoy
+        </Button>
+      )}
+    </>
+  )
+
+  const toolbarEnd = (
+    <>
+      <SaveStatusIndicator status={status} isDirty={isDirty} />
+      <CopyButton aria-label="Copiar nota" text={notePlainText} iconOnly />
+      {!ctx.isLoading && <SaveDailyVersion save={saveVersion} date={targetDate} />}
+      {/* Los avisos largos no entran en la fila de controles: van en una fila propia justo debajo. */}
+      <Box
+        className="daily-editor-toolbar-notices"
+        sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}
+      >
+        {error && status === 'error' && (
+          <Alert severity="error" role="alert">
+            No se pudo cargar la nota.{' '}
+            <Link component="button" onClick={retry}>
+              Reintentar
+            </Link>
+          </Alert>
+        )}
+        {status === 'error' && (
+          <Alert severity="error">
+            Error al guardar.{' '}
+            <Link component="button" onClick={retry}>
+              Reintentar
+            </Link>
+          </Alert>
+        )}
+        {status === 'conflict' && (
+          <Alert severity="warning">
+            <AlertTitle>Conflicto de guardado</AlertTitle>
+            Otra sesión modificó esta nota. Recarga para ver el estado actual.
+          </Alert>
+        )}
+        {!ctx.isLoading && <SaveDailyVersionNotices save={saveVersion} />}
+      </Box>
+    </>
+  )
 
   return (
     <Stack spacing={1}>
-      <Stack direction="row" sx={{ alignItems: 'center', flexWrap: 'wrap', gap: 1.5 }}>
-        <Typography variant="h5" component="h1">
-          Notas diarias
-        </Typography>
-        <TextField
-          label="Fecha"
-          type="date"
-          size="small"
-          value={targetDate}
-          disabled={saveVersion.isLocked}
-          onChange={(e) => {
-            if (isValidIsoDate(e.target.value)) {
-              handleNavigateToDate(e.target.value)
-            }
-          }}
-          slotProps={{ inputLabel: { shrink: true } }}
-          sx={{ minWidth: 180 }}
-        />
-        <Link component={RouterLink} to="/notes">
-          Hoy
-        </Link>
-        <Stack direction="row" spacing={1} sx={{ alignItems: 'center', ml: 'auto' }}>
-          <CopyButton aria-label="Copiar nota" text={notePlainText}>
-            Copiar nota
-          </CopyButton>
-          {saveIndicator}
-        </Stack>
-      </Stack>
+      <Typography component="h1" sx={visuallyHidden}>
+        Notas diarias
+      </Typography>
 
-      {/* Error de query inicial */}
-      {error && status === 'error' && (
-        <Alert severity="error" role="alert">
-          No se pudo cargar la nota.{' '}
-          <Link component="button" onClick={retry}>
-            Reintentar
-          </Link>
-        </Alert>
-      )}
-
-      {/* Editor */}
-      <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
-        <DailyEditor
-          initialContent={content ?? emptyDocument()}
-          onChange={handleEditorChange}
-          readOnly={saveVersion.isLocked || ctx.isLoading}
-        />
-      </Paper>
-
-      {/* Guardar versión manual */}
-      {!ctx.isLoading && <SaveDailyVersion save={saveVersion} date={targetDate} />}
+      {/* Primera pantalla: columna del alto libre de la ventana (barra de 48 px y márgenes), donde el editor crece. */}
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: {
+            xs: 'max(calc(100dvh - 64px), 320px)',
+            sm: 'max(calc(100dvh - 72px), 320px)',
+          },
+        }}
+      >
+        <Paper
+          variant="outlined"
+          sx={{ flex: '1 1 auto', minHeight: 0, display: 'flex', flexDirection: 'column' }}
+        >
+          <DailyEditor
+            initialContent={content ?? emptyDocument()}
+            onChange={handleEditorChange}
+            readOnly={saveVersion.isLocked || ctx.isLoading}
+            toolbarStart={toolbarStart}
+            toolbarEnd={toolbarEnd}
+            fillHeight
+          />
+        </Paper>
+      </Box>
 
       {/* Lista de notas existentes */}
       <Stack spacing={1}>

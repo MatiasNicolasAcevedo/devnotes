@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect } from './fixtures';
+import { expect, savedIndicator } from './fixtures';
 
 export async function chooseDate(page: Page, date: string) {
   await page.getByLabel('Fecha', { exact: true }).fill(date);
@@ -18,7 +18,7 @@ export async function writeWork(page: Page, date: string, text: string) {
   const note = await response.json();
   expect(note.date).toBe(date);
   expect(JSON.stringify(note.content)).toContain(text);
-  await expect(page.getByText('Guardado', { exact: true })).toBeVisible();
+  await expect(savedIndicator(page)).toBeVisible();
   return note;
 }
 

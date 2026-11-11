@@ -183,16 +183,6 @@ describe('DailyNotesPage', () => {
     // El editor tiene un label accesible
     expect(screen.getByLabelText('Editor de nota diaria')).toBeInTheDocument()
   })
-
-  it('la home ofrece enlace a Notas', async () => {
-    installAuthBackend({ user: buildAuthUser() })
-    renderWithProviders(<AppRoutes />)
-
-    expect(await screen.findByRole('link', { name: 'Ir a Notas' })).toHaveAttribute(
-      'href',
-      '/notes',
-    )
-  })
 })
 
 describe('todayLocal', () => {

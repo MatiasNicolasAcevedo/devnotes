@@ -1,15 +1,15 @@
 ---
 id: T-050
-status: ready
+status: mergeable
 priority: P1
 size: M
 executor: junie
-role: implementer
+role: merger
 milestone: M3
 product_cycle: I3
 spec: null
 branch: codex/t-050-ui-adjustments
-pr: null
+pr: 51
 depends_on: [T-044]
 ---
 # T-050 · Interfaz compacta para usar DevNotes como app de escritorio
@@ -132,19 +132,133 @@ Pruebas de componente porque el riesgo es de presentación e interacción; E2E s
 | UI-09: `manifest.json` válido y enlazado | Unitario | Desde `client/`: `npm test -- --run src/app/manifest.test.ts` (prueba nueva que lee `public/manifest.json` e `index.html`) | Exit 0 |
 | Gate de cliente | Cliente | Desde la raíz: `bash scripts/verify.sh --client` | Exit 0, cobertura sin bajar umbrales |
 | Recorridos afectados, durante la iteración | E2E dirigido | Desde la raíz en Git Bash, un patrón por corrida, con el título del caso que se esté ajustando: `STARTER_E2E_PROJECT=starter-e2e-t050-iter bash scripts/e2e.sh --grep "CA-01:" --project desktop`. Repetir con `"voice:"`, `"portability:"` y los demás títulos tocados, y con `--project mobile` para los que cambian en angosto | Exit 0 en cada caso ajustado |
-| Gate de cierre | FULL de aplicación | Desde la raíz en Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t050 STARTER_E2E_PROJECT=starter-e2e-t050 STARTER_SERVER_TESTS=container bash scripts/verify.sh` | Exit 0, una sola vez sobre las fuentes finales |
+| Gate de cierre | STARTER | Desde la raíz en Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t050-r2-a8637a7 STARTER_E2E_PROJECT=starter-e2e-t050-r2-a8637a7 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter` | Exit 0 sobre las fuentes finales |
 | Aceptación del dueño | Manual | En `starter-dev-local-nginx`, con Chrome: instalar DevNotes como app, abrirla en una ventana de unos 830 px y en el modo móvil de 375 px | Veredicto del dueño con SHA: abre en Notas, todo entra en una fila, se ve que graba |
 
 Antes del FULL, checkpoint con SHA, base, comando, recursos propios y cleanup. Si el dueño tiene su stack en el puerto 5175, pedirle que lo detenga: ver [BACKLOG](../BACKLOG.md#hallazgos-del-control-de-s-107).
 
 ## Checkpoint vigente
 
-2026-11-11. Frontera en Claude Code de escritorio (Claude Fable 5.2, `claude-fable-5-2`, esfuerzo no expuesto), con Git Bash, Git, `gh`, Docker y Node. Contrato completo y `ready`: el dueño revisó la aplicación en su stack local, envió ocho capturas, eligió la variante A de la barra entre tres maquetas y confirmó las decisiones UI-01 a UI-09. Impacto previsto: solo UI del cliente, más un medidor de nivel local del micrófono que no cambia lo que se envía; sin cambios de API, permisos, esquema ni datos. Nada implementado todavía.
+### Segunda revisión independiente (2026-11-11)
+
+Reviewer en Codex de escritorio con PowerShell, Git, `gh`, Git Bash, Node y Docker. Modelo de familia GPT-6, variante y esfuerzo no expuestos. PR51 abierto contra `main`, HEAD publicado `4702fe6d2f98dffa7c54881de8657b78a25bd3f1`, base publicada `915459cbabd9f3f557df4b9012c8b4db5572863c`. GitHub devolvió `verify-required` SUCCESS del HEAD en el run `43110490049`. El perfil es FULL/STARTER y las huellas de HEAD/base coinciden con las de `a8637a7`. El log local registra exit 0 en las cinco etapas y el JUnit saneado registra 49/49, incluidos los casos de barra y captura en desktop y mobile.
+
+Reensayo dirigido desde la raíz con Git Bash de Windows y Node 24: `STARTER_E2E_PROJECT=starter-e2e-t050-review2-4702fe6 bash scripts/e2e.sh --grep "T-050: visitor navigation|voice: capture" --project desktop`, exit 0, 2/2. JUnit saneado en `e2e/artifacts/starter-e2e-t050-review2-4702fe6/sanitized/junit.xml`. Fixtures ficticias, con limpieza del proyecto verificada por etiquetas exactas (`container/network/volume=0/0/0`). Desde `client/`, `npm test -- --run src/app src/features/auth src/features/system src/features/voice`, 262/262. `node scripts/docs-check.mjs` y `git diff --check`, exit 0.
+
+1. **UI-02/UI-03.** Chromium comprobó a 375, 600, 620 y 1280 px que las pestañas, el indicador de readiness pendiente y «Ingresar» están visibles en una fila de hasta 48 px, separados y dentro del viewport. La prueba demoró la petición real de readiness y comprobó su recuperación al liberarla.
+2. **UI-07.** La prueba de navegador guardó una nota de más de 120 puntos de código. Comparó el extracto real de la API con el corte esperado y el `title` con el texto completo, incluido el tramo posterior. También comprobó `nowrap`, elipsis y desborde del texto dentro del extracto. Vitest cubrió el límite con Unicode y la nota corta sin petición de detalle.
+3. **UI-08.** Chromium comprobó el avance de `mm:ss` junto a «Detener», cinco barras y una sola petición de transcripción. Las regresiones de cliente cubrieron un solo `getUserMedia`, RMS, silencio y recuperación, limpieza del `AudioContext`, cancelación y grabación sin medidor.
+
+Resultado técnico favorable. Impacto en presentación del cliente, lecturas de detalle de notas propias y pruebas E2E. La oferta de instalación de Chrome con SVG y el titileo con movimiento reducido quedan para la comprobación manual del dueño. El comentario de revisión en PR51 registra el veredicto con HEAD, base y CI después de publicar esta transición. Si GitHub confirma MERGED, el comentario de cierre conserva el resultado de `gh pr view` para conciliar T-050 en la próxima rama autorizada. T-046 espera además la aceptación del dueño en T-045.
+
+### Corrección de la revisión (2026-11-11)
+
+Implementer en Codex de escritorio con PowerShell, Git, `gh`, Git Bash, Node y Docker. Modelo exacto y esfuerzo no expuestos. GitHub confirmó PR51 abierto, HEAD `3542a35b5e20b673a3d5b01bf37f2670c2eb25a3`, base `915459cbabd9f3f557df4b9012c8b4db5572863c` y `verify-required` SUCCESS. El [veredicto](https://github.com/MatiasNicolasAcevedo/devnotes/pull/51#issuecomment-6803481769) fija los tres hallazgos. Impacto en cliente y E2E: espacio en la barra, detalle existente para completar el `title` y disposición del cronómetro. Se conservan los contratos de API, permisos y persistencia.
+
+Rojo sobre `3542a35` más las pruebas locales, con base `915459c`: `npm test -- --run src/features/voice/VoiceLayout.test.tsx` desde `client/`, exit 1 (2/12 fallan por el `title` truncado y la fila del cronómetro). `STARTER_E2E_PROJECT=starter-e2e-t050-r2-red bash scripts/e2e.sh --grep "T-050: visitor navigation|voice: capture" --project desktop`, exit 1 (2/2 fallan). JUnit saneado en `e2e/artifacts/starter-e2e-t050-r2-red/sanitized/`; el script retiró los contenedores, la red y el volumen propios.
+
+Sobre `fb6f579` y base `915459c`, desde `client/`: `npm test -- --run src/app src/features/auth src/features/system src/features/voice`, 262/262; `npm run typecheck` y `npm run lint`, exit 0. `STARTER_E2E_PROJECT=starter-e2e-t050-r2-green bash scripts/e2e.sh --grep "T-050: visitor navigation|voice: capture" --project desktop` salió 1: barra aprobada en los cuatro anchos, Voz agotó su plazo al intentar guardar la segunda nota con un emoji. El validador preexistente rechazaba su par sustituto válido, comprobado en Node con la expresión de `voiceNoteTextSchema`. Se conserva la prueba Unicode de componente y se usa texto del plano básico para que el E2E cree una nota larga. El defecto del validador queda en BACKLOG. El JUnit saneado y la traza de acciones están en `e2e/artifacts/starter-e2e-t050-r2-green/sanitized/`; contenedores, red y volumen retirados.
+
+Reensayo dirigido sobre `a8637a7`, base `915459c`: `STARTER_E2E_PROJECT=starter-e2e-t050-r2-voice bash scripts/e2e.sh --grep "voice: capture" --project desktop`, exit 0 (1/1). Verificó el corte real de la lista y el `title` completo con elipsis en navegador, el cronómetro junto a «Detener» y el flujo de captura y transcripción. Reporte saneado en `e2e/artifacts/starter-e2e-t050-r2-voice/sanitized/`; retirados contenedores, red y volumen propios.
+
+Gate STARTER del 2026-11-11. HEAD de fuentes `a8637a7a8785e8311b933fb4edab63d77eaef6af`, base publicada `915459cbabd9f3f557df4b9012c8b4db5572863c`. Huellas técnicas antes y después: HEAD `52a1430c70fe68e6721cd3f0909b02f54dad6f94`, base `af65013ad4539e55ead65261f776b21d18fca4ca` (`git ls-tree -r` sin Markdown, pasado a `git hash-object --stdin` desde PowerShell). Se ejecutó el comando de la tabla con Git Bash explícito y Node v24.21.0 tras comprobar los SHA remotos, la clasificación FULL/STARTER y la ausencia de recursos por etiqueta exacta. STARTER usó `.env.example` y las fixtures ficticias de cada arnés.
+
+Resultado exit 0. Docs 25 s, server 543 s (429 unitarias y 241 IT PostgreSQL), cliente 175 s (typecheck, lint, formato, tests con cobertura y build), tooling 2319 s y Playwright 1498 s (25/25 desktop, 24/24 mobile, cero omitidos). Pasaron ambos proyectos de `T-020: visible link button`; sigue sin comprobarse la causa del fallo histórico. Log local en `e2e/artifacts/t050-r2-starter-a8637a7.log` y JUnit saneado en `e2e/artifacts/starter-e2e-t050-r2-a8637a7/sanitized/junit.xml`. Tooling y E2E aplicaron su limpieza propia. Se retiraron la red y el volumen de caché de verify y se comprobó `container/network/volume=0/0/0` en verify y E2E por etiquetas exactas. La transición documental conserva las huellas técnicas del gate.
+
+Las correcciones se publicaron en la rama de PR51 con `a8637a7`. Sigue la revisión independiente del HEAD publicado y la base indicada, con `verify-required` del HEAD vigente y las condiciones de AUTONOMY.
+
+### Preparación del contrato
+
+2026-11-11. Frontera en Claude Code de escritorio (Claude Fable 5.2, `claude-fable-5-2`, esfuerzo no expuesto), con Git Bash, Git, `gh`, Docker y Node. Contrato completo y `ready`: el dueño revisó la aplicación en su stack local, envió ocho capturas, eligió la variante A de la barra entre tres maquetas y confirmó las decisiones UI-01 a UI-09. Impacto previsto: solo UI del cliente, más un medidor de nivel local del micrófono que no cambia lo que se envía; sin cambios de API, permisos, esquema ni datos.
+
+### Avance del implementer (2026-11-11)
+
+Implementer en Claude Code de escritorio (Claude Fable 5.2, `claude-fable-5-2`, esfuerzo no expuesto), con Git Bash, Git, `gh`, Docker y Node. Rama `codex/t-050-ui-adjustments` desde main `915459c` (PR50 MERGED, mergeado por esta sesión con autorización expresa del dueño). Impacto: `client/` y `e2e/`, más la ruta de un archivo en `scripts/test-dev-stack.sh`, fuera del alcance escrito y autorizada expresamente por el dueño en esta sesión; sin cambios de server, API, permisos, esquema ni datos. El medidor de nivel lee el mismo `MediaStream` y no cambia lo que se graba ni lo que se envía.
+
+Hecho, con las pruebas primero en rojo en cada paso:
+
+| Paso | Commit | Rojo previo | Verde |
+|---|---|---|---|
+| 1 · Barra y rutas (UI-01 a UI-04) | `051f803` | 32 pruebas | `npm test -- --run src/app src/features/auth src/features/system` exit 0 |
+| 2 · Notas (UI-05 y UI-06) | `99034f8` | 15 pruebas | `npm test -- --run src/features/daily` exit 0 (246 pruebas) |
+| 3 · Voz (UI-07 y UI-08) | `8dc868c` | 28 pruebas | `npm test -- --run src/features/voice` exit 0 (174 pruebas) |
+| 4 · Manifiesto (UI-09) | `0eeb970` | import sin resolver | `npm test -- --run src/app/manifest.test.ts` exit 0 (4 pruebas) |
+| 4 · E2E | `2d41cac` | cuatro casos en la primera tanda dirigida | tandas dirigidas de abajo |
+| 4 · Arnés del stack local | `9eb67c0` | `test-dev-stack.sh nginx` exit 1 en el gate | `bash scripts/test-dev-stack.sh nginx` y `vite` exit 0 |
+| Tooling · ensayo de HMR | `e8428b2` | referenciaba `SystemInfoPanel.tsx`, eliminado por UI-01 | incluido en `test-dev-stack.sh vite` exit 0 |
+
+- Gate de cliente: `bash scripts/verify.sh --client` exit 0 sobre `0eeb970` (typecheck, lint, formato, cobertura y build; umbrales sin tocar).
+- E2E dirigidos con `STARTER_E2E_PROJECT=starter-e2e-t050-iter bash scripts/e2e.sh --grep "…" --project <proyecto>`, exit 0:
+  - desktop: `compiled shell`, `real database outage`, los cuatro de `auth.spec.ts`, `CA-01:`, `multiline clipboard`, `voice: capture`, `voice: provider error`, `T-020: direct URL`, `CA-05: reload and logout`, `CA-06: two identities on the same date only see their own space`.
+  - mobile: `compiled shell`, `real database outage`, `visitor, real OIDC`, `logout requires CSRF`, `CA-01:`, `multiline clipboard`, `voice: capture`, `T-020: direct URL`, `CA-05: reload and logout`.
+
+Decisiones de implementación dentro del contrato:
+
+- Punto de corte en JavaScript (`useIsNarrow`, `sm` de MUI) y `matchMedia` simulado en `src/test/viewport.ts`, para probar 1280 px y 375 px en componentes.
+- Menú de usuario: el nombre es un `MenuItem` deshabilitado sin atenuar; el menú se cierra al elegir «Cerrar sesión» para no tapar un aviso de error con «Reintentar», y si se reabre durante el cierre muestra «Cerrando sesión…» deshabilitado.
+- Botones «Agregar enlace» / «Editar enlace» y «Detener»: el texto visible es el del contrato («Enlace», «Detener») y el nombre accesible conserva el anterior («Agregar enlace», «Detener y transcribir»), que contiene al visible.
+- Editor: la primera pantalla mide el alto libre de la ventana y el editor se desplaza por dentro; «Notas guardadas» queda debajo. Los avisos largos son un hijo de ancho completo de `toolbarEnd`, así la barra fija los arrastra consigo. `DailyEditor` suma `fillHeight` para no cambiar el editor de solo lectura de Historial.
+- Barras de nivel: historial de las últimas cinco muestras (una cada 100 ms) del RMS real.
+- «Cancelar grabación» se conserva junto al cronómetro.
+
+Cambios de pruebas que el contrato vuelve obligatorios, sin debilitar casos:
+
+- Componentes: se eliminan las dos pruebas de enlaces de la pantalla de inicio (`la home ofrece enlace a Notas` y `al Historial`); la navegación equivalente la cubren las pruebas de la barra. Las pruebas de `SystemInfoPanel` sobre readiness pasan a `ServerStatus.test.tsx` con los mismos casos (503, HTML, JSON inválido, DOWN, componentes, revalidación a 5 s) más el de sin red.
+- `fixtures.ts` · `layout()`: un control visible vale por su texto o por su `aria-label`, porque las barras llevan botones de icono.
+- `daily-notes.spec.ts` CA-01: la comprobación de `resize: vertical` y del arrastre se reemplaza por `resize: none`, alto que llena la ventana hasta su borde inferior y barra `sticky`.
+- `editor-ergonomics.spec.ts`: la alineación del `h1` con la fecha se reemplaza por la de los cinco controles de la barra en una fila y por la barra superior de 48 px como máximo, ahora en los dos proyectos.
+- `system.spec.ts` y `local-stack.spec.ts`: leen el indicador de la barra. La interfaz ya no consulta `/api/v1/system/info`; el contrato de esa API se sigue comprobando por petición directa. El reintento accesible por teclado se ejerce sobre el aviso de sesión, que es el que aparece con el servidor caído.
+- Tras el login la URL esperada es `/notes`, que la SPA ya canonizaba a `/notes/<hoy>`.
+
+No comprobado por pruebas automáticas: el titileo y su variante `prefers-reduced-motion` (solo CSS) y que Chrome ofrezca instalar con el icono SVG; quedan para la aceptación manual del dueño.
+
+Checkpoint previo al FULL: fuentes técnicas finales en el commit de la corrección de CA-03 (posterior a `e8428b2`, solo `e2e/tests/daily-notes.spec.ts`), base main `915459c`; el commit de este checkpoint solo agrega Markdown. `bash scripts/verify.sh --policy main` informa `policy=FULL` y `profile=STARTER`, porque `client/index.html` y `client/public/manifest.json` quedan fuera de `client/src/`; por eso el gate es el FULL del contrato más tooling. Comando, desde la raíz en Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t050 STARTER_E2E_PROJECT=starter-e2e-t050 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter` (docs, backend, cliente, tooling y Playwright real). Recursos propios: proyectos Compose `starter-verify-t050` y `starter-e2e-t050` con `.env.example` y fixtures ficticias, y artefactos en `e2e/artifacts/starter-e2e-t050/`; el script limpia solo esos proyectos. No había otros contenedores en marcha al iniciar. Sin editar fuentes durante la corrida. Siguiente paso: con exit 0, publicar la rama, abrir el PR y pasar a `in_review`.
+
+Intentos del gate sobre `7ff8282` (mismas fuentes de cliente y specs que `2d41cac`):
+
+1. Exit 1 en `client`: una prueba de voz ya existente agotó sus 10 s con el contenedor unas tres veces más lento (el archivo tardó 73 s contra 27 s en la corrida verde). Tarda lo mismo antes y después de T-050 y no se reprodujo; no se tocó el límite. Hallazgo en BACKLOG.
+2. Exit 1 en `tooling`, con docs, server y client en verde: `test-dev-stack.sh nginx` usaba la interfaz anterior. Corregido en `9eb67c0` y `e8428b2`.
+
+Intentos sobre `9657318`:
+
+3. Exit 1 en `tooling` a los 32 s de `test-dev-stack.sh nginx`: Docker no pudo resolver `registry-1.docker.io` al construir la imagen. Falla de red del host; el registro respondió minutos después.
+4. Docs, server, client y tooling completo en verde (`suite=tooling` 2270 s); E2E 45 de 47, exit 1:
+   - `mobile › CA-03`: la spec exigía que el separador empezara después de 48 px, y UI-06 angosta la columna de números a 40 px en angosto. La aserción usa ahora 32 px por debajo de 600 px y conserva 48 px en ancho.
+   - `desktop › T-020: visible link button`: al editar el enlace el `href` no cambió. Intermitente: el mismo caso pasó en mobile dentro de esa corrida y cinco de cinco veces seguidas al repetirlo solo en desktop. Sin causa comprobada; hallazgo en BACKLOG.
+5. Iniciado sobre `131f9df` y detenido por el implementer a pedido del dueño cuando solo había terminado `docs`; sus recursos (`starter-verify-t050`) se retiraron.
+
+**Gate de cierre no completado, por decisión del dueño (2026-11-12).** El dueño indicó en la sesión que no podía correr el gate completo y pidió abrir el PR sin él. No existe una corrida FULL con exit 0 sobre el HEAD final. La evidencia disponible es la del intento 4 sobre `9657318` más las corridas dirigidas posteriores; desde `9657318` solo cambiaron la aserción de CA-03 en `e2e/tests/daily-notes.spec.ts` (`88d8bfd`) y Markdown. El revisor y el merge siguen sujetos a `verify-required` y a AUTONOMY.
 
 ## Correcciones significativas
 
 | Fecha / SHA | Problema y causa | Corrección | Prueba |
 |---|---|---|---|
+| 2026-11-11 · `99034f8` | `useIsNarrow` leía `theme.breakpoints` de un tema nulo cuando el componente se monta sin `ThemeProvider` (pruebas del editor). | Usa `useTheme()`, que entrega el tema por defecto. | `npm test -- --run src/features/daily` exit 0 |
+| 2026-11-11 · `9eb67c0` | El arnés `e2e/harness/local-stack.mjs` buscaba el botón «Cerrar sesión», «API y base de datos disponibles» y el aviso de estado del servidor; además medía el desborde horizontal en el instante de cambiar el ancho, antes de que la aplicación pasara a angosto. | Lee el menú de usuario y el indicador de la barra, y espera con `expect.poll` a que el diseño se asiente. | `bash scripts/test-dev-stack.sh nginx` y `vite`, exit 0 |
+| 2026-11-11 · `e8428b2` | `scripts/test-dev-stack.sh` editaba `SystemInfoPanel.tsx` para el ensayo de HMR; UI-01 lo elimina. Fuera de «solo `client/` y `e2e/`». | Con autorización del dueño, la ruta pasa a `ServerStatus.tsx`, que conserva el texto «Servidor conectado» como nombre accesible. | `bash scripts/test-dev-stack.sh vite`, exit 0 |
+| 2026-11-12 · corrección de CA-03 | `daily-notes.spec.ts` CA-03 daba por fija la columna de números de 48 px; en angosto UI-06 la deja en 40 px. | El umbral depende del ancho: 32 px por debajo de 600 px, 48 px en ancho. | `bash scripts/e2e.sh --grep "CA-03:" --project mobile`, exit 0 |
+| 2026-11-11 · `2d41cac` | Tanda E2E dirigida: cuatro fallos de las specs, no del producto. El helper `saved` chocaba con variables locales; tras el login la URL ya canonizada era `/notes/<hoy>`; en Notas hay dos alertas al vencer la sesión; la página quedaba desplazada 9 px al medir el editor. | Helper `savedIndicator`, patrón `notesUrl`, filtro por texto del aviso de sesión y `scrollTo(0, 0)` antes de medir. | Tanda dirigida desktop, exit 0 |
+| 2026-11-11 · `fb6f579` | UI-02/UI-03: el nav encogía y las pestañas invadían el indicador pendiente. | Reservar el ancho intrínseco de las pestañas y agrupar indicador y sesión con un margen automático. Reducir los espacios de la barra sin mover el corte. | Playwright desktop midió 375, 600, 620 y 1280 px con readiness pendiente y visitante. |
+| 2026-11-11 · `fb6f579`, `a8637a7` | UI-07: la lista de Voz usaba el extracto recortado como `title`. | Los extractos que alcanzan 120 puntos de código cargan el detalle propio con TanStack Query y usan el texto de la revisión correspondiente. La vista conserva el extracto con elipsis. | `VoiceLayout.test.tsx` y Playwright `voice: capture`, exit 0. |
+| 2026-11-11 · `fb6f579` | UI-08: el cronómetro estaba en la fila de señales, debajo de «Detener». | Agrupar el cronómetro con el botón y conservar el medidor y cancelación en su fila. | `VoiceLayout.test.tsx` y Playwright `voice: capture`, exit 0. |
+
+## Revisión independiente
+
+Checkpoint del 2026-11-11. Reviewer en Codex de escritorio, con Git, `gh`, Node, Chrome y Docker. Modelo y esfuerzo exactos no expuestos. HEAD de implementación revisado `37077172e606a511649662c723eb6ded6aed95e3`, base `915459cbabd9f3f557df4b9012c8b4db5572863c`, `verify-required` SUCCESS. El perfil es `FULL/STARTER`. En `client/`, `npm test -- --run src/app src/features/auth src/features/system src/features/daily src/features/voice` pasó (507/507). `node scripts/docs-check.mjs` y `git diff --check` pasaron. Los ensayos usaron fixtures ficticias y el reviewer solo modificó Markdown.
+
+Desde Git Bash: `STARTER_E2E_PROJECT=starter-e2e-t050-review-3707717 bash scripts/e2e.sh --grep "T-020: visible link button" --project desktop` pasó (1/1). El script exportó el JUnit saneado en `e2e/artifacts/starter-e2e-t050-review-3707717/sanitized/` y retiró los contenedores, red y volumen del proyecto. La causa del fallo original sigue sin comprobarse.
+
+Sobre el mismo HEAD/base, `STARTER_E2E_PROJECT=starter-e2e-t050-review-ca03-3707717 bash scripts/e2e.sh --grep "CA-03:" --project mobile` pasó (1/1). Es la única spec que cambió después del intento 4. El script exportó el JUnit saneado en `e2e/artifacts/starter-e2e-t050-review-ca03-3707717/sanitized/` y retiró los recursos del proyecto.
+
+**Hallazgos y condición de cierre**
+
+1. **UI-02/UI-03.** En `AppShell.tsx`, la fila deja encoger el `nav`, pero las pestañas mantienen su ancho y desbordan hacia el indicador. En una prueba de componente en Chrome con sesión de visitante y readiness pendiente, «Datos» termina en x=437,5 px y «Conectando» empieza en x=416,1 px a 600 px. También se solapan a 620 px. Conservar una fila de hasta 48 px, el corte de 600 px y los controles visibles sin superposición. Verificar en navegador el estado pendiente con «Ingresar» a 600 y 620 px, además de 375 y 1280 px.
+2. **UI-07.** `VoiceLibrary.tsx` usa `title={item.excerpt}`. La lista real entrega hasta 120 puntos de código y la prueba `VoiceLayout.test.tsx` inyecta directamente el texto largo como `excerpt`. Demostrar con una nota de más de 120 puntos de código y un extracto fiel al contrato que el `title` contiene también el tramo posterior al corte. Resolver con el detalle existente si cabe en el alcance de cliente. Una revisión del contrato o de la API requiere frontera.
+3. **UI-08.** `VoiceComposer.tsx` pone el cronómetro en un bloque debajo de la fila de «Detener». Mostrar `mm:ss` junto al botón durante la grabación cuando el ancho permite la fila y comprobar la disposición en navegador. Las pruebas dirigidas sí acreditan nivel simulado, silencio, limpieza, un solo `getUserMedia` y un POST de transcripción al detener.
+
+UI-01 y UI-04 a UI-06 conformes en el diff y las pruebas revisadas. UI-09 cumple el manifiesto y el enlace comprobados en unitario. La oferta de instalación de Chrome con el SVG y la animación con movimiento reducido quedan en la verificación manual ya registrada. El cambio autorizado de `scripts/test-dev-stack.sh` adapta el ensayo HMR a `ServerStatus.tsx`. Sin cambios de API, permisos, esquema o datos en el diff.
+
+Al emitir ese veredicto la evidencia de gate era parcial. El JUnit saneado del intento 4 sobre `9657318` confirma 47 pruebas y dos fallos, con docs, server, client y tooling en verde según la tarea. El dueño autorizó abrir el PR con esa evidencia. `verify-required` comprueba documentación y tooling liviano. Para el nuevo HEAD se aplica la evidencia de STARTER del [checkpoint vigente](#checkpoint-vigente) y sigue pendiente la revisión independiente con CI del HEAD final según AUTONOMY.
 
 ## Cierre y siguiente tarea
 

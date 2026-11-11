@@ -1,42 +1,74 @@
 import Button from '@mui/material/Button'
-import Stack from '@mui/material/Stack'
-import Typography from '@mui/material/Typography'
+import IconButton from '@mui/material/IconButton'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
+import { useState } from 'react'
 import { Link as RouterLink, useLocation } from 'react-router'
+import { PersonIcon } from '../../shared/ui/icons'
 import { sessionLabel, useSession } from './sessionContext'
 
-/** Estado de sesión en la barra superior: usuario con «Cerrar sesión» o acceso al ingreso. */
+/** Estado de sesión en la barra superior: menú de usuario con «Cerrar sesión» o acceso al ingreso. */
 export function SessionControls() {
-  const { status, user, logout, logoutPending, csrfReady } = useSession()
+  const { status, user } = useSession()
   const { pathname } = useLocation()
 
-  if (status === 'authenticated' && user) {
-    const label = sessionLabel(user)
-    return (
-      <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', minWidth: 0 }}>
-        <Typography noWrap title={label} sx={{ minWidth: 0 }}>
-          {label}
-        </Typography>
-        <Button
-          color="inherit"
-          variant="outlined"
-          size="small"
-          onClick={logout}
-          disabled={logoutPending || !csrfReady}
-          sx={{ flexShrink: 0 }}
-        >
-          {logoutPending ? 'Cerrando sesión…' : 'Cerrar sesión'}
-        </Button>
-      </Stack>
-    )
-  }
+  // Se monta solo con sesión: al terminar, el menú abierto se descarta y no reaparece con otra identidad.
+  if (status === 'authenticated' && user) return <AccountMenu label={sessionLabel(user)} />
 
   if (status === 'visitor' && pathname !== '/login') {
     return (
-      <Button color="inherit" component={RouterLink} to="/login">
+      <Button color="inherit" component={RouterLink} to="/login" sx={{ flexShrink: 0 }}>
         Ingresar
       </Button>
     )
   }
 
   return null
+}
+
+function AccountMenu({ label }: { label: string }) {
+  const { logout, logoutPending, csrfReady } = useSession()
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const open = anchor !== null
+
+  return (
+    <>
+      <IconButton
+        color="inherit"
+        size="small"
+        aria-label={`Cuenta de ${label}`}
+        aria-haspopup="menu"
+        aria-expanded={open ? 'true' : undefined}
+        onClick={(event) => setAnchor(event.currentTarget)}
+        sx={{ flexShrink: 0, border: 1, borderColor: 'divider' }}
+      >
+        <PersonIcon />
+      </IconButton>
+      <Menu
+        anchorEl={anchor}
+        open={open}
+        onClose={() => setAnchor(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        {/* Primera línea no interactiva: la identidad activa sigue a la vista sin ocupar la barra. */}
+        <MenuItem
+          disabled
+          divider
+          sx={{ '&.Mui-disabled': { opacity: 1 }, maxWidth: 280, whiteSpace: 'normal' }}
+        >
+          {label}
+        </MenuItem>
+        <MenuItem
+          disabled={logoutPending || !csrfReady}
+          onClick={() => {
+            setAnchor(null)
+            logout()
+          }}
+        >
+          {logoutPending ? 'Cerrando sesión…' : 'Cerrar sesión'}
+        </MenuItem>
+      </Menu>
+    </>
+  )
 }

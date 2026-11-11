@@ -12,7 +12,7 @@ import { server } from '../../test/msw/server'
 import { renderWithProviders } from '../../test/render'
 import { emptyDocument, type DailyContent } from './editor/dailyDocument'
 import { setTestDebounce } from './useDailyNote'
-import { SaveDailyVersion } from './SaveDailyVersion'
+import { SaveDailyVersion, SaveDailyVersionNotices } from './SaveDailyVersion'
 import { useSaveDailyVersion } from './useSaveDailyVersion'
 import { DailyDraftProvider, useDailyDraftContext } from './DailyDraftProvider'
 
@@ -117,6 +117,7 @@ function TestConsumer({
       <span data-testid="phase">{save.phase}</span>
       <span data-testid="locked">{String(save.isLocked)}</span>
       <SaveDailyVersion save={save} date={DATE} />
+      <SaveDailyVersionNotices save={save} />
     </div>
   )
 }
@@ -193,6 +194,7 @@ describe('SaveDailyVersion', () => {
           <span data-testid="rev">{note.revision}</span>
           <button onClick={() => note.edit(content)}>Editar</button>
           <SaveDailyVersion save={save} date={DATE} />
+          <SaveDailyVersionNotices save={save} />
         </>
       )
     }
@@ -387,6 +389,9 @@ describe('SaveDailyVersion', () => {
 
     const button = screen.getByRole('button', { name: 'Guardar versión' })
     expect(button).toBeDisabled()
+    // Botón de icono: sin texto visible, con el progreso dentro mientras guarda.
+    expect(button).toHaveTextContent('')
+    expect(button.querySelector('[role="progressbar"]')).not.toBeNull()
   })
 
   it('reintento tras error limpia estado y permite nueva acción', async () => {

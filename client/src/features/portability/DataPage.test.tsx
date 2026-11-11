@@ -570,7 +570,7 @@ describe('DataPage · sesión e identidad', () => {
     await act(async () => {
       await queryClient.refetchQueries({ queryKey: authQueryKeys.session })
     })
-    await screen.findByText('Persona B')
+    await screen.findByRole('button', { name: 'Cuenta de Persona B' })
     const input = await screen.findByLabelText(FILE_LABEL)
     await waitFor(() => expect(input).toBeEnabled())
   }

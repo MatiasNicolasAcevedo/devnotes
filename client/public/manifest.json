@@ -1,0 +1,10 @@
+{
+  "name": "DevNotes",
+  "short_name": "DevNotes",
+  "start_url": "/notes",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#181a1b",
+  "theme_color": "#212324",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

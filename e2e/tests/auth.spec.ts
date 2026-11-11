@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { test, expect, control, readiness, login, label, layout, keyboardActivate, issuer } from './fixtures';
+import { test, expect, control, readiness, login, label, layout, keyboardActivate, issuer, accountButton, expectLoggedIn, notesUrl } from './fixtures';
 
 test.describe.configure({ timeout: 90_000 });
 
@@ -18,12 +18,12 @@ test('visitor, real OIDC callback, reload and repeated login preserve the Postgr
   expect(Number.isFinite(Date.parse(fingerprint[0].createdAt))).toBe(true);
   await layout(page);
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Cerrar sesión' })).toBeEnabled();
+  await expectLoggedIn(page, identity);
   expect((await (await page.request.get('/api/v1/auth/me')).json()).id).toBe(id);
   // Fresh authorize/callback, even while already authenticated.
   await page.goto('/oauth2/authorization/google');
-  await expect(page).toHaveURL('http://localhost/');
-  await expect(page.getByText(label(identity), { exact: true })).toBeVisible();
+  await expect(page).toHaveURL(notesUrl);
+  await expect(accountButton(page, identity)).toBeVisible();
   expect((await (await page.request.get('/api/v1/auth/me')).json()).id).toBe(id);
   expect(await control('fingerprint', identity)).toEqual(fingerprint);
   const exposure = await page.evaluate(() => ({
@@ -46,11 +46,16 @@ test('logout requires CSRF, confirms 204, renews protection and rejects the old 
   expect((await (await page.request.get('/api/v1/auth/me')).json()).id).toBe(id);
   await expect(page.getByText('La sesión terminó. Volvé a ingresar.')).toHaveCount(0);
   const logout = page.waitForResponse(response => new URL(response.url()).pathname === '/logout' && response.request().method() === 'POST');
-  await keyboardActivate(page, 'button', 'Cerrar sesión');
+  // Por teclado: el botón de cuenta abre el menú y el foco cae en «Cerrar sesión».
+  await keyboardActivate(page, 'button', `Cuenta de ${label(identity)}`);
+  const item = page.getByRole('menuitem', { name: 'Cerrar sesión', exact: true });
+  await expect(item).toBeFocused();
+  await page.keyboard.press('Enter');
   expect((await logout).status()).toBe(204);
   await expect(page).toHaveURL('http://localhost/login');
   await expect.poll(async () => (await context.cookies()).some(cookie => cookie.name === 'XSRF-TOKEN' && cookie.value !== csrf?.value)).toBe(true);
   expect((await page.request.get('/api/v1/auth/me')).status()).toBe(401);
+  await expect(accountButton(page)).toHaveCount(0);
   await expect(page.getByText(label(identity), { exact: true })).toHaveCount(0);
   expect((await page.request.post('/logout', { headers: { 'X-XSRF-TOKEN': csrf!.value } })).status()).toBe(403);
   // Cookie values remain in memory only; never attach storageState or log them.
@@ -77,10 +82,11 @@ test('backend restart expires the session once without redirects; a different id
   const expired = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/auth/me');
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange', { bubbles: true })));
   expect((await expired).status()).toBe(401);
-  await expect(page.getByRole('alert')).toContainText('La sesión terminó. Volvé a ingresar.');
+  // Notas agrega su propio aviso para visitantes: se elige el de sesión.
+  await expect(page.getByRole('alert').filter({ hasText: 'La sesión terminó' })).toContainText('La sesión terminó. Volvé a ingresar.');
   await expect(page.getByText(label(identity), { exact: true })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Cerrar sesión' })).toHaveCount(0);
-  await expect(page).toHaveURL('http://localhost/');
+  await expect(accountButton(page)).toHaveCount(0);
+  await expect(page).toHaveURL(notesUrl);
   // Observe a bounded interval through polling, with a positive completion condition, no fixed sleep.
   const deadline = Date.now() + 3000;
   await expect.poll(() => {
@@ -94,7 +100,8 @@ test('backend restart expires the session once without redirects; a different id
   await control('identity', second);
   await readiness(page);
   expect(await login(page, second)).not.toBe(first);
-  await expect(page.getByText(label(identity), { exact: true })).toHaveCount(0);
+  await expect(accountButton(page, identity)).toHaveCount(0);
+  await expect(accountButton(page, second)).toBeVisible();
   await expect(page.getByText('La sesión terminó. Volvé a ingresar.')).toHaveCount(0);
   await layout(page);
 });
@@ -128,5 +135,5 @@ test('provider cancellation uses real state; orphan callback also shows only the
   }
   // The accessible retry performs a subsequent successful real OIDC flow.
   await keyboardActivate(page, 'link', 'Reintentar');
-  await expect(page.getByText(label(identity), { exact: true })).toBeVisible();
+  await expect(accountButton(page, identity)).toBeVisible();
 });

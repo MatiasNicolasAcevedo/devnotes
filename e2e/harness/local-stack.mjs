@@ -57,6 +57,14 @@ async function swagger(page) {
   await expect(logout.getByRole('button', { name: 'Execute' })).toHaveCount(0);
   assert.deepEqual(foreign, []);
 }
+// T-050: el estado del servidor es el indicador de la barra (por nombre accesible) y la sesión, el menú de usuario.
+const serverStatus = (page, name) => page.getByRole('banner').getByRole('status', { name, exact: true });
+async function loggedIn(page) {
+  await page.getByRole('button', { name: /^Cuenta de / }).click();
+  await expect(page.getByRole('menuitem', { name: 'Cerrar sesión', exact: true })).toBeEnabled();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('menu')).toHaveCount(0);
+}
 const tunnels = new Set();
 const tunnel = net.createServer(socket => {
   const upstream = net.connect({ host: proxy === 'vite' ? 'client-dev' : 'client', port: proxy === 'vite' ? 5173 : 80 });
@@ -92,7 +100,7 @@ try {
     await expect(target).toBeVisible();
     await target.press('Enter');
   } else await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Cerrar sesión', exact: true })).toBeEnabled();
+  await loggedIn(page);
   const me = await context.request.get('/api/v1/auth/me');
   assert.equal(me.status(), 200);
   const user = await me.json();
@@ -101,12 +109,13 @@ try {
   else writeFileSync(identity, JSON.stringify({ id: user.id }));
   phase = 'reload';
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Cerrar sesión', exact: true })).toBeEnabled();
+  await loggedIn(page);
   for (const width of [1280, 375]) {
     await page.setViewportSize({ width, height: 812 });
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-    await expect(page.getByText('API y base de datos disponibles', { exact: true })).toBeVisible();
+    // El paso a angosto lo decide la aplicación al cambiar el ancho: se espera a que el diseño se asiente.
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await expect(serverStatus(page, 'Servidor conectado')).toBeVisible();
     await page.screenshot({ path: `/artifacts/safe-home-${width}.png` });
   }
   if (action === 'outage-1280' || action === 'outage-375') {
@@ -114,10 +123,10 @@ try {
     await page.setViewportSize({ width: Number(action.split('-')[1]), height: 812 });
     const started = Date.now();
     writeFileSync('/artifacts/outage-ready', 'ready');
-    const error = page.getByRole('alert').filter({ hasText: 'No se pudo obtener el estado del servidor' });
-    await expect(error).toBeVisible({ timeout: 30_000 });
+    const offline = serverStatus(page, 'Servidor sin conexión');
+    await expect(offline).toBeVisible({ timeout: 30_000 });
     assert.ok(Date.now() - started < 30_000);
-    await expect(page.getByText('Servidor conectado', { exact: true })).toHaveCount(0);
+    await expect(serverStatus(page, 'Servidor conectado')).toHaveCount(0);
     const health = await context.request.get('/actuator/health/readiness', { timeout: 5000 });
     assert.equal(health.status(), 503);
     assert.deepEqual(await health.json(), { status: 'DOWN' });
@@ -130,9 +139,9 @@ try {
     const recovery = Date.now();
     phase = 'database-recovery';
     writeFileSync('/artifacts/outage-restart-ready', 'ready');
-    await expect(page.getByText('API y base de datos disponibles', { exact: true })).toBeVisible({ timeout: 30_000 });
+    await expect(serverStatus(page, 'Servidor conectado')).toBeVisible({ timeout: 30_000 });
     assert.ok(Date.now() - recovery < 30_000);
-    await expect(error).toHaveCount(0);
+    await expect(offline).toHaveCount(0);
     console.log(`Local browser ${proxy}: DB ${action.split('-')[1]} recovered in ${Date.now() - recovery} ms from restart coordination.`);
     writeFileSync('/artifacts/outage-up', 'up');
   }
@@ -141,9 +150,9 @@ try {
     const navigations = [];
     page.on('framenavigated', frame => { if (frame === page.mainFrame()) navigations.push(1); });
     writeFileSync('/artifacts/hmr-ready', 'ready');
-    await expect(page.getByText('Servidor HMR ficticio', { exact: true })).toBeVisible();
+    await expect(serverStatus(page, 'Servidor HMR ficticio')).toBeVisible();
     writeFileSync('/artifacts/hmr-observed', 'observed');
-    await expect(page.getByText('Servidor conectado', { exact: true })).toBeVisible();
+    await expect(serverStatus(page, 'Servidor conectado')).toBeVisible();
     assert.equal(navigations.length, 0);
   }
   await context.storageState({ path: state });

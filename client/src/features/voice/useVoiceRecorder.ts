@@ -33,7 +33,28 @@ export interface VoiceRecorderState {
   elapsedSeconds: number
   /** Formateada mm:ss para mostrar. */
   elapsedFormatted: string
+  /**
+   * Nivel del micrófono para las cinco barras (0 a 1, la más reciente al final) mientras graba; `null` fuera de
+   * una grabación o si el navegador no ofrece AudioContext.
+   */
+  levels: number[] | null
+  /** El micrófono lleva 3 s seguidos sin sonido. Solo informa: no detiene ni altera la grabación. */
+  silent: boolean
 }
+
+const LEVEL_BARS = 5
+/** Cada barra representa una muestra de nivel de este intervalo. */
+const LEVEL_SAMPLE_MS = 100
+/** RMS por debajo del cual se considera que no hay sonido. */
+const SILENCE_RMS = 0.01
+const SILENCE_MS = 3000
+
+/** Lleva el RMS (la voz ronda 0,02 a 0,3) a una altura de barra entre 0 y 1. */
+function barLevel(rms: number): number {
+  return Math.min(1, Math.sqrt(rms) * 1.8)
+}
+
+const NO_LEVEL = { levels: null, silent: false } as const
 
 export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
   const { onResult, onError, ...controllerOptions } = options
@@ -52,6 +73,7 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
     error: null,
     elapsedSeconds: 0,
     elapsedFormatted: '00:00',
+    ...NO_LEVEL,
   })
 
   // Mantener referencias actualizadas sin re-crear el controller.
@@ -83,6 +105,7 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
               error: error ?? new Error('Error desconocido.'),
               elapsedSeconds: prev.elapsedSeconds,
               elapsedFormatted: prev.elapsedFormatted,
+              ...NO_LEVEL,
             }
           }
           if (nextState === 'idle' && result) {
@@ -92,6 +115,7 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
               error: null,
               elapsedSeconds: 0,
               elapsedFormatted: '00:00',
+              ...NO_LEVEL,
             }
           }
           if (nextState === 'recording') {
@@ -106,6 +130,7 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
           return {
             ...prev,
             state: nextState,
+            ...NO_LEVEL,
             ...(nextState === 'idle' ? { result: null, error: null } : {}),
           }
         })
@@ -128,16 +153,36 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
     if (!ctrl) return
 
     const startTime = Date.now() - elapsedRef.current * 1000
+    // Medidor de nivel: historial corto para las barras y comienzo del silencio en curso.
+    let history: number[] = []
+    let lastSampleAt = -Infinity
+    let silentSince: number | null = null
 
     const tick = () => {
-      const elapsed = Math.floor((Date.now() - startTime) / 1000)
+      const now = Date.now()
+      const elapsed = Math.floor((now - startTime) / 1000)
       elapsedRef.current = elapsed
+      const rms = ctrl.getLevel()
+      let level: Pick<VoiceRecorderState, 'levels' | 'silent'> = NO_LEVEL
+      if (rms !== null) {
+        if (now - lastSampleAt >= LEVEL_SAMPLE_MS) {
+          lastSampleAt = now
+          history = [...history, barLevel(rms)].slice(-LEVEL_BARS)
+        }
+        if (rms >= SILENCE_RMS) silentSince = null
+        else silentSince ??= now
+        level = {
+          levels: [...Array<number>(LEVEL_BARS - history.length).fill(0), ...history],
+          silent: silentSince !== null && now - silentSince >= SILENCE_MS,
+        }
+      }
       setState((prev) =>
         prev.state === 'recording'
           ? {
               ...prev,
               elapsedSeconds: elapsed,
               elapsedFormatted: formatElapsed(elapsed),
+              ...level,
             }
           : prev,
       )
@@ -198,6 +243,7 @@ export function useVoiceRecorder(options: UseVoiceRecorderOptions = {}) {
       error: null,
       elapsedSeconds: 0,
       elapsedFormatted: '00:00',
+      ...NO_LEVEL,
     })
   }, [])
 

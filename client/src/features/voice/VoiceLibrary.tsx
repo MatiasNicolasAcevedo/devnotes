@@ -8,9 +8,10 @@ import ListItemText from '@mui/material/ListItemText'
 import Pagination from '@mui/material/Pagination'
 import Typography from '@mui/material/Typography'
 import type { VoiceNoteListItem } from './api'
-import { useVoiceNotes } from './useVoiceNotes'
+import { useVoiceNote, useVoiceNotes } from './useVoiceNotes'
 
 const DEFAULT_PAGE_SIZE = 20
+const EXCERPT_CODE_POINTS = 120
 
 /**
  * Formatea la fecha/hora de creación en español local.
@@ -90,7 +91,7 @@ export function VoiceLibrary({ onSelect, selectedId, disabled = false }: VoiceLi
   }
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ width: '100%', minWidth: 0 }}>
       <List dense disablePadding>
         {items.map((item) => (
           <ListItem key={item.id} disablePadding divider>
@@ -107,16 +108,14 @@ export function VoiceLibrary({ onSelect, selectedId, disabled = false }: VoiceLi
               }}
             >
               <ListItemText
-                primary={formatCreatedAt(item.createdAt)}
-                secondary={
-                  <Typography
-                    component="span"
-                    noWrap
-                    sx={{ fontFamily: 'monospace', fontSize: '0.85rem', color: 'text.secondary' }}
-                  >
-                    {item.excerpt}
+                disableTypography
+                sx={{ minWidth: 0 }}
+                primary={
+                  <Typography component="span" variant="body2" sx={{ whiteSpace: 'nowrap' }}>
+                    {formatCreatedAt(item.createdAt)}
                   </Typography>
                 }
+                secondary={<VoiceExcerpt key={item.revision} item={item} />}
               />
             </ListItemButton>
           </ListItem>
@@ -135,6 +134,31 @@ export function VoiceLibrary({ onSelect, selectedId, disabled = false }: VoiceLi
         </Box>
       )}
     </Box>
+  )
+}
+
+function VoiceExcerpt({ item }: { item: VoiceNoteListItem }) {
+  // El servidor cuenta puntos de código. En el límite, solo el detalle confirma el texto completo.
+  const mayBeTruncated = [...item.excerpt].length >= EXCERPT_CODE_POINTS
+  const { data: detail } = useVoiceNote(mayBeTruncated ? item.id : '', item.revision)
+  const fullText = detail?.revision === item.revision ? detail.text : undefined
+
+  return (
+    <Typography
+      component="span"
+      title={mayBeTruncated ? fullText : item.excerpt}
+      sx={{
+        display: 'block',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        fontFamily: 'monospace',
+        fontSize: '0.85rem',
+        color: 'text.secondary',
+      }}
+    >
+      {item.excerpt}
+    </Typography>
   )
 }
 

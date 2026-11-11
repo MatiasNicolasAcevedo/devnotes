@@ -1,4 +1,4 @@
-import { test, expect, control, readiness, interactiveLogin, layout } from './fixtures';
+import { test, expect, control, readiness, interactiveLogin, layout, logout, savedIndicator } from './fixtures';
 import { saveVersion, readVersion } from './daily-helpers';
 
 test.describe.configure({ timeout: 120_000 });
@@ -64,7 +64,7 @@ test('reference preview: insert, save, edit original, delete, and preview access
   expect(saveResp.status()).toBe(200);
   const note = await saveResp.json();
   expect(note.date).toBe(today);
-  await expect(page.getByText('Guardado', { exact: true })).toBeVisible();
+  await expect(savedIndicator(page)).toBeVisible();
 
   /* 4. Guardar versión */
   await saveVersion(page, today);
@@ -145,6 +145,6 @@ test('reference preview: insert, save, edit original, delete, and preview access
   }
 
   await layout(page);
-  await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
+  await logout(page);
   await expect(page).toHaveURL('http://localhost/login');
 });

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Page, Request, Response } from '@playwright/test';
-import { control, csrfHeaders, interactiveLogin, keyboardActivate, layout, login, readiness } from './fixtures';
+import { control, csrfHeaders, interactiveLogin, keyboardActivate, layout, login, readiness, logout } from './fixtures';
 import { expect, fakeMicrophone, origin, providerScenario, test, trackStates } from '../fixtures/voice-fixture';
 
 /**
@@ -45,7 +45,16 @@ async function record(page: Page) {
   await page.getByRole('button', { name: 'Grabar', exact: true }).click();
   await expect(page.getByText('Grabando', { exact: true })).toBeVisible();
   // Al menos un segundo de audio real del dispositivo sintético.
-  await expect(page.getByRole('timer')).toHaveText(/^00:0[1-9]$/);
+  const timer = page.getByRole('timer');
+  await expect(timer).toHaveText(/^00:0[1-9]$/);
+  // T-050 (UI-08): el botón pasa a «Detener» y cinco barras muestran el nivel del micrófono.
+  const stop = page.getByRole('button', { name: 'Detener y transcribir', exact: true });
+  await expect(stop).toHaveText('Detener');
+  const buttonBox = (await stop.boundingBox())!;
+  const timerBox = (await timer.boundingBox())!;
+  expect(timerBox.x).toBeGreaterThan(buttonBox.x + buttonBox.width);
+  expect(Math.abs(timerBox.y + timerBox.height / 2 - (buttonBox.y + buttonBox.height / 2))).toBeLessThan(1);
+  await expect(page.locator('[data-level-bar]')).toHaveCount(5);
   expect((await trackStates(page)).at(-1)).toBe('audio:live');
 }
 
@@ -60,7 +69,9 @@ test('voice: capture, transcribe, edit, copy, save, reload, second note, correct
   const posts = countPosts(page);
   await openVoice(page);
   await expect(page.getByText('No hay notas de voz todavía.')).toBeVisible();
-  await expect(page.getByText(/Al detener, el audio se envía a Groq para transcribir/)).toBeVisible();
+  // T-050 (UI-07): el aviso es una línea de texto con el mismo enlace, sin caja.
+  await expect(page.getByText(/Al detener, el audio se envía a Groq\./)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Ver política de Groq', exact: true })).toHaveAttribute('href', 'https://console.groq.com/docs/your-data');
   const capabilities = await (await page.request.get('/api/v1/voice/capabilities')).json();
   expect(capabilities).toMatchObject({ recordingEnabled: true, reason: null, maxDurationSeconds: 600, language: 'es' });
   const text = page.getByRole('textbox', { name: 'Texto de la nota' });
@@ -106,7 +117,7 @@ test('voice: capture, transcribe, edit, copy, save, reload, second note, correct
   await expect(text).toHaveValue('');
   expect(await (await page.request.get(`${notes}/${firstNote.id}`)).json()).toMatchObject({ text: corrected, revision: 1 });
 
-  const secondText = `Segunda nota ${identity.slice(0, 8)} escrita a mano.`;
+  const secondText = `Segunda nota ${identity.slice(0, 8)} escrita a mano. ${'Texto de prueba '.repeat(10)}Tramo final.`;
   await text.fill(secondText);
   const createdSecond = page.waitForResponse(on(notes, 'POST'));
   await page.getByRole('button', { name: 'Guardar', exact: true }).click();
@@ -118,6 +129,13 @@ test('voice: capture, transcribe, edit, copy, save, reload, second note, correct
   const list = await (await page.request.get(notes)).json();
   expect(list.totalElements).toBe(2);
   expect(list.content.map((item: { excerpt: string }) => item.excerpt.startsWith('Segunda nota'))).toEqual([true, false]);
+  const secondExcerpt = [...secondText].slice(0, 120).join('');
+  expect(list.content[0].excerpt).toBe(secondExcerpt);
+  const preview = secondItem.getByText(secondExcerpt, { exact: true });
+  await expect(preview).toHaveAttribute('title', secondText);
+  await expect(preview).toHaveCSS('white-space', 'nowrap');
+  await expect(preview).toHaveCSS('text-overflow', 'ellipsis');
+  expect(await preview.evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true);
   expect(posts).toEqual({ transcriptions: 1, notes: 2 });
 
   // VO-04: corregir la primera con revisión; la recarga conserva el texto exacto.
@@ -267,7 +285,7 @@ test('voice: provider error with explicit retry, private second identity, late r
 
     // VO-01/VO-06: cerrar sesión con captura activa detiene el micrófono sin subir audio.
     await record(page);
-    await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
+    await logout(page);
     await expect(page).toHaveURL(`${origin}/login`);
     const states = await trackStates(page);
     expect(states.length, 'Three captures: rate limited, discarded and interrupted by logout').toBe(3);

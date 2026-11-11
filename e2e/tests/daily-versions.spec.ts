@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { test, expect, control, login, interactiveLogin, readiness, csrfHeaders, layout } from './fixtures';
+import { test, expect, control, login, interactiveLogin, readiness, csrfHeaders, layout, logout } from './fixtures';
 import { chooseDate, writeWork, saveVersion, readVersion } from './daily-helpers';
 
 test.describe.configure({ timeout: 90_000 });
@@ -25,7 +25,8 @@ test('T-020: direct URL, reload, Hoy and empty dates keep route and editor coher
   await expect(page.getByLabel('Fecha', { exact: true })).toHaveValue(day20);
   await expect(editor).toHaveAttribute('contenteditable', 'true');
   await expect(editor).toHaveText('');
-  await page.getByRole('link', { name: 'Hoy', exact: true }).click();
+  // En angosto el enlace es un icono con nombre «Ir a hoy».
+  await page.getByRole('link', { name: /^(Hoy|Ir a hoy)$/ }).click();
   const today = await page.evaluate(() => {
     const value = new Date();
     return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
@@ -103,7 +104,7 @@ test('CA-05: reload and logout/login recover work and version copy', async ({ pa
   await readVersion(page, date, 'Copia guardada que se recupera');
   await page.reload();
   await expect(page.getByRole('textbox', { name: 'Versión de solo lectura' })).toHaveText('Copia guardada que se recupera');
-  await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
+  await logout(page);
   await expect(page).toHaveURL('http://localhost/login');
   await expect(page.locator('.daily-editor-content')).toHaveCount(0);
   expect((await page.request.get('/api/v1/daily-versions')).status()).toBe(401);
@@ -156,7 +157,7 @@ test('CA-06: two identities on the same date only see their own versions; change
     const stillA = await page.request.get(`/api/v1/daily-versions/${day19}`);
     expect(stillA.status()).toBe(200);
     expect(await stillA.json()).toEqual(versionA);
-    await pageB.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
+    await logout(pageB);
     await expect(pageB).toHaveURL('http://localhost/login');
     await expect(pageB.locator('.daily-editor-content')).toHaveCount(0);
     expect((await pageB.request.get('/api/v1/auth/me')).status()).toBe(401);

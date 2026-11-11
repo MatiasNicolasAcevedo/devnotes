@@ -14,13 +14,39 @@
 }
 
 .daily-editor-toolbar {
+  /* Fija al desplazar la página: el guardado de versión queda siempre a mano. */
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 4px 12px;
+  gap: 4px 8px;
   padding: 3px 8px;
   border-bottom: 1px solid var(--editor-border);
+  border-radius: 6px 6px 0 0;
+  background: var(--editor-bg);
   font-family: system-ui, sans-serif;
+}
+
+.daily-editor-tool {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.daily-editor-toolbar-spacer {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Avisos largos: fila propia debajo de los controles, dentro de la misma barra. */
+.daily-editor-toolbar-notices {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+.daily-editor-toolbar-notices:empty {
+  display: none;
 }
 
 .daily-editor-error {
@@ -31,19 +57,6 @@
     sans-serif;
 }
 
-.daily-editor-help,
-.daily-editor-footer {
-  color: var(--editor-muted);
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.daily-editor-footer {
-  padding: 6px 12px;
-  border-top: 1px solid var(--editor-border);
-  font-family: system-ui, sans-serif;
-}
-
 .daily-editor-viewport {
   height: clamp(360px, 55vh, 720px);
   min-height: 240px;
@@ -51,6 +64,19 @@
   overflow: auto;
   scrollbar-color: #646b76 var(--editor-bg);
   display: flex;
+}
+
+/* Notas: el editor llena el alto libre de la ventana y se desplaza por dentro; ya no se redimensiona a mano. */
+.daily-editor-wrapper--fill {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.daily-editor-wrapper--fill > .daily-editor-viewport {
+  flex: 1 1 0;
+  height: auto;
+  min-height: 240px;
+  resize: none;
 }
 
 .daily-editor-viewport:focus-within {
@@ -141,14 +167,15 @@
   color: #fff;
 }
 
-@media (max-width: 600px) {
+/* Angosto (menos de 600 px): columna de números más estrecha para ganar ancho de escritura. */
+@media (max-width: 599.95px) {
   .daily-editor-content {
     padding-right: 12px;
-    padding-left: 56px;
+    padding-left: 40px;
   }
   .daily-editor-content > p::before,
   .daily-editor-content > hr[data-type='separator']::before {
-    left: -48px;
-    width: 32px;
+    left: -32px;
+    width: 24px;
   }
 }

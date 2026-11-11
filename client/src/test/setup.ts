@@ -2,13 +2,18 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup } from '@testing-library/react'
 import { afterAll, afterEach, beforeAll } from 'vitest'
 import { server } from './msw/server'
+import { installMatchMedia, resetViewportWidth } from './viewport'
 
 // Cualquier petición sin handler falla el test: la API nunca se alcanza de verdad desde pruebas de componentes.
-beforeAll(() => server.listen({ onUnhandledFrame: 'error' }))
+beforeAll(() => {
+  installMatchMedia()
+  server.listen({ onUnhandledFrame: 'error' })
+})
 afterEach(() => {
   cleanup()
   server.resetHandlers()
   clearCookies()
+  resetViewportWidth()
 })
 afterAll(() => server.close())
 

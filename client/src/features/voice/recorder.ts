@@ -35,6 +35,19 @@ export interface CaptureControllerOptions {
   isTypeSupported?: (type: string) => boolean
   /** performance.now inyectable (solo pruebas). */
   now?: () => number
+  /**
+   * Fábrica del AudioContext del medidor de nivel (inyectable en pruebas). `null` graba sin medidor; por defecto
+   * usa el AudioContext del navegador si existe.
+   */
+  createAudioContext?: (() => AudioContext) | null
+}
+
+/** Medidor de nivel: un analizador conectado al stream de la captura, sin salida de audio. */
+interface LevelMeter {
+  context: AudioContext
+  source: MediaStreamAudioSourceNode
+  analyser: AnalyserNode
+  samples: Float32Array<ArrayBuffer>
 }
 
 const DEFAULT_MIME_TYPES = ['audio/webm;codecs=opus', 'audio/webm']
@@ -105,6 +118,8 @@ export class CaptureController {
   private _MediaRecorder: typeof MediaRecorder
   private _isTypeSupported: (type: string) => boolean
   private _now: () => number
+  private _createAudioContext: (() => AudioContext) | null | undefined
+  private _meter: LevelMeter | null = null
 
   constructor(options: CaptureControllerOptions = {}) {
     this._mimeTypes = options.mimeTypes ?? DEFAULT_MIME_TYPES
@@ -137,6 +152,20 @@ export class CaptureController {
         return () => false
       })()
     this._now = options.now ?? (() => performance.now())
+    this._createAudioContext = options.createAudioContext
+  }
+
+  /**
+   * Nivel RMS actual del micrófono (0 es silencio; 1, señal a fondo de escala) o `null` si no hay medidor:
+   * fuera de una grabación o en un navegador sin AudioContext.
+   */
+  getLevel(): number | null {
+    const meter = this._meter
+    if (!meter) return null
+    meter.analyser.getFloatTimeDomainData(meter.samples)
+    let sum = 0
+    for (const sample of meter.samples) sum += sample * sample
+    return Math.sqrt(sum / meter.samples.length)
   }
 
   get state(): CaptureState {
@@ -194,6 +223,7 @@ export class CaptureController {
 
       this._recorder.start(1000) // timeslice de 1 segundo
       this._startTime = this._now()
+      this._startMeter(stream)
       this._transition('recording')
 
       // Timer de límite de duración
@@ -383,7 +413,47 @@ export class CaptureController {
     }
   }
 
+  /**
+   * Abre el medidor sobre el mismo stream de la captura: no pide otro micrófono ni cambia lo que se graba o se
+   * envía. Si el navegador no lo ofrece o falla, la grabación sigue sin medidor.
+   */
+  private _startMeter(stream: MediaStream): void {
+    const create =
+      this._createAudioContext === undefined
+        ? typeof AudioContext === 'undefined'
+          ? null
+          : () => new AudioContext()
+        : this._createAudioContext
+    if (!create) return
+    let context: AudioContext | null = null
+    try {
+      context = create()
+      const source = context.createMediaStreamSource(stream)
+      const analyser = context.createAnalyser()
+      analyser.fftSize = 1024
+      // Sin conexión al destino: el micrófono se mide, no se reproduce.
+      source.connect(analyser)
+      this._meter = { context, source, analyser, samples: new Float32Array(analyser.fftSize) }
+    } catch {
+      this._meter = null
+      void context?.close().catch(() => undefined)
+    }
+  }
+
+  private _stopMeter(): void {
+    const meter = this._meter
+    if (!meter) return
+    this._meter = null
+    try {
+      meter.source.disconnect()
+    } catch {
+      // Ya desconectado.
+    }
+    void meter.context.close().catch(() => undefined)
+  }
+
   private _cleanup(): void {
+    this._stopMeter()
     if (this._recorder) {
       this._recorder.ondataavailable = null
       this._recorder.onstop = null

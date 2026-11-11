@@ -8,14 +8,18 @@ import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
+import IconButton from '@mui/material/IconButton'
 import Link from '@mui/material/Link'
-import Stack from '@mui/material/Stack'
+import Tooltip from '@mui/material/Tooltip'
 import { Link as RouterLink } from 'react-router'
+import { AMBER } from '../../app/theme'
+import { SaveIcon } from '../../shared/ui/icons'
 import { formatDateLocal } from './dateUtils'
 import type { UseSaveDailyVersionReturn } from './useSaveDailyVersion'
 
 /**
- * Botón y estados de guardar versión manual.
+ * Botón de icono (disquete) para guardar una versión manual, con su diálogo de confirmación. Va en la barra del
+ * editor; los avisos de resultado se muestran aparte con `SaveDailyVersionNotices`.
  * Recibe el resultado del hook `useSaveDailyVersion` y la fecha activa para formatear el diálogo.
  */
 export function SaveDailyVersion({
@@ -25,16 +29,7 @@ export function SaveDailyVersion({
   save: UseSaveDailyVersionReturn
   date: string
 }) {
-  const {
-    phase,
-    error,
-    handleClick,
-    handleConfirm,
-    handleCancel,
-    handleRetry,
-    showConfirmDialog,
-    confirmDate,
-  } = save
+  const { phase, handleClick, handleConfirm, handleCancel, showConfirmDialog, confirmDate } = save
 
   const formattedDate = confirmDate ? formatDateLocal(confirmDate) : formatDateLocal(date)
 
@@ -45,69 +40,22 @@ export function SaveDailyVersion({
     phase === 'conflict' ||
     phase === 'unknown'
 
-  let buttonLabel: React.ReactNode
-  if (phase === 'saving') {
-    buttonLabel = (
-      <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-        <CircularProgress size={16} aria-hidden />
-        <span>Guardando versión…</span>
-      </Stack>
-    )
-  } else {
-    buttonLabel = 'Guardar versión'
-  }
-
   return (
     <>
-      <Stack spacing={1} sx={{ width: '100%' }}>
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={handleClick}
-          disabled={buttonDisabled}
-          aria-label="Guardar versión"
-        >
-          {buttonLabel}
-        </Button>
-
-        {phase === 'success' && (
-          <Alert severity="success" role="alert">
-            Versión guardada correctamente.
-          </Alert>
-        )}
-
-        {phase === 'conflict' && (
-          <Alert severity="warning" role="alert">
-            <AlertTitle>Conflicto de revisión</AlertTitle>
-            La revisión del trabajo ha cambiado. Recarga la página y vuelve a intentarlo.
-          </Alert>
-        )}
-
-        {phase === 'error' && error && (
-          <Alert severity="error" role="alert">
-            Error al guardar la versión.{' '}
-            <Link component="button" onClick={handleRetry}>
-              Reintentar
-            </Link>
-          </Alert>
-        )}
-
-        {phase === 'unknown' && (
-          <Alert severity="warning" role="alert">
-            <AlertTitle>Resultado desconocido</AlertTitle>
-            No se pudo confirmar si la versión se guardó. Consulta el{' '}
-            <Link component={RouterLink} to="/history">
-              historial de versiones
-            </Link>{' '}
-            antes de repetir la acción.
-            <Box sx={{ mt: 1 }}>
-              <Link component="button" onClick={handleRetry}>
-                Reintentar
-              </Link>
-            </Box>
-          </Alert>
-        )}
-      </Stack>
+      {/* El span recibe el puntero cuando el botón está deshabilitado, así el tooltip sigue disponible. */}
+      <Tooltip title="Guardar versión" describeChild>
+        <Box component="span" sx={{ display: 'inline-flex', flexShrink: 0 }}>
+          <IconButton
+            size="small"
+            onClick={handleClick}
+            disabled={buttonDisabled}
+            aria-label="Guardar versión"
+            sx={{ color: AMBER }}
+          >
+            {phase === 'saving' ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+          </IconButton>
+        </Box>
+      </Tooltip>
 
       <Dialog open={showConfirmDialog} onClose={handleCancel}>
         <DialogTitle>Reemplazar versión existente</DialogTitle>
@@ -126,4 +74,57 @@ export function SaveDailyVersion({
       </Dialog>
     </>
   )
+}
+
+/** Avisos de «Guardar versión»: éxito, conflicto, error y resultado desconocido. No entran en la barra. */
+export function SaveDailyVersionNotices({ save }: { save: UseSaveDailyVersionReturn }) {
+  const { phase, error, handleRetry } = save
+
+  if (phase === 'success') {
+    return (
+      <Alert severity="success" role="alert">
+        Versión guardada correctamente.
+      </Alert>
+    )
+  }
+
+  if (phase === 'conflict') {
+    return (
+      <Alert severity="warning" role="alert">
+        <AlertTitle>Conflicto de revisión</AlertTitle>
+        La revisión del trabajo ha cambiado. Recarga la página y vuelve a intentarlo.
+      </Alert>
+    )
+  }
+
+  if (phase === 'error' && error) {
+    return (
+      <Alert severity="error" role="alert">
+        Error al guardar la versión.{' '}
+        <Link component="button" onClick={handleRetry}>
+          Reintentar
+        </Link>
+      </Alert>
+    )
+  }
+
+  if (phase === 'unknown') {
+    return (
+      <Alert severity="warning" role="alert">
+        <AlertTitle>Resultado desconocido</AlertTitle>
+        No se pudo confirmar si la versión se guardó. Consulta el{' '}
+        <Link component={RouterLink} to="/history">
+          historial de versiones
+        </Link>{' '}
+        antes de repetir la acción.
+        <Box sx={{ mt: 1 }}>
+          <Link component="button" onClick={handleRetry}>
+            Reintentar
+          </Link>
+        </Box>
+      </Alert>
+    )
+  }
+
+  return null
 }

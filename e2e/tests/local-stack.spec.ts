@@ -1,18 +1,20 @@
-import { test, expect, control, layout } from './fixtures';
+import { test, expect, control, layout, serverStatus } from './fixtures';
 
 test.describe.configure({ timeout: 90_000 });
 
+// T-050: el estado de API y base de datos se lee en el indicador de la barra superior.
 test('real database outage removes cached success and recovers on the open page within 30 seconds', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByText('API y base de datos disponibles', { exact: true })).toBeVisible();
+  const online = serverStatus(page, 'Servidor conectado');
+  const offline = serverStatus(page, 'Servidor sin conexión');
+  await expect(online).toBeVisible();
   await layout(page);
   try {
     const stoppedAt = Date.now();
     await control('stop-db');
-    const error = page.getByRole('alert').filter({ hasText: 'No se pudo obtener el estado del servidor' });
-    await expect(error).toBeVisible({ timeout: 30_000 });
+    await expect(offline).toBeVisible({ timeout: 30_000 });
     expect(Date.now() - stoppedAt).toBeLessThan(30_000);
-    await expect(page.getByText('Servidor conectado', { exact: true })).toHaveCount(0);
+    await expect(online).toHaveCount(0);
     const health = await page.request.get('/actuator/health/readiness', { timeout: 5000 });
     expect(health.status()).toBe(503);
     expect(await health.json()).toEqual({ status: 'DOWN' });
@@ -20,9 +22,9 @@ test('real database outage removes cached success and recovers on the open page 
     await layout(page);
     const restartedAt = Date.now();
     await control('start-db');
-    await expect(page.getByText('API y base de datos disponibles', { exact: true })).toBeVisible({ timeout: 30_000 });
+    await expect(online).toBeVisible({ timeout: 30_000 });
     expect(Date.now() - restartedAt).toBeLessThan(30_000);
-    await expect(error).toHaveCount(0);
+    await expect(offline).toHaveCount(0);
     const recovered = await page.request.get('/actuator/health/readiness', { timeout: 5000 });
     expect(recovered.status()).toBe(200);
     expect(await recovered.json()).toEqual({ status: 'UP' });

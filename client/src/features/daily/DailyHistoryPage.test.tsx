@@ -283,14 +283,4 @@ describe('DailyHistoryPage — navegación', () => {
     const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
     expect(within(nav).getByRole('link', { name: 'Historial' })).toHaveAttribute('href', '/history')
   })
-
-  it('la home ofrece enlace al Historial', async () => {
-    installAuthBackend({ user: buildAuthUser() })
-    renderWithProviders(<AppRoutes />)
-
-    expect(await screen.findByRole('link', { name: 'Ir al Historial' })).toHaveAttribute(
-      'href',
-      '/history',
-    )
-  })
 })

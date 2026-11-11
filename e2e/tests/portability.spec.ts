@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Locator, Page, Request, Response } from '@playwright/test';
-import { control, csrfHeaders, expect, interactiveLogin, layout, readiness, test } from './fixtures';
+import { control, csrfHeaders, expect, interactiveLogin, layout, readiness, test, savedIndicator } from './fixtures';
 import { saveVersion } from './daily-helpers';
 
 /**
@@ -147,7 +147,7 @@ test('portability: A exports, empty B previews and imports the same data, reimpo
     const content = JSON.stringify((await response.json()).content);
     return content.includes(href) && content.includes(reference.id) && content.includes(marker);
   }, { timeout: 15_000, message: 'Autosave persisted the complete daily note' }).toBe(true);
-  await expect(page.getByText('Guardado', { exact: true })).toBeVisible();
+  await expect(savedIndicator(page)).toBeVisible();
   await saveVersion(page, date);
 
   /* 1. A crea una nota de voz escribiendo texto, sin micrófono. */

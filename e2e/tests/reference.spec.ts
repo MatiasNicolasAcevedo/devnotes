@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { writeFile } from 'node:fs/promises';
-import { test, expect, control, readiness, layout, interactiveLogin, csrfHeaders as headers, keyboardActivate } from './fixtures';
+import { test, expect, control, readiness, layout, interactiveLogin, csrfHeaders as headers, keyboardActivate, logout } from './fixtures';
 
 test.describe.configure({ timeout: 90_000 });
 const path = '/api/v1/reference-items';
@@ -78,7 +78,7 @@ test('private reference CRUD persists, paginates and rejects a simultaneous seco
     expect(page.url()).toBe('http://localhost/reference');
     await page.screenshot({ path: testInfo.outputPath('safe-failure.png') });
     await writeFile(testInfo.outputPath('safe-screenshot.json'), JSON.stringify({ safe: true }));
-    await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
+    await logout(page);
     await expect(page).toHaveURL('http://localhost/login');
     expect((await page.request.get(path)).status()).toBe(401);
     expect((await bPage.request.get(path)).status()).toBe(200);

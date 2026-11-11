@@ -8,6 +8,7 @@ import { installAuthBackend } from '../../test/msw/authBackend'
 import { installReferenceBackend, referenceItem } from '../../test/msw/referenceBackend'
 import { server } from '../../test/msw/server'
 import { renderWithProviders } from '../../test/render'
+import { clickLogout } from '../../test/session'
 import { authQueryKeys } from '../auth/api'
 import * as api from './api'
 import { referenceKeys } from './useReferenceItems'
@@ -70,7 +71,7 @@ describe.each(['logout', 'expiry', 'switch'] as const)(
         await entered.promise
         expect(screen.getByRole('button', { name: 'Guardando…' })).toBeDisabled()
         if (transition === 'logout') {
-          await user.click(screen.getByRole('button', { name: 'Cerrar sesión' }))
+          await clickLogout(user)
           await screen.findByRole('heading', { name: `Ingresar a ${projectIdentity.name}` })
         } else if (transition === 'expiry') {
           auth.expireSession()

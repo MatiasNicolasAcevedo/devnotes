@@ -31,11 +31,15 @@ export function useVoiceNotes(params?: VoiceListParams) {
 }
 
 /** Detalle de una nota específica. */
-export function useVoiceNote(id: string) {
+export function useVoiceNote(id: string, listedRevision?: number) {
   return useQuery({
     queryKey: voiceQueryKeys.detail(id),
     queryFn: ({ signal }) => fetchVoiceNote(id, signal),
     enabled: !!id,
+    refetchOnMount: (query) =>
+      listedRevision === undefined
+        ? true
+        : query.state.data?.revision !== listedRevision && 'always',
   })
 }
 

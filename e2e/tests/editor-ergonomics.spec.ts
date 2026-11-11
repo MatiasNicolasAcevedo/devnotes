@@ -1,8 +1,8 @@
-import { test, expect, login, layout } from './fixtures';
+import { test, expect, login, layout, savedIndicator } from './fixtures';
 
 test.describe.configure({ timeout: 90_000 });
 
-test('multiline clipboard, persistence, scroll focus and compact layout', async ({ page, context, identity }, testInfo) => {
+test('multiline clipboard, persistence, scroll focus and compact layout', async ({ page, context, identity }) => {
   await login(page, identity);
   await page.getByRole('link', { name: 'Notas', exact: true }).click();
   const editor = page.getByRole('textbox', { name: 'Editor de nota diaria' });
@@ -21,7 +21,7 @@ test('multiline clipboard, persistence, scroll focus and compact layout', async 
   await page.keyboard.press('Control+V');
   await expect(paragraphs).toHaveCount(4);
   expect(await paragraphs.allTextContents()).toEqual(['  ñandú áé <> &', '', '  tareas: --- / #1', '']);
-  await expect(page.getByText('Guardado', { exact: true })).toBeVisible();
+  await expect(savedIndicator(page)).toBeVisible();
   await page.reload();
   await expect(editor).toHaveAttribute('contenteditable', 'true');
   await expect(paragraphs).toHaveCount(4);
@@ -34,11 +34,22 @@ test('multiline clipboard, persistence, scroll focus and compact layout', async 
   expect(await viewport.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
   const nav = page.getByRole('navigation', { name: 'Navegación principal' });
   expect(await nav.evaluate(element => Boolean(element.closest('header')))).toBe(true);
-  if (testInfo.project.name === 'desktop') {
-    const title = (await page.getByRole('heading', { name: 'Notas diarias' }).boundingBox())!;
-    const date = (await page.getByLabel('Fecha', { exact: true }).boundingBox())!;
-    expect(Math.abs(title.y + title.height / 2 - date.y - date.height / 2)).toBeLessThan(4);
+  // T-050 (UI-05): el título ya no se ve; fecha, enlace, copiar y guardar versión comparten una fila de la barra.
+  await expect(page.getByRole('heading', { level: 1, name: 'Notas diarias' })).toHaveCount(1);
+  const toolbar = page.getByRole('group', { name: 'Herramientas del editor' });
+  const centers: number[] = [];
+  for (const control of [
+    toolbar.getByRole('button', { name: /^Cambiar fecha/ }),
+    toolbar.getByRole('link', { name: /^(Hoy|Ir a hoy)$/ }),
+    toolbar.getByRole('button', { name: /^(Agregar|Editar) enlace$/ }),
+    toolbar.getByRole('button', { name: 'Copiar nota', exact: true }),
+    toolbar.getByRole('button', { name: 'Guardar versión', exact: true }),
+  ]) {
+    const box = (await control.boundingBox())!;
+    centers.push(box.y + box.height / 2);
   }
+  expect(Math.max(...centers) - Math.min(...centers)).toBeLessThan(4);
+  expect((await page.getByRole('banner').boundingBox())!.height).toBeLessThanOrEqual(48);
   await layout(page);
 });
 

@@ -3,6 +3,8 @@ import { randomUUID } from 'node:crypto';
 import { readFile, writeFile, rename, unlink } from 'node:fs/promises';
 
 export const issuer = 'http://host.docker.internal:8090/default';
+/** Notas abierta en hoy: `/notes`, que la SPA canoniza a `/notes/<fecha de hoy>` al cargar la nota. */
+export const notesUrl = /^http:\/\/localhost\/notes(\/\d{4}-\d{2}-\d{2})?$/;
 export async function control(operation: string, identity?: string): Promise<unknown> {
   const id = randomUUID();
   await writeFile('/artifacts/control/request.tmp', JSON.stringify({ id, operation, identity }));
@@ -83,7 +85,9 @@ export async function layout(page: Page) {
     const bounds = await element.boundingBox();
     expect(bounds !== null && bounds.x >= 0 && bounds.x + bounds.width <= page.viewportSize()!.width,
       'Visible main controls fit within the viewport').toBe(true);
-    expect((await element.innerText()).trim().length > 0, 'Controls have visible labels').toBe(true);
+    // T-050: los botones de icono de las barras no llevan texto; su nombre accesible es el aria-label.
+    const name = (await element.innerText()).trim() || (await element.getAttribute('aria-label') ?? '').trim();
+    expect(name.length > 0, 'Controls have a visible label or an accessible name').toBe(true);
   }
 }
 
@@ -96,9 +100,9 @@ export async function login(page: Page, identity: string) {
   expect(request.searchParams.get('redirect_uri')).toBe('http://localhost/login/oauth2/code/google');
   expect(Boolean(request.searchParams.get('state')), 'Real authorization state is present').toBe(true);
   expect((await callback).status()).toBe(302);
-  await expect(page).toHaveURL('http://localhost/');
-  await expect(page.getByRole('button', { name: 'Cerrar sesión', exact: true })).toBeEnabled();
-  await expect(page.getByText(label(identity), { exact: true })).toBeVisible();
+  // T-050: sin pantalla de inicio, el callback aterriza en / y la SPA abre Notas.
+  await expect(page).toHaveURL(notesUrl);
+  await expectLoggedIn(page, identity);
   const me = await page.request.get('/api/v1/auth/me');
   expect(me.status()).toBe(200);
   expect(me.headers()['cache-control']).toContain('no-store');
@@ -118,13 +122,56 @@ export async function interactiveLogin(page: Page, identity: string) {
   await page.getByPlaceholder('Enter any user/subject').fill(`e2e-${identity}`);
   await page.locator('textarea[name="claims"]').fill(JSON.stringify({ aud: ['starter-test'], name: label(identity), email: `${identity}@example.invalid`, email_verified: true }));
   await page.getByRole('button', { name: 'Sign-in', exact: true }).click();
-  await expect(page).toHaveURL('http://localhost/');
-  await expect(page.getByRole('button', { name: 'Cerrar sesión' })).toBeEnabled();
+  await expect(page).toHaveURL(notesUrl);
+  await expectLoggedIn(page, identity);
   const me = await page.request.get('/api/v1/auth/me');
   expect(me.status()).toBe(200);
   const user = await me.json();
   expect(user.displayName).toBe(label(identity));
   return user.id as string;
+}
+
+/** Botón del menú de usuario de la barra; con `identity` exige que nombre a esa persona. */
+export function accountButton(page: Page, identity?: string) {
+  return page.getByRole('button', identity
+    ? { name: `Cuenta de ${label(identity)}`, exact: true }
+    : { name: /^Cuenta de / });
+}
+
+/** Abre el menú de usuario y devuelve su opción «Cerrar sesión». */
+export async function logoutItem(page: Page) {
+  await accountButton(page).click();
+  const item = page.getByRole('menuitem', { name: 'Cerrar sesión', exact: true });
+  await expect(item).toBeVisible();
+  return item;
+}
+
+/** La sesión activa se ve en la barra: botón de cuenta, nombre en el menú y cierre habilitado (CSRF listo). */
+export async function expectLoggedIn(page: Page, identity: string) {
+  await expect(accountButton(page, identity)).toBeVisible();
+  const item = await logoutItem(page);
+  await expect(item).toBeEnabled();
+  await expect(page.getByRole('menu').getByText(label(identity), { exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('menu')).toHaveCount(0);
+}
+
+/** Cierra la sesión desde el menú de usuario. */
+export async function logout(page: Page) {
+  const item = await logoutItem(page);
+  await expect(item).toBeEnabled();
+  await item.click();
+}
+
+/** «Guardado» en la barra del editor: texto en ancho, icono con nombre accesible en angosto. */
+export function savedIndicator(page: Page) {
+  const status = page.getByRole('status', { name: 'Estado de guardado', exact: true });
+  return status.getByText('Guardado', { exact: true }).or(status.getByRole('img', { name: 'Guardado', exact: true }));
+}
+
+/** Indicador del servidor en la barra superior, por su nombre accesible. */
+export function serverStatus(page: Page, name: string) {
+  return page.getByRole('banner').getByRole('status', { name, exact: true });
 }
 
 export async function csrfHeaders(page: Page) {

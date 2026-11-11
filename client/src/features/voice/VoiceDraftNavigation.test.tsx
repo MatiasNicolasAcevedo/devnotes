@@ -7,6 +7,7 @@ import { buildAuthUser, problemResponse } from '../../test/factories'
 import { installAuthBackend } from '../../test/msw/authBackend'
 import { server } from '../../test/msw/server'
 import { renderWithProviders } from '../../test/render'
+import { clickLogout } from '../../test/session'
 import { authQueryKeys, LOGOUT_PATH } from '../auth/api'
 import { voiceQueryKeys } from './api'
 
@@ -181,7 +182,7 @@ describe('workspace de voz y navegación', () => {
 
   it('atrás y adelante muestran la guardia; un error conserva texto y el descarte libera la ruta', async () => {
     server.use(mock.post(LIST, () => problemResponse(503)))
-    const { user, dailyRead } = renderApp('/')
+    const { user, dailyRead } = renderApp('/data')
     await user.click(screen.getByRole('button', { name: 'Ir a voz' }))
     await voiceText()
     await user.click(screen.getByRole('button', { name: 'Ir a destino diario' }))
@@ -198,10 +199,10 @@ describe('workspace de voz y navegación', () => {
     expect(await screen.findByText(/Tu borrador se conserva/)).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Volver a voz' }))
     expect(await voiceText()).toHaveValue('Pendiente')
-    await user.click(screen.getByRole('link', { name: 'Inicio' }))
+    await user.click(screen.getByRole('link', { name: 'Datos' }))
     await guard()
     await user.click(screen.getByRole('button', { name: 'Descartar y continuar' }))
-    expect(await screen.findByRole('heading', { name: /Bienvenido/ })).toBeVisible()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Datos' })).toBeVisible()
     await user.click(screen.getByRole('link', { name: 'Voz' }))
     expect(await voiceText()).toHaveValue('')
   })
@@ -235,7 +236,7 @@ describe('workspace de voz y navegación', () => {
         })
       }),
     )
-    const { user, queryClient } = renderApp('/')
+    const { user, queryClient } = renderApp('/data')
     await user.click(screen.getByRole('button', { name: 'Ir a voz' }))
     const back = screen.getByRole('button', { name: 'Atrás' })
     await user.type(await voiceText(), 'Texto guardado')
@@ -267,7 +268,7 @@ describe('workspace de voz y navegación', () => {
     const { user } = renderApp()
     await user.click(await screen.findByRole('button', { name: 'Grabar' }))
     expect(await screen.findByText('Esperando permiso del micrófono')).toBeVisible()
-    await user.click(screen.getByRole('link', { name: 'Inicio' }))
+    await user.click(screen.getByRole('link', { name: 'Datos' }))
     await guard()
     await user.click(screen.getByRole('button', { name: 'Volver a voz' }))
     permission.release()
@@ -460,7 +461,7 @@ describe('workspace de voz y navegación', () => {
       fetchSpy.mock.calls.find(([path]) => path === TRANSCRIPTION)?.[1]?.signal
     await waitFor(() => expect(received).toHaveBeenCalledOnce())
     expect(getSignal()?.aborted).toBe(false)
-    await user.click(screen.getByRole('link', { name: 'Inicio' }))
+    await user.click(screen.getByRole('link', { name: 'Datos' }))
     await guard()
     await waitFor(() => expect(getSignal()?.aborted).toBe(true))
     expect(screen.getByRole('button', { name: 'Guardar y continuar' })).toBeDisabled()
@@ -468,7 +469,7 @@ describe('workspace de voz y navegación', () => {
     expect(await screen.findByRole('button', { name: 'Transcribir' })).toBeEnabled()
     expect(track.stop).toHaveBeenCalledOnce()
     expect(getUserMedia).toHaveBeenCalledOnce()
-    await user.click(screen.getByRole('link', { name: 'Inicio' }))
+    await user.click(screen.getByRole('link', { name: 'Datos' }))
     await user.click(await screen.findByRole('button', { name: 'Descartar y continuar' }))
     response.release()
     await user.click(screen.getByRole('link', { name: 'Voz' }))
@@ -482,10 +483,10 @@ describe('workspace de voz y sesión', () => {
     const { user } = renderApp()
     server.use(mock.post(LOGOUT_PATH, () => problemResponse(503), { once: true }))
     await user.type(await voiceText(), 'Texto privado')
-    await user.click(screen.getByRole('button', { name: 'Cerrar sesión' }))
+    await clickLogout(user)
     expect(await screen.findByText('No se pudo confirmar el cierre de sesión')).toBeVisible()
     expect(await voiceText()).toHaveValue('Texto privado')
-    await user.click(screen.getByRole('button', { name: 'Cerrar sesión' }))
+    await clickLogout(user)
     await screen.findByRole('link', { name: 'Continuar con Google' })
     await user.click(screen.getByRole('link', { name: 'Voz' }))
     expect(await voiceText()).toHaveValue('')
@@ -504,7 +505,7 @@ describe('workspace de voz y sesión', () => {
     )
     await user.click(await screen.findByRole('button', { name: 'Grabar' }))
     expect(await screen.findByText('Grabando')).toBeVisible()
-    await user.click(screen.getByRole('button', { name: 'Cerrar sesión' }))
+    await clickLogout(user)
     await waitFor(() => expect(track.stop).toHaveBeenCalledOnce())
     expect(screen.queryByText('Grabando')).not.toBeInTheDocument()
     response.release()
@@ -518,10 +519,10 @@ describe('workspace de voz y sesión', () => {
     await user.type(await voiceText(), 'Texto de una sesión vencida')
     auth.expireSession()
     server.use(mock.post(LIST, () => problemResponse(401)))
-    await user.click(screen.getByRole('link', { name: 'Inicio' }))
+    await user.click(screen.getByRole('link', { name: 'Datos' }))
     await user.click(await screen.findByRole('button', { name: 'Guardar y continuar' }))
     await screen.findByText('La sesión terminó. Volvé a ingresar.')
-    expect(await screen.findByRole('heading', { name: /Bienvenido/ })).toBeVisible()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Datos' })).toBeVisible()
     await user.click(screen.getByRole('link', { name: 'Voz' }))
     expect(await voiceText()).toHaveValue('')
   })
@@ -546,7 +547,7 @@ describe('workspace de voz y sesión', () => {
       buildAuthUser({ id: '01900000-0000-7000-8000-000000000002', displayName: 'Persona B' }),
     )
     await act(() => queryClient.invalidateQueries({ queryKey: authQueryKeys.session }))
-    expect(await screen.findByText('Persona B')).toBeVisible()
+    expect(await screen.findByRole('button', { name: 'Cuenta de Persona B' })).toBeVisible()
     expect(await voiceText()).toHaveValue('')
     await user.type(await voiceText(), 'Texto de B')
     held.release()
@@ -567,22 +568,20 @@ describe('workspace de voz y sesión', () => {
       }),
     )
     await user.type(await voiceText(), 'Borrador de A')
-    const logout = screen.getByRole('button', { name: 'Cerrar sesión' })
-    await waitFor(() => expect(logout).toBeEnabled())
-    await user.click(logout)
+    await clickLogout(user)
     await waitFor(() => expect(post).toHaveBeenCalledOnce())
     const [oldLogout] = queryClient.getMutationCache().getAll()
     auth.login(
       buildAuthUser({ id: '01900000-0000-7000-8000-000000000002', displayName: 'Persona B' }),
     )
     await act(() => queryClient.invalidateQueries({ queryKey: authQueryKeys.session }))
-    expect(await screen.findByText('Persona B')).toBeVisible()
+    expect(await screen.findByRole('button', { name: 'Cuenta de Persona B' })).toBeVisible()
     expect(await voiceText()).toHaveValue('')
     await user.type(await voiceText(), 'Borrador de B')
     response.release()
     await waitFor(() => expect(oldLogout.state.status).toBe('success'))
     expect(screen.getByTestId('location')).toHaveTextContent(VOICE)
     expect(await voiceText()).toHaveValue('Borrador de B')
-    expect(screen.getByText('Persona B')).toBeVisible()
+    expect(screen.getByRole('button', { name: 'Cuenta de Persona B' })).toBeVisible()
   })
 })

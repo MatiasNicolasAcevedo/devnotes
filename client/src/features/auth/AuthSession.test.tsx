@@ -12,6 +12,7 @@ import { buildAuthUser, problemResponse } from '../../test/factories'
 import { installAuthBackend } from '../../test/msw/authBackend'
 import { server } from '../../test/msw/server'
 import { renderWithProviders } from '../../test/render'
+import { clickLogout, openAccountMenu } from '../../test/session'
 import { AUTH_CSRF_PATH, AUTH_ME_PATH, LOGOUT_PATH, authQueryKeys } from './api'
 import { AuthSessionProvider } from './AuthSessionProvider'
 import { LoginPage } from './LoginPage'
@@ -128,23 +129,49 @@ async function findAlert(title: RegExp) {
 }
 
 const banner = () => screen.getByRole('banner')
+const accountButton = (name = 'Persona A') =>
+  within(banner()).getByRole('button', { name: `Cuenta de ${name}` })
+const queryAccountButton = (name = 'Persona A') =>
+  within(banner()).queryByRole('button', { name: `Cuenta de ${name}` })
+
+/** Espera el botón de cuenta (sesión cargada) y devuelve el mismo `user`, para encadenar con el menú. */
+async function findAccount<T>(user: T): Promise<T> {
+  await within(banner()).findByRole('button', { name: /^Cuenta de / })
+  return user
+}
 
 afterEach(() => {
   focusManager.setFocused(undefined)
 })
 
 describe('Sesión en el shell', () => {
-  it('muestra el estado de carga y después al usuario con «Cerrar sesión», sin roles ni selector', async () => {
+  it('muestra el estado de carga y después el menú de usuario con el nombre y «Cerrar sesión», sin roles ni selector', async () => {
     installPrivateApi(installAuthBackend({ user: personaA }))
     const releaseMe = holdNext('get', AUTH_ME_PATH)
 
-    renderSession()
+    const { user } = renderSession()
 
-    expect(screen.getByRole('status')).toHaveTextContent('Verificando sesión…')
+    expect(screen.getByText('Verificando sesión…')).toBeVisible()
     releaseMe()
-    expect(await within(banner()).findByText('Persona A')).toBeVisible()
-    expect(within(banner()).getByRole('button', { name: 'Cerrar sesión' })).toBeVisible()
+    expect(
+      await within(banner()).findByRole('button', { name: 'Cuenta de Persona A' }),
+    ).toBeVisible()
     expect(await screen.findByText('Datos de Persona A')).toBeVisible()
+    // El nombre y el cierre ya no ocupan la barra: viven en el menú.
+    expect(within(banner()).queryByText(/Persona A/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).not.toBeInTheDocument()
+
+    expect(await openAccountMenu(user)).toBeVisible()
+    const menu = screen.getByRole('menu')
+    expect(
+      within(menu)
+        .getAllByRole('menuitem')
+        .map((item) => item.textContent),
+    ).toEqual(['Persona A', 'Cerrar sesión'])
+    expect(within(menu).getByText('Persona A').closest('li')).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument()
     expect(screen.queryByText(/rol|permiso/i)).not.toBeInTheDocument()
   })
@@ -163,7 +190,9 @@ describe('Sesión en el shell', () => {
 
     renderSession()
 
-    expect(await within(banner()).findByText(expected)).toBeVisible()
+    expect(
+      await within(banner()).findByRole('button', { name: `Cuenta de ${expected}` }),
+    ).toBeVisible()
   })
 
   it('un visitante ve «Ingresar», obtiene CSRF al montar y un 401 de API no termina nada', async () => {
@@ -188,12 +217,12 @@ describe('Sesión en el shell', () => {
     installPrivateApi(backend)
     const releaseCsrf = holdNext('get', AUTH_CSRF_PATH)
 
-    renderSession()
+    const { user } = renderSession()
 
-    const button = await within(banner()).findByRole('button', { name: 'Cerrar sesión' })
-    expect(button).toBeDisabled()
+    const item = await openAccountMenu(await findAccount(user))
+    expect(item).toHaveAttribute('aria-disabled', 'true')
     releaseCsrf()
-    await waitFor(() => expect(button).toBeEnabled())
+    await waitFor(() => expect(item).not.toHaveAttribute('aria-disabled', 'true'))
   })
 
   it('si falla el CSRF lo explica, mantiene deshabilitado el cierre y permite reintentar', async () => {
@@ -204,13 +233,14 @@ describe('Sesión en el shell', () => {
     const { user } = renderSession()
 
     const alert = await findAlert(/No se pudo preparar la protección de la sesión/)
-    expect(within(banner()).getByRole('button', { name: 'Cerrar sesión' })).toBeDisabled()
+    expect(await openAccountMenu(user)).toHaveAttribute('aria-disabled', 'true')
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument())
     await user.click(within(alert).getByRole('button', { name: 'Reintentar' }))
 
-    await waitFor(() =>
-      expect(within(banner()).getByRole('button', { name: 'Cerrar sesión' })).toBeEnabled(),
-    )
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument())
+    const item = await openAccountMenu(user)
+    await waitFor(() => expect(item).not.toHaveAttribute('aria-disabled', 'true'))
   })
 
   it('un 403 de me se explica con reintento y no se toma como visitante', async () => {
@@ -225,7 +255,9 @@ describe('Sesión en el shell', () => {
     expect(within(banner()).queryByRole('link', { name: 'Ingresar' })).not.toBeInTheDocument()
     await user.click(within(alert).getByRole('button', { name: 'Reintentar' }))
 
-    expect(await within(banner()).findByText('Persona A')).toBeVisible()
+    expect(
+      await within(banner()).findByRole('button', { name: 'Cuenta de Persona A' }),
+    ).toBeVisible()
   })
 })
 
@@ -243,7 +275,7 @@ describe('Expiración de la sesión', () => {
 
     expect(await screen.findByText('La sesión terminó. Volvé a ingresar.')).toBeVisible()
     releaseInFlight()
-    expect(within(banner()).queryByText('Persona A')).not.toBeInTheDocument()
+    expect(queryAccountButton()).not.toBeInTheDocument()
     expect(within(banner()).getByRole('link', { name: 'Ingresar' })).toBeVisible()
     expect(screen.queryByText('Datos de Persona A')).not.toBeInTheDocument()
     expect(
@@ -278,7 +310,7 @@ describe('Expiración de la sesión', () => {
     await user.click(screen.getByRole('button', { name: 'Recargar datos' }))
 
     expect(await screen.findByText(/No tenés permiso/)).toBeVisible()
-    expect(within(banner()).getByText('Persona A')).toBeVisible()
+    expect(accountButton()).toBeVisible()
     expect(screen.queryByText('La sesión terminó. Volvé a ingresar.')).not.toBeInTheDocument()
   })
 })
@@ -289,15 +321,17 @@ describe('Cierre de sesión', () => {
     const privateApi = installPrivateApi(backend)
     const { user, queryClient } = renderSession()
     expect(await screen.findByText('Datos de Persona A')).toBeVisible()
-    const button = within(banner()).getByRole('button', { name: 'Cerrar sesión' })
-    await waitFor(() => expect(button).toBeEnabled())
 
     const releaseInFlight = privateApi.hold()
     await user.click(screen.getByRole('button', { name: 'Recargar datos' }))
     const releaseLogout = holdNext('post', LOGOUT_PATH)
-    await user.click(button)
+    await clickLogout(user)
 
-    expect(within(banner()).getByRole('button', { name: 'Cerrando sesión…' })).toBeDisabled()
+    // El menú se cierra al elegir; al reabrirlo, la opción informa el cierre en curso y no se puede repetir.
+    await waitFor(() => expect(screen.queryByRole('menu')).not.toBeInTheDocument())
+    const pending = await openAccountMenu(user)
+    expect(pending).toHaveTextContent('Cerrando sesión…')
+    expect(pending).toHaveAttribute('aria-disabled', 'true')
     releaseLogout()
     expect(
       await screen.findByRole('heading', { name: `Ingresar a ${projectIdentity.name}` }),
@@ -307,7 +341,7 @@ describe('Cierre de sesión', () => {
     expect(backend.state.user).toBeNull()
     expect(backend.calls).toMatchObject({ logout: 1, csrf: 2 })
     expect(document.cookie).toContain('XSRF-TOKEN=csrf-ficticio-2')
-    expect(within(banner()).queryByText('Persona A')).not.toBeInTheDocument()
+    expect(queryAccountButton()).not.toBeInTheDocument()
     expect(screen.queryByText('La sesión terminó. Volvé a ingresar.')).not.toBeInTheDocument()
     expect(queryClient.getQueryData(PRIVATE_KEY)).toBeUndefined()
     expect(queryClient.getMutationCache().getAll()).toHaveLength(0)
@@ -324,15 +358,13 @@ describe('Cierre de sesión', () => {
       installPrivateApi(backend)
       server.use(mock.post(LOGOUT_PATH, reply, { once: true }))
       const { user } = renderSession()
-      const button = await within(banner()).findByRole('button', { name: 'Cerrar sesión' })
-      await waitFor(() => expect(button).toBeEnabled())
       expect(await screen.findByText('Datos de Persona A')).toBeVisible()
 
-      await user.click(button)
+      await clickLogout(user)
 
       const alert = await findAlert(/No se pudo confirmar el cierre de sesión/)
       expect(alert).toHaveTextContent(text)
-      expect(within(banner()).getByText('Persona A')).toBeVisible()
+      expect(accountButton()).toBeVisible()
       expect(screen.getByText('Datos de Persona A')).toBeVisible()
       expect(backend.state.user).not.toBeNull()
 
@@ -349,19 +381,19 @@ describe('Cierre de sesión', () => {
     const backend = installAuthBackend({ user: personaA })
     installPrivateApi(backend)
     const { user } = renderSession()
-    const button = await within(banner()).findByRole('button', { name: 'Cerrar sesión' })
-    await waitFor(() => expect(button).toBeEnabled())
+    const item = await openAccountMenu(await findAccount(user))
+    await waitFor(() => expect(item).not.toHaveAttribute('aria-disabled', 'true'))
     // El server rotó la sesión y borró la cookie CSRF después de que la SPA la obtuvo.
     backend.login(personaA)
 
-    await user.click(button)
+    await user.click(item)
 
     const alert = await findAlert(/No se pudo confirmar el cierre de sesión/)
     expect(alert).toHaveTextContent(
       'La operación fue rechazada y no se aplicó. Volvé a intentarla.',
     )
     expect(backend.calls.logout).toBe(1)
-    expect(within(banner()).getByText('Persona A')).toBeVisible()
+    expect(accountButton()).toBeVisible()
 
     await user.click(within(alert).getByRole('button', { name: 'Reintentar' }))
 
@@ -386,14 +418,12 @@ describe('Cierre de sesión', () => {
       ),
     )
     const { user } = renderSession()
-    const button = await within(banner()).findByRole('button', { name: 'Cerrar sesión' })
-    await waitFor(() => expect(button).toBeEnabled())
 
-    await user.click(button)
+    await clickLogout(await findAccount(user))
 
     expect(await screen.findByText('La sesión terminó. Volvé a ingresar.')).toBeVisible()
     expect(screen.queryByText(/No se pudo confirmar el cierre de sesión/)).not.toBeInTheDocument()
-    expect(within(banner()).queryByText('Persona A')).not.toBeInTheDocument()
+    expect(queryAccountButton()).not.toBeInTheDocument()
     expect(screen.queryByText('Datos de Persona A')).not.toBeInTheDocument()
   })
 
@@ -401,10 +431,14 @@ describe('Cierre de sesión', () => {
     const backend = installAuthBackend({ user: personaA })
     installPrivateApi(backend)
     const { user } = renderSession()
-    const button = await within(banner()).findByRole('button', { name: 'Cerrar sesión' })
-    await waitFor(() => expect(button).toBeEnabled())
+    const button = await within(banner()).findByRole('button', { name: 'Cuenta de Persona A' })
 
     while (document.activeElement !== button) await user.tab()
+    await user.keyboard('{Enter}')
+    const item = await screen.findByRole('menuitem', { name: 'Cerrar sesión' })
+    await waitFor(() => expect(item).not.toHaveAttribute('aria-disabled', 'true'))
+    await user.keyboard('{ArrowDown}')
+    expect(item).toHaveFocus()
     await user.keyboard('{Enter}')
 
     expect(
@@ -419,9 +453,7 @@ describe('Identidades consecutivas', () => {
     const privateApi = installPrivateApi(backend)
     const { user } = renderSession()
     expect(await screen.findByText('Datos de Persona A')).toBeVisible()
-    const button = within(banner()).getByRole('button', { name: 'Cerrar sesión' })
-    await waitFor(() => expect(button).toBeEnabled())
-    await user.click(button)
+    await clickLogout(user)
     expect(
       await screen.findByRole('heading', { name: `Ingresar a ${projectIdentity.name}` }),
     ).toBeVisible()
@@ -436,9 +468,9 @@ describe('Identidades consecutivas', () => {
     expect(screen.queryByText('Datos de Persona A')).not.toBeInTheDocument()
     releaseB()
     expect(await screen.findByText('Datos de Persona B')).toBeVisible()
-    await waitFor(() =>
-      expect(within(banner()).getByRole('button', { name: 'Cerrar sesión' })).toBeEnabled(),
-    )
+    const item = await openAccountMenu(await findAccount(user))
+    expect(within(screen.getByRole('menu')).getByText('Persona B')).toBeVisible()
+    await waitFor(() => expect(item).not.toHaveAttribute('aria-disabled', 'true'))
     expect(backend.calls.csrf).toBe(3)
   })
 
@@ -452,7 +484,9 @@ describe('Identidades consecutivas', () => {
     const releaseB = privateApi.hold()
     regainFocus()
 
-    expect(await within(banner()).findByText('Persona B')).toBeVisible()
+    expect(
+      await within(banner()).findByRole('button', { name: 'Cuenta de Persona B' }),
+    ).toBeVisible()
     expect(screen.getByText('Cargando datos privados…')).toBeVisible()
     expect(screen.queryByText('Datos de Persona A')).not.toBeInTheDocument()
     releaseB()
