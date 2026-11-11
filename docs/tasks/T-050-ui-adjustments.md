@@ -1,6 +1,6 @@
 ---
 id: T-050
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 executor: junie
@@ -208,6 +208,24 @@ Intentos sobre `9657318`:
 | 2026-11-11 · `e8428b2` | `scripts/test-dev-stack.sh` editaba `SystemInfoPanel.tsx` para el ensayo de HMR; UI-01 lo elimina. Fuera de «solo `client/` y `e2e/`». | Con autorización del dueño, la ruta pasa a `ServerStatus.tsx`, que conserva el texto «Servidor conectado» como nombre accesible. | `bash scripts/test-dev-stack.sh vite`, exit 0 |
 | 2026-11-12 · corrección de CA-03 | `daily-notes.spec.ts` CA-03 daba por fija la columna de números de 48 px; en angosto UI-06 la deja en 40 px. | El umbral depende del ancho: 32 px por debajo de 600 px, 48 px en ancho. | `bash scripts/e2e.sh --grep "CA-03:" --project mobile`, exit 0 |
 | 2026-11-11 · `2d41cac` | Tanda E2E dirigida: cuatro fallos de las specs, no del producto. El helper `saved` chocaba con variables locales; tras el login la URL ya canonizada era `/notes/<hoy>`; en Notas hay dos alertas al vencer la sesión; la página quedaba desplazada 9 px al medir el editor. | Helper `savedIndicator`, patrón `notesUrl`, filtro por texto del aviso de sesión y `scrollTo(0, 0)` antes de medir. | Tanda dirigida desktop, exit 0 |
+
+## Revisión independiente
+
+Checkpoint del 2026-11-11. Reviewer en Codex de escritorio, con Git, `gh`, Node, Chrome y Docker. Modelo y esfuerzo exactos no expuestos. HEAD de implementación revisado `37077172e606a511649662c723eb6ded6aed95e3`, base `915459cbabd9f3f557df4b9012c8b4db5572863c`, `verify-required` SUCCESS. El perfil es `FULL/STARTER`. En `client/`, `npm test -- --run src/app src/features/auth src/features/system src/features/daily src/features/voice` pasó (507/507). `node scripts/docs-check.mjs` y `git diff --check` pasaron. Los ensayos usaron fixtures ficticias y el reviewer solo modificó Markdown.
+
+Desde Git Bash: `STARTER_E2E_PROJECT=starter-e2e-t050-review-3707717 bash scripts/e2e.sh --grep "T-020: visible link button" --project desktop` pasó (1/1). El script exportó el JUnit saneado en `e2e/artifacts/starter-e2e-t050-review-3707717/sanitized/` y retiró los contenedores, red y volumen del proyecto. La causa del fallo original sigue sin comprobarse.
+
+Sobre el mismo HEAD/base, `STARTER_E2E_PROJECT=starter-e2e-t050-review-ca03-3707717 bash scripts/e2e.sh --grep "CA-03:" --project mobile` pasó (1/1). Es la única spec que cambió después del intento 4. El script exportó el JUnit saneado en `e2e/artifacts/starter-e2e-t050-review-ca03-3707717/sanitized/` y retiró los recursos del proyecto.
+
+**Hallazgos y condición de cierre**
+
+1. **UI-02/UI-03.** En `AppShell.tsx`, la fila deja encoger el `nav`, pero las pestañas mantienen su ancho y desbordan hacia el indicador. En una prueba de componente en Chrome con sesión de visitante y readiness pendiente, «Datos» termina en x=437,5 px y «Conectando» empieza en x=416,1 px a 600 px. También se solapan a 620 px. Conservar una fila de hasta 48 px, el corte de 600 px y los controles visibles sin superposición. Verificar en navegador el estado pendiente con «Ingresar» a 600 y 620 px, además de 375 y 1280 px.
+2. **UI-07.** `VoiceLibrary.tsx` usa `title={item.excerpt}`. La lista real entrega hasta 120 puntos de código y la prueba `VoiceLayout.test.tsx` inyecta directamente el texto largo como `excerpt`. Demostrar con una nota de más de 120 puntos de código y un extracto fiel al contrato que el `title` contiene también el tramo posterior al corte. Resolver con el detalle existente si cabe en el alcance de cliente. Una revisión del contrato o de la API requiere frontera.
+3. **UI-08.** `VoiceComposer.tsx` pone el cronómetro en un bloque debajo de la fila de «Detener». Mostrar `mm:ss` junto al botón durante la grabación cuando el ancho permite la fila y comprobar la disposición en navegador. Las pruebas dirigidas sí acreditan nivel simulado, silencio, limpieza, un solo `getUserMedia` y un POST de transcripción al detener.
+
+UI-01 y UI-04 a UI-06 conformes en el diff y las pruebas revisadas. UI-09 cumple el manifiesto y el enlace comprobados en unitario. La oferta de instalación de Chrome con el SVG y la animación con movimiento reducido quedan en la verificación manual ya registrada. El cambio autorizado de `scripts/test-dev-stack.sh` adapta el ensayo HMR a `ServerStatus.tsx`. Sin cambios de API, permisos, esquema o datos en el diff.
+
+La evidencia de gate sigue siendo parcial. El JUnit saneado del intento 4 sobre `9657318` confirma 47 pruebas y dos fallos, con docs, server, client y tooling en verde según la tarea. El dueño autorizó abrir el PR con esa evidencia. `verify-required` comprueba documentación y tooling liviano. Para merge hace falta un STARTER válido sobre las fuentes corregidas y la base publicada, con revisión independiente y CI del HEAD final según AUTONOMY.
 
 ## Cierre y siguiente tarea
 
