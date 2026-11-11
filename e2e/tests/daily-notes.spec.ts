@@ -281,8 +281,9 @@ test('CA-03: four separator commands on Enter, widths measured against area with
   const separator100 = page.locator('.daily-editor-content > hr[data-type="separator"][data-width="100"]');
   const sepBox = await separator100.boundingBox();
   // The separator width should fit within the editor content area (excluding gutter)
-  // Gutter is 48px, so content area starts at ~48px
-  expect(sepBox!.x).toBeGreaterThan(wrapperBox!.x + 48);
+  // Gutter is 64px wide (numbers end at 48px); T-050 (UI-06) narrows it below 600px to 40px (numbers end at 32px).
+  const numbersEnd = page.viewportSize()!.width < 600 ? 32 : 48;
+  expect(sepBox!.x).toBeGreaterThan(wrapperBox!.x + numbersEnd);
   expect(sepBox!.x + sepBox!.width).toBeLessThan(wrapperBox!.x + wrapperBox!.width);
 
   // Test Undo (Ctrl+Z)
