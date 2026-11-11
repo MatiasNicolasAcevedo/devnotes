@@ -1,6 +1,6 @@
 ---
 id: T-040
-status: in_review
+status: changes_requested
 priority: P1
 size: S
 executor: junie
@@ -66,6 +66,23 @@ Se habilitó con el PR de [T-049](T-049-voice-retest.md) MERGED. Abre la rama co
 Siguiente: sesión nueva para [T-041](T-041-xlsx-codec.md) en la misma rama.
 
 2026-11-11. Como portadora pasa a `in_review`: T-041…T-045 quedaron cerradas en la rama, el gate integrado STARTER está en verde y el control de avance de las seis tareas está hecho, todo registrado en [T-045](T-045-xlsx-journey.md#checkpoint-vigente). El PR49 quedó listo para la revisión independiente.
+
+### Revisión independiente · ronda 1 de 2
+
+2026-11-10 (Argentina). Reviewer: Codex de escritorio, familia GPT-6 (variante y esfuerzo no expuestos), con Git/`gh`, PowerShell/Git Bash, Maven Wrapper/JDK 21, Docker/Testcontainers, Node 24/npm y Playwright. Sesión distinta de la implementación. Impacto de esta transición: documental, sin cambios de comportamiento, API, permisos, datos ni UI.
+
+- PR49 abierto y listo, `codex/s-107-xlsx-portability` → `main`. HEAD técnico revisado `f9fdb5768e720e889d407370dc756391655d83d7`, base publicada `fc8fda5b20946e595c153144e99d9a3d3346ac5d`. Árbol limpio e idéntico al HEAD remoto; `6980805` es ancestro y `git diff --name-only 37664e7 HEAD` contiene cuatro Markdown. `verify-required` en [SUCCESS para ese HEAD](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/42936609828); una corrida anterior cancelada no cuenta como éxito.
+- `bash scripts/verify.sh --policy c5e37cc4b73ad038ac35edf29c66131416bb4a34`: `FULL` / `STARTER`. Cotejados los tres SHA-256 y las huellas de HEAD/árbol de [T-045](T-045-xlsx-journey.md#gate-integrado-verde-en-tres-corridas-sobre-las-mismas-fuentes). La primera corrida acredita docs, backend con JaCoCo, cliente y ocho ensayos de tooling; la segunda acredita el E2E completo (47 casos, incluidos ambos `portability:`); la tercera acredita los dos ensayos de proxies que faltaban tras el fallo de entorno. `37664e7` y `628e787` difieren solo en Markdown. La evidencia compuesta alcanza para el gate de esas fuentes/base y para el control de avance; no cubre los dos bordes de restauración de abajo. No se repitió FULL.
+- Backend, desde `server/`: `./mvnw clean integration-test failsafe:verify -Dtest='DailyNoteServiceTest,DailyVersionServiceTest,Xlsx*Test,PortabilityExportServiceTest,SecurityConfigTest' -Dit.test='Portability*IT'` exit 0, 205 Surefire y 24 Failsafe con PostgreSQL 18 y OIDC local. Incluye propiedad y cuenta ajena, rollback, importaciones concurrentes, cuenta no vacía, límites del codec/ZIP, CSRF/401/413. El dirigido no sustituye la cobertura del gate.
+- Cliente, desde `client/`: `npm test -- --run src/features/portability src/app/AppRoutes.test.tsx src/services/http.test.ts` exit 0, 108 casos; cambio de identidad durante descarga, vista previa e importación incluidos.
+- Proxies: `STARTER_PORTABILITY_PROXY_PORT=5295 STARTER_PORTABILITY_PROXY_PROJECT=starter-portability-proxy-49001-1 node scripts/test-portability-proxies.mjs` exit 0 (10 MiB en ambas rutas y ambos proxies, 413 de nginx y rutas vecinas). `STARTER_E2E_PROJECT=starter-e2e-pr49-review-f9fdb57 bash scripts/e2e.sh --grep 'portability:' --project desktop` exit 0, 1/1 con navegador/API/PostgreSQL/OIDC reales, dos cuentas y sin interceptar la API propia. Ambos proyectos de revisión quedaron en 0 contenedores, volúmenes y redes según sus labels exactos. Logs y comprobación local en `.orchestrator/pr49-review-1-f9fdb57/`.
+
+**Resultado: `changes_requested`.** Dos bloqueantes del recorrido de restauración, verificados con `RestoreReview.java` y `restore-edges.log` en ese directorio local, ejecutando `java -Xmx512m --class-path <classpath de Surefire> .orchestrator/pr49-review-1-f9fdb57/RestoreReview.java` sobre las clases probadas y datos ficticios:
+
+1. **B1 · Un respaldo de una nota anterior a T-040 puede ser irrestaurable.** La fórmula anterior, con creación a `20:00:20.973Z` y actualización a `20:00:21.001Z`, podía persistir `createdAt=20:00:21.946Z` y `updatedAt=20:00:21.002Z`. La base no impone el orden y T-040 solo corrige escrituras futuras. El writer exporta ambos valores y `XlsxWorkbookReader.dailyNote` los rechaza por `requireOrdered`: `IMPORT_INVALID_RECORD`, `diarias`, fila 2, en un libro generado por el propio writer. Frontera/dueño debe resolver la compatibilidad con esas fechas históricas y la regla de preservación antes de tocar los datos o el contrato. Cierre: regresión con una nota legada que compruebe respaldo, vista previa y restauración completa en una cuenta vacía, con las fechas según la política aprobada.
+2. **B2 · Se anuncia como respaldo una exportación que rebasa el límite de registros del importador.** No hay cuota de 10.000 referencias por cuenta; el writer emite todas y el reader rechaza la 10.001. Con referencias válidas, el libro generado con 10.000 se leyó completo y el de 10.001 (528.050 bytes) dio `IMPORT_INVALID_RECORD`, `referencias`, fila 10.002. Frontera/dueño debe resolver el comportamiento para cuentas fuera de los límites de restauración, incluidos los límites en bytes, antes de ampliar formato o límites. Cierre: regresión al límite y límite +1 que demuestre que todo respaldo anunciado como descargado se puede restaurar en una cuenta vacía, o que el producto informe la limitación antes de anunciar la descarga como respaldo utilizable, según el contrato acordado.
+
+Retoma: frontera/dueño define la política de B1 y B2; después, sesión implementer en la misma rama/PR, pruebas rojas y verdes y revalidación por alcance, y una segunda revisión independiente sobre los SHA publicados. La prueba del dueño de T-045 sigue pendiente; M3 y T-046 esperan las condiciones de salida de S-107.
 
 ## Correcciones significativas
 

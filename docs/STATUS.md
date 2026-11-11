@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-040](tasks/T-040-daily-timestamps.md) · S-107 / tarea portadora de la rama compartida y del PR único |
-| Estado | `in_review` |
-| Acción actual | Implementación de S-107 publicada y lista para revisión independiente. T-040 (`f10529f`), [T-041](tasks/T-041-xlsx-codec.md) (`900913b`), [T-042](tasks/T-042-xlsx-export-api.md) (`345514c`), [T-043](tasks/T-043-xlsx-import-api.md) (`2095b1e`), [T-044](tasks/T-044-xlsx-client.md) (`b18bd04`) y [T-045](tasks/T-045-xlsx-journey.md) (`6980805`) cerradas en la rama, con XL-01…XL-06 en verde. Gate integrado STARTER verde sobre las fuentes de `37664e7`, en tres corridas por un puerto ocupado del host, y control de avance de las seis tareas hecho. Siguiente: reviewer en sesión nueva sobre el PR49. Sigue pendiente la prueba del dueño de T-045. [Checkpoint](tasks/T-045-xlsx-journey.md#checkpoint-vigente) |
-| Rama / PR | `codex/s-107-xlsx-portability` · [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), listo para revisión, único de S-107 |
+| Estado | `changes_requested` |
+| Acción actual | Ronda 1 del PR49: dos bloqueantes de restauración. Frontera/dueño debe resolver la compatibilidad con fechas históricas y el comportamiento de las exportaciones que superan los límites de importación. Evidencia y condiciones de cierre en [T-040](tasks/T-040-daily-timestamps.md#revisión-independiente--ronda-1-de-2). Sigue pendiente la prueba del dueño de T-045. |
+| Rama / PR | `codex/s-107-xlsx-portability` · [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), cambios requeridos, único de S-107 |
 
 Por decisión del dueño del 2026-11-10, T-040…T-045 comparten la rama `codex/s-107-xlsx-portability` y un único PR; FULL integrado sobre su HEAD final. Mientras dura la rama, esta tabla mantiene a T-040 como tarea portadora, con su estado de revisión, y nombra las demás tareas en «Acción actual» y en el prompt. [Regla](specs/S-107-xlsx-portability.md#tareas-y-dependencias)
 
@@ -78,18 +78,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como reviewer del PR49 de MatiasNicolasAcevedo/devnotes (S-107, tarea portadora T-040, tareas T-040, T-041, T-042, T-043, T-044 y T-045), siguiendo AGENTS.md, docs/agents/reviewer.md, docs/AUTONOMY.md y docs/TESTING.md. Sesión nueva e independiente: no implementaste ninguna de esas tareas. Es la primera de un máximo de dos rondas para el PR completo.
-
-Precondición, a comprobar sin dar nada por supuesto:
-gh pr view 49 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,isDraft,headRefName,headRefOid,baseRefName,statusCheckRollup
-Debe devolver state OPEN, isDraft false, headRefName codex/s-107-xlsx-portability y baseRefName main, con verify-required en success sobre el HEAD vigente. El HEAD remoto debe contener 6980805 (recorrido E2E de T-045) y git diff --name-only 37664e7 HEAD debe listar solo Markdown: 37664e7 son las fuentes probadas por el gate integrado. Si no coincide, informá el estado real y no revises a ciegas.
-
-Luego:
-1. Registrá rol, modelo y herramienta. Leé docs/specs/S-107-xlsx-portability.md, los seis contratos docs/tasks/T-040…T-045 con sus checkpoints y el diff completo contra main en un checkout aislado del SHA del PR si el árbol local tiene cambios ajenos.
-2. Comprobá el perfil del diff (bash scripts/verify.sh --policy c5e37cc4b73ad038ac35edf29c66131416bb4a34, esperado STARTER) y la evidencia del gate integrado y del control de avance en el «Checkpoint vigente» de T-045: tres corridas sobre las mismas fuentes por un puerto ocupado del host, con logs y SHA-256 en .orchestrator/t045/. Juzgá si esa evidencia compuesta alcanza; repetí FULL solo por cambio técnico o de base, evidencia insuficiente o riesgo concreto.
-3. Buscá bordes y ejecutá dirigidos y negativos por riesgo: propiedad y fuga entre cuentas en exportar e importar, todo o nada y cuenta no vacía, límites del codec y del ZIP, CSRF/401/413, proxies de nginx y Vite, cambio de identidad en la pantalla Datos y el recorrido portability: sin interceptores sobre la API propia.
-4. No edites código del PR. Guardá solo la transición de T-040 y STATUS (mergeable o changes_requested) y BACKLOG si cambia la cola, con commit de rutas explícitas y push; después docs-check, CI del HEAD final y el veredicto APROBADO o CAMBIOS REQUERIDOS en el PR con SHA de HEAD y de base, evidencia y bloqueantes.
-5. Si aprobás, seguí con docs/agents/merger.md solo si AUTONOMY y las herramientas lo permiten. La prueba del dueño de T-045 sigue pendiente y la registra el dueño: no abras ni copies su archivo, y no declares M3 cumplida sin su veredicto.
-
-No borres ramas, worktrees ni archivos de .orchestrator salvo la rama mergeada según merger; el cleanup pendiente de T-049 requiere autorización del dueño.
+Actuá como frontera para S-107, PR49 de MatiasNicolasAcevedo/devnotes, tarea portadora T-040, en sesión nueva. Seguí AGENTS.md, docs/AUTONOMY.md y docs/TESTING.md. Comprobá el estado remoto y leé el veredicto de la primera ronda y el checkpoint de T-040. Con el dueño, resolvé la política de restauración de fechas históricas (B1) y la promesa de respaldo cuando una cuenta supera los límites de importación (B2). Dejá las decisiones y los criterios rojos/verdes para una nueva sesión implementer en la misma rama y PR. Después queda una sola ronda de revisión independiente. La prueba del dueño de T-045 sigue pendiente; no abras ni copies su archivo, no declares M3 cumplida y no habilites T-046. El cleanup de T-049 sigue reservado al dueño.
 ```
