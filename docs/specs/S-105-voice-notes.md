@@ -1,7 +1,7 @@
 ---
 id: S-105
 status: ready
-version: 2
+version: 3
 milestone: M2
 tasks: [T-017, T-027, T-028, T-029, T-030, T-031, T-032, T-033, T-034, T-035, T-036, T-037, T-048, T-049]
 ---
@@ -37,7 +37,7 @@ Groq (q) es el proveedor elegido; no se integra Grok/xAI ni multiproveedor. Viab
 Ruta privada `/voice`, enlace «Voz» en shell. Una columna a375 px; lista/editor adyacentes si caben a1280 px. Textarea Roboto Mono, tema existente, labels/foco/teclado y mensajes en español. Workspace en memoria por propietario sobre el outlet, siguiendo el precedente DailyDraftWorkspace.
 
 1. Nueva nota abre borrador vacío. Permitir escritura manual aunque transcripción esté apagada. Grabar exige sesión/CSRF, capacidades y navegador compatibles y **borrador nuevo vacío**. Para grabar con texto o sobre guardada usar Nueva nota y resolver descarte; no reemplazar ni concatenar implícitamente.
-2. Antes de grabar: «Al detener, el audio se envía a Groq para transcribir. DevNotes guarda solo el texto que decidas guardar. La retención de Groq depende de sus controles de datos», con enlace a su política. Solicitar micrófono únicamente por gesto.
+2. Antes de grabar: «Al detener, el audio se envía a Groq. Ver política de Groq», con enlace a su política. Texto abreviado por decisión del dueño del 2026-11-11 (versión 3, [T-050](../tasks/T-050-ui-adjustments.md)); la versión 2 decía además que DevNotes guarda solo el texto y que la retención depende de los controles de datos de Groq. Solicitar micrófono únicamente por gesto.
 3. Solicitando: «Esperando permiso del micrófono» y Cancelar. Capturando: rojo **y** «Grabando», contador mm:ss, «Detener y transcribir» y «Cancelar grabación». Anuncio accesible del estado, sin leer el contador cada segundo.
 4. Stop espera el último fragmento y libera tracks antes de «Transcribiendo…». Una sola petición por intento; edición/guardar/nueva captura deshabilitados. Cancelar aborta localmente e invalida resultado; no garantiza cancelar el procesamiento ya enviado al proveedor.
 5. Éxito rellena borrador **sin guardar**, enfoca texto y elimina audio. Aplicar respuesta solo si coinciden propietario, generación y operación. Fallo conserva blob solo en memoria para Reintentar transcripción/Descartar audio, sin micrófono. Reintento explícito, nunca automático.

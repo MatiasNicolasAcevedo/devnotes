@@ -2,7 +2,7 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
-Próxima acción: frontera completa con el dueño el contrato de [T-050](tasks/T-050-ui-adjustments.md) (ajustes mínimos de UI) y el dueño hace la prueba pendiente de [T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño). Después, [T-046](tasks/T-046-render-image.md).
+Próxima acción: implementar [T-050](tasks/T-050-ui-adjustments.md) (interfaz compacta, contrato `ready`) tras mergear el PR de documentación. La prueba del dueño de [T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño) sigue pendiente y pospuesta por él. Después, [T-046](tasks/T-046-render-image.md).
 
 ## Siguientes · plan del dueño del 2026-11-10, ajustado el 2026-11-11
 
@@ -10,8 +10,8 @@ Del plan original quedan hechos la activación de Groq y la portabilidad `.xlsx`
 
 | Orden | Contrato / resultado | Ejecuta | Dependencia |
 |---|---|---|---|
-| 1 | [T-045](tasks/T-045-xlsx-journey.md) · Solo falta la prueba del dueño: exportar e importar en una cuenta vacía | Dueño | Código MERGED en PR49 |
-| 2 | [T-050](tasks/T-050-ui-adjustments.md) · Ajustes mínimos de UI | Frontera define; Junie implementa | Contrato por completar con el dueño |
+| 1 | [T-045](tasks/T-045-xlsx-journey.md) · Solo falta la prueba del dueño: exportar e importar en una cuenta vacía. Pospuesta por él el 2026-11-11; no bloquea T-050 | Dueño | Código MERGED en PR49 |
+| 2 | [T-050](tasks/T-050-ui-adjustments.md) · Interfaz compacta para usar DevNotes como app de escritorio | Junie | Contrato `ready`; PR de documentación MERGED |
 | 3 | [T-046](tasks/T-046-render-image.md) · Imagen única y smoke local con 512 MB | Junie | T-045 aceptada y T-050 MERGED |
 | 4 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | T-046 MERGED |
 

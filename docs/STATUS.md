@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-050](tasks/T-050-ui-adjustments.md) · Ajustes mínimos de UI previos al piloto en Render |
-| Estado | `draft` |
-| Acción actual | Frontera completa el contrato con el dueño. El dueño revisa la aplicación en su stack local `starter-dev-local-nginx` y lista los ajustes; frontera presenta 2 o 3 propuestas y documenta la elegida. En la misma pasada el dueño hace la [prueba pendiente de T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño). |
+| Tarea y contrato | [T-050](tasks/T-050-ui-adjustments.md) · Interfaz compacta para usar DevNotes como app de escritorio |
+| Estado | `ready` |
+| Acción actual | Contrato de T-050 completo y acordado con el dueño (UI-01 a UI-09, variante A de la barra). Falta mergear el PR de documentación; después, una sesión nueva de implementer toma T-050 en su rama. La [prueba de T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño) sigue pendiente; el dueño la pospuso el 2026-11-11 y no bloquea T-050. |
 | Rama / PR | `codex/docs-s107-reconcile-ui-plan` · PR de documentación por abrir, sin tarea propia |
 
 Orden vigente, decidido por el dueño el 2026-11-11: T-050 (ajustes de UI) → [T-046](tasks/T-046-render-image.md) → [T-047](tasks/T-047-render-first-deploy.md). T-046 espera además el veredicto del dueño en T-045, que está `blocked` solo por esa prueba.
@@ -82,5 +82,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sos frontera. Retomá la rama codex/docs-s107-reconcile-ui-plan y leé T-050. Si el dueño ya listó los ajustes de UI, presentale 2 o 3 propuestas y escribí en T-050 el alcance elegido, los archivos, los pasos y la aceptación con comandos exactos; pasala a ready y dejá aquí el prompt del implementer. Si el dueño informa el resultado de la prueba de T-045, registrá solo veredicto, conteos y SHA en esa tarea y, si es favorable, pasala a done con pr 49. Cerrá con docs-check y abrí el PR de documentación. T-046 sigue en draft hasta T-050 MERGED y T-045 aceptada.
+Sos implementer. Confirmá en GitHub que el PR de documentación de la rama codex/docs-s107-reconcile-ui-plan está MERGED; si sigue abierto, detenete y avisá al dueño. Con MERGED, creá codex/t-050-ui-adjustments desde main y ejecutá T-050 según su contrato: leé client/AGENTS.md, seguí los cuatro pasos en orden con las pruebas primero en rojo, usá solo E2E dirigidos durante la iteración y el FULL una vez al cierre. No toques server ni la API. Al terminar, publicá el PR, dejá T-050 en in_review y el prompt de revisión aquí. T-046 sigue en draft hasta T-050 MERGED y T-045 aceptada por el dueño.
 ```

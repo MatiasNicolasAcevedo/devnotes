@@ -57,7 +57,7 @@ Estado al 2026-11-11: PR49 MERGED (squash `ff02bbd`), con XL-07…10 agregados d
 
 ## I3 posterior · Ajustes de UI
 
-Pedido del dueño del 2026-11-11: una única tarea, [T-050](tasks/T-050-ui-adjustments.md), con retoques mínimos de la interfaz antes de desplegar. Frontera define el alcance con el dueño a partir de su revisión de la aplicación y de 2 o 3 propuestas; Junie implementa en su propio PR. Solo `client/`, sin cambios de API, permisos ni datos.
+Pedido del dueño del 2026-11-11: una única tarea, [T-050](tasks/T-050-ui-adjustments.md), que compacta la interfaz para usar DevNotes como app instalada en una ventana chica y en el teléfono: sin pantalla de inicio, barra superior de una fila, controles de Notas en la barra del editor, Voz en dos mitades con señales de grabación y manifiesto de instalación. Alcance acordado con el dueño sobre capturas y maquetas (UI-01 a UI-09); Junie implementa en su propio PR. Solo `client/` y `e2e/`, sin cambios de API, permisos ni datos.
 
 ## I4 / M4 · Piloto en Render Free
 
