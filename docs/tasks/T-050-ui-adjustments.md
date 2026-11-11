@@ -1,6 +1,6 @@
 ---
 id: T-050
-status: in_progress
+status: in_review
 priority: P1
 size: M
 executor: junie
@@ -9,7 +9,7 @@ milestone: M3
 product_cycle: I3
 spec: null
 branch: codex/t-050-ui-adjustments
-pr: null
+pr: 51
 depends_on: [T-044]
 ---
 # T-050 · Interfaz compacta para usar DevNotes como app de escritorio
@@ -195,6 +195,9 @@ Intentos sobre `9657318`:
 4. Docs, server, client y tooling completo en verde (`suite=tooling` 2270 s); E2E 45 de 47, exit 1:
    - `mobile › CA-03`: la spec exigía que el separador empezara después de 48 px, y UI-06 angosta la columna de números a 40 px en angosto. La aserción usa ahora 32 px por debajo de 600 px y conserva 48 px en ancho.
    - `desktop › T-020: visible link button`: al editar el enlace el `href` no cambió. Intermitente: el mismo caso pasó en mobile dentro de esa corrida y cinco de cinco veces seguidas al repetirlo solo en desktop. Sin causa comprobada; hallazgo en BACKLOG.
+5. Iniciado sobre `131f9df` y detenido por el implementer a pedido del dueño cuando solo había terminado `docs`; sus recursos (`starter-verify-t050`) se retiraron.
+
+**Gate de cierre no completado, por decisión del dueño (2026-11-12).** El dueño indicó en la sesión que no podía correr el gate completo y pidió abrir el PR sin él. No existe una corrida FULL con exit 0 sobre el HEAD final. La evidencia disponible es la del intento 4 sobre `9657318` más las corridas dirigidas posteriores; desde `9657318` solo cambiaron la aserción de CA-03 en `e2e/tests/daily-notes.spec.ts` (`88d8bfd`) y Markdown. El revisor y el merge siguen sujetos a `verify-required` y a AUTONOMY.
 
 ## Correcciones significativas
 

@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-050](tasks/T-050-ui-adjustments.md) · Interfaz compacta para usar DevNotes como app de escritorio |
-| Estado | `in_progress` |
-| Acción actual | Implementer: los cuatro pasos de T-050 están commiteados con gate de cliente y E2E dirigidos en verde; corre el gate de cierre local. Detalle en el [avance de la tarea](tasks/T-050-ui-adjustments.md#avance-del-implementer-2026-11-11). La [prueba de T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño) sigue pendiente; el dueño la pospuso el 2026-11-11 y no bloquea T-050. |
-| Rama / PR | `codex/t-050-ui-adjustments` · PR por abrir al pasar el gate |
+| Estado | `in_review` |
+| Acción actual | Implementación publicada en [PR51](https://github.com/MatiasNicolasAcevedo/devnotes/pull/51); espera revisión independiente en sesión nueva. El gate de cierre completo no se corrió en verde sobre el HEAD final por decisión del dueño; el detalle y la evidencia parcial están en el [avance de la tarea](tasks/T-050-ui-adjustments.md#avance-del-implementer-2026-11-11). La [prueba de T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño) sigue pendiente y no bloquea T-050. |
+| Rama / PR | `codex/t-050-ui-adjustments` · [PR51](https://github.com/MatiasNicolasAcevedo/devnotes/pull/51) |
 
 Orden vigente, decidido por el dueño el 2026-11-11: T-050 (ajustes de UI) → [T-046](tasks/T-046-render-image.md) → [T-047](tasks/T-047-render-first-deploy.md). T-046 espera además el veredicto del dueño en T-045, que está `blocked` solo por esa prueba.
 
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Sos implementer. Continuá T-050 en la rama codex/t-050-ui-adjustments: leé el avance del implementer en docs/tasks/T-050-ui-adjustments.md, comprobá si el gate de cierre terminó y con qué resultado, y retomá desde ahí (corregir y repetir el gate, o publicar el PR y dejar T-050 en in_review con el prompt de revisión aquí). No toques server ni la API. T-046 sigue en draft hasta T-050 MERGED y T-045 aceptada por el dueño.
+Sos reviewer, en sesión nueva y distinta de la que implementó. Revisá T-050 en el PR51 (https://github.com/MatiasNicolasAcevedo/devnotes/pull/51), rama codex/t-050-ui-adjustments contra main: leé docs/agents/reviewer.md, docs/tasks/T-050-ui-adjustments.md y client/AGENTS.md, y comprobá UI-01 a UI-09 contra el diff y las pruebas. Tené en cuenta lo que la tarea declara: no hay un gate de cierre completo en verde sobre el HEAD final (el dueño decidió saltear la última corrida; el intento 4 pasó docs, server, client y tooling, y 45 de 47 E2E), el cambio en scripts/test-dev-stack.sh fue autorizado por el dueño fuera del alcance escrito, y el caso E2E desktop «T-020: visible link button» falló una vez sin causa comprobada. Esperá verify-required sobre el HEAD publicado, publicá el veredicto en el PR y no mergees sin los requisitos de docs/AUTONOMY.md. T-046 sigue en draft hasta T-050 MERGED y T-045 aceptada por el dueño.
 ```
