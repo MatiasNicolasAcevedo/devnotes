@@ -69,7 +69,40 @@ XL-04. Casos mínimos de IT con PostgreSQL:
 
 ## Checkpoint vigente
 
-`draft` por dependencia. Contrato completo (frontera, 2026-11-10).
+2026-11-10. Implementer en Claude Code de escritorio (Claude Fable 5.2, esfuerzo no expuesto), sesión distinta de las de T-040, T-041 y T-042, con Git Bash, JDK 21, Maven Wrapper, Docker, Node 24, Git y `gh`. Impacto: dos rutas de API nuevas, POST `/api/v1/portability/import-preview` y POST `/api/v1/portability/imports`, con su regla en la allowlist de `SecurityConfig` (sesión y CSRF); la segunda escribe en `reference_item`, `daily_note`, `daily_version` y `voice_note` de la cuenta de la sesión. Dos `location` nuevas en nginx y una entrada en el proxy de Vite. Sin cambios de esquema, dependencias ni UI.
+
+**T-043 cerrada en la rama** `codex/s-107-xlsx-portability`, con XL-04 verde. El frontmatter sigue en `draft` por la [regla de la rama compartida](../specs/S-107-xlsx-portability.md#tareas-y-dependencias); la portadora es [T-040](T-040-daily-timestamps.md) y el PR es el [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49) (draft).
+
+- Precondición: `gh pr view 49` devolvió `OPEN`, draft, `codex/s-107-xlsx-portability` → `main`, HEAD `7c2764f`, que contiene `345514c`; árbol local limpio y T-042 registrada como cerrada con XL-03 verde.
+- SHA de la importación: `2095b1e`. Agrega `PortabilityImportService`, `ImportAccountNotEmptyException`, `PortabilityWriteRepository`, `PortabilityImportExceptionHandler` y `PortabilityImportRequestException`; amplía `PortabilityController` y `SecurityConfig`; toca `client/nginx.conf` y `client/vite.config.ts`; crea `scripts/test-portability-proxies.mjs`, `PortabilityImportApiIT` y `PortabilityImportServiceIT`, un caso en `SecurityConfigTest` y `upload` en el helper `OidcHttpBrowser`. `XlsxTestBooks` pasa a ser público para armar libros inválidos desde los IT.
+- Rojo previo: con la comprobación de bloqueo y cuenta vacía desactivada, `PortabilityImportServiceIT` falló en 4 de 12 (cuenta con un registro, reimportación, dos importaciones simultáneas de referencias y espera de la escritura concurrente). Con la regla, 12/12.
+- XL-04, desde `server/` en Git Bash: `./mvnw -q verify -Dit.test='PortabilityImport*IT' -Dtest=none -Dsurefire.failIfNoSpecifiedTests=false` **exit 0**, con `PortabilityImportApiIT` 7/7 y `PortabilityImportServiceIT` 12/12 sobre PostgreSQL Testcontainers y OIDC real. Se corrió sin `clean` después del backend completo, así que `jacoco:check` evaluó la cobertura acumulada; en un árbol limpio ese comando puede terminar en exit 1 por umbrales, como en T-041 y T-042.
+- Backend completo, porque cambian `SecurityConfig` y un helper compartido: `./mvnw clean verify` desde `server/`, **exit 0**, 425 unitarias y de slice y 234 de integración sin fallos, con Spotless y `jacoco:check` en verde. Acredita el backend, no el gate FULL.
+- Proxies, desde la raíz: `STARTER_PORTABILITY_PROXY_PORT=5185 node scripts/test-portability-proxies.mjs` **exit 0**. Un archivo de 10 MiB llega al upstream por nginx y por Vite en las dos rutas, con cookie, `X-XSRF-TOKEN` y `Content-Type` intactos y los `Forwarded`/`X-Forwarded-*` reconstruidos; nginx responde 413 con 11 y 12 MiB; las rutas vecinas conservan el límite genérico de 1 MB. El upstream del ensayo es el eco de `compose.proxy-test.yml`, no Spring: el tramo Spring lo cubre el IT con 10 485 760 y 10 485 761 bytes. Se usó el puerto 5185 porque el 5175 por defecto estaba ocupado por un stack ajeno (`starter-dev-devnotes-preview-1027`), que no se tocó.
+- Cliente: `npm run typecheck` exit 0, y ESLint y Prettier sobre `vite.config.ts` sin hallazgos. No se corrieron las pruebas ni el build del cliente.
+- Cierre temporal: `node scripts/docs-check.mjs` OK, `git diff --check` exit 0 y `bash scripts/verify.sh --policy origin/main` con `policy=FULL` y `profile=STARTER`.
+- No ejecutado: Playwright, `npm run verify` del cliente ni el gate FULL de la tabla. **FULL diferido** al HEAD final del PR único, con `--tooling`, según [TESTING](../TESTING.md#aplazamiento-de-full-hasta-t-044).
+- Sin recursos propios por limpiar: el ensayo de proxies bajó su proyecto Compose y comprobó labels en cero; los contenedores de Testcontainers terminaron con cada corrida. No se borraron ramas, worktrees ni archivos de `.orchestrator`.
+
+Casos de los IT:
+
+- **Preview.** 200 con el cuerpo exacto de S-107 y `no-store`; `accountEmpty` verdadero en la cuenta vacía y falso con una referencia, una nota diaria o una nota de voz; los conteos de las cinco tablas no cambian.
+- **Ida y vuelta.** A exporta, B vacía importa (201) y exporta: referencias, notas diarias, versión y voz iguales salvo los IDs, que son UUIDv7 nuevos. Los átomos de B apuntan a las referencias de B, el átomo huérfano conserva su ID y el separador se conserva. La versión cuelga de la nota de su fecha, y `revision` y `source_revision` quedan en 1. B abre la nota y la referencia por la API normal, A no ve la referencia de B y la exportación de A no cambia. Otra cuenta con la misma fecha no se toca.
+- **Rechazos.** Reimportar en B, o importar en una cuenta con una sola referencia, nota diaria o nota de voz, da 409 `IMPORT_ACCOUNT_NOT_EMPTY` sin escrituras. Por familia, en las dos rutas: no ZIP y `vbaProject.bin` (`IMPORT_INVALID_FILE`), versión 2 (`IMPORT_UNSUPPORTED_FORMAT`), cabecera, fragmento, registro y versión sin nota (`IMPORT_INVALID_RECORD` con `sheet` y `row`). El cuerpo nunca repite el contenido de la celda.
+- **Concurrencia.** Dos importaciones simultáneas de la misma cuenta, por HTTP y por servicio: una 201 y otra 409, sin duplicados. El caso de solo referencias se repite cinco veces porque ninguna clave única las protege: depende solo del bloqueo.
+- **Transporte y seguridad.** 401 sin sesión aun con token CSRF, 403 sin CSRF, 413 `IMPORT_TOO_LARGE` con 10 485 761 bytes y 400 con 10 485 760 bytes que no son un ZIP. 400 con dos partes `file`, con una parte extra, con otro nombre de parte, sin partes y con archivo vacío; 415 si no es multipart. GET, PUT, DELETE, PATCH y rutas vecinas, 403. Un `?ownerId=` ajeno no cambia el dueño.
+
+Decisiones de implementación dentro del contrato, para T-044 y T-045:
+
+- **Errores.** ProblemDetail con `code`, y `sheet` y `row` solo cuando el codec los informa. `detail` es un texto fijo en español por código. Las partes inválidas (cantidad, nombre o archivo vacío) responden 400 `IMPORT_INVALID_FILE`.
+- **413 sin `code`.** Un cuerpo de más de 21 MB lo rechaza el multipart de Spring antes de llegar al controlador, y uno de más de 11 MB lo rechaza nginx con su página propia. En ambos casos el 413 no trae `code`: el cliente debe tratar cualquier 413 como archivo demasiado grande.
+- **Bloqueo.** `SELECT … FOR UPDATE` sobre `app_user` también frena las inserciones del mismo usuario en las tres tablas mientras dura la importación, porque su clave foránea necesita un bloqueo compartido de esa fila. Una escritura concurrente espera y después sigue su curso normal; el IT lo comprueba. El paso de `DataIntegrityViolation` a 409 queda como defensa y se prueba con una colisión simulada en el último lote.
+- **Escrituras.** `PortabilityWriteRepository` usa `JdbcTemplate` con inserciones por lote, sin tocar los repositorios de otras features. Los UUIDv7 salen de `UuidVersion7Strategy` de Hibernate, la misma estrategia que usan las entidades.
+- **Validación fuera de la transacción.** El archivo se lee y valida completo antes de abrir la transacción, para no retener una conexión durante el parseo.
+- **Vite.** El proxy de desarrollo no limita el cuerpo; la entrada nueva solo mantiene alineadas las rutas con nginx. El límite de 10 MiB lo aplica el servidor.
+- **Script de proxies.** `scripts/test-portability-proxies.mjs` sigue el patrón de `test-voice-proxies.mjs` y, como ese, no está en `verify-tooling.sh`: se corre a mano. Acepta `STARTER_PORTABILITY_PROXY_PORT` para el par de puertos (nginx y el siguiente para Vite).
+
+Siguiente: sesión nueva para [T-044](T-044-xlsx-client.md) en la misma rama.
 
 ## Correcciones significativas
 

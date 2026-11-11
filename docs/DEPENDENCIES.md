@@ -18,6 +18,9 @@ Comparación con la referencia Git seleccionada: coordenadas/versiones/scopes, p
 | org.springframework.boot:spring-boot-starter-webmvc | `BOM` | 4.1.1 | compile | Runtime backend · server/pom.xml |
 | org.flywaydb:flyway-database-postgresql | `BOM` | 12.4.0 | compile | Runtime backend · server/pom.xml |
 | org.springdoc:springdoc-openapi-starter-webmvc-ui | `${springdoc.version}` | 3.1.1 | compile | Runtime backend · server/pom.xml |
+| org.dhatim:fastexcel | `${fastexcel.version}` | 0.20.2 | compile | Escritura `.xlsx` en streaming (S-107) · server/pom.xml |
+| org.dhatim:fastexcel-reader | `${fastexcel.version}` | 0.20.2 | compile | Lectura `.xlsx` con StAX (S-107) · server/pom.xml |
+| org.apache.commons:commons-compress | `${commons-compress.version}` | 1.28.0 | compile | Inspección ZIP previa al parseo (S-107); misma versión que resuelve fastexcel-reader · server/pom.xml |
 | org.postgresql:postgresql | `BOM` | 42.7.13 | runtime | Runtime backend · server/pom.xml |
 | org.springframework.boot:spring-boot-starter-actuator-test | `BOM` | 4.1.1 | test | Pruebas · server/pom.xml |
 | org.springframework.boot:spring-boot-starter-data-jpa-test | `BOM` | 4.1.1 | test | Pruebas · server/pom.xml |
@@ -29,6 +32,21 @@ Comparación con la referencia Git seleccionada: coordenadas/versiones/scopes, p
 | org.springframework.boot:spring-boot-testcontainers | `BOM` | 4.1.1 | test | Pruebas · server/pom.xml |
 | org.testcontainers:testcontainers-junit-jupiter | `BOM` | 2.0.5 | test | Pruebas · server/pom.xml |
 | org.testcontainers:testcontainers-postgresql | `BOM` | 2.0.5 | test | Pruebas · server/pom.xml |
+
+### Transitivas relevantes de S-107
+
+Resueltas con `./mvnw dependency:tree` el 2026-11-10; no son directas y no se fijan en el POM.
+
+| Coordenada | Resuelta | Llega por | Licencia / nota |
+|---|---|---|---|
+| com.github.rzymek:opczip | 1.2.0 | fastexcel | Apache-2.0 · escritura ZIP OPC en streaming |
+| com.fasterxml:aalto-xml | 1.4.0 | fastexcel-reader | Apache-2.0 · parser StAX; fastexcel lo configura con `supportDTD=false` e `isSupportingExternalEntities=false` |
+| org.codehaus.woodstox:stax2-api | 4.3.0 | aalto-xml | BSD-2-Clause |
+| commons-codec:commons-codec | 1.21.0 | commons-compress | Apache-2.0 |
+| commons-io:commons-io | 2.20.0 | commons-compress | Apache-2.0 |
+| org.apache.commons:commons-lang3 | 3.20.0 | commons-compress | Apache-2.0 |
+
+`org.dhatim:fastexcel` y `fastexcel-reader` son Apache-2.0; 0.20.2 era la última versión publicada en Maven Central (metadatos actualizados el 2026-06-08). XXE comprobado en `XlsxZipInspectionTest`.
 
 ## Plugins y herramientas Maven
 
@@ -116,7 +134,9 @@ Comparación con la referencia Git seleccionada: coordenadas/versiones/scopes, p
 | Acción CI | `actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6` | .github/workflows/ci.yml |
 | Acción CI | `actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9` | .github/workflows/ci.yml |
 
-Inventario: backend 20 directas; client 41 directas; E2E 1 directa; siete plugins Maven declarados más formateador y annotation processor. JUnit/Mockito/AssertJ transitivas continúan en el BOM; no duplicadas.
+Inventario: backend 23 directas; client 41 directas; E2E 1 directa; siete plugins Maven declarados más formateador y annotation processor. JUnit/Mockito/AssertJ transitivas continúan en el BOM; no duplicadas.
 Los rangos del scaffold se conservan junto a sus versiones exactas de lockfile. Imágenes sin digest se conservan tal como estaban; Playwright mantiene tag + digest. Java 21 y Node 24.21.0 se conservan también en CI.
+
+Las tres coordenadas de S-107 y la tabla de transitivas se agregaron a mano en T-041: el script compara contra la referencia Git y falla, por diseño, cuando cambian las dependencias directas.
 
 Reproducir: resolver un POM efectivo y ejecutar `python scripts/dependency-inventory.py --effective-pom RUTA --write`. El script falla ante diferencias de dependencias/lockfiles/wrappers. Revisar cualquier diferencia antes de aceptarla.

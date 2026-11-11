@@ -1,6 +1,6 @@
 # M2-RC1 · Entrega local y pruebas de voz
 
-Estado al 2026-11-10: **RC técnica, aceptada con mejoras por el dueño**, SHA de entrega `aef4213db2fe7f676591811b7ee67a22757b64b0` (squash de [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44), revisión independiente cumplida). Grabación habilitada localmente. **Ensayo externo de T-039 fallido**. La [corrección del multipart de T-048](tasks/T-048-groq-multipart-fix.md#checkpoint-vigente) está en `main`. **Voz real verificada para dictado en español** en el [reensayo de T-049](#resultado-de-t-049) sobre `8d787c1`, con el silencio como limitación conocida aceptada por el dueño. Contrato canónico [S-105 v2](specs/S-105-voice-notes.md). Evidencia de integración en [T-037](tasks/T-037-voice-release.md).
+Estado al 2026-11-10: **RC técnica, aceptada con mejoras por el dueño**, SHA de entrega `aef4213db2fe7f676591811b7ee67a22757b64b0` (squash de [PR44](https://github.com/MatiasNicolasAcevedo/devnotes/pull/44), revisión independiente cumplida). Grabación habilitada localmente. **Ensayo externo de T-039 fallido**. La [corrección del multipart de T-048](tasks/T-048-groq-multipart-fix.md#checkpoint-vigente) está en `main`. **Dictado en español verificado con entrada sintética** en el [reensayo de T-049](#resultado-de-t-049) sobre `8d787c1`; el silencio quedó fuera de criterio y el dueño lo aceptó como limitación conocida, por lo que el estado «Voz real verificada» de la tabla siguiente no se declara. Contrato canónico [S-105 v2](specs/S-105-voice-notes.md). Evidencia de integración en [T-037](tasks/T-037-voice-release.md).
 
 ## Qué recibirá el dueño
 
@@ -124,7 +124,7 @@ La tarea conserva logs y comandos. Aquí solo figuran el enlace a la evidencia y
 | FULL local / CI / revisión independiente | Gate STARTER (`verify.sh --starter`) exit 0 sobre `8775ac9`; CI `verify-required` verde en ese HEAD; revisión independiente APROBADA sin bloqueantes sobre `ad548bc` con `verify-required` SUCCESS. [Evidencia](tasks/T-037-voice-release.md#gate-de-cierre) |
 | Cleanup de recursos de pruebas | Proyectos `starter-verify-t037`, `starter-e2e-t037` y `starter-e2e-t037-iter` sin contenedores, volúmenes ni redes; stack persistente del dueño intacto |
 | Ensayo Groq, fecha/modelo/formato/retención/cuota | T-039: tres HTTP 502 y una muestra indeterminada. [Resultado](#resultado-de-t-039). T-049: tres muestras habladas con HTTP 200 y silencio fuera de criterio, aceptado por el dueño. [Resultado](#resultado-de-t-049) |
-| Aceptación personal del dueño | «Aceptada con mejoras» sobre las fuentes de `aef4213`. La transcripción real sigue bloqueada por el 502. |
+| Aceptación personal del dueño | «Aceptada con mejoras» sobre las fuentes de `aef4213` (2026-11-10, `c63038d`), con la transcripción entonces bloqueada por el 502. T-048 corrigió el 502 y T-049 transcribió tres muestras habladas sintéticas sobre `8d787c1`; el dueño aceptó el silencio como limitación conocida. Con su propio micrófono queda para su uso cotidiano. [Resultado](#resultado-de-t-049) |
 
 Matriz VO por capa. Las capas anteriores son las pruebas de las tareas citadas, todas dentro del gate de cierre. El recorrido integrado usa Chromium real con micrófono sintético, la API, la base y el OIDC propios, y el doble de Groq en la red privada, sin interceptar la API propia. Corre en `e2e/tests/voice.spec.ts`, en ambos viewports.
 

@@ -15,6 +15,9 @@ const proxiedPaths = [
 // This exact path must be configured before the generic /api/ prefix so it takes precedence.
 const voiceTranscriptionPath = '/api/v1/voice/transcriptions'
 const voiceTimeout = 75_000 // 75 s — matches nginx proxy_send_timeout / proxy_read_timeout
+// Account import (S-107): exact routes, same as the nginx locations. The dev proxy has no body limit, so the
+// 10 MiB rule is the server's; they are listed before the generic /api/ prefix to keep both proxies aligned.
+const portabilityImportPaths = '^/api/v1/portability/(?:import-preview|imports)(?:\\?.*)?$'
 // En el contenedor client-dev apunta a http://server:8080; en el host, al server publicado en loopback.
 const apiTarget = process.env.STARTER_API_TARGET ?? 'http://127.0.0.1:8080'
 
@@ -123,7 +126,7 @@ export default defineConfig(({ command, mode }) => {
           },
         } satisfies ProxyOptions,
         ...Object.fromEntries(
-          proxiedPaths.map((path) => [
+          [portabilityImportPaths, ...proxiedPaths].map((path) => [
             path,
             {
               target: apiTarget,

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -129,7 +130,8 @@ public class DailyVersionService {
     }
 
     private Instant nowMicros() {
-        return Instant.ofEpochMilli(clock.millis()).plusNanos(clock.instant().getNano() / 1_000_000 * 1_000_000);
+        // UTC truncated to microseconds (S-101, PostgreSQL TIMESTAMPTZ precision), from a single clock reading.
+        return clock.instant().truncatedTo(ChronoUnit.MICROS);
     }
 
     private DailyVersionView toView(DailyVersion version, DailyNote note) {

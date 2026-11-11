@@ -152,6 +152,43 @@ public final class OidcHttpBrowser {
         return request(path, method, headers, "");
     }
 
+    /** GET of a binary resource with the session cookies; the body is returned untouched. */
+    public HttpResponse<byte[]> download(String path) throws Exception {
+        var request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + path))
+                .timeout(Duration.ofSeconds(30))
+                .header("X-Forwarded-Host", "127.0.0.1:5173")
+                .header("X-Forwarded-Proto", "http")
+                .header("X-Forwarded-Port", "5173")
+                .GET();
+        if (!cookies.isEmpty()) {
+            request.header(
+                    "Cookie",
+                    cookies.entrySet().stream()
+                            .map(entry -> entry.getKey() + "=" + entry.getValue())
+                            .collect(Collectors.joining("; ")));
+        }
+        return client.send(request.build(), HttpResponse.BodyHandlers.ofByteArray());
+    }
+
+    /** POST of a binary body with the session cookies; safe to call from several threads (cookies untouched). */
+    public HttpResponse<String> upload(String path, Map<String, String> headers, byte[] body) throws Exception {
+        var request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + path))
+                .timeout(Duration.ofSeconds(60))
+                .header("X-Forwarded-Host", "127.0.0.1:5173")
+                .header("X-Forwarded-Proto", "http")
+                .header("X-Forwarded-Port", "5173")
+                .POST(HttpRequest.BodyPublishers.ofByteArray(body));
+        if (!cookies.isEmpty()) {
+            request.header(
+                    "Cookie",
+                    cookies.entrySet().stream()
+                            .map(entry -> entry.getKey() + "=" + entry.getValue())
+                            .collect(Collectors.joining("; ")));
+        }
+        headers.forEach(request::header);
+        return client.send(request.build(), HttpResponse.BodyHandlers.ofString());
+    }
+
     public HttpResponse<String> request(String path, String method, Map<String, String> headers, String body)
             throws Exception {
         var request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + path))

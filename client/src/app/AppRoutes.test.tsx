@@ -57,6 +57,34 @@ describe('Página /voice', () => {
   })
 })
 
+describe('Página /data', () => {
+  it('el enlace «Datos» de la barra lleva a la pantalla de exportar e importar', async () => {
+    installAuthBackend({ user: buildAuthUser() })
+    const { user } = renderWithProviders(<AppRoutes />)
+
+    const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
+    const link = within(nav).getByRole('link', { name: 'Datos' })
+    expect(link).toHaveAttribute('href', '/data')
+    await user.click(link)
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Datos' })).toBeVisible()
+    expect(await screen.findByRole('button', { name: 'Descargar Excel' })).toBeVisible()
+    expect(screen.getByLabelText('Archivo de respaldo (.xlsx)')).toHaveAttribute('accept', '.xlsx')
+  })
+
+  it('sin sesión, /data invita a ingresar y no muestra acciones', async () => {
+    installAuthBackend()
+    renderWithProviders(<AppRoutes />, { route: '/data' })
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Datos' })).toBeVisible()
+    expect(await screen.findByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute(
+      'href',
+      '/login',
+    )
+    expect(screen.queryByRole('button', { name: 'Descargar Excel' })).not.toBeInTheDocument()
+  })
+})
+
 describe('Página /login', () => {
   it('«Continuar con Google» es una navegación completa same-origin al inicio OIDC', async () => {
     installAuthBackend()

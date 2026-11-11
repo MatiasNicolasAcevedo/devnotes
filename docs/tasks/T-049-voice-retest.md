@@ -1,6 +1,6 @@
 ---
 id: T-049
-status: mergeable
+status: done
 priority: P1
 size: S
 executor: frontier
@@ -146,6 +146,23 @@ Cleanup pendiente, sin borrar en esta sesión: `/tmp/t049-silence.webm` y `/tmp/
 - Favorable sin bloqueantes. El código cumple la regla de S-105 sobre segmentos. El criterio de cuatro muestras favorables no se cumple y el cierre se apoya en la decisión del dueño, registrada con su cita. Observaciones no bloqueantes, con archivo y línea, en el veredicto del [PR48](https://github.com/MatiasNicolasAcevedo/devnotes/pull/48): alinear la etiqueta «Voz real verificada» y una fila obsoleta de VOICE-RELEASE, y precisar en S-107 qué muestra STATUS mientras T-040 es la tarea portadora.
 - `mergeable` no habilita el merge por sí solo: lo decide el dueño según AUTONOMY sobre el SHA del veredicto.
 
+### Conciliación
+
+2026-11-10. Implementer de T-040 en Claude Code de escritorio (Claude Fable 5.2, esfuerzo no expuesto), sesión distinta de la implementación, la revisión y el merge de T-049. `gh pr view 48 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` devolvió `state: MERGED`, `mergedAt: 2026-11-10T21:31:31Z`, `mergeCommit.oid: fc8fda5b20946e595c153144e99d9a3d3346ac5d`, HEAD `5bc1e981d4a3103f3ee6401fec01accb921a9f6b` y base `main`; ese squash es la punta de `origin/main`. `verify-required` SUCCESS sobre `5bc1e98`. Conciliada como `done` en la rama `codex/s-107-xlsx-portability`.
+
+Observaciones no bloqueantes del veredicto del [PR48](https://github.com/MatiasNicolasAcevedo/devnotes/pull/48):
+
+| Observación | Resolución |
+|---|---|
+| E-1, E-2 | Resueltas en [VOICE-RELEASE](../VOICE-RELEASE.md): la cabecera ya no usa la etiqueta «Voz real verificada», cuya definición exige el 422 en silencio, y la fila de aceptación personal no menciona un bloqueo vigente. La frase de «Decisión del dueño y cierre de la matriz» que cita esa etiqueta describe el texto anterior |
+| E-3 | Resuelta en [BACKLOG](../BACKLOG.md#hallazgos-de-t-049): la decisión citada del dueño es «Filtrar en el backend»; el detalle del filtro figura como propuesta |
+| P-1 | Resuelta: regla escrita en [S-107](../specs/S-107-xlsx-portability.md#tareas-y-dependencias) e [implementer](../agents/implementer.md) |
+| P-2 | Resuelta: comando único del gate integrado en [T-045](T-045-xlsx-journey.md#aceptación-y-pruebas); T-044 lo enlaza |
+| P-3, P-4 | Resueltas: una frase en [T-046](T-046-render-image.md) y la mención de S-107 en [AUTONOMY](../AUTONOMY.md#ejecutores-y-continuidad) |
+| P-5 | Sin acción: el PR48 ya está MERGED y el comentario del 2026-11-10T21:23:41Z en el PR describe el commit de proceso |
+| C-1, E-4 | A [BACKLOG](../BACKLOG.md#hallazgos-de-t-049): los casos de prueba del adaptador están fuera del contrato de T-040, y el cleanup requiere autorización del dueño. No se borró nada |
+| C-2 | Solo registro; sin acción |
+
 ## Correcciones significativas
 
 | Fecha / SHA | Problema y causa | Corrección | Prueba |
@@ -155,4 +172,4 @@ Cleanup pendiente, sin borrar en esta sesión: `/tmp/t049-silence.webm` y `/tmp/
 
 ## Cierre y siguiente tarea
 
-Cierre con la decisión del dueño del 2026-11-10: VOICE-RELEASE registra el resultado sobre `8d787c1` con la limitación de silencio, y el PR único de T-049 va a revisión independiente. Tras T-049 MERGED, la siguiente sesión concilia `done` y toma [T-040](T-040-daily-timestamps.md) en la rama compartida de S-107.
+`done`: [PR48](https://github.com/MatiasNicolasAcevedo/devnotes/pull/48) MERGED, squash `fc8fda5b20946e595c153144e99d9a3d3346ac5d` (2026-11-10T21:31:31Z). Cierre con la decisión del dueño del 2026-11-10: VOICE-RELEASE registra el resultado sobre `8d787c1` con la limitación de silencio. La siguiente tarea es [T-040](T-040-daily-timestamps.md), en la rama compartida de S-107. El [cleanup pendiente](../BACKLOG.md#hallazgos-de-t-049) espera autorización del dueño.
