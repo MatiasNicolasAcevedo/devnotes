@@ -25,6 +25,7 @@ ENV JAVA_HOME=/opt/java/openjdk
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 ENV PORT=10000
 RUN apk add --no-cache bash curl libstdc++ \
+    && sed -Ei '/^user[[:space:]]/d; s|^pid[[:space:]]+[^;]+;|pid /tmp/devnotes-nginx.pid;|' /etc/nginx/nginx.conf \
     && chown nginx:nginx /etc/nginx/conf.d /etc/nginx/conf.d/default.conf /var/cache/nginx
 COPY --from=jre /opt/java/openjdk/ /opt/java/openjdk/
 COPY --from=client-build /app/dist/ /usr/share/nginx/html/

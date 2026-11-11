@@ -8,7 +8,7 @@ if [[ ! $port =~ ^[1-9][0-9]{0,4}$ ]] || (( port > 65535 || port == 8080 )); the
 fi
 
 "${BASH_SOURCE[0]%/*}/19-public-origin.sh" "$port" http://127.0.0.1:8080
-nginx -t -g 'pid /tmp/devnotes-nginx.pid;'
+nginx -t
 
 # Job control lets both background processes receive SIGINT.
 set -m
@@ -18,7 +18,7 @@ trap 'signal=INT' INT
 
 java -Duser.timezone=UTC -jar /app/app.jar --server.address=127.0.0.1 --server.port=8080 &
 spring_pid=$!
-nginx -g 'daemon off; pid /tmp/devnotes-nginx.pid;' &
+nginx -g 'daemon off;' &
 nginx_pid=$!
 
 # Check both PIDs, including when either command fails before the first wait.

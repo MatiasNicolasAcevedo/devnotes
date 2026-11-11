@@ -64,13 +64,14 @@ Cleanup: `down --volumes` solo del proyecto de smoke, tras verificar los labels 
 
 Implementer en Codex, familia GPT-6, variante y esfuerzo no expuestos. Herramientas de esta sesión: PowerShell, Git, `gh`, Git Bash, Node y Docker. Cambios de empaquetado y operación local, con el contrato de origen compartido entre ambos nginx.
 
-Base verificada en GitHub: `main` en `d230ee19e4a171bb73cf669c3fe4ced36b60a61c`. El primer avance concilia T-050 y la postergación de T-045. Para el smoke usar el checkout de ese avance, proyecto `devnotes-render-smoke-t046a`, app en 18080, OIDC en 18090 y logs locales en `e2e/artifacts/t046-smoke-a.log`. Correr `docker compose --env-file .env.example -p devnotes-render-smoke-t046a -f deploy/render/compose.smoke.yml up -d --build --wait --wait-timeout 300` y medir desde el inicio del contenedor. Al terminar, comprobar las etiquetas del proyecto y aplicar `down --volumes` solo a esos recursos. Siguiente paso: RP-01 y RP-02.
+Base verificada en GitHub: `main` en `d230ee19e4a171bb73cf669c3fe4ced36b60a61c`. El primer avance `0e3c500` concilia T-050 y la postergación de T-045. Repetir smoke desde el checkout limpio con el ajuste del PID, proyecto `devnotes-render-smoke-t046b`, app en 18080, OIDC en 18090 y log local en `e2e/artifacts/t046-smoke-b.log`. Correr `docker compose --env-file .env.example -p devnotes-render-smoke-t046b -f deploy/render/compose.smoke.yml up -d --build --wait --wait-timeout 300` y medir desde el inicio del contenedor. Al terminar, comprobar las etiquetas del proyecto y aplicar `down --volumes` solo a esos recursos. Siguiente paso: RP-01 y RP-02.
 
 ## Correcciones significativas
 
 | Fecha / SHA | Problema y causa | Corrección | Prueba |
 |---|---|---|---|
 | 2026-11-11 | El ensayo de caída de Java se quedaba esperando. `kill -0` con los dos PID devuelve éxito mientras uno siga vivo. | Comprobar cada PID por separado. | `scripts/ci/test-render-entrypoint.sh` |
+| 2026-11-11 · `0e3c500` | El primer smoke compiló y la app salió con código 1. El parámetro global de nginx duplicaba la directiva `pid` de la imagen. `OOMKilled=false`. | Ajustar la configuración de nginx en la imagen Render y usarla en la prueba de configuración y en el arranque. | `e2e/artifacts/t046-smoke-a.log`; reensayo en `devnotes-render-smoke-t046b`. |
 
 ## Cierre y siguiente tarea
 
