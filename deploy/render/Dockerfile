@@ -16,7 +16,8 @@ COPY server/pom.xml ./
 RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -ntp -q dependency:resolve
 COPY server/src/main/ src/main/
 RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -ntp -DskipTests package \
-    && cp target/devnotes-server-*.jar /workspace/app.jar
+    && cp target/devnotes-server-*.jar /workspace/app.jar \
+    && java -Djarmode=tools -jar app.jar extract --destination /workspace/runtime
 
 # Use the musl build of the same Temurin JRE release for the existing nginx Alpine image.
 FROM eclipse-temurin:21.0.12_8-jre-alpine AS jre
@@ -29,7 +30,7 @@ RUN apk add --no-cache bash curl libstdc++ \
     && chown nginx:nginx /etc/nginx/conf.d /etc/nginx/conf.d/default.conf /var/cache/nginx
 COPY --from=jre /opt/java/openjdk/ /opt/java/openjdk/
 COPY --from=client-build /app/dist/ /usr/share/nginx/html/
-COPY --from=server-build /workspace/app.jar /app/app.jar
+COPY --from=server-build /workspace/runtime/ /app/
 COPY client/nginx.conf /opt/starter/nginx.conf.template
 COPY --chmod=755 client/19-public-origin.sh /app/19-public-origin.sh
 COPY --chmod=755 deploy/render/entrypoint.sh /app/entrypoint.sh

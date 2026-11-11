@@ -16,7 +16,8 @@ signal=
 trap 'signal=TERM' TERM
 trap 'signal=INT' INT
 
-java -Duser.timezone=UTC -jar /app/app.jar --server.address=127.0.0.1 --server.port=8080 &
+# Keep JVM compilation work low during cold starts on the pilot's CPU quota.
+java -XX:TieredStopAtLevel=1 -Duser.timezone=UTC -jar /app/app.jar --server.address=127.0.0.1 --server.port=8080 &
 spring_pid=$!
 nginx -g 'daemon off;' &
 nginx_pid=$!
