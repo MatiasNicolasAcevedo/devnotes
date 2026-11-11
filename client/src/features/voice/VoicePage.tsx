@@ -1,6 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
 import Box from '@mui/material/Box'
-import Container from '@mui/material/Container'
 import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
@@ -14,6 +13,8 @@ import { useVoiceNote } from './useVoiceNotes'
 import { VoiceComposer, type VoiceComposerHandle } from './VoiceComposer'
 import { VoiceLibrary } from './VoiceLibrary'
 import { useVoiceDraftContext } from './voiceDraftContext'
+import { useIsNarrow } from '../../shared/ui/useIsNarrow'
+import { visuallyHidden } from '../../shared/ui/visuallyHidden'
 
 /** Destino pendiente mientras se resuelve el diálogo de cambios sin guardar. */
 type PendingTarget = { kind: 'note'; id: string } | { kind: 'new' }
@@ -21,7 +22,7 @@ type PendingTarget = { kind: 'note'; id: string } | { kind: 'new' }
 /**
  * Pantalla de voz: ruta /voice.
  *
- * S-105: una columna a375 px; lista/editor adyacentes si caben a1280 px.
+ * Dos mitades iguales desde 600 px (nueva nota a la izquierda, notas guardadas a la derecha); apiladas en angosto.
  * VoiceLibrary (lista paginada) + VoiceComposer (editor con captura).
  * Al seleccionar una nota (o pulsar Nueva nota) con cambios sin guardar, pide resolver antes:
  * «Guardar y continuar» solo continúa tras el ACK del servidor; 409/error se quedan en la nota actual.
@@ -39,6 +40,7 @@ function VoicePageContent() {
   // Guardado/borrado en vuelo en el composer: no se cambia de documento hasta su respuesta.
   const [composerBusy, setComposerBusy] = useState(false)
   const composerRef = useRef<VoiceComposerHandle>(null)
+  const narrow = useIsNarrow()
 
   // Cargar detalle de la nota seleccionada. Mientras carga, el editor queda bloqueado (no se
   // escribe sobre la nota anterior para luego perderlo); si falla, se avisa y se puede reintentar.
@@ -115,41 +117,21 @@ function VoicePageContent() {
   }, [savingBeforeContinue])
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 1, sm: 2 } }}>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 1,
-          mb: 2,
-        }}
-      >
-        <Typography component="h1" variant="h5" sx={{ fontWeight: 600 }}>
-          Notas de voz
-        </Typography>
-        <Button variant="outlined" onClick={handleNewNote} disabled={composerBusy}>
-          Nueva nota
-        </Button>
-      </Box>
+    <Box sx={{ width: '100%' }}>
+      <Typography component="h1" sx={visuallyHidden}>
+        Notas de voz
+      </Typography>
 
+      {/* Dos mitades iguales en ancho; apiladas en angosto. `minmax(0, 1fr)` impide que el contenido ensanche una. */}
       <Box
         sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', lg: 'row' },
-          gap: { xs: 2, lg: 3 },
-          width: '100%',
+          display: 'grid',
+          gridTemplateColumns: narrow ? 'minmax(0, 1fr)' : 'minmax(0, 1fr) minmax(0, 1fr)',
+          gap: narrow ? 2 : 3,
+          alignItems: 'start',
         }}
       >
-        {/* Editor — arriba en mobile, derecha en desktop */}
-        <Box
-          sx={{
-            width: '100%',
-            maxWidth: { xs: '100%', lg: 600 },
-            order: { xs: 1, lg: 1 },
-            flex: { lg: '0 0 auto' },
-          }}
-        >
+        <Box component="section" aria-label="Nueva nota" sx={{ minWidth: 0 }}>
           {detailError && (
             <Alert
               severity="error"
@@ -175,21 +157,12 @@ function VoicePageContent() {
             loadingDetail={loadingDetail}
             detailUnavailable={detailError}
             onDetached={handleDetached}
+            onNewNote={handleNewNote}
+            newNoteDisabled={composerBusy}
           />
         </Box>
 
-        {/* Lista de notas — abajo en mobile, izquierda en desktop */}
-        <Box
-          sx={{
-            width: '100%',
-            order: { xs: 2, lg: 0 },
-            flex: { lg: 1 },
-            '& .MuiList-root': {
-              maxHeight: { lg: 'calc(100vh - 200px)' },
-              overflow: 'auto',
-            },
-          }}
-        >
+        <Box component="section" aria-label="Notas guardadas" sx={{ minWidth: 0 }}>
           <VoiceLibrary onSelect={handleSelect} selectedId={selectedId} disabled={composerBusy} />
         </Box>
       </Box>
@@ -212,6 +185,6 @@ function VoicePageContent() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </Box>
   )
 }

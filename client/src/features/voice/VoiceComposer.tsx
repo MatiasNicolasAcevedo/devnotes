@@ -18,9 +18,11 @@ import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
 import Link from '@mui/material/Link'
 import Stack from '@mui/material/Stack'
+import { keyframes } from '@mui/material/styles'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { ApiError } from '../../services/http'
+import { MicIcon, StopIcon } from '../../shared/ui/icons'
 import { fetchVoiceNote, voiceQueryKeys, type VoiceNoteDetail } from './api'
 import { useSession } from '../auth/sessionContext'
 import { MaxDurationExceededError } from './recorder'
@@ -41,7 +43,13 @@ interface VoiceComposerProps {
   detailUnavailable?: boolean
   /** El documento dejó de corresponder a una nota guardada (borrada o 404): la página la deselecciona. */
   onDetached?: () => void
+  /** Abre un borrador nuevo. El botón «Nueva nota» va al lado de «Grabar». */
+  onNewNote?: () => void
+  newNoteDisabled?: boolean
 }
+
+/** Titileo del botón «Detener» mientras graba. */
+const blink = keyframes({ '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.45 } })
 
 export interface VoiceComposerHandle {
   isDirty: boolean
@@ -65,7 +73,15 @@ export interface VoiceComposerHandle {
  */
 export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposerProps>(
   (
-    { selectedDetail, onBusyChange, loadingDetail = false, detailUnavailable = false, onDetached },
+    {
+      selectedDetail,
+      onBusyChange,
+      loadingDetail = false,
+      detailUnavailable = false,
+      onDetached,
+      onNewNote,
+      newNoteDisabled = false,
+    },
     ref,
   ) => {
     // Mientras la nota pedida carga o falló no se escribe, graba, guarda ni borra: lo que se hiciera
@@ -352,7 +368,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     const isExistingNote = draft.state.noteId != null
 
     return (
-      <Box sx={{ width: '100%' }}>
+      <Box sx={{ width: '100%', minWidth: 0 }}>
         {/* Info de nota existente */}
         {isExistingNote && (
           <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
@@ -360,22 +376,97 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
           </Typography>
         )}
 
-        {/* Aviso de Groq antes de grabar */}
-        {showGroqWarning && recordingEnabled && (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            <Typography component="span">
-              Al detener, el audio se envía a Groq para transcribir. DevNotes guarda solo el texto
-              que decidas guardar. La retención de Groq depende de{' '}
-              <Link
-                href="https://console.groq.com/docs/your-data"
-                target="_blank"
-                rel="noopener noreferrer"
+        {/* Fila de grabación: botón grande y «Nueva nota» al lado */}
+        <Stack
+          direction="row"
+          spacing={1}
+          useFlexGap
+          sx={{ alignItems: 'center', flexWrap: 'wrap', mb: 1.5 }}
+        >
+          {captureState === 'recording' ? (
+            <Button
+              variant="contained"
+              color="error"
+              onClick={stopAndTranscribe}
+              aria-label="Detener y transcribir"
+              data-recording="true"
+              startIcon={<StopIcon />}
+              sx={{
+                minHeight: 44,
+                px: 3,
+                fontSize: '1rem',
+                animation: `${blink} 1.2s ease-in-out infinite`,
+                // Sin movimiento: rojo fijo, sin titilar.
+                '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+              }}
+            >
+              Detener
+            </Button>
+          ) : (
+            canRecord && (
+              <Button
+                variant="contained"
+                onClick={handleStartRecording}
+                startIcon={<MicIcon />}
+                sx={{ minHeight: 44, px: 3, fontSize: '1rem' }}
               >
-                su política
-              </Link>
-              .
-            </Typography>
-          </Alert>
+                Grabar
+              </Button>
+            )
+          )}
+          {onNewNote && (
+            <Button variant="outlined" onClick={onNewNote} disabled={newNoteDisabled}>
+              Nueva nota
+            </Button>
+          )}
+        </Stack>
+
+        {/* Señales de que está grabando: cronómetro, nivel real del micrófono y cancelación */}
+        {captureState === 'recording' && (
+          <Box sx={{ mb: 2 }}>
+            <Stack
+              direction="row"
+              spacing={1.5}
+              useFlexGap
+              sx={{ alignItems: 'center', flexWrap: 'wrap' }}
+            >
+              <Typography component="span" color="error.main" sx={{ fontWeight: 600 }}>
+                Grabando
+              </Typography>
+              <Typography
+                component="span"
+                sx={{ fontFamily: 'monospace', fontSize: '1.1rem' }}
+                role="timer"
+                aria-label={`Tiempo de grabación: ${recorder.elapsedFormatted}`}
+              >
+                {recorder.elapsedFormatted}
+              </Typography>
+              {recorder.levels && (
+                <Box
+                  aria-hidden
+                  sx={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: 24 }}
+                >
+                  {recorder.levels.map((level, index) => (
+                    <Box
+                      key={index}
+                      data-level-bar
+                      // Altura por estilo en línea: cambia en cada cuadro y no debe generar clases nuevas.
+                      style={{ height: `${Math.max(8, Math.round(level * 100))}%` }}
+                      sx={{ width: 5, borderRadius: '2px', bgcolor: 'error.main' }}
+                    />
+                  ))}
+                </Box>
+              )}
+              <Button size="small" color="inherit" onClick={handleCancelRecording}>
+                Cancelar grabación
+              </Button>
+            </Stack>
+            {recorder.silent && (
+              <Typography role="status" variant="body2" color="warning.main" sx={{ mt: 0.5 }}>
+                No se detecta sonido. Revisá el micrófono.
+              </Typography>
+            )}
+          </Box>
         )}
 
         {/* Razón si la grabación está deshabilitada */}
@@ -396,48 +487,6 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
               <Button size="small" onClick={handleCancelRecording}>
                 Cancelar
               </Button>
-            </Stack>
-          </Alert>
-        )}
-
-        {/* Estado de captura: grabando */}
-        {captureState === 'recording' && (
-          <Alert
-            severity="error"
-            sx={{ mb: 2 }}
-            action={
-              <Stack direction="row" spacing={1} useFlexGap>
-                <Button size="small" color="inherit" onClick={stopAndTranscribe} variant="outlined">
-                  Detener y transcribir
-                </Button>
-                <Button size="small" color="inherit" onClick={handleCancelRecording}>
-                  Cancelar grabación
-                </Button>
-              </Stack>
-            }
-          >
-            <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-              <Box
-                sx={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: '50%',
-                  bgcolor: 'error.main',
-                  animation: 'pulse 1.5s infinite',
-                }}
-                aria-hidden
-              />
-              <Typography component="span" sx={{ fontWeight: 600 }}>
-                Grabando
-              </Typography>
-              <Typography
-                component="span"
-                sx={{ fontFamily: 'monospace', fontSize: '1.1rem' }}
-                role="timer"
-                aria-label={`Tiempo de grabación: ${recorder.elapsedFormatted}`}
-              >
-                {recorder.elapsedFormatted}
-              </Typography>
             </Stack>
           </Alert>
         )}
@@ -587,26 +636,6 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
 
         {/* Botones de acción */}
         <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }} useFlexGap>
-          {/* Grabar */}
-          {canRecord && (
-            <Button
-              variant="outlined"
-              onClick={handleStartRecording}
-              startIcon={
-                <Box
-                  sx={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: '50%',
-                    bgcolor: 'error.main',
-                  }}
-                />
-              }
-            >
-              Grabar
-            </Button>
-          )}
-
           {/* Copiar */}
           {!draft.isTextEmpty && (
             <Button variant="outlined" onClick={handleCopy} disabled={isTranscribing || isSaving}>
@@ -631,6 +660,20 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
             </Button>
           )}
         </Stack>
+
+        {/* Aviso de Groq antes de grabar: una línea, sin caja (S-105 regla 2) */}
+        {showGroqWarning && recordingEnabled && (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1.5 }}>
+            Al detener, el audio se envía a Groq.{' '}
+            <Link
+              href="https://console.groq.com/docs/your-data"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Ver política de Groq
+            </Link>
+          </Typography>
+        )}
 
         {/* Diálogo de confirmación de borrado */}
         <Dialog open={showDeleteDialog} onClose={handleDeleteCancel}>

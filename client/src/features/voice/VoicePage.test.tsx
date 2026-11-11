@@ -51,6 +51,8 @@ const idleRecorder = {
   error: null,
   elapsedSeconds: 0,
   elapsedFormatted: '00:00',
+  levels: null,
+  silent: false,
   cancel: vi.fn(),
   resetError: vi.fn(),
 }

@@ -90,7 +90,7 @@ export function VoiceLibrary({ onSelect, selectedId, disabled = false }: VoiceLi
   }
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ width: '100%', minWidth: 0 }}>
       <List dense disablePadding>
         {items.map((item) => (
           <ListItem key={item.id} disablePadding divider>
@@ -107,12 +107,26 @@ export function VoiceLibrary({ onSelect, selectedId, disabled = false }: VoiceLi
               }}
             >
               <ListItemText
-                primary={formatCreatedAt(item.createdAt)}
+                sx={{ minWidth: 0 }}
+                primary={
+                  <Typography component="span" variant="body2" sx={{ whiteSpace: 'nowrap' }}>
+                    {formatCreatedAt(item.createdAt)}
+                  </Typography>
+                }
                 secondary={
+                  // Una sola línea con puntos suspensivos; el texto completo queda en `title`.
                   <Typography
                     component="span"
-                    noWrap
-                    sx={{ fontFamily: 'monospace', fontSize: '0.85rem', color: 'text.secondary' }}
+                    title={item.excerpt}
+                    sx={{
+                      display: 'block',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      fontFamily: 'monospace',
+                      fontSize: '0.85rem',
+                      color: 'text.secondary',
+                    }}
                   >
                     {item.excerpt}
                   </Typography>
