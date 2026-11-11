@@ -1,6 +1,9 @@
 import { createTheme } from '@mui/material/styles'
 import { esES } from '@mui/material/locale'
 
+/** Ámbar de acento: pestaña activa, puntero sobre una pestaña y «Guardar versión». Único lugar donde se define. */
+export const AMBER = '#ffb74d'
+
 /** Tema oscuro único de DevNotes. Textos internos de MUI en español. */
 export const theme = createTheme(
   {

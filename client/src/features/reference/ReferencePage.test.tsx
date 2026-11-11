@@ -145,7 +145,7 @@ describe('ReferencePage', () => {
       await screen.findByText('La operación fue rechazada y no se aplicó. Volvé a intentarla.'),
     ).toBeVisible()
     expect(backend.calls.save).toBe(0)
-    expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible()
+    expect(screen.getByRole('button', { name: /^Cuenta de / })).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Guardar' }))
     expect(await screen.findByText('Elemento guardado.')).toBeVisible()
   })
