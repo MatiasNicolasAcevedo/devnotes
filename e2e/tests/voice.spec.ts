@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Page, Request, Response } from '@playwright/test';
-import { control, csrfHeaders, interactiveLogin, keyboardActivate, layout, login, readiness } from './fixtures';
+import { control, csrfHeaders, interactiveLogin, keyboardActivate, layout, login, readiness, logout } from './fixtures';
 import { expect, fakeMicrophone, origin, providerScenario, test, trackStates } from '../fixtures/voice-fixture';
 
 /**
@@ -46,6 +46,9 @@ async function record(page: Page) {
   await expect(page.getByText('Grabando', { exact: true })).toBeVisible();
   // Al menos un segundo de audio real del dispositivo sintético.
   await expect(page.getByRole('timer')).toHaveText(/^00:0[1-9]$/);
+  // T-050 (UI-08): el botón pasa a «Detener» y cinco barras muestran el nivel del micrófono.
+  await expect(page.getByRole('button', { name: 'Detener y transcribir', exact: true })).toHaveText('Detener');
+  await expect(page.locator('[data-level-bar]')).toHaveCount(5);
   expect((await trackStates(page)).at(-1)).toBe('audio:live');
 }
 
@@ -60,7 +63,9 @@ test('voice: capture, transcribe, edit, copy, save, reload, second note, correct
   const posts = countPosts(page);
   await openVoice(page);
   await expect(page.getByText('No hay notas de voz todavía.')).toBeVisible();
-  await expect(page.getByText(/Al detener, el audio se envía a Groq para transcribir/)).toBeVisible();
+  // T-050 (UI-07): el aviso es una línea de texto con el mismo enlace, sin caja.
+  await expect(page.getByText(/Al detener, el audio se envía a Groq\./)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Ver política de Groq', exact: true })).toHaveAttribute('href', 'https://console.groq.com/docs/your-data');
   const capabilities = await (await page.request.get('/api/v1/voice/capabilities')).json();
   expect(capabilities).toMatchObject({ recordingEnabled: true, reason: null, maxDurationSeconds: 600, language: 'es' });
   const text = page.getByRole('textbox', { name: 'Texto de la nota' });
@@ -267,7 +272,7 @@ test('voice: provider error with explicit retry, private second identity, late r
 
     // VO-01/VO-06: cerrar sesión con captura activa detiene el micrófono sin subir audio.
     await record(page);
-    await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
+    await logout(page);
     await expect(page).toHaveURL(`${origin}/login`);
     const states = await trackStates(page);
     expect(states.length, 'Three captures: rate limited, discarded and interrupted by logout').toBe(3);

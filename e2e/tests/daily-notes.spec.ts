@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { test, expect, control, login, interactiveLogin, readiness, csrfHeaders, layout } from './fixtures';
+import { test, expect, control, login, interactiveLogin, readiness, csrfHeaders, layout, logout } from './fixtures';
 
 import { writeWork, saveVersion, readVersion } from './daily-helpers';
 
@@ -74,18 +74,21 @@ test('CA-01: text blocks, separator, empty lines are numbered consecutively; wra
   const secondBox = (await paragraphs.nth(1).boundingBox())!;
   expect(secondBox.y - firstBox.y).toBeCloseTo(metrics.lineHeight, 0);
   const viewport = page.locator('.daily-editor-viewport');
-  await expect(viewport).toHaveCSS('resize', 'vertical');
-  const beforeResize = (await viewport.boundingBox())!;
-  expect(beforeResize.height).toBeGreaterThanOrEqual(360);
-  if (testInfo.project.name === 'desktop') {
-    await viewport.scrollIntoViewIfNeeded();
-    const box = (await viewport.boundingBox())!;
-    await page.mouse.move(box.x + box.width - 3, box.y + box.height - 3);
-    await page.mouse.down();
-    await page.mouse.move(box.x + box.width - 3, box.y + box.height + 77, { steps: 10 });
-    await page.mouse.up();
-    expect((await viewport.boundingBox())!.height).toBeGreaterThan(beforeResize.height + 40);
-  }
+  // T-050 (UI-06): el área ya no se redimensiona a mano; ocupa el alto libre de la ventana, hasta su borde inferior.
+  await expect(viewport).toHaveCSS('resize', 'none');
+  await page.evaluate(() => scrollTo(0, 0));
+  const fill = await viewport.evaluate(element => {
+    const box = element.getBoundingClientRect();
+    return { height: box.height, bottom: box.bottom, window: innerHeight, scrolled: scrollY };
+  });
+  expect(fill.scrolled).toBe(0);
+  expect(fill.height).toBeGreaterThanOrEqual(240);
+  // Solo quedan fuera la barra superior (48 px), la barra del editor y los márgenes.
+  expect(fill.height).toBeGreaterThanOrEqual(fill.window - 48 - 110);
+  expect(fill.bottom).toBeLessThanOrEqual(fill.window);
+  expect(fill.bottom).toBeGreaterThanOrEqual(fill.window - 20);
+  await expect(page.locator('.daily-editor-toolbar')).toHaveCSS('position', 'sticky');
+  await expect(page.getByText(/Arrastrá la esquina inferior derecha/)).toHaveCount(0);
 
   // Verify wrap: type a long text that wraps visually but stays on one line number
   await page.keyboard.press('End');
@@ -396,7 +399,7 @@ test('CA-06: two identities on the same date only see their own space; IDs/URLs 
     await page.reload();
     await expect(page.getByRole('textbox', { name: 'Editor de nota diaria' })).toHaveText('Nota secreta de A');
     expect((await (await page.request.get('/api/v1/auth/me')).json()).id).toBe(actorA);
-    await pageB.getByRole('button', { name: 'Cerrar sesión', exact: true }).click();
+    await logout(pageB);
     await expect(pageB).toHaveURL('http://localhost/login');
     await expect(pageB.locator('.daily-editor-content')).toHaveCount(0);
     expect((await pageB.request.get('/api/v1/auth/me')).status()).toBe(401);
