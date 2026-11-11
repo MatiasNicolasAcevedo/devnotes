@@ -55,8 +55,11 @@ vi.mock('./useVoiceRecorder', () => ({
 }))
 
 const LONG =
-  'Esta es una nota de voz muy larga que antes ensanchaba la columna y rompía la pantalla: ' +
+  '🎙️ Esta es una nota de voz muy larga que antes ensanchaba la columna y rompía la pantalla: ' +
   'sigue y sigue con más detalle sobre la reunión, los pendientes y lo que quedó por revisar mañana.'
+const EXCERPT = [...LONG].slice(0, 120).join('')
+const NOTE_ID = '01900000-0000-7000-8000-000000000001'
+const TIMESTAMP = '2026-11-01T12:00:00.000000Z'
 
 const session: AuthSession = {
   status: 'authenticated',
@@ -72,8 +75,9 @@ const session: AuthSession = {
   logoutError: null,
 }
 
-function renderPage({ recordingEnabled = true } = {}) {
+function renderPage({ recordingEnabled = true, excerpt = EXCERPT, fullText = LONG } = {}) {
   const transcriptions = vi.fn()
+  const detailRequests = vi.fn()
   server.use(
     mock.get('/api/v1/voice/capabilities', () =>
       HttpResponse.json({
@@ -90,11 +94,11 @@ function renderPage({ recordingEnabled = true } = {}) {
       HttpResponse.json({
         content: [
           {
-            id: '01900000-0000-7000-8000-000000000001',
-            excerpt: LONG,
+            id: NOTE_ID,
+            excerpt,
             revision: 1,
-            createdAt: '2026-11-01T12:00:00.000000Z',
-            updatedAt: '2026-11-01T12:00:00.000000Z',
+            createdAt: TIMESTAMP,
+            updatedAt: TIMESTAMP,
           },
         ],
         page: 0,
@@ -103,6 +107,16 @@ function renderPage({ recordingEnabled = true } = {}) {
         totalPages: 1,
       }),
     ),
+    mock.get(`/api/v1/voice-notes/${NOTE_ID}`, () => {
+      detailRequests()
+      return HttpResponse.json({
+        id: NOTE_ID,
+        text: fullText,
+        revision: 1,
+        createdAt: TIMESTAMP,
+        updatedAt: TIMESTAMP,
+      })
+    }),
     mock.post('/api/v1/voice/transcriptions', () => {
       transcriptions()
       return HttpResponse.json({ text: 'Texto transcrito', language: 'es' })
@@ -124,7 +138,7 @@ function renderPage({ recordingEnabled = true } = {}) {
   }
   const user = userEvent.setup()
   const view = render(<VoicePage />, { wrapper: Wrapper })
-  return { user, transcriptions, ...view }
+  return { user, transcriptions, detailRequests, ...view }
 }
 
 const composer = () => screen.getByRole('region', { name: 'Nueva nota' })
@@ -140,7 +154,7 @@ beforeEach(() => {
 describe('Voz en dos mitades (UI-07)', () => {
   it('en ancho: nueva nota a la izquierda y notas guardadas a la derecha, en dos columnas iguales', async () => {
     renderPage()
-    await screen.findByText(LONG)
+    await screen.findByText(EXCERPT)
 
     const grid = composer().parentElement
     expect(grid).toBe(library().parentElement)
@@ -161,7 +175,7 @@ describe('Voz en dos mitades (UI-07)', () => {
   it('en angosto se apilan en una sola columna, con la nueva nota primero', async () => {
     setViewportWidth(NARROW_VIEWPORT)
     renderPage()
-    await screen.findByText(LONG)
+    await screen.findByText(EXCERPT)
 
     expect(composer().parentElement).toHaveStyle({
       display: 'grid',
@@ -214,9 +228,11 @@ describe('Voz en dos mitades (UI-07)', () => {
 
   it('una nota larga ocupa una línea con puntos suspensivos y el texto completo en title; la fecha no se corta', async () => {
     renderPage()
-    const excerpt = await within(library()).findByText(LONG)
+    const excerpt = await within(library()).findByText(EXCERPT)
 
-    expect(excerpt).toHaveAttribute('title', LONG)
+    expect([...EXCERPT]).toHaveLength(120)
+    expect([...LONG].length).toBeGreaterThan(120)
+    await waitFor(() => expect(excerpt).toHaveAttribute('title', LONG))
     expect(excerpt).toHaveStyle({
       display: 'block',
       overflow: 'hidden',
@@ -226,6 +242,14 @@ describe('Voz en dos mitades (UI-07)', () => {
     const date = within(library()).getByText(/2026/)
     expect(date).toHaveStyle({ whiteSpace: 'nowrap' })
     expect(date).not.toHaveStyle({ textOverflow: 'ellipsis' })
+  })
+
+  it('usa el extracto como title sin pedir detalle cuando tiene menos de 120 puntos de código', async () => {
+    const short = '🎙'.repeat(119)
+    const { detailRequests } = renderPage({ excerpt: short, fullText: short })
+
+    expect(await within(library()).findByText(short)).toHaveAttribute('title', short)
+    expect(detailRequests).not.toHaveBeenCalled()
   })
 })
 
@@ -251,7 +275,9 @@ describe('Señales de grabación (UI-08)', () => {
     expect(stop).toHaveStyle({ minHeight: '44px' })
     expect(stop).toHaveAttribute('data-recording', 'true')
     expect(within(composer()).queryByRole('button', { name: 'Grabar' })).not.toBeInTheDocument()
-    expect(within(composer()).getByRole('timer')).toHaveTextContent('00:07')
+    const timer = within(composer()).getByRole('timer')
+    expect(timer).toHaveTextContent('00:07')
+    expect(timer.parentElement).toBe(stop.parentElement)
 
     const levelBars = bars(container)
     expect(levelBars).toHaveLength(5)

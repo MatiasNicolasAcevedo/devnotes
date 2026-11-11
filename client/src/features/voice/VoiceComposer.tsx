@@ -384,24 +384,34 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
           sx={{ alignItems: 'center', flexWrap: 'wrap', mb: 1.5 }}
         >
           {captureState === 'recording' ? (
-            <Button
-              variant="contained"
-              color="error"
-              onClick={stopAndTranscribe}
-              aria-label="Detener y transcribir"
-              data-recording="true"
-              startIcon={<StopIcon />}
-              sx={{
-                minHeight: 44,
-                px: 3,
-                fontSize: '1rem',
-                animation: `${blink} 1.2s ease-in-out infinite`,
-                // Sin movimiento: rojo fijo, sin titilar.
-                '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-              }}
-            >
-              Detener
-            </Button>
+            <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={stopAndTranscribe}
+                aria-label="Detener y transcribir"
+                data-recording="true"
+                startIcon={<StopIcon />}
+                sx={{
+                  minHeight: 44,
+                  px: 3,
+                  fontSize: '1rem',
+                  animation: `${blink} 1.2s ease-in-out infinite`,
+                  // Sin movimiento: rojo fijo, sin titilar.
+                  '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+                }}
+              >
+                Detener
+              </Button>
+              <Typography
+                component="span"
+                sx={{ fontFamily: 'monospace', fontSize: '1.1rem' }}
+                role="timer"
+                aria-label={`Tiempo de grabación: ${recorder.elapsedFormatted}`}
+              >
+                {recorder.elapsedFormatted}
+              </Typography>
+            </Stack>
           ) : (
             canRecord && (
               <Button
@@ -421,7 +431,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
           )}
         </Stack>
 
-        {/* Señales de que está grabando: cronómetro, nivel real del micrófono y cancelación */}
+        {/* Nivel real del micrófono y cancelación */}
         {captureState === 'recording' && (
           <Box sx={{ mb: 2 }}>
             <Stack
@@ -432,14 +442,6 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
             >
               <Typography component="span" color="error.main" sx={{ fontWeight: 600 }}>
                 Grabando
-              </Typography>
-              <Typography
-                component="span"
-                sx={{ fontFamily: 'monospace', fontSize: '1.1rem' }}
-                role="timer"
-                aria-label={`Tiempo de grabación: ${recorder.elapsedFormatted}`}
-              >
-                {recorder.elapsedFormatted}
               </Typography>
               {recorder.levels && (
                 <Box

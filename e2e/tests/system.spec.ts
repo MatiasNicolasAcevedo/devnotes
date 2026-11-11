@@ -2,6 +2,53 @@ import { test, expect, control, readiness, layout, serverStatus } from './fixtur
 
 test.describe.configure({ timeout: 90_000 });
 
+test('T-050: visitor navigation fits on one row while readiness is pending', async ({ page }) => {
+  const readinessPath = '**/actuator/health/readiness';
+  const { promise, resolve } = Promise.withResolvers<void>();
+  // Demorar el request real hasta terminar las mediciones, sin reemplazar la respuesta del servidor.
+  await page.route(readinessPath, async route => {
+    await promise;
+    await route.continue();
+  });
+  try {
+    await page.goto('/');
+    const banner = page.getByRole('banner');
+    const nav = banner.getByRole('navigation', { name: 'Navegación principal' });
+    const connecting = serverStatus(page, 'Conectando con el servidor');
+    const login = banner.getByRole('link', { name: 'Ingresar', exact: true });
+    const brand = banner.getByRole('link', { name: 'DevNotes', exact: true });
+    const tabs = ['Voz', 'Notas', 'Referencia', 'Historial', 'Datos'];
+
+    for (const width of [375, 600, 620, 1280]) {
+      await test.step(`${width} px`, async () => {
+        await page.setViewportSize({ width, height: 800 });
+        const narrow = width < 600;
+        await expect(brand).toHaveCount(narrow ? 0 : 1);
+        await expect(connecting).toHaveText(narrow ? '' : 'Conectando');
+        const links = tabs.map(name => nav.getByRole('link', { name, exact: true }));
+        const controls = [...(narrow ? [] : [brand]), ...links, connecting, login];
+        await expect(banner).toBeVisible();
+        const bar = (await banner.boundingBox())!;
+        expect(bar.height).toBeLessThanOrEqual(48);
+        let previousRight = -1;
+        for (const control of controls) {
+          await expect(control).toBeVisible();
+          const { x, y, width: controlWidth, height } = (await control.boundingBox())!;
+          expect(x, 'Horizontal separation from previous control').toBeGreaterThan(previousRight);
+          previousRight = x + controlWidth;
+          expect(previousRight).toBeLessThanOrEqual(width);
+          expect(y).toBeGreaterThanOrEqual(bar.y);
+          expect(y + height).toBeLessThanOrEqual(bar.y + bar.height);
+          expect(Math.abs(y + height / 2 - (bar.y + bar.height / 2))).toBeLessThan(1);
+        }
+      });
+    }
+  } finally {
+    resolve();
+  }
+  await expect(serverStatus(page, 'Servidor conectado')).toBeVisible();
+});
+
 // T-050: sin pantalla de inicio, el estado real del servidor se muestra en el indicador de la barra superior.
 test('compiled shell displays the real server status and recovers accessibly through Reintentar after an outage', async ({ page }, testInfo) => {
   const desktop = testInfo.project.name === 'desktop';

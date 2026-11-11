@@ -45,9 +45,15 @@ async function record(page: Page) {
   await page.getByRole('button', { name: 'Grabar', exact: true }).click();
   await expect(page.getByText('Grabando', { exact: true })).toBeVisible();
   // Al menos un segundo de audio real del dispositivo sintético.
-  await expect(page.getByRole('timer')).toHaveText(/^00:0[1-9]$/);
+  const timer = page.getByRole('timer');
+  await expect(timer).toHaveText(/^00:0[1-9]$/);
   // T-050 (UI-08): el botón pasa a «Detener» y cinco barras muestran el nivel del micrófono.
-  await expect(page.getByRole('button', { name: 'Detener y transcribir', exact: true })).toHaveText('Detener');
+  const stop = page.getByRole('button', { name: 'Detener y transcribir', exact: true });
+  await expect(stop).toHaveText('Detener');
+  const buttonBox = (await stop.boundingBox())!;
+  const timerBox = (await timer.boundingBox())!;
+  expect(timerBox.x).toBeGreaterThan(buttonBox.x + buttonBox.width);
+  expect(Math.abs(timerBox.y + timerBox.height / 2 - (buttonBox.y + buttonBox.height / 2))).toBeLessThan(1);
   await expect(page.locator('[data-level-bar]')).toHaveCount(5);
   expect((await trackStates(page)).at(-1)).toBe('audio:live');
 }
@@ -111,7 +117,7 @@ test('voice: capture, transcribe, edit, copy, save, reload, second note, correct
   await expect(text).toHaveValue('');
   expect(await (await page.request.get(`${notes}/${firstNote.id}`)).json()).toMatchObject({ text: corrected, revision: 1 });
 
-  const secondText = `Segunda nota ${identity.slice(0, 8)} escrita a mano.`;
+  const secondText = `Segunda nota ${identity.slice(0, 8)} escrita a mano. 🎙️ ${'Texto de prueba '.repeat(10)}Tramo final.`;
   await text.fill(secondText);
   const createdSecond = page.waitForResponse(on(notes, 'POST'));
   await page.getByRole('button', { name: 'Guardar', exact: true }).click();
@@ -123,6 +129,13 @@ test('voice: capture, transcribe, edit, copy, save, reload, second note, correct
   const list = await (await page.request.get(notes)).json();
   expect(list.totalElements).toBe(2);
   expect(list.content.map((item: { excerpt: string }) => item.excerpt.startsWith('Segunda nota'))).toEqual([true, false]);
+  const secondExcerpt = [...secondText].slice(0, 120).join('');
+  expect(list.content[0].excerpt).toBe(secondExcerpt);
+  const preview = secondItem.getByText(secondExcerpt, { exact: true });
+  await expect(preview).toHaveAttribute('title', secondText);
+  await expect(preview).toHaveCSS('white-space', 'nowrap');
+  await expect(preview).toHaveCSS('text-overflow', 'ellipsis');
+  expect(await preview.evaluate(element => element.scrollWidth > element.clientWidth)).toBe(true);
   expect(posts).toEqual({ transcriptions: 1, notes: 2 });
 
   // VO-04: corregir la primera con revisión; la recarga conserva el texto exacto.

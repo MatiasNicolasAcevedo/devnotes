@@ -118,11 +118,11 @@ function AppShellContent({
           variant="dense"
           disableGutters
           sx={{
-            gap: narrow ? 0.5 : 1.5,
+            gap: narrow ? 0.5 : 1,
             flexWrap: 'nowrap',
             minHeight: 48,
             maxHeight: 48,
-            px: narrow ? 1 : 2,
+            px: narrow ? 1 : 1.5,
           }}
         >
           {narrow ? null : (
@@ -141,16 +141,21 @@ function AppShellContent({
             component="nav"
             aria-label="Navegación principal"
             direction="row"
-            spacing={narrow ? 0.25 : 0.5}
-            sx={{ flexWrap: 'nowrap', alignItems: 'center', minWidth: 0 }}
+            spacing={0.25}
+            sx={{ flexWrap: 'nowrap', alignItems: 'center', flexShrink: 0 }}
           >
             {TABS.map((tab) => (
               <NavTab key={tab.to} {...tab} />
             ))}
           </Stack>
-          <Box sx={{ flexGrow: 1, minWidth: 0 }} />
-          <ServerStatus />
-          <SessionControls />
+          <Stack
+            direction="row"
+            spacing={narrow ? 0.5 : 1}
+            sx={{ ml: 'auto', flexShrink: 0, alignItems: 'center' }}
+          >
+            <ServerStatus />
+            <SessionControls />
+          </Stack>
         </Toolbar>
       </AppBar>
       <Container
