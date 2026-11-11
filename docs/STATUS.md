@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-046](tasks/T-046-render-image.md) · Imagen única para Render y smoke local con métricas |
 | Estado | `draft` |
-| Acción actual | Preparar la imagen y verificar RP-01/RP-02 en local. La [aceptación de T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño) mantiene el PR en borrador. |
+| Acción actual | Completar el smoke RP-01/RP-02 y el gate STARTER de la imagen. La [aceptación de T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño) mantiene el PR en borrador. |
 | Rama / PR | `codex/t-046-render-image` |
 
 [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED. El dueño pospuso T-045 y autorizó el avance de T-046 en borrador. [T-047](tasks/T-047-render-first-deploy.md) queda después de T-046 MERGED.
