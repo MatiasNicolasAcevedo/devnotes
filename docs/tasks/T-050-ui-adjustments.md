@@ -143,7 +143,7 @@ Antes del FULL, checkpoint con SHA, base, comando, recursos propios y cleanup. S
 
 ### Avance del implementer (2026-11-11)
 
-Implementer en Claude Code de escritorio (Claude Fable 5.2, `claude-fable-5-2`, esfuerzo no expuesto), con Git Bash, Git, `gh`, Docker y Node. Rama `codex/t-050-ui-adjustments` desde main `915459c` (PR50 MERGED, mergeado por esta sesión con autorización expresa del dueño). Impacto: solo `client/` y `e2e/`; sin cambios de server, API, permisos, esquema ni datos. El medidor de nivel lee el mismo `MediaStream` y no cambia lo que se graba ni lo que se envía.
+Implementer en Claude Code de escritorio (Claude Fable 5.2, `claude-fable-5-2`, esfuerzo no expuesto), con Git Bash, Git, `gh`, Docker y Node. Rama `codex/t-050-ui-adjustments` desde main `915459c` (PR50 MERGED, mergeado por esta sesión con autorización expresa del dueño). Impacto: `client/` y `e2e/`, más la ruta de un archivo en `scripts/test-dev-stack.sh`, fuera del alcance escrito y autorizada expresamente por el dueño en esta sesión; sin cambios de server, API, permisos, esquema ni datos. El medidor de nivel lee el mismo `MediaStream` y no cambia lo que se graba ni lo que se envía.
 
 Hecho, con las pruebas primero en rojo en cada paso:
 
@@ -154,6 +154,8 @@ Hecho, con las pruebas primero en rojo en cada paso:
 | 3 · Voz (UI-07 y UI-08) | `8dc868c` | 28 pruebas | `npm test -- --run src/features/voice` exit 0 (174 pruebas) |
 | 4 · Manifiesto (UI-09) | `0eeb970` | import sin resolver | `npm test -- --run src/app/manifest.test.ts` exit 0 (4 pruebas) |
 | 4 · E2E | `2d41cac` | cuatro casos en la primera tanda dirigida | tandas dirigidas de abajo |
+| 4 · Arnés del stack local | `9eb67c0` | `test-dev-stack.sh nginx` exit 1 en el gate | `bash scripts/test-dev-stack.sh nginx` y `vite` exit 0 |
+| Tooling · ensayo de HMR | `e8428b2` | referenciaba `SystemInfoPanel.tsx`, eliminado por UI-01 | incluido en `test-dev-stack.sh vite` exit 0 |
 
 - Gate de cliente: `bash scripts/verify.sh --client` exit 0 sobre `0eeb970` (typecheck, lint, formato, cobertura y build; umbrales sin tocar).
 - E2E dirigidos con `STARTER_E2E_PROJECT=starter-e2e-t050-iter bash scripts/e2e.sh --grep "…" --project <proyecto>`, exit 0:
@@ -180,13 +182,20 @@ Cambios de pruebas que el contrato vuelve obligatorios, sin debilitar casos:
 
 No comprobado por pruebas automáticas: el titileo y su variante `prefers-reduced-motion` (solo CSS) y que Chrome ofrezca instalar con el icono SVG; quedan para la aceptación manual del dueño.
 
-Checkpoint previo al FULL: fuentes técnicas finales en `2d41cac`, base main `915459c`; el commit de este checkpoint solo agrega Markdown. `bash scripts/verify.sh --policy main` informa `policy=FULL` y `profile=STARTER`, porque `client/index.html` y `client/public/manifest.json` quedan fuera de `client/src/`; por eso el gate es el FULL del contrato más tooling. Comando, desde la raíz en Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t050 STARTER_E2E_PROJECT=starter-e2e-t050 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter` (docs, backend, cliente, tooling y Playwright real). Recursos propios: proyectos Compose `starter-verify-t050` y `starter-e2e-t050` con `.env.example` y fixtures ficticias, y artefactos en `e2e/artifacts/starter-e2e-t050/`; el script limpia solo esos proyectos. No había otros contenedores en marcha al iniciar. Sin editar fuentes durante la corrida. Siguiente paso: con exit 0, publicar la rama, abrir el PR y pasar a `in_review`.
+Checkpoint previo al FULL: fuentes técnicas finales en `e8428b2`, base main `915459c`; el commit de este checkpoint solo agrega Markdown. `bash scripts/verify.sh --policy main` informa `policy=FULL` y `profile=STARTER`, porque `client/index.html` y `client/public/manifest.json` quedan fuera de `client/src/`; por eso el gate es el FULL del contrato más tooling. Comando, desde la raíz en Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t050 STARTER_E2E_PROJECT=starter-e2e-t050 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter` (docs, backend, cliente, tooling y Playwright real). Recursos propios: proyectos Compose `starter-verify-t050` y `starter-e2e-t050` con `.env.example` y fixtures ficticias, y artefactos en `e2e/artifacts/starter-e2e-t050/`; el script limpia solo esos proyectos. No había otros contenedores en marcha al iniciar. Sin editar fuentes durante la corrida. Siguiente paso: con exit 0, publicar la rama, abrir el PR y pasar a `in_review`.
+
+Intentos del gate sobre `7ff8282` (mismas fuentes de cliente y specs que `2d41cac`):
+
+1. Exit 1 en `client`: una prueba de voz ya existente agotó sus 10 s con el contenedor unas tres veces más lento (el archivo tardó 73 s contra 27 s en la corrida verde). Tarda lo mismo antes y después de T-050 y no se reprodujo; no se tocó el límite. Hallazgo en BACKLOG.
+2. Exit 1 en `tooling`, con docs, server y client en verde: `test-dev-stack.sh nginx` usaba la interfaz anterior. Corregido en `9eb67c0` y `e8428b2`.
 
 ## Correcciones significativas
 
 | Fecha / SHA | Problema y causa | Corrección | Prueba |
 |---|---|---|---|
 | 2026-11-11 · `99034f8` | `useIsNarrow` leía `theme.breakpoints` de un tema nulo cuando el componente se monta sin `ThemeProvider` (pruebas del editor). | Usa `useTheme()`, que entrega el tema por defecto. | `npm test -- --run src/features/daily` exit 0 |
+| 2026-11-11 · `9eb67c0` | El arnés `e2e/harness/local-stack.mjs` buscaba el botón «Cerrar sesión», «API y base de datos disponibles» y el aviso de estado del servidor; además medía el desborde horizontal en el instante de cambiar el ancho, antes de que la aplicación pasara a angosto. | Lee el menú de usuario y el indicador de la barra, y espera con `expect.poll` a que el diseño se asiente. | `bash scripts/test-dev-stack.sh nginx` y `vite`, exit 0 |
+| 2026-11-11 · `e8428b2` | `scripts/test-dev-stack.sh` editaba `SystemInfoPanel.tsx` para el ensayo de HMR; UI-01 lo elimina. Fuera de «solo `client/` y `e2e/`». | Con autorización del dueño, la ruta pasa a `ServerStatus.tsx`, que conserva el texto «Servidor conectado» como nombre accesible. | `bash scripts/test-dev-stack.sh vite`, exit 0 |
 | 2026-11-11 · `2d41cac` | Tanda E2E dirigida: cuatro fallos de las specs, no del producto. El helper `saved` chocaba con variables locales; tras el login la URL ya canonizada era `/notes/<hoy>`; en Notas hay dos alertas al vencer la sesión; la página quedaba desplazada 9 px al medir el editor. | Helper `savedIndicator`, patrón `notesUrl`, filtro por texto del aviso de sesión y `scrollTo(0, 0)` antes de medir. | Tanda dirigida desktop, exit 0 |
 
 ## Cierre y siguiente tarea

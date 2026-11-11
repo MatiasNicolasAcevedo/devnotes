@@ -40,6 +40,14 @@ Del [control de avance de T-040…T-045](tasks/T-045-xlsx-journey.md#control-de-
 - **OpenAPI sin caso de portabilidad.** Las tres rutas están anotadas detrás del interruptor, pero `OpenApiContractIT` no las comprueba (nota de T-042).
 - **Comandos dirigidos con `-Dtest=none`.** Los comandos de contrato de T-041, T-042 y T-043 (`./mvnw -q verify -Dit.test=… -Dtest=none`) terminan en exit 1 por `jacoco:check` en un árbol limpio aunque las pruebas pasen. Los contratos futuros con un IT dirigido deberían añadir `-Djacoco.skip=true` y dejar la cobertura al `clean verify`.
 
+### Hallazgos de T-050
+
+Del [avance de T-050](tasks/T-050-ui-adjustments.md#avance-del-implementer-2026-11-11) (2026-11-11). Ninguno bloquea su PR ni tiene tarea asignada.
+
+- **Ensayos manuales con la interfaz anterior.** `scripts/test-dev-auth.mjs` y `scripts/test-auth-ui-smoke.mjs` no están en `verify-tooling.sh` y siguen buscando el botón «Cerrar sesión» en la barra, la URL `/` tras el login, el texto «Servidor conectado» y `SystemInfoPanel.tsx`, que T-050 eliminó. Fallarán hasta adaptarlos al menú de usuario, a `/notes` y a `ServerStatus.tsx`.
+- **Prueba de voz cerca de su límite bajo carga.** `VoiceDraftNavigation.test.tsx › descarta audio que excedió 600 s…` tarda unos 1,5 s en el host y agotó los 10 s una vez dentro del gate, con el contenedor de cliente unas tres veces más lento que lo habitual; no se reprodujo en 16 corridas bajo carga ni en dos gates posteriores.
+- **Perfil STARTER por archivos de `client/` fuera de `src/`.** `classify-diff.mjs` trata `client/index.html` y `client/public/` como STARTER, así que un cambio de aplicación que los toque exige tooling; el contrato de T-050 preveía solo el FULL de aplicación.
+
 ## Hechas · I3 / M3 portabilidad xlsx
 
 [S-107](specs/S-107-xlsx-portability.md) entró a `main` con el PR único [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), MERGED el 2026-11-11, squash `ff02bbd`. M3 se da por cumplida cuando el dueño registre su veredicto en T-045.
