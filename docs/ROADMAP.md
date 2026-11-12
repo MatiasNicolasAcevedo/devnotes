@@ -63,6 +63,18 @@ Pedido del dueño del 2026-11-11: una única tarea, [T-050](tasks/T-050-ui-adjus
 
 Último paso del plan del 2026-11-10, solo si M3 sale bien y después de T-050 MERGED. [S-108](specs/S-108-render-pilot.md) con la receta de [DEPLOYMENT](DEPLOYMENT.md#piloto-de-devnotes-en-render-free): T-046 (imagen única y smoke local con 512 MB) → T-047 (primer deploy con Google real, migración `.xlsx` y aceptación del dueño). Los recursos, secretos y gastos quedan reservados al dueño. **Frontera vuelve al cerrar T-047**, o antes por un veredicto negativo o una decisión fuera de contrato.
 
+## I5 / M5 · Espacios privados, continuidad diaria y disponibilidad
+
+Pedido del dueño del 2026-11-12, preparado en [T-052](tasks/T-052-scope-expansion-plan.md). Excepción de rama/PR documental junto a PR54; las implementaciones esperan ambos MERGED y usan una tarea/PR/sesión cada vez. FULL/STARTER no se ejecutan hasta solicitud expresa, según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+
+| Capacidad | Ruta | Objetivo verificable |
+|---|---|---|
+| [S-111](specs/S-111-render-daily-availability.md) · Disponibilidad diaria | T-053 → T-054 → T-055 → T-056 | Ventana y sonda local verificadas; eficacia en Render separada y pendiente de ensayo autorizado |
+| [S-109](specs/S-109-private-spaces.md) · Trabajo/Personal | T-057 → T-058 → T-059 → T-060 → T-061 → T-062 → T-063 → T-064 → T-065 | Diario, versiones, referencias y voz separados; navegación clara y respaldo compatible |
+| [S-110](specs/S-110-previous-day-copy.md) · Continuidad de jornada | T-066 → T-067 | Copia explícita de la última anterior sin sobrescrituras ni mezcla de espacios |
+
+Quince tareas de producto; control de avance por Junie tras T-057, T-062 y T-067. **Frontera vuelve tras T-067 MERGED** con la evidencia dirigida y los pendientes reales (ensayo Render, prueba Android del dueño e integrado diferido) claramente separados, o ante decisión/bloqueo fuera de contrato. La ausencia de aprobación de un deploy no bloquea desarrollo local de los espacios ni se presenta como aceptación remota. Las categorías y las restantes propuestas no entran en esta iteración.
+
 ## Objetivos futuros sin contrato de ejecución
 
 Restauración/comparación/múltiples revisiones por día, búsquedas, plantillas de enlaces y personalización son opciones del contexto, no tareas ready ni dependencias. La exportación/importación y el piloto de despliegue tienen contrato en S-107/S-108; producción en VPS sigue como propuesta de DEPLOYMENT. No instalar infraestructura para ellas. Google real, servicios pagos y datos reales reservados al dueño.
