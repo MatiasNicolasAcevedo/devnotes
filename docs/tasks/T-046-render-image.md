@@ -1,10 +1,10 @@
 ---
 id: T-046
-status: in_review
+status: mergeable
 priority: P1
 size: M
 executor: junie
-role: implementer
+role: merger
 milestone: M4
 product_cycle: I4
 spec: S-108
@@ -61,6 +61,16 @@ El dueño autorizó el avance técnico en `draft` tras el merge de [T-050](T-050
 Cleanup: `down --volumes` solo del proyecto de smoke, tras verificar los labels exactos.
 
 ## Checkpoint vigente
+
+**Revisión independiente favorable (2026-11-11).** Reviewer en Codex, familia GPT-6, variante y esfuerzo no expuestos. Herramientas: Git, `gh`, PowerShell, Git Bash, Node y Docker. Esta transición documenta la revisión y el paso a merge. El diff técnico abarca la imagen, su operación local y la parametrización compartida de nginx, con las mismas rutas, sesión, CSRF y validación del origen de S-108.
+
+- `gh pr view 52` confirmó `OPEN`, fuera de borrador, HEAD `79aa92320bb8719fd59d567ee638bd2f380cf9c3` y base `main` `d230ee19e4a171bb73cf669c3fe4ced36b60a61c`, con [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43128857385/job/130887722784). La punta de `main` y el checkout limpio coincidieron con esos SHA. Se revisó el diff completo y GitHub informó cero hilos de revisión.
+- **RP-01 y RP-02.** Los artefactos de métricas y señales corroboran readiness `200` a 191,17 s, picos de 253,7/275,6 MiB, API anónima `401`, guardado y recuperación con OIDC ficticio y salida `0` por SIGTERM y `1` por caída de cada proceso. La revisión repitió `bash scripts/ci/test-render-entrypoint.sh`, verificó rechazo de `PORT=8080`, `65536`, `0` y `abc`, y probó el nginx de la imagen local `c41b1ab68be7` sin red ni volúmenes. Escuchó en `12345` como usuario no privilegiado con origen HTTPS ficticio, rechazó un Host ajeno (`400`) y respetó la frontera de Actuator (`404` fuera de readiness, `405` para POST a readiness). Contenedor revisor retirado y proyectos de smoke/STARTER con contenedores, redes y volúmenes `0/0/0` por etiquetas exactas.
+- **STARTER.** `bash scripts/verify.sh --policy origin/main` informó `FULL/STARTER`. El log y el JUnit saneado acreditan las cinco etapas en verde, 429 unitarias, 241 IT PostgreSQL y 49 E2E sin omisiones. Las huellas técnicas del smoke, el gate y el HEAD publicado coinciden, con la misma base. `node scripts/docs-check.mjs` y `git diff --check` pasaron. Se conserva el STARTER del implementer.
+
+La transición es solo Markdown. Verificar el HEAD remoto de esta transición, su base, `docs-check`, `diff --check` y `verify-required` antes de publicar el veredicto ligado a ambos SHA. Con el veredicto vigente y las condiciones de [AUTONOMY](../AUTONOMY.md#revisión-y-merge) cumplidas, seguir [merger](../agents/merger.md). T-047 se habilita al confirmar `MERGED` y se retoma con el dueño en sesión nueva.
+
+### Evidencia de implementación
 
 Implementer en Codex, familia GPT-6, variante y esfuerzo no expuestos. Herramientas de esta sesión: PowerShell, Git, `gh`, Git Bash, Node y Docker. Cambios de empaquetado y operación local, con el contrato de origen compartido entre ambos nginx.
 

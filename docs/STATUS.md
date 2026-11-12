@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-046](tasks/T-046-render-image.md) · Imagen única para Render y smoke local con métricas |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente de PR52 en sesión nueva, con el HEAD y la base publicados y la evidencia STARTER de T-046. |
+| Estado | `mergeable` |
+| Acción actual | Verificar el HEAD de la transición revisora y publicar el veredicto de PR52. Con el veredicto vigente y los checks requeridos en verde, confirmar el cierre según [merger](agents/merger.md). |
 | Rama / PR | `codex/t-046-render-image` · [PR52](https://github.com/MatiasNicolasAcevedo/devnotes/pull/52) |
 
 [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED. [T-047](tasks/T-047-render-first-deploy.md) queda después de T-046 MERGED.
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Revisá T-046 en una sesión independiente como reviewer, en codex/t-046-render-image. Confirmá en GitHub que PR52 está abierto y listo para revisión contra main, y verificá el HEAD, la base y verify-required vigentes. Contrastá el diff y la evidencia RP-01, RP-02 y STARTER de docs/tasks/T-046-render-image.md con S-108. Publicá el veredicto ligado a los SHA finales según docs/agents/reviewer.md. Si el PR queda elegible, seguí docs/agents/merger.md y confirmá MERGED en GitHub. Dejá al dueño el prompt para conciliar T-046 y retomar T-047 en una sesión nueva según docs/tasks/T-047-render-first-deploy.md.
+Consultá PR52 en GitHub según docs/agents/merger.md. Si está abierto, tomá la evidencia de docs/tasks/T-046-render-image.md y verificá el HEAD, la base y verify-required. Para hacer el squash, comprobá el veredicto APROBADO vigente y las demás condiciones de docs/AUTONOMY.md. Si está MERGED, registrá el SHA y la fecha y, en una sesión nueva de frontera con el dueño, conciliá T-046 en codex/t-047-render-first-deploy y retomá el contrato de docs/tasks/T-047-render-first-deploy.md. El dueño realiza las acciones reservadas o confirma cada una por separado.
 ```
