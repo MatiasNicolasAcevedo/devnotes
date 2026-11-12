@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy en Render, migración y aceptación del dueño |
 | Estado | `in_progress` |
-| Acción actual | El dueño verifica el login de Google y completa RP-04 y RP-03. Frontera registra la aceptación y las métricas restantes del piloto. |
+| Acción actual | Reinicio y readiness confirmados. El dueño verifica la recuperación de la nota en la app instalada y da su veredicto. |
 | Rama / PR | `codex/t-047-render-first-deploy` · PR documental pendiente |
 
 [T-046](tasks/T-046-render-image.md#checkpoint-vigente) conciliada como `done` tras confirmar PR52 MERGED. [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED.
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá T-047 como frontera con el dueño en codex/t-047-render-first-deploy. Seguí docs/tasks/T-047-render-first-deploy.md y S-108. El SHA 222ae003f5db5fc887929ca98f9405ae67bd4d09 quedó live y readiness dio 200 con UP. Acompañá el login real, RP-04 en la cuenta vacía y RP-03 con reinicio y recuperación en Chrome instalado. Con una sola cuenta, completá la importación antes de guardar la nota ficticia. Registrá RAM tras guardar, despertar por inactividad y veredicto saneado. Cerrá con un PR documental y el gate DOCS_ONLY.
+Retomá T-047 como frontera con el dueño en codex/t-047-render-first-deploy. El dueño confirmó el login con Google en Brave y «Guardado» en Notas. Omitió RP-04 en Render. Reiniciaste devnotes-pilot y readiness dio 200 con UP en el mismo SHA 222ae003f5db5fc887929ca98f9405ae67bd4d09. Registrá la recuperación desde la app web instalada, el veredicto del dueño y el despertar por inactividad. Cerrá con un PR documental y el gate DOCS_ONLY. T-051 está en borrador para después de MERGED.
 ```
