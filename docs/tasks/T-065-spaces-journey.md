@@ -68,4 +68,3 @@ Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. 
 ## Cierre y siguiente tarea
 
 No done hasta MERGED comprobado. Tras MERGED confirmado, la siguiente sesión concilia esta tarea y toma T-066 si sus dependencias están done. No modificar protecciones, incorporar otras propuestas ni desplegar por pasar tests locales.
-

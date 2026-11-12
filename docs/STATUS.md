@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-052](tasks/T-052-scope-expansion-plan.md) · Contratos de expansión I5 |
-| Estado | `in_progress` |
-| Acción actual | Completar y publicar el PR documental autorizado; preparar tareas para sesiones independientes. |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente del PR documental sobre HEAD/base publicados; implementación espera también el cierre de PR54. |
 | Rama / PR | `codex/t-052-scope-expansion-plan` · PR por publicar |
 
 Excepción del dueño: planificación junto a [PR54](https://github.com/MatiasNicolasAcevedo/devnotes/pull/54), que sigue OPEN/draft. No implica cierre ni aceptación de T-051. El estado draft de su archivo en esta base pertenece a main; su ejecución está en la rama de PR54. T-047 conciliada como done. FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
@@ -86,5 +86,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá T-052 como planner en codex/t-052-scope-expansion-plan. Completá specs y tareas de espacios Trabajo/Personal, copia de la última nota anterior, navegación Windows/Android y sonda diaria de Render. Conservá la ejecución de T-051 en PR54 sin marcarla done. Publicá solo documentación contra main con checks documentales y CI liviana. No ejecutes FULL, STARTER ni E2E completo: están diferidos hasta solicitud expresa del dueño. Dejá revisión independiente como siguiente acción y no implementes las features en esta sesión.
+En una sesión revisora independiente, revisá T-052 en codex/t-052-scope-expansion-plan sobre el HEAD/base publicados de su PR contra main. Verificá S-109, S-110, S-111, tareas T-053…T-067, compatibilidad XLSX y excepciones en AUTONOMY/TESTING. Corré solo docs-check, diff-check y clasificación documental; exigí CI verify-required verde. No ejecutes FULL/STARTER/E2E completo, no despliegues ni actives la sonda. PR54/T-051 conserva su cierre independiente pendiente; no marcarla done por este PR. Si el plan queda aprobado y MERGED, la siguiente sesión reconcilia T-052; si T-051 sigue abierto retoma su cierre, y solo con ambos conciliados habilita T-053. No implementar producto durante la revisión.
 ```

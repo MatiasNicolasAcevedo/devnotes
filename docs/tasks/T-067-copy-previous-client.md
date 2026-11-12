@@ -68,4 +68,3 @@ Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. 
 ## Cierre y siguiente tarea
 
 Control de cinco tareas de I5: revisar dependencias, evidencia dirigida, integrado diferido y hallazgos en esta tarea; volver a frontera solo por decisión fuera del contrato. No done hasta MERGED comprobado. Tras MERGED confirmado, una nueva sesión concilia esta tarea y vuelve a frontera/dueño para elegir otras propuestas. No inventar la siguiente implementación. No modificar protecciones, incorporar otras propuestas ni desplegar por pasar tests locales.
-

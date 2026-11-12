@@ -52,10 +52,6 @@ Desde `server/`, Git Bash con JDK 21 y Docker Linux activo:
 ./mvnw -q verify -Dtest=PrivateSpaceTest -Dit.test=PrivateSpaceMigrationIT,DailyNoteRepositoryIT -Djacoco.skip=true
 ```
 
-
-
-
-
 Los nombres nuevos de tests son archivos/clases que esta tarea debe crear. Confirmar cantidad ejecutada distinta de cero; no usar failIfNoTests=false. IT usa PostgreSQL real; unitarios no acreditan integración. `-Djacoco.skip=true` evita evaluar cobertura global con una selección parcial sin modificar umbrales/configuración; no afirmar cobertura total.
 
 Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`. Registrar **FULL/STARTER DIFERIDO POR EL DUEÑO**. No ejecutar FULL, STARTER, tooling completo ni E2E completo hasta solicitud expresa, aunque el clasificador dé FULL/STARTER. CI liviana/revisión independiente siguen obligatorias.
@@ -67,4 +63,3 @@ Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. 
 ## Cierre y siguiente tarea
 
 Control de cinco tareas de I5: revisar dependencias, evidencia dirigida, integrado diferido y hallazgos en esta tarea; volver a frontera solo por decisión fuera del contrato. No done hasta MERGED comprobado. Tras MERGED confirmado, la siguiente sesión concilia esta tarea y toma T-058 si sus dependencias están done. No modificar protecciones, incorporar otras propuestas ni desplegar por pasar tests locales.
-

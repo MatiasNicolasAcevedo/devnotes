@@ -52,8 +52,6 @@ Desde `client/`, Node >=24/npm del proyecto:
 npm test -- --run src/features/spaces src/features/daily/api.test.ts src/features/daily/useDailyNote.test.tsx src/features/voice/VoiceDraftNavigation.test.tsx src/features/reference
 ```
 
-
-
 Para cambios client, desde `client/`: `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build`. Son verificaciones estáticas/dirigidas; no ejecutar `npm run verify` como sustitución del gate aplazado.
 
 Los nombres nuevos de tests son archivos/clases que esta tarea debe crear. Confirmar cantidad ejecutada distinta de cero; no usar failIfNoTests=false. IT usa PostgreSQL real; unitarios no acreditan integración. `-Djacoco.skip=true` evita evaluar cobertura global con una selección parcial sin modificar umbrales/configuración; no afirmar cobertura total.
@@ -67,4 +65,3 @@ Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. 
 ## Cierre y siguiente tarea
 
 No done hasta MERGED comprobado. Tras MERGED confirmado, la siguiente sesión concilia esta tarea y toma T-064 si sus dependencias están done. No modificar protecciones, incorporar otras propuestas ni desplegar por pasar tests locales.
-
