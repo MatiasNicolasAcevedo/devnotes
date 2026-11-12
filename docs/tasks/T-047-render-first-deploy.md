@@ -1,6 +1,6 @@
 ---
 id: T-047
-status: draft
+status: blocked
 priority: P1
 size: S
 executor: frontier
@@ -18,8 +18,6 @@ depends_on: [T-046]
 ## Objetivo
 
 DevNotes funciona en la URL HTTPS de Render con Google real y los datos locales del dueño importados, cumpliendo RP-03 y RP-04 de [S-108](../specs/S-108-render-pilot.md). Es el cierre del plan del 2026-11-10. Después, frontera recibe los hallazgos.
-
-Está en `draft` solo porque depende de T-046.
 
 ## Alcance y decisiones resueltas
 
@@ -40,7 +38,7 @@ Está en `draft` solo porque depende de T-046.
 Solo Markdown: DEPLOYMENT (evidencia del piloto y diagnóstico encontrado), esta tarea, STATUS y BACKLOG si hay hallazgos.
 
 1. El dueño crea la base y el Web Service, y carga las variables. El agente verifica readiness por la URL pública.
-2. El dueño ejecuta el recorrido RP-03, incluido Chrome instalado como app, y luego la migración RP-04.
+2. El dueño ejecuta RP-03, incluido Chrome instalado como app, y RP-04. Si usa la misma cuenta para ambos, verifica el login y completa la importación en la cuenta vacía antes de guardar la nota ficticia de RP-03. Con una cuenta de prueba distinta para RP-03, puede conservar el orden original.
 3. Registrar el SHA desplegado, el tiempo de arranque en frío, la RAM según las métricas de Render, los resultados y el veredicto del dueño. Publicar un PR documental.
 
 ## Aceptación y pruebas
@@ -53,7 +51,13 @@ Solo Markdown: DEPLOYMENT (evidencia del piloto y diagnóstico encontrado), esta
 
 ## Checkpoint vigente
 
-`draft` por dependencia. Contrato completo (frontera, 2026-11-10).
+**2026-11-11 · Frontera con el dueño.** Codex de escritorio, familia GPT-6, variante y esfuerzo no expuestos. Git, `gh`, PowerShell, Git Bash, Node y documentación oficial de Render. El avance es documental y operativo, sin cambios de código, API, permisos de la aplicación, esquema ni UI.
+
+[T-046](T-046-render-image.md#checkpoint-vigente) está conciliada como `done`. `main` y `origin/main` apuntaban a `222ae003f5db5fc887929ca98f9405ae67bd4d09` al crear la rama; ese es el SHA objetivo del deploy. El dueño confirmó que aún falta crear los recursos. El siguiente paso es aprovisionar PostgreSQL 18 Free y el Web Service Docker Free y configurar el origen y Google según [DEPLOYMENT](../DEPLOYMENT.md#primer-deploy-y-aceptación-del-dueño). El dueño ejecuta o confirma cada acción reservada por separado.
+
+Por pedido del dueño se agregó el MCP oficial de Render a la configuración de usuario de Codex con `codex mcp add render --url https://mcp.render.com/mcp --oauth-client-id codex`. El dueño completó el OAuth en su navegador. `codex mcp list --json` confirmó `render` habilitado y `auth_status=o_auth`. Falta identificar el workspace del piloto y comprobar las herramientas en una sesión que cargue el MCP.
+
+Retomar la verificación pública con la URL HTTPS y el SHA del deploy activo que reporte el dueño. Quedan pendientes readiness, métricas de Render, RP-03, RP-04 y el veredicto. Registrar en [DEPLOYMENT](../DEPLOYMENT.md#primer-deploy-y-aceptación-del-dueño) solo evidencia saneada.
 
 ## Correcciones significativas
 
