@@ -9,7 +9,7 @@ depends_on: [T-047]
 branch: codex/t-051-render-follow-up
 role: implementer
 executor: frontier
-pr: null
+pr: 54
 ---
 
 # T-051 · Ícono y voz en Render
@@ -48,5 +48,5 @@ El dueño pidió dejar la sonda para después y avanzar con el ícono y la voz. 
 
 **2026-11-12 · Implementación.** Frontera como implementer en Codex de escritorio, familia GPT-6, variante y esfuerzo no expuestos. Git, `gh`, PowerShell, Git Bash, Node, MCP de Render y documentación oficial. Base `main` `00407ef4a637369d3078d19aceab123be3b13521` tras [conciliar T-047](T-047-render-first-deploy.md#checkpoint-vigente). El favicon SVG y los PNG de 192 y 512 px usan los insumos del dueño. El cambio de producto alcanza la presentación de la pestaña y de la app instalada. La voz usa la configuración del piloto indicada por el dueño.
 
-- `npm test -- --run src/app/manifest.test.ts` desde `client/`: 4/4. Verificación de los tres archivos de ícono y de las dimensiones PNG mediante cabeceras IHDR: OK. `node scripts/docs-check.mjs` y `git diff --check`: OK. STARTER exceptuado por el dueño para el deploy de prueba.
-- Render confirmó `devnotes-pilot` Free en la URL acordada, enlazado a `main` y con auto-deploy desactivado. El SHA objetivo es el primer commit publicado de T-051 con los íconos. Pendiente la confirmación del dueño para el deploy por ese SHA y su aceptación en Brave, Windows y voz. Verificar el historial antes de iniciar el deploy y al terminar. Conservar solo estado, SHA y resultados saneados. La sonda y la medición del despertar siguen aplazadas.
+- `npm test -- --run src/app/manifest.test.ts` desde `client/`: 4/4. Verificación de los tres archivos de ícono y de las dimensiones PNG mediante cabeceras IHDR: OK. `npm run build`: OK, con aviso de tamaño del bundle. Los cuatro archivos públicos están en `dist`. `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD`: OK. `bash scripts/verify.sh --policy origin/main` en Git Bash: `FULL` / `STARTER`, nueve rutas, cinco técnicas. STARTER exceptuado por el dueño para el deploy de prueba.
+- [PR54](https://github.com/MatiasNicolasAcevedo/devnotes/pull/54) abierto como borrador. SHA de prueba publicado y verificado en GitHub: `f6a23c7ec7587baa004d85b8a4187058b9fff255`, con [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43148200959/job/130950912772). Render confirmó `devnotes-pilot` Free, enlazado a `main` con auto-deploy desactivado. El deploy `dep-dbqhq3s9v7es73cksk2g` de `222ae003f5db5fc887929ca98f9405ae67bd4d09` seguía `live` al preparar el deploy de prueba. El panel de Render en Brave reconoció el SHA exacto y quedó listo en **Deploy a specific commit**, pendiente confirmación del dueño. Antes de iniciar, comprobar que no exista otro deploy de ese SHA. Tras `live`, hacer un GET a readiness, comprobar el manifiesto y los archivos de ícono públicos y recoger la aceptación del dueño en Brave, Windows y voz. La sonda y la medición del despertar siguen aplazadas.
