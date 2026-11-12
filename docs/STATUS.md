@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-051](tasks/T-051-render-follow-up.md) · Ícono y voz en Render |
 | Estado | `in_progress` |
-| Acción actual | Confirmar con el dueño el deploy por SHA en `devnotes-pilot` y verificar la aceptación en Brave y Windows. |
+| Acción actual | Recoger la aceptación del dueño en Brave, Windows y voz sobre el SHA activo en `devnotes-pilot`. |
 | Rama / PR | `codex/t-051-render-follow-up` · [PR54](https://github.com/MatiasNicolasAcevedo/devnotes/pull/54) |
 
 [T-047](tasks/T-047-render-first-deploy.md#checkpoint-vigente), [T-046](tasks/T-046-render-image.md#checkpoint-vigente) y [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliadas como `done`.
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-En una sesión de implementación, retomá T-051 desde su checkpoint y verificá PR54 y el SHA de prueba f6a23c7ec7587baa004d85b8a4187058b9fff255. Consultá el historial de devnotes-pilot para saber si el dueño ya inició el deploy de ese SHA. Si falta, coordiná su confirmación explícita y un único deploy con Manual Deploy → Deploy a specific commit. Verificá readiness y los íconos servidos; el dueño confirma el ícono en Brave y en la app de Windows, login y reapertura de una nota, y transcripción, edición, guardado y reapertura con una muestra sintética ficticia según VOICE-RELEASE. Registrá el resultado en PR54 y prepará la revisión independiente. El dueño exceptuó STARTER para este deploy de prueba y aplazó la sonda y la medición del despertar.
+En una sesión de implementación, retomá T-051 y verificá PR54 y el deploy activo de f6a23c7ec7587baa004d85b8a4187058b9fff255 en devnotes-pilot. El único deploy ya quedó live y pasaron readiness y la comparación de los archivos públicos de ícono. Recogé la aceptación del dueño del favicon en Brave, el ícono de la app instalada en Windows, el login y reapertura de una nota, y la transcripción, edición, guardado y reapertura de una muestra sintética ficticia según VOICE-RELEASE. Registrá el resultado saneado en PR54 y prepará la revisión independiente. STARTER quedó exceptuado por el dueño para el deploy de prueba. La sonda y la medición del despertar quedan aplazadas.
 ```
