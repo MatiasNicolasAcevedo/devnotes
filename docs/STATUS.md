@@ -2,9 +2,9 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy en Render, migración y aceptación del dueño |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente de PR53. El dueño aprobó la persistencia y aplazó la medición del despertar. Tras MERGED sigue T-051. |
+| Tarea y contrato | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy en Render y aceptación del dueño |
+| Estado | `mergeable` |
+| Acción actual | Verificar el HEAD de la transición revisora de PR53 y publicar el veredicto. Con el veredicto vigente y los checks en verde, confirmar el cierre según [merger](agents/merger.md). |
 | Rama / PR | `codex/t-047-render-first-deploy` · [PR53](https://github.com/MatiasNicolasAcevedo/devnotes/pull/53) |
 
 [T-046](tasks/T-046-render-image.md#checkpoint-vigente) conciliada como `done` tras confirmar PR52 MERGED. [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED.
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-En una sesión independiente, revisá PR53 de T-047 contra main según docs/agents/reviewer.md y docs/AUTONOMY.md. Verificá el HEAD publicado, la base, DOCS_ONLY y verify-required. El dueño aprobó la persistencia en Brave, omitió RP-04 en Render y aplazó la medición del despertar. Publicá el veredicto de revisión y seguí el protocolo de merge si corresponde. Tras confirmar MERGED, el siguiente prompt toma T-051 en una sesión nueva para integrar el ícono y probar la voz en el mismo deploy. El dueño informó que guardó GROQ_API_KEY y DEVNOTES_VOICE_ENABLED=true en Render. La sonda queda aplazada.
+En una sesión nueva de implementación, confirmá PR53 MERGED en GitHub según docs/agents/merger.md y tomá T-051 según docs/tasks/T-051-render-follow-up.md. Desde main actualizado, abrí codex/t-051-render-follow-up y conciliá T-047 como done con el SHA y la fecha del squash. Integrá el ícono y coordiná un único deploy por SHA con el dueño para verificar el ícono en Brave y la app instalada en Windows y probar la voz con una muestra ficticia. El dueño informó que guardó GROQ_API_KEY y DEVNOTES_VOICE_ENABLED=true en Render. Aplicá el gate STARTER del contrato y respetá las confirmaciones del dueño para las acciones en Render. La sonda y la medición del despertar quedan aplazadas.
 ```
