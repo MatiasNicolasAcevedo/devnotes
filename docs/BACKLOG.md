@@ -4,7 +4,7 @@ Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este í
 
 ## Planificación I5 autorizada el 2026-11-12
 
-[T-052](tasks/T-052-scope-expansion-plan.md) prepara los contratos de Trabajo/Personal, copia de la última nota anterior, navegación Windows/Android y sonda diaria de Render. Excepción: PR documental independiente junto a PR54; primero revisar/mergear planificación y conciliar T-051, después implementar una tarea por sesión/PR. Las otras propuestas del catálogo siguen sin seleccionar.
+[T-052](tasks/T-052-scope-expansion-plan.md) prepara los contratos de Trabajo/Personal, copia de la última nota anterior, navegación Windows/Android y sonda diaria de Render. Excepción: PR documental independiente junto a PR54; primero revisar/mergear planificación y conciliar T-051, después implementar una tarea por sesión/PR. Las propuestas 2, 9, 16, 21, 22, 24 y 34 quedan seleccionadas para después de I5 en [Expansión futura](FUTURE-FEATURES.md); no alteran esta cola.
 
 | Orden | Tarea / resultado | Dependencia |
 |---|---|---|

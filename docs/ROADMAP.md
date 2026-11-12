@@ -78,3 +78,7 @@ Quince tareas de producto; control de avance por Junie tras T-057, T-062 y T-067
 ## Objetivos futuros sin contrato de ejecución
 
 Restauración/comparación/múltiples revisiones por día, búsquedas, plantillas de enlaces y personalización son opciones del contexto, no tareas ready ni dependencias. La exportación/importación y el piloto de despliegue tienen contrato en S-107/S-108; producción en VPS sigue como propuesta de DEPLOYMENT. No instalar infraestructura para ellas. Google real, servicios pagos y datos reales reservados al dueño.
+
+## Después de I5 · Ideas seleccionadas pendientes
+
+El dueño seleccionó las ideas 2, 9, 16, 21, 22, 24 y 34 para ampliar el producto al terminar lo ya definido. [Resúmenes y dirección de UX](FUTURE-FEATURES.md): notas libres, listas, formato compacto, código, búsqueda unificada, consulta en paralelo y reutilización de voz. Volver a frontera tras T-067 para definir contratos y prioridad; no iniciar estas ideas desde una tarea de I5.

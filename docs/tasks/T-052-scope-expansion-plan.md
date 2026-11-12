@@ -74,3 +74,7 @@ Publicación: [PR55](https://github.com/MatiasNicolasAcevedo/devnotes/pull/55) O
 ## Cierre y siguiente tarea
 
 No done con PR abierto. Una sesión revisora independiente verifica el PR documental. Antes de comenzar la implementación de la serie, deben estar MERGED y conciliados tanto T-052 como T-051. La primera tarea de la serie investigará la sonda con pruebas locales; la activación/deploy en Render permanece sujeta a autorización del dueño sobre el SHA concreto. No ejecutar FULL por iniciativa del agente.
+
+## Ampliación documental solicitada después de publicar PR55
+
+2026-11-12: el dueño solicita registrar siete ideas para después de I5 en el mismo PR. Se añade [FUTURE-FEATURES](../FUTURE-FEATURES.md), enlazado desde BACKLOG y ROADMAP. Son direcciones de producto pendientes de contrato, no nuevas tareas ni cambios a S-109…S-111. Se recomienda panel secundario de consulta y resultados de búsqueda agrupados. Misma sesión de frontera/planner y herramientas ya registradas; se conserva revisión independiente y prohibición de FULL/STARTER. Validación de esta ampliación: docs-check sobre copia de archivos publicables, diff-check y CI documental del nuevo HEAD.
