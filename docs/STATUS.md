@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy en Render, migración y aceptación del dueño |
 | Estado | `blocked` |
-| Acción actual | Identificar con el dueño el workspace de Render y empezar por PostgreSQL 18 Free. El MCP de Render quedó configurado con OAuth. |
+| Acción actual | Crear PostgreSQL 18 Free en el workspace `devnotes` y registrar región y vencimiento. El MCP de Render quedó configurado con OAuth. |
 | Rama / PR | `codex/t-047-render-first-deploy` · PR documental pendiente |
 
 [T-046](tasks/T-046-render-image.md#checkpoint-vigente) conciliada como `done` tras confirmar PR52 MERGED. [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED.
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá T-047 como frontera con el dueño en codex/t-047-render-first-deploy. Seguí docs/tasks/T-047-render-first-deploy.md y S-108. El MCP de Render tiene OAuth confirmado. Identificá con el dueño el workspace y empezá por PostgreSQL 18 Free. El dueño crea los recursos de Render, configura Google y despliega 222ae003f5db5fc887929ca98f9405ae67bd4d09 de main, o confirma cada acción reservada por separado. Con la URL pública y el SHA activo, verificá readiness, registrá arranque y RAM, acompañá RP-03 y RP-04 y registrá el veredicto saneado. Cerrá con un PR documental y el gate DOCS_ONLY.
+Retomá T-047 como frontera con el dueño en codex/t-047-render-first-deploy. Seguí docs/tasks/T-047-render-first-deploy.md y S-108. El MCP de Render tiene OAuth confirmado y el workspace del piloto es devnotes. Empezá por PostgreSQL 18 Free y registrá región y vencimiento. El dueño crea los recursos de Render, configura Google y despliega 222ae003f5db5fc887929ca98f9405ae67bd4d09 de main, o confirma cada acción reservada por separado. Con la URL pública y el SHA activo, verificá readiness, registrá arranque y RAM, acompañá RP-03 y RP-04 y registrá el veredicto saneado. Cerrá con un PR documental y el gate DOCS_ONLY.
 ```

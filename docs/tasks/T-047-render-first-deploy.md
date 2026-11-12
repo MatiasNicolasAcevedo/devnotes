@@ -55,9 +55,11 @@ Solo Markdown: DEPLOYMENT (evidencia del piloto y diagnóstico encontrado), esta
 
 [T-046](T-046-render-image.md#checkpoint-vigente) está conciliada como `done`. `main` y `origin/main` apuntaban a `222ae003f5db5fc887929ca98f9405ae67bd4d09` al crear la rama; ese es el SHA objetivo del deploy. El dueño confirmó que aún falta crear los recursos. El siguiente paso es aprovisionar PostgreSQL 18 Free y el Web Service Docker Free y configurar el origen y Google según [DEPLOYMENT](../DEPLOYMENT.md#primer-deploy-y-aceptación-del-dueño). El dueño ejecuta o confirma cada acción reservada por separado.
 
-Por pedido del dueño se agregó el MCP oficial de Render a la configuración de usuario de Codex con `codex mcp add render --url https://mcp.render.com/mcp --oauth-client-id codex`. El dueño completó el OAuth en su navegador. `codex mcp list --json` confirmó `render` habilitado y `auth_status=o_auth`. Falta identificar el workspace del piloto y comprobar las herramientas en una sesión que cargue el MCP.
+Por pedido del dueño se agregó el MCP oficial de Render a la configuración de usuario de Codex con `codex mcp add render --url https://mcp.render.com/mcp --oauth-client-id codex`. El dueño completó el OAuth en su navegador y eligió el workspace `devnotes`. `codex mcp list --json` confirmó `render` habilitado y `auth_status=o_auth`. Si se opera desde Codex, recargar los servidores MCP y comprobar las herramientas para `devnotes` antes de la primera acción.
 
 Retomar la verificación pública con la URL HTTPS y el SHA del deploy activo que reporte el dueño. Quedan pendientes readiness, métricas de Render, RP-03, RP-04 y el veredicto. Registrar en [DEPLOYMENT](../DEPLOYMENT.md#primer-deploy-y-aceptación-del-dueño) solo evidencia saneada.
+
+Comprobación del avance `3503f0d28550a4f70458822cdb31406d45c0748e` contra la base `222ae003f5db5fc887929ca98f9405ae67bd4d09`: `node scripts/docs-check.mjs` y `git diff --check` pasaron. Git Bash de Windows ejecutó `bash scripts/verify.sh --policy origin/main` fuera del sandbox porque MSYS devolvió `0xC0000022` dentro. Resultado `DOCS_ONLY` / `DOCUMENTATION`, cinco Markdown. Repetir sobre el HEAD del PR cuando quede registrada la evidencia del piloto.
 
 ## Correcciones significativas
 
