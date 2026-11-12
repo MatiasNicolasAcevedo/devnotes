@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy en Render, migración y aceptación del dueño |
 | Estado | `in_progress` |
-| Acción actual | El dueño confirmó la recuperación y aprobó el piloto. Medir el despertar por inactividad cuando pueda dejar el servicio sin uso y completar PR53. |
+| Acción actual | El dueño aprobó la persistencia del piloto. Registrar el tiempo de despertar en su primer acceso manual tras una suspensión y completar PR53. |
 | Rama / PR | `codex/t-047-render-first-deploy` · [PR53](https://github.com/MatiasNicolasAcevedo/devnotes/pull/53) en borrador |
 
 [T-046](tasks/T-046-render-image.md#checkpoint-vigente) conciliada como `done` tras confirmar PR52 MERGED. [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED.
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá T-047 como frontera con el dueño en codex/t-047-render-first-deploy, PR53 en borrador. El dueño aprobó la persistencia en Brave después del reinicio de devnotes-pilot en 222ae003f5db5fc887929ca98f9405ae67bd4d09 y omitió RP-04 en Render. Cuando pueda cerrar DevNotes, medí el despertar por inactividad desde el primer GET hasta readiness 200 con UP. Completá PR53 con DOCS_ONLY y pasalo a revisión independiente. T-051 está en borrador para después de MERGED.
+Retomá T-047 como frontera con el dueño en codex/t-047-render-first-deploy, PR53 en borrador. El dueño aprobó la persistencia en Brave después del reinicio de devnotes-pilot en 222ae003f5db5fc887929ca98f9405ae67bd4d09 y omitió RP-04 en Render. El dueño elige hacer manualmente el primer acceso después de una suspensión. Registrá su medición desde que abre https://devnotes-pilot.onrender.com/actuator/health/readiness hasta que recibe 200 con UP, con fecha y hora local. Completá PR53 con DOCS_ONLY y pasalo a revisión independiente. Después de MERGED sigue T-051, que agrupa ícono, voz y la sonda de 10 minutos desde la activación del dueño hasta las 00:00 de Buenos Aires, sin cargos nuevos ni tarjeta.
 ```
