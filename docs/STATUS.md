@@ -4,8 +4,8 @@
 |---|---|
 | Tarea y contrato | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy en Render, migración y aceptación del dueño |
 | Estado | `in_progress` |
-| Acción actual | El dueño confirmó la recuperación y aprobó el piloto. Medir el despertar por inactividad cuando pueda dejar el servicio sin uso y completar el PR documental. |
-| Rama / PR | `codex/t-047-render-first-deploy` · PR documental pendiente |
+| Acción actual | El dueño confirmó la recuperación y aprobó el piloto. Medir el despertar por inactividad cuando pueda dejar el servicio sin uso y completar PR53. |
+| Rama / PR | `codex/t-047-render-first-deploy` · [PR53](https://github.com/MatiasNicolasAcevedo/devnotes/pull/53) en borrador |
 
 [T-046](tasks/T-046-render-image.md#checkpoint-vigente) conciliada como `done` tras confirmar PR52 MERGED. [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED.
 
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá T-047 como frontera con el dueño en codex/t-047-render-first-deploy. El dueño aprobó la persistencia en Brave después del reinicio de devnotes-pilot en 222ae003f5db5fc887929ca98f9405ae67bd4d09. Omitió RP-04 en Render. Cuando el dueño pueda cerrar DevNotes, medí el despertar por inactividad desde el primer GET hasta readiness 200 con UP. Cerrá con un PR documental y el gate DOCS_ONLY. T-051 está en borrador para después de MERGED.
+Retomá T-047 como frontera con el dueño en codex/t-047-render-first-deploy, PR53 en borrador. El dueño aprobó la persistencia en Brave después del reinicio de devnotes-pilot en 222ae003f5db5fc887929ca98f9405ae67bd4d09 y omitió RP-04 en Render. Cuando pueda cerrar DevNotes, medí el despertar por inactividad desde el primer GET hasta readiness 200 con UP. Completá PR53 con DOCS_ONLY y pasalo a revisión independiente. T-051 está en borrador para después de MERGED.
 ```

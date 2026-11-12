@@ -10,7 +10,7 @@ product_cycle: I4
 spec: S-108
 spec_version: 1
 branch: codex/t-047-render-first-deploy
-pr: null
+pr: 53
 depends_on: [T-046]
 ---
 # T-047 · Primer deploy en Render, migración de datos y aceptación del dueño
@@ -69,4 +69,4 @@ Comprobación del avance `3503f0d28550a4f70458822cdb31406d45c0748e` contra la ba
 
 ## Cierre y siguiente tarea
 
-PR documental con revisión independiente. Tras MERGED, el plan del 2026-11-10 queda completo y frontera define la siguiente iteración con los hallazgos del dueño.
+[PR53 documental](https://github.com/MatiasNicolasAcevedo/devnotes/pull/53) en borrador mientras se mide el despertar por inactividad. Luego pasa a revisión independiente. Tras MERGED, continúa [T-051](T-051-render-follow-up.md) con los ajustes que pidió el dueño.
