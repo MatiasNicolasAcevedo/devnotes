@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy en Render, migración y aceptación del dueño |
 | Estado | `blocked` |
-| Acción actual | El dueño registra el callback de Google y guarda las cinco variables privadas de PostgreSQL y Google en `devnotes-pilot`. Frontera continúa con el deploy por SHA y readiness. |
+| Acción actual | El dueño corrige `SPRING_DATASOURCE_URL` en Environment de `devnotes-pilot` y confirma el guardado. Frontera relanza el mismo SHA y comprueba readiness. |
 | Rama / PR | `codex/t-047-render-first-deploy` · PR documental pendiente |
 
 [T-046](tasks/T-046-render-image.md#checkpoint-vigente) conciliada como `done` tras confirmar PR52 MERGED. [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED.
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá T-047 como frontera con el dueño en codex/t-047-render-first-deploy. Seguí docs/tasks/T-047-render-first-deploy.md y S-108. PostgreSQL y devnotes-pilot ya están creados en Virginia y el health check está configurado. Cuando el dueño confirme el callback de Google y las cinco variables privadas guardadas con Save only, desplegá 222ae003f5db5fc887929ca98f9405ae67bd4d09 de main con Manual Deploy → Deploy a specific commit. Verificá readiness, registrá arranque y RAM, acompañá RP-03 y RP-04 y registrá el veredicto saneado. Cerrá con un PR documental y el gate DOCS_ONLY.
+Retomá T-047 como frontera con el dueño en codex/t-047-render-first-deploy. Seguí docs/tasks/T-047-render-first-deploy.md y S-108. El build pasó y Spring informó que faltaba la URL del datasource. Cuando el dueño confirme que corrigió SPRING_DATASOURCE_URL en devnotes-pilot y guardó con Save only, desplegá 222ae003f5db5fc887929ca98f9405ae67bd4d09 de main con Manual Deploy → Deploy a specific commit. Verificá readiness, registrá arranque y RAM, acompañá RP-03 y RP-04 y registrá el veredicto saneado. Cerrá con un PR documental y el gate DOCS_ONLY.
 ```
