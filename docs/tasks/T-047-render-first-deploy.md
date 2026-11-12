@@ -1,10 +1,10 @@
 ---
 id: T-047
-status: in_progress
+status: in_review
 priority: P1
 size: S
 executor: frontier
-role: implementer
+role: reviewer
 milestone: M4
 product_cycle: I4
 spec: S-108
@@ -57,7 +57,7 @@ Solo Markdown: DEPLOYMENT (evidencia del piloto y diagnóstico encontrado), esta
 
 Por pedido del dueño se agregó el MCP oficial de Render con `codex mcp add render --url https://mcp.render.com/mcp --oauth-client-id codex`. El dueño completó OAuth y reinició Codex. `codex mcp list --json` confirmó `render` habilitado y `auth_status=o_auth`. `list_workspaces` respondió desde esta sesión y el dueño confirmó el workspace personal como destino de los recursos del piloto. El health check se guardó desde el panel web y se confirmó con `get_service`.
 
-El dueño confirmó login con Google real en Brave, omitió RP-04 en Render para empezar con notas propias y confirmó que una nota diaria mostró «Guardado». Autorizó el reinicio de `devnotes-pilot`. [DEPLOYMENT](../DEPLOYMENT.md#avance-del-piloto) conserva SHA, RAM antes del reinicio, evento `server_restarted`, nueva instancia y readiness público `200` con `UP`. El dueño volvió a iniciar sesión, abrió la nota anterior y aprobó esta etapa del piloto. Queda pendiente una medición del despertar por inactividad en el primer acceso manual del dueño. La siguiente tarea agrupada es [T-051](T-051-render-follow-up.md), tras MERGED de T-047.
+El dueño confirmó login con Google real en Brave, omitió RP-04 en Render para empezar con notas propias y confirmó que una nota diaria mostró «Guardado». Autorizó el reinicio de `devnotes-pilot`. [DEPLOYMENT](../DEPLOYMENT.md#avance-del-piloto) conserva SHA, RAM antes del reinicio, evento `server_restarted`, nueva instancia y readiness público `200` con `UP`. El dueño volvió a iniciar sesión, abrió la nota anterior y aprobó esta etapa del piloto. El 2026-11-12 pidió aplazar la medición del despertar por inactividad y avanzar con el ícono y la voz. PR53 pasa a revisión independiente con esa decisión. Tras MERGED sigue [T-051](T-051-render-follow-up.md).
 
 Comprobación del avance `3503f0d28550a4f70458822cdb31406d45c0748e` contra la base `222ae003f5db5fc887929ca98f9405ae67bd4d09`: `node scripts/docs-check.mjs` y `git diff --check` pasaron. Git Bash de Windows ejecutó `bash scripts/verify.sh --policy origin/main` fuera del sandbox porque MSYS devolvió `0xC0000022` dentro. Resultado `DOCS_ONLY` / `DOCUMENTATION`, cinco Markdown. Repetir sobre el HEAD del PR cuando quede registrada la evidencia del piloto.
 
@@ -69,4 +69,4 @@ Comprobación del avance `3503f0d28550a4f70458822cdb31406d45c0748e` contra la ba
 
 ## Cierre y siguiente tarea
 
-[PR53 documental](https://github.com/MatiasNicolasAcevedo/devnotes/pull/53) en borrador mientras se mide el despertar por inactividad. Luego pasa a revisión independiente. Tras MERGED, continúa [T-051](T-051-render-follow-up.md) con los ajustes que pidió el dueño.
+[PR53 documental](https://github.com/MatiasNicolasAcevedo/devnotes/pull/53) para revisión independiente. Tras MERGED, continúa [T-051](T-051-render-follow-up.md) con el ícono y la voz.
