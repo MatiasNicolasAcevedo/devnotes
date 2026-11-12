@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-046](tasks/T-046-render-image.md) · Imagen única para Render y smoke local con métricas |
-| Estado | `draft` |
-| Acción actual | Con [T-045 aceptada](tasks/T-045-xlsx-journey.md#prueba-del-dueño), contrastar HEAD y base con el STARTER vigente de T-046 y preparar la revisión independiente de PR52. |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente de PR52 en sesión nueva, con el HEAD y la base publicados y la evidencia STARTER de T-046. |
 | Rama / PR | `codex/t-046-render-image` · [PR52](https://github.com/MatiasNicolasAcevedo/devnotes/pull/52) |
 
 [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED. [T-047](tasks/T-047-render-first-deploy.md) queda después de T-046 MERGED.
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá T-046 como implementer en codex/t-046-render-image. T-045 ya está aceptada y conciliada en docs/tasks/T-045-xlsx-journey.md. Confirmá en GitHub PR52 en borrador contra main, HEAD, base y verify-required. Contrastá base y huellas técnicas con la evidencia STARTER de docs/tasks/T-046-render-image.md, ejecutá docs-check y publicá la transición a revisión independiente según docs/agents/implementer.md. Tras confirmar PR52 MERGED, retomá T-047 con el dueño en una sesión nueva según docs/tasks/T-047-render-first-deploy.md.
+Revisá T-046 en una sesión independiente como reviewer, en codex/t-046-render-image. Confirmá en GitHub que PR52 está abierto y listo para revisión contra main, y verificá el HEAD, la base y verify-required vigentes. Contrastá el diff y la evidencia RP-01, RP-02 y STARTER de docs/tasks/T-046-render-image.md con S-108. Publicá el veredicto ligado a los SHA finales según docs/agents/reviewer.md. Si el PR queda elegible, seguí docs/agents/merger.md y confirmá MERGED en GitHub. Dejá al dueño el prompt para conciliar T-046 y retomar T-047 en una sesión nueva según docs/tasks/T-047-render-first-deploy.md.
 ```

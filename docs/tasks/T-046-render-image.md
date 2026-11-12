@@ -1,6 +1,6 @@
 ---
 id: T-046
-status: draft
+status: in_review
 priority: P1
 size: M
 executor: junie
@@ -70,7 +70,7 @@ El primer avance `0e3c500` concilia T-050 y la postergación de T-045. **RP-01**
 
 **STARTER** del 2026-11-11, una ejecución del comando de la tabla con HEAD `f5057d28ca8854fdaecc6e2735993958a42eb2a1`, base `main` `d230ee19e4a171bb73cf669c3fe4ced36b60a61c`. Huellas técnicas HEAD/base `b104dc7c7582f3127e43489ca59196b3636763ee` / `52a1430c70fe68e6721cd3f0909b02f54dad6f94`, reproducibles en Windows PowerShell con `git ls-tree -r $ref | Where-Object { $_ -notmatch '\.md$' } | git hash-object --stdin` para cada referencia `$ref`. Git Bash de Windows, Node 24.21.0, Compose v2.40.2, perfil FULL/STARTER. Exit 0 en docs (9 s), backend (455 s, 429 unitarias y 241 IT PostgreSQL, JaCoCo y Spotless), cliente (128 s), tooling (1887 s, incluidas las pruebas de proxy nginx/Vite) y Playwright (1180 s, 25/25 desktop y 24/24 mobile, cero omitidas). CI liviana local 118/118. Log `e2e/artifacts/t046-starter-99e4040.log` y JUnit saneado `e2e/artifacts/starter-e2e-t046/sanitized/junit.xml`. Limpieza verificada por etiquetas exactas: contenedores/redes/volúmenes 0/0/0 en `starter-verify-t046` y `starter-e2e-t046`.
 
-Salida técnica acreditada. Con T-045 aceptada, retomar [PR52](https://github.com/MatiasNicolasAcevedo/devnotes/pull/52) en sesión nueva, contrastar la evidencia con el HEAD y la base vigentes y publicar la transición a revisión independiente.
+**Traspaso a revisión independiente (2026-11-11).** Con [T-045 aceptada por el dueño](T-045-xlsx-journey.md#prueba-del-dueño), el implementer confirmó con `gh pr view` que [PR52](https://github.com/MatiasNicolasAcevedo/devnotes/pull/52) estaba abierto en borrador, con HEAD `1f51de132df7de55edc86b5b61162d20a3bcd307` y base `main` `d230ee19e4a171bb73cf669c3fe4ced36b60a61c`. [`verify-required`](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43127972043/job/130884782952) dio `SUCCESS` para ese HEAD. La base y ambas huellas técnicas coincidieron con el STARTER. Desde el HEAD probado, el diff es solo Markdown. `node scripts/docs-check.mjs` y `git diff --check` pasaron para la transición documental. La sesión revisora toma el HEAD publicado y comprueba su `verify-required`.
 
 ## Correcciones significativas
 
