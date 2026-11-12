@@ -5,7 +5,7 @@
 | Tarea y contrato | [T-046](tasks/T-046-render-image.md) · Imagen única para Render y smoke local con métricas |
 | Estado | `draft` |
 | Acción actual | RP-01, RP-02 y STARTER verdes. El PR queda en borrador hasta la [aceptación de T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño). |
-| Rama / PR | `codex/t-046-render-image` |
+| Rama / PR | `codex/t-046-render-image` · [PR52](https://github.com/MatiasNicolasAcevedo/devnotes/pull/52) |
 
 [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED. El dueño pospuso T-045 y autorizó el avance de T-046 en borrador. [T-047](tasks/T-047-render-first-deploy.md) queda después de T-046 MERGED.
 
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá T-046 como implementer en codex/t-046-render-image. Confirmá en GitHub el PR en borrador contra main, HEAD, base y verify-required. Si sigue pendiente la aceptación de T-045, conservá el borrador. Cuando el dueño registre su aceptación, conciliá T-045 con resultado, conteos y SHA. Contrastá base y huellas técnicas con la evidencia STARTER de docs/tasks/T-046-render-image.md, ejecutá docs-check y publicá la transición a revisión independiente según el protocolo. Retomá T-047 en otra sesión tras confirmar T-046 MERGED.
+Retomá T-046 como implementer en codex/t-046-render-image. Confirmá en GitHub PR52 en borrador contra main, HEAD, base y verify-required. Si sigue pendiente la aceptación de T-045, conservá el borrador. Cuando el dueño registre su aceptación, conciliá T-045 con resultado, conteos y SHA. Contrastá base y huellas técnicas con la evidencia STARTER de docs/tasks/T-046-render-image.md, ejecutá docs-check y publicá la transición a revisión independiente según el protocolo. Retomá T-047 en otra sesión tras confirmar T-046 MERGED.
 ```

@@ -10,7 +10,7 @@ product_cycle: I4
 spec: S-108
 spec_version: 1
 branch: codex/t-046-render-image
-pr: null
+pr: 52
 depends_on: [T-045, T-050]
 ---
 # T-046 · Imagen única para Render y smoke local con métricas
