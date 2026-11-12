@@ -8,10 +8,9 @@ Del plan original quedan hechos la activación de Groq y la portabilidad `.xlsx`
 
 | Orden | Contrato / resultado | Ejecuta | Dependencia |
 |---|---|---|---|
-| 1 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | [T-046 conciliada](tasks/T-046-render-image.md#checkpoint-vigente) |
-| 2 | [T-051](tasks/T-051-render-follow-up.md) · Ícono y voz en un PR y un despliegue | Dueño con un agente de frontera | T-047 MERGED |
+| 1 | [T-051](tasks/T-051-render-follow-up.md) · Ícono y voz en un PR y un despliegue | Dueño con un agente de frontera | [T-047 conciliada](tasks/T-047-render-first-deploy.md#checkpoint-vigente) |
 
-Retorno a frontera si el dueño emite «no aceptada» en T-047, ante una decisión fuera de contrato o al cerrar T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
+Retorno a frontera ante una decisión fuera de contrato o al cerrar T-051. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
 
 El dueño aplazó medir el despertar por inactividad y probar la [sonda diaria](tasks/T-051-render-follow-up.md#sonda-aplazada).
 
@@ -51,6 +50,8 @@ Del [avance de T-050](tasks/T-050-ui-adjustments.md#avance-del-implementer-2026-
 ## Hechas · I4 / M4 piloto en Render
 
 [T-046](tasks/T-046-render-image.md#checkpoint-vigente) · Imagen única y smoke local con 512 MB, RP-01 y RP-02 verificados, PR52 MERGED.
+
+[T-047](tasks/T-047-render-first-deploy.md#checkpoint-vigente) · Primer deploy y aceptación del piloto en Brave, PR53 MERGED. El dueño omitió la importación en Render.
 
 ## Hechas · I3 / M3 portabilidad xlsx
 

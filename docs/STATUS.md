@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy en Render y aceptación del dueño |
-| Estado | `mergeable` |
-| Acción actual | Verificar el HEAD de la transición revisora de PR53 y publicar el veredicto. Con el veredicto vigente y los checks en verde, confirmar el cierre según [merger](agents/merger.md). |
-| Rama / PR | `codex/t-047-render-first-deploy` · [PR53](https://github.com/MatiasNicolasAcevedo/devnotes/pull/53) |
+| Tarea y contrato | [T-051](tasks/T-051-render-follow-up.md) · Ícono y voz en Render |
+| Estado | `in_progress` |
+| Acción actual | Coordinar con el dueño el único deploy por SHA y verificar la aceptación del piloto en Brave y Windows. |
+| Rama / PR | `codex/t-051-render-follow-up` |
 
-[T-046](tasks/T-046-render-image.md#checkpoint-vigente) conciliada como `done` tras confirmar PR52 MERGED. [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED.
+[T-047](tasks/T-047-render-first-deploy.md#checkpoint-vigente), [T-046](tasks/T-046-render-image.md#checkpoint-vigente) y [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliadas como `done`.
 
 PR de documentación: [PR50](https://github.com/MatiasNicolasAcevedo/devnotes/pull/50) MERGED, squash `915459cbabd9f3f557df4b9012c8b4db5572863c`, confirmado en GitHub el 2026-11-11 (mergedAt 2026-11-11T05:34:34Z), HEAD `484d4d6`, `verify-required` SUCCESS; lo mergeó el implementer de T-050 con autorización expresa del dueño en esa sesión.
 
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-En una sesión nueva de implementación, confirmá PR53 MERGED en GitHub según docs/agents/merger.md y tomá T-051 según docs/tasks/T-051-render-follow-up.md. Desde main actualizado, abrí codex/t-051-render-follow-up y conciliá T-047 como done con el SHA y la fecha del squash. Integrá el ícono y coordiná un único deploy por SHA con el dueño para verificar el ícono en Brave y la app instalada en Windows y probar la voz con una muestra ficticia. El dueño informó que guardó GROQ_API_KEY y DEVNOTES_VOICE_ENABLED=true en Render. Aplicá el gate STARTER del contrato y respetá las confirmaciones del dueño para las acciones en Render. La sonda y la medición del despertar quedan aplazadas.
+En una sesión de implementación, retomá T-051 desde su checkpoint y verificá el PR y el SHA publicado de codex/t-051-render-follow-up. Consultá el historial de devnotes-pilot para saber si el dueño ya inició el deploy de ese SHA. Si falta, coordiná su confirmación explícita y un único deploy con Manual Deploy → Deploy a specific commit. Verificá readiness y los íconos servidos; el dueño confirma el ícono en Brave y en la app de Windows, login y reapertura de una nota, y transcripción, edición, guardado y reapertura con una muestra sintética ficticia según VOICE-RELEASE. Registrá el resultado en el mismo PR y prepará la revisión independiente. El dueño exceptuó STARTER para este deploy de prueba y aplazó la sonda y la medición del despertar.
 ```

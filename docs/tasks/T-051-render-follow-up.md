@@ -1,6 +1,6 @@
 ---
 id: T-051
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M4
@@ -41,9 +41,12 @@ El dueño pidió dejar la sonda para después y avanzar con el ícono y la voz. 
 ## Pasos y pruebas
 
 1. Desde `main` actualizado tras PR53 MERGED, abrir la rama indicada. Copiar el SVG local sobre `client/public/favicon.svg` y añadir los PNG de 192 y 512 px al manifiesto. Ajustar `client/src/app/manifest.test.ts` para comprobar los tres tamaños sin perder los datos de instalación existentes.
-2. Desde `client/`, ejecutar `npm test -- --run src/app/manifest.test.ts`. Gate de cierre desde la raíz en Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t051 STARTER_E2E_PROJECT=starter-e2e-t051 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter`. Conservar `node scripts/docs-check.mjs`, `git diff --check` y `bash scripts/verify.sh --policy origin/main`.
-3. Con el gate verde, publicar el SHA de prueba y coordinar un solo deploy manual con el dueño. Comprobar readiness y el nuevo ícono. El dueño prueba voz con la muestra ficticia bajo las condiciones de VOICE-RELEASE y confirma el veredicto. Registrar evidencia saneada en el mismo PR.
+2. Desde `client/`, ejecutar `npm test -- --run src/app/manifest.test.ts`. Conservar `node scripts/docs-check.mjs`, `git diff --check` y `bash scripts/verify.sh --policy origin/main`. El dueño exceptuó el gate STARTER para adelantar el deploy de prueba el 2026-11-12.
+3. Publicar el SHA de prueba y coordinar un solo deploy manual en `devnotes-pilot`, con confirmación expresa del dueño para ese SHA. Comprobar readiness y el nuevo ícono. El dueño prueba voz con la muestra ficticia bajo las condiciones de VOICE-RELEASE y confirma el veredicto. Registrar evidencia saneada en el mismo PR.
 
 ## Checkpoint vigente
 
-Frontera en Codex de escritorio, familia GPT-6, variante y esfuerzo no expuestos. Git, PowerShell, MCP de Render y documentación oficial. Insumos conservados en `.orchestrator/t051-inputs/`, con copias del ICO y del ejemplo Java verificadas por SHA-256. Pendiente para `ready`: T-047 MERGED. El cambio de assets en `client/public` exige el perfil STARTER según [TESTING](../TESTING.md#frecuencia-y-alcance-del-gate).
+**2026-11-12 · Implementación.** Frontera como implementer en Codex de escritorio, familia GPT-6, variante y esfuerzo no expuestos. Git, `gh`, PowerShell, Git Bash, Node, MCP de Render y documentación oficial. Base `main` `00407ef4a637369d3078d19aceab123be3b13521` tras [conciliar T-047](T-047-render-first-deploy.md#checkpoint-vigente). El favicon SVG y los PNG de 192 y 512 px usan los insumos del dueño. El cambio de producto alcanza la presentación de la pestaña y de la app instalada. La voz usa la configuración del piloto indicada por el dueño.
+
+- `npm test -- --run src/app/manifest.test.ts` desde `client/`: 4/4. Verificación de los tres archivos de ícono y de las dimensiones PNG mediante cabeceras IHDR: OK. `node scripts/docs-check.mjs` y `git diff --check`: OK. STARTER exceptuado por el dueño para el deploy de prueba.
+- Render confirmó `devnotes-pilot` Free en la URL acordada, enlazado a `main` y con auto-deploy desactivado. El SHA objetivo es el primer commit publicado de T-051 con los íconos. Pendiente la confirmación del dueño para el deploy por ese SHA y su aceptación en Brave, Windows y voz. Verificar el historial antes de iniciar el deploy y al terminar. Conservar solo estado, SHA y resultados saneados. La sonda y la medición del despertar siguen aplazadas.

@@ -16,7 +16,11 @@ describe('manifiesto de la aplicación', () => {
       display: 'standalone',
       background_color: '#181a1b',
       theme_color: '#212324',
-      icons: [{ src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }],
+      icons: [
+        { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' },
+        { src: '/devnotes-icon-192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/devnotes-icon-512.png', sizes: '512x512', type: 'image/png' },
+      ],
     })
   })
 
