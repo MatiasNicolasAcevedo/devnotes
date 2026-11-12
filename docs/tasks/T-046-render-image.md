@@ -1,16 +1,16 @@
 ---
 id: T-046
-status: draft
+status: mergeable
 priority: P1
 size: M
 executor: junie
-role: implementer
+role: merger
 milestone: M4
 product_cycle: I4
 spec: S-108
 spec_version: 1
 branch: codex/t-046-render-image
-pr: null
+pr: 52
 depends_on: [T-045, T-050]
 ---
 # T-046 · Imagen única para Render y smoke local con métricas
@@ -19,7 +19,7 @@ depends_on: [T-045, T-050]
 
 Preparar `deploy/render/Dockerfile` y `deploy/render/compose.smoke.yml` según [DEPLOYMENT · Piloto](../DEPLOYMENT.md#piloto-de-devnotes-en-render-free) y demostrar RP-01 y RP-02 de [S-108](../specs/S-108-render-pilot.md) desde un checkout limpio. No se crean recursos en Render.
 
-Está en `draft` solo por sus dependencias: se habilita con [T-045](T-045-xlsx-journey.md) aceptada por el dueño y [T-050](T-050-ui-adjustments.md) MERGED, para que la imagen del piloto incluya los ajustes de UI. El PR único de S-107 ya está MERGED y T-040…T-044 conciliadas. La siguiente tarea es [T-047](T-047-render-first-deploy.md).
+El dueño autorizó el avance técnico en `draft` tras el merge de [T-050](T-050-ui-adjustments.md). La [aceptación de T-045](T-045-xlsx-journey.md#prueba-del-dueño) habilita el paso a revisión. La siguiente tarea es [T-047](T-047-render-first-deploy.md).
 
 ## Alcance y decisiones resueltas
 
@@ -62,12 +62,33 @@ Cleanup: `down --volumes` solo del proyecto de smoke, tras verificar los labels 
 
 ## Checkpoint vigente
 
-`draft` por dependencia. Contrato completo (frontera, 2026-11-10). El 2026-11-11 el dueño antepuso T-050; el resto del contrato no cambia.
+**Revisión independiente favorable (2026-11-11).** Reviewer en Codex, familia GPT-6, variante y esfuerzo no expuestos. Herramientas: Git, `gh`, PowerShell, Git Bash, Node y Docker. Esta transición documenta la revisión y el paso a merge. El diff técnico abarca la imagen, su operación local y la parametrización compartida de nginx, con las mismas rutas, sesión, CSRF y validación del origen de S-108.
+
+- `gh pr view 52` confirmó `OPEN`, fuera de borrador, HEAD `79aa92320bb8719fd59d567ee638bd2f380cf9c3` y base `main` `d230ee19e4a171bb73cf669c3fe4ced36b60a61c`, con [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43128857385/job/130887722784). La punta de `main` y el checkout limpio coincidieron con esos SHA. Se revisó el diff completo y GitHub informó cero hilos de revisión.
+- **RP-01 y RP-02.** Los artefactos de métricas y señales corroboran readiness `200` a 191,17 s, picos de 253,7/275,6 MiB, API anónima `401`, guardado y recuperación con OIDC ficticio y salida `0` por SIGTERM y `1` por caída de cada proceso. La revisión repitió `bash scripts/ci/test-render-entrypoint.sh`, verificó rechazo de `PORT=8080`, `65536`, `0` y `abc`, y probó el nginx de la imagen local `c41b1ab68be7` sin red ni volúmenes. Escuchó en `12345` como usuario no privilegiado con origen HTTPS ficticio, rechazó un Host ajeno (`400`) y respetó la frontera de Actuator (`404` fuera de readiness, `405` para POST a readiness). Contenedor revisor retirado y proyectos de smoke/STARTER con contenedores, redes y volúmenes `0/0/0` por etiquetas exactas.
+- **STARTER.** `bash scripts/verify.sh --policy origin/main` informó `FULL/STARTER`. El log y el JUnit saneado acreditan las cinco etapas en verde, 429 unitarias, 241 IT PostgreSQL y 49 E2E sin omisiones. Las huellas técnicas del smoke, el gate y el HEAD publicado coinciden, con la misma base. `node scripts/docs-check.mjs` y `git diff --check` pasaron. Se conserva el STARTER del implementer.
+
+La transición es solo Markdown. Verificar el HEAD remoto de esta transición, su base, `docs-check`, `diff --check` y `verify-required` antes de publicar el veredicto ligado a ambos SHA. Con el veredicto vigente y las condiciones de [AUTONOMY](../AUTONOMY.md#revisión-y-merge) cumplidas, seguir [merger](../agents/merger.md). T-047 se habilita al confirmar `MERGED` y se retoma con el dueño en sesión nueva.
+
+### Evidencia de implementación
+
+Implementer en Codex, familia GPT-6, variante y esfuerzo no expuestos. Herramientas de esta sesión: PowerShell, Git, `gh`, Git Bash, Node y Docker. Cambios de empaquetado y operación local, con el contrato de origen compartido entre ambos nginx.
+
+El primer avance `0e3c500` concilia T-050 y la postergación de T-045. **RP-01** desde el checkout limpio `99e4040ebd4dfa60b2ec78fe3f02db11102b5ed2`: `docker compose --env-file .env.example -p devnotes-render-smoke-t046c -f deploy/render/compose.smoke.yml up -d --build --wait --wait-timeout 300`, exit 0. Readiness 200 a 191,17 s desde `State.StartedAt`. Pico `memory.peak` de arranque: 266.022.912 bytes (253,7 MiB). Pico tras guardar: 288.952.320 bytes (275,6 MiB). Chrome local con Playwright y resolución de OIDC por proceso comprobó la API anónima 401, carga y recarga de ruta interna, callback real del proveedor ficticio, guardado PUT 200 y recuperación de la misma nota tras `restart app` y nuevo login. Comandos locales `node e2e/artifacts/t046-render-browser.cjs write` y `node e2e/artifacts/t046-render-browser.cjs read`, exit 0.
+
+**RP-02** con el mismo checkout y proyecto. `bash scripts/ci/test-render-entrypoint.sh` pasó en Linux y Git Bash. En el contenedor real, `docker compose … kill -s SIGTERM app` devolvió 0 y los logs confirmaron el cierre de Spring y nginx. Al matar Java y nginx por separado, la app salió con código 1 en ambos casos. El ensayo adicional con SIGINT devolvió 0. Evidencia local en `e2e/artifacts/t046-smoke-c.log`, `e2e/artifacts/t046-smoke-c-metrics.log` y `e2e/artifacts/t046-smoke-c-signals.log`. Tras verificar etiquetas y aplicar `down --volumes`, los proyectos de smoke `devnotes-render-smoke-t046a`, `devnotes-render-smoke-t046b` y `devnotes-render-smoke-t046c` quedaron con contenedores/redes/volúmenes 0/0/0.
+
+**STARTER** del 2026-11-11, una ejecución del comando de la tabla con HEAD `f5057d28ca8854fdaecc6e2735993958a42eb2a1`, base `main` `d230ee19e4a171bb73cf669c3fe4ced36b60a61c`. Huellas técnicas HEAD/base `b104dc7c7582f3127e43489ca59196b3636763ee` / `52a1430c70fe68e6721cd3f0909b02f54dad6f94`, reproducibles en Windows PowerShell con `git ls-tree -r $ref | Where-Object { $_ -notmatch '\.md$' } | git hash-object --stdin` para cada referencia `$ref`. Git Bash de Windows, Node 24.21.0, Compose v2.40.2, perfil FULL/STARTER. Exit 0 en docs (9 s), backend (455 s, 429 unitarias y 241 IT PostgreSQL, JaCoCo y Spotless), cliente (128 s), tooling (1887 s, incluidas las pruebas de proxy nginx/Vite) y Playwright (1180 s, 25/25 desktop y 24/24 mobile, cero omitidas). CI liviana local 118/118. Log `e2e/artifacts/t046-starter-99e4040.log` y JUnit saneado `e2e/artifacts/starter-e2e-t046/sanitized/junit.xml`. Limpieza verificada por etiquetas exactas: contenedores/redes/volúmenes 0/0/0 en `starter-verify-t046` y `starter-e2e-t046`.
+
+**Traspaso a revisión independiente (2026-11-11).** Con [T-045 aceptada por el dueño](T-045-xlsx-journey.md#prueba-del-dueño), el implementer confirmó con `gh pr view` que [PR52](https://github.com/MatiasNicolasAcevedo/devnotes/pull/52) estaba abierto en borrador, con HEAD `1f51de132df7de55edc86b5b61162d20a3bcd307` y base `main` `d230ee19e4a171bb73cf669c3fe4ced36b60a61c`. [`verify-required`](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43127972043/job/130884782952) dio `SUCCESS` para ese HEAD. La base y ambas huellas técnicas coincidieron con el STARTER. Desde el HEAD probado, el diff es solo Markdown. `node scripts/docs-check.mjs` y `git diff --check` pasaron para la transición documental. La sesión revisora toma el HEAD publicado y comprueba su `verify-required`.
 
 ## Correcciones significativas
 
 | Fecha / SHA | Problema y causa | Corrección | Prueba |
 |---|---|---|---|
+| 2026-11-11 | El ensayo de caída de Java se quedaba esperando. `kill -0` con los dos PID devuelve éxito mientras uno siga vivo. | Comprobar cada PID por separado. | `scripts/ci/test-render-entrypoint.sh` |
+| 2026-11-11 · `0e3c500` | El primer smoke compiló y la app salió con código 1. El parámetro global de nginx duplicaba la directiva `pid` de la imagen. `OOMKilled=false`. | Ajustar la configuración de nginx en la imagen Render y usarla en la prueba de configuración y en el arranque. | `e2e/artifacts/t046-smoke-a.log`; reensayo en `devnotes-render-smoke-t046b`. |
+| 2026-11-11 · `d0903e3` | Spring seguía inicializando Hibernate después de 300 s a 0,1 CPU. La app seguía viva, `OOMKilled=false` y el pico observado a los 310 s fue 223.428.608 bytes. | Extraer el jar en build y limitar la compilación JIT a nivel 1 para el piloto. [Spring Boot](https://docs.spring.io/spring-boot/reference/packaging/efficient.html) · [Java 21](https://docs.oracle.com/en/java/javase/21/docs/specs/man/java.html) | `99e4040`: readiness a 191,17 s en `devnotes-render-smoke-t046c`. |
 
 ## Cierre y siguiente tarea
 

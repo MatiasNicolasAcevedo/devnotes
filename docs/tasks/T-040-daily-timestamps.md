@@ -207,4 +207,4 @@ Revisión favorable. El veredicto se publica en el PR ligado al HEAD que incluye
 
 ## Cierre y siguiente tarea
 
-PR49 MERGED el 2026-11-11 (squash `ff02bbd`). T-040…T-044 quedaron conciliadas como `done` y el hallazgo resuelto salió de BACKLOG. [T-045](T-045-xlsx-journey.md#prueba-del-dueño) sigue `blocked` solo por la prueba del dueño, que también condiciona T-046. La tarea siguiente en la cola es [T-050](T-050-ui-adjustments.md).
+PR49 MERGED el 2026-11-11 (squash `ff02bbd`). T-040…T-044 quedaron conciliadas como `done` y el hallazgo resuelto salió de BACKLOG. [T-045](T-045-xlsx-journey.md#prueba-del-dueño) se concilió con la aceptación del dueño. La cola vigente está en [STATUS](../STATUS.md).

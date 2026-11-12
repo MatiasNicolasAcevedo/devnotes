@@ -1,0 +1,60 @@
+# Use a unique project and --env-file .env.example. All credentials are fictitious.
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: deploy/render/Dockerfile
+    mem_limit: 512m
+    cpus: 0.1
+    ports:
+      - "127.0.0.1:18080:10000"
+    environment:
+      APP_PUBLIC_URL: http://127.0.0.1:18080
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/render_smoke
+      SPRING_DATASOURCE_USERNAME: render_smoke
+      SPRING_DATASOURCE_PASSWORD: fictitious-render-smoke-only
+      SPRING_PROFILES_ACTIVE: e2e
+      starter.oidc.local-issuer: http://host.docker.internal:${RENDER_SMOKE_OIDC_PORT:-18090}/default
+      starter.oidc.local-client-id: starter-test
+      starter.oidc.local-client-secret: fictitious-test-only
+    depends_on:
+      db:
+        condition: service_healthy
+      oidc:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-H", "Host: 127.0.0.1:18080", "http://127.0.0.1:10000/actuator/health/readiness"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 120s
+
+  db:
+    image: postgres:18.6
+    environment:
+      POSTGRES_DB: render_smoke
+      POSTGRES_USER: render_smoke
+      POSTGRES_PASSWORD: fictitious-render-smoke-only
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "render_smoke", "-d", "render_smoke"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  oidc:
+    image: ghcr.io/navikt/mock-oauth2-server:3.0.3
+    environment:
+      SERVER_PORT: ${RENDER_SMOKE_OIDC_PORT:-18090}
+      JSON_CONFIG_PATH: /config/oidc.json
+    volumes:
+      - ../../scripts/fixtures/oidc.json:/config/oidc.json:ro
+    ports:
+      - "127.0.0.1:${RENDER_SMOKE_OIDC_PORT:-18090}:${RENDER_SMOKE_OIDC_PORT:-18090}"
+    networks:
+      default:
+        aliases: [host.docker.internal]
+
+volumes:
+  db-data:

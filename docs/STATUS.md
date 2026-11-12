@@ -2,16 +2,16 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-050](tasks/T-050-ui-adjustments.md) · Interfaz compacta para usar DevNotes como app de escritorio |
+| Tarea y contrato | [T-046](tasks/T-046-render-image.md) · Imagen única para Render y smoke local con métricas |
 | Estado | `mergeable` |
-| Acción actual | Confirmar el cierre de PR51 en GitHub según [merger](agents/merger.md). La [prueba de T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño) sigue pendiente. |
-| Rama / PR | `codex/t-050-ui-adjustments` · [PR51](https://github.com/MatiasNicolasAcevedo/devnotes/pull/51) |
+| Acción actual | Verificar el HEAD de la transición revisora y publicar el veredicto de PR52. Con el veredicto vigente y los checks requeridos en verde, confirmar el cierre según [merger](agents/merger.md). |
+| Rama / PR | `codex/t-046-render-image` · [PR52](https://github.com/MatiasNicolasAcevedo/devnotes/pull/52) |
 
-Orden vigente, decidido por el dueño el 2026-11-11: T-050 (ajustes de UI) → [T-046](tasks/T-046-render-image.md) → [T-047](tasks/T-047-render-first-deploy.md). T-046 espera además el veredicto del dueño en T-045, que está `blocked` solo por esa prueba.
+[T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED. [T-047](tasks/T-047-render-first-deploy.md) queda después de T-046 MERGED.
 
 PR de documentación: [PR50](https://github.com/MatiasNicolasAcevedo/devnotes/pull/50) MERGED, squash `915459cbabd9f3f557df4b9012c8b4db5572863c`, confirmado en GitHub el 2026-11-11 (mergedAt 2026-11-11T05:34:34Z), HEAD `484d4d6`, `verify-required` SUCCESS; lo mergeó el implementer de T-050 con autorización expresa del dueño en esa sesión.
 
-S-107 (T-040…T-045): [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49) MERGED, squash `ff02bbd933418cec46f34b25715313580753d0ee`, confirmado en GitHub el 2026-11-11 (mergedAt 2026-11-11T04:02:14Z), HEAD revisado `706c494`. T-040…T-044 conciliadas como done; la rama compartida terminó y rige otra vez «una tarea, un PR».
+M3 cumplida. S-107 (T-040…T-045) está conciliada como `done` tras [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49) MERGED y el [veredicto del dueño](tasks/T-045-xlsx-journey.md#prueba-del-dueño).
 
 Limpieza del 2026-11-11, autorizada por el dueño: PR38 cerrado sin merge por obsoleto (T-033 y T-034 ya estaban conciliadas en main) y su rama borrada; cleanup de T-049 hecho (worktree, rama local y remota, fixtures y pruebas en `.orchestrator`); retirados los stacks locales `starter-dev-devnotes-preview-1027` y un volumen `starter-dev-local-nginx` creado desde WSL, con sus datos ficticios. El stack local del dueño pasa a ser `starter-dev-local-nginx`, el nombre que ya usaban AGENTS y VOICE-RELEASE.
 
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Consultá primero PR51 en GitHub según docs/agents/merger.md. Si sigue abierto, retomá como merger de T-050 solo con el veredicto APROBADO vigente y todas las condiciones de docs/AUTONOMY.md. Si ya está MERGED, guardá el SHA y la fecha para conciliar T-050 en la primera rama siguiente autorizada. T-046 queda en draft hasta que el dueño registre su prueba favorable de T-045. Cuando estén ambas condiciones, retomá T-046 como implementer en sesión nueva, conciliá T-050 y T-045 y seguí el contrato de docs/tasks/T-046-render-image.md.
+Consultá PR52 en GitHub según docs/agents/merger.md. Si está abierto, tomá la evidencia de docs/tasks/T-046-render-image.md y verificá el HEAD, la base y verify-required. Para hacer el squash, comprobá el veredicto APROBADO vigente y las demás condiciones de docs/AUTONOMY.md. Si está MERGED, registrá el SHA y la fecha y, en una sesión nueva de frontera con el dueño, conciliá T-046 en codex/t-047-render-first-deploy y retomá el contrato de docs/tasks/T-047-render-first-deploy.md. El dueño realiza las acciones reservadas o confirma cada una por separado.
 ```

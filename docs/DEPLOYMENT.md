@@ -16,7 +16,7 @@ Alcance acordado con el dueño el 2026-11-10. Orden decidido ese mismo día: pri
 
 Una pasada sobre la imagen final con aproximadamente 512 MB y 0,1 CPU, PostgreSQL 18 aparte y OIDC ficticio. Registrar tiempo hasta readiness y pico de memoria en el arranque y tras guardar una nota. Si el límite falla, aislar Spring para ubicar el consumo antes de reconsiderar el empaquetado. Contrastar la referencia local con las métricas de Render. [Recursos del plan](https://render.com/docs/blueprint-spec) y [métricas](https://render.com/docs/service-metrics).
 
-Los comandos son el contrato previsto para `deploy/render/compose.smoke.yml`. La tarea debe crear ese archivo y verificar la receta desde un checkout limpio. El stack usa un nombre único, puertos de loopback libres y datos descartables. Limpiar volúmenes solo después de verificar la propiedad y las etiquetas exactas del proyecto de prueba.
+Ejecutar estos comandos desde un checkout limpio con `deploy/render/compose.smoke.yml`. El stack usa un nombre único y datos descartables. Reservar los puertos de loopback 18080 para la app y 18090 para OIDC. Si el segundo está ocupado, fijar `RENDER_SMOKE_OIDC_PORT` a otro puerto libre. Limpiar volúmenes después de verificar la propiedad y las etiquetas exactas del proyecto de prueba.
 
 ```powershell
 # Desde la raíz del repo y en la misma terminal durante toda la prueba.
@@ -25,13 +25,17 @@ $compose = @("compose", "--env-file", ".env.example", "-p", $project,
              "-f", "deploy/render/compose.smoke.yml")
 docker @compose up -d --build --wait --wait-timeout 300
 curl.exe -fsS http://127.0.0.1:18080/actuator/health/readiness
+# Pico de arranque, antes de interactuar con la app.
+docker @compose exec -T app cat /sys/fs/cgroup/memory.peak
 # Después de guardar una nota ficticia, leer el pico en bytes si está disponible.
 docker @compose exec -T app cat /sys/fs/cgroup/memory.peak
 # Tras verificar la propiedad de los recursos descartables del proyecto.
 docker @compose down --volumes
 ```
 
-La prueba local incluye recarga directa de una ruta interna, API privada `401` sin sesión y recuperación de la nota tras reiniciar el contenedor de la app. El pico del cgroup es memoria del contenedor. Si el host no expone `memory.peak`, informar el máximo observado con `docker stats` como estimación. Cierre con el gate STARTER por los cambios en Docker y Compose, según [TESTING](TESTING.md#frecuencia-y-alcance-del-gate). [Pico de memoria del cgroup](https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html) y [docker stats](https://docs.docker.com/reference/cli/docker/container/stats/).
+Recargar una ruta interna y verificar que una petición directa a `/api/v1/daily-notes` sin sesión devuelva `401`. En Windows, usar una instancia de Chrome o Edge con perfil temporal y `--host-resolver-rules="MAP host.docker.internal 127.0.0.1"` para que el navegador alcance el OIDC ficticio con el mismo issuer que Spring. Ingresar por el flujo normal, guardar una nota ficticia, ejecutar `docker @compose restart app`, esperar readiness y volver a ingresar para recuperar la nota.
+
+Medir el tiempo desde el inicio del contenedor de la app hasta el primer readiness exitoso. El pico del cgroup mide la memoria de ese contenedor. Si el host no expone `memory.peak`, informar el máximo observado con `docker stats` como estimación. Cierre con el gate STARTER por los cambios en Docker y Compose, según [TESTING](TESTING.md#frecuencia-y-alcance-del-gate). [Pico de memoria del cgroup](https://www.kernel.org/doc/html/latest/admin-guide/cgroup-v2.html) y [docker stats](https://docs.docker.com/reference/cli/docker/container/stats/).
 
 ### Primer deploy y aceptación del dueño
 
@@ -39,7 +43,7 @@ La prueba local incluye recarga directa de una ruta interna, API privada `401` s
 2. Fijar `APP_PUBLIC_URL` a la URL HTTPS pública del servicio y registrar su callback exacto `/login/oauth2/code/google`. El dueño autoriza Google y carga `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` en el panel privado. Para operar mediante MCP, comprobar la conexión por OAuth y el alcance de acceso concedido al entorno de prueba. [Callback de Google](https://developers.google.com/identity/protocols/oauth2/web-server) y [MCP de Render](https://render.com/docs/mcp-server).
 3. El dueño inicia sesión, guarda una nota ficticia, reinicia el Web Service y vuelve a abrir la nota desde Chrome instalado como app. Registrar SHA desplegado, resultado del recorrido y métricas de arranque y RAM. La receta documenta diagnóstico de build, conexión y callback. [Instalar como app en Chrome](https://support.google.com/chrome/answer/9658361?hl=es-419).
 
-El piloto arranca bajo demanda. Si las suspensiones posteriores molestan, evaluar un ping externo cada 10 minutos durante la franja elegida en Buenos Aires. En un mes de 31 días, de 07:00 a 22:00 son 465 h y hasta las 23:00 son 496 h, más la espera hasta la suspensión y el tráfico fuera de horario. El workspace comparte 750 h mensuales entre sus Web Services Free. [Cuota e inactividad](https://render.com/docs/free#free-web-services).
+El dueño fijó como objetivo del piloto disponibilidad diaria de 07:00 a 00:00 en `America/Argentina/Buenos_Aires`. En T-047, medir el arranque en frío en Render y evaluar una sonda externa sobre `/actuator/health/readiness` con el primer GET antes de las 07:00 y un intervalo de 10 minutos durante la franja. El arranque requiere una petición entrante cuando el servicio está suspendido. La franja suma 527 h en un mes de 31 días, más el arranque, el tiempo hasta la suspensión y el tráfico fuera de horario. Los Web Services Free comparten 750 h mensuales por workspace. [Cuota e inactividad](https://render.com/docs/free#free-web-services).
 
 ## Arquitectura recomendada
 Un VPS Linux con Docker Compose, un proxy HTTPS compartido (Caddy como opción inicial), un PostgreSQL 18 compartido y un stack separado por aplicación. Servir React compilado y `/api`, `/oauth2`, callback y logout desde el mismo origen de cada aplicación: `https://app-a.ejemplo.com`, `https://app-b.ejemplo.com`. Cloudflare DNS Free como opción inicial propuesta; proxy/CDN opcionales, con TLS completo hasta el origen. No cachear API privada ni respuestas con sesión. No cambiar el modelo OIDC/sesión/CSRF ni publicar puertos de PostgreSQL/backend.

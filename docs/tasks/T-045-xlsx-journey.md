@@ -1,6 +1,6 @@
 ---
 id: T-045
-status: blocked
+status: done
 priority: P1
 size: M
 executor: junie
@@ -10,7 +10,7 @@ product_cycle: I3
 spec: S-107
 spec_version: 1
 branch: codex/s-107-xlsx-portability
-pr: null
+pr: 49
 depends_on: [T-044]
 ---
 # T-045 · Recorrido real de ida y vuelta y prueba del dueño
@@ -19,7 +19,7 @@ depends_on: [T-044]
 
 Demostrar XL-06 en un navegador real y cerrar M3 con la prueba del dueño sobre sus propios datos locales. Esto habilita el piloto en Render, cuya siguiente tarea es [T-046](T-046-render-image.md).
 
-Está en `draft` solo porque depende de T-044 cerrada en la rama compartida de [S-107](../specs/S-107-xlsx-portability.md#tareas-y-dependencias). Cierra la rama: gate integrado, control de las seis tareas y paso del PR único a revisión.
+La tarea cerró la rama compartida de [S-107](../specs/S-107-xlsx-portability.md#tareas-y-dependencias) con el gate integrado, el control de las seis tareas y el paso del PR único a revisión.
 
 ## Alcance y decisiones resueltas
 
@@ -58,11 +58,15 @@ Está en `draft` solo porque depende de T-044 cerrada en la rama compartida de [
 
 ## Checkpoint vigente
 
-**Retoma vigente (2026-11-11).** El código y el recorrido E2E entraron a `main` con el [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49) MERGED: squash `ff02bbd933418cec46f34b25715313580753d0ee`, `mergedAt` 2026-11-11T04:02:14Z. La tarea queda `blocked` por una sola condición: la [prueba del dueño](#prueba-del-dueño). Al registrar su veredicto favorable pasa a `done` con `pr: 49`; hasta entonces el frontmatter conserva `pr: null` para no contar como tarea en vuelo. Lo que sigue es el historial de la rama compartida, anterior al merge.
+**Cierre del 2026-11-11.** T-045 queda `done` con la [aceptación del dueño](#prueba-del-dueño). `gh pr view 49 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` confirmó [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49) `MERGED` contra `main`, squash `ff02bbd933418cec46f34b25715313580753d0ee`, `mergedAt` `2026-11-11T04:02:14Z` y HEAD revisado `706c494f6582c698226e4d4d79ae8b2594d7a91e`. M3 queda cumplida.
+
+Registro documental en Codex (familia GPT-6, variante y esfuerzo no expuestos), con Git, `gh`, PowerShell, Docker y Node. El cambio actualiza el estado y la evidencia de aceptación.
+
+### Historial de implementación en la rama compartida
 
 2026-11-10. Implementer en Claude Code de escritorio (Claude Fable 5.2, `claude-fable-5-2`, esfuerzo no expuesto), sesión distinta de las de T-040…T-044, con Git Bash, Docker, Node 24.21.0, Git y `gh`. Impacto: solo pruebas; agrega `e2e/tests/portability.spec.ts`. Sin cambios de comportamiento, API, permisos, esquema, datos ni UI.
 
-**T-045 cerrada en la rama** `codex/s-107-xlsx-portability`, con XL-06 y el gate integrado en verde y el control de avance hecho. Falta la prueba del dueño. El frontmatter sigue en `draft` por la [regla de la rama compartida](../specs/S-107-xlsx-portability.md#tareas-y-dependencias); la portadora es [T-040](T-040-daily-timestamps.md) y el PR es el [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49), listo para revisión independiente.
+**T-045 cerrada en la rama** `codex/s-107-xlsx-portability`, con XL-06 y el gate integrado en verde y el control de avance hecho. El frontmatter quedó en `draft` por la [regla de la rama compartida](../specs/S-107-xlsx-portability.md#tareas-y-dependencias), con [T-040](T-040-daily-timestamps.md) como portadora del [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49) para revisión independiente.
 
 - Precondición: `gh pr view 49` devolvió `OPEN`, draft, `codex/s-107-xlsx-portability` → `main`, HEAD `c82f5e9`, que contiene `b18bd04`; árbol local limpio y T-044 registrada como cerrada con XL-05 verde.
 - SHA del recorrido: `6980805`. Solo agrega `e2e/tests/portability.spec.ts`; no hizo falta tocar helpers ni fuentes de la aplicación.
@@ -102,17 +106,17 @@ Hecho por esta sesión antes de pedir la revisión, sobre los contratos, los che
 | [T-042](T-042-xlsx-export-api.md) | XL-03 | `PortabilityExportApiIT` 5/5 y `PortabilityExportServiceTest` 1/1 | Cumplido |
 | [T-043](T-043-xlsx-import-api.md) | XL-04 y proxies | `PortabilityImportApiIT` 7/7 y `PortabilityImportServiceIT` 12/12. Ensayo de proxies repetido sobre las fuentes finales: `node scripts/test-portability-proxies.mjs` exit 0 con el puerto por defecto (`.orchestrator/t045/portability-proxies.log`) | Cumplido |
 | [T-044](T-044-xlsx-client.md) | XL-05 | `api.test.ts` 41, `DataPage.test.tsx` 31, `AppRoutes.test.tsx` 9 y `http.test.ts` 27 | Cumplido; toca además `services/http.ts`, justificado en su checkpoint por la regla del cliente HTTP único |
-| T-045 | XL-06 | `portability:` aprobado en desktop y en mobile, en la iteración y dentro del E2E completo | Cumplido salvo la prueba del dueño |
+| T-045 | XL-06 | `portability:` aprobado en desktop y en mobile, en la iteración y dentro del E2E completo | Criterio automático cumplido |
 
 - Cobertura: JaCoCo `check` en verde con los umbrales del POM y cobertura del cliente por encima de sus umbrales; ningún umbral, retry ni deadline cambió en la rama.
 - Alcance: el diff acumulado desde `c5e37cc` no tiene migraciones ni cambios de esquema, y las dependencias nuevas son solo las tres de T-041. `git ls-files -- plantilla` vacío.
-- Estados: T-041…T-045 conservan `draft` y `pr: null` por la regla de la rama compartida; T-040 pasa a `in_review` con el PR49. Las seis se concilian `done` juntas tras el MERGED.
+- Estados de la rama compartida: T-041…T-045 conservaron `draft` y `pr: null` al pasar T-040 a `in_review` con el PR49.
 - Desvíos aceptados dentro del contrato: el gate en tres corridas (arriba) y `--starter` en lugar de dos invocaciones.
 - Hallazgos fuera de alcance, sin bloquear la revisión, registrados en [BACKLOG](../BACKLOG.md#hallazgos-del-control-de-s-107): puertos fijos de los ensayos de proxies, ensayo de proxies de portabilidad fuera de `verify-tooling.sh`, rutas de portabilidad sin caso en `OpenApiContractIT` y comandos dirigidos con `-Dtest=none` que terminan en exit 1 por JaCoCo.
 
 ### Prueba del dueño
 
-**Pendiente.** La hace el dueño en su entorno, sobre `main` en `ff02bbd` o posterior, en el stack local `starter-dev-local-nginx` (base nueva desde el 2026-11-11, con datos ficticios creados por él): exportar su cuenta, abrir el archivo en Excel para leerlo e importarlo en una segunda cuenta vacía de su instancia local o en un stack descartable propio. Aquí se registra solo «OK/observaciones», conteos y SHA; ningún agente abre ni copia el archivo.
+**Aceptada por el dueño el 2026-11-11.** «Acepto T-045» es el veredicto explícito sobre toda la prueba manual. El recorrido usó `main` en `d230ee19e4a171bb73cf669c3fe4ced36b60a61c`, con `starter-dev-local-nginx` como origen y el stack local con volumen nuevo `starter-dev-t045-destino` como destino. La captura aportada por el dueño muestra «Importación completa» con **2 notas diarias, 1 versión guardada, 2 notas de voz y 2 referencias**.
 
 ## Correcciones significativas
 
@@ -122,4 +126,4 @@ Hecho por esta sesión antes de pedir la revisión, sobre los contratos, los che
 
 ## Cierre y siguiente tarea
 
-Con XL-06 y el gate integrado en verde, Junie hace el control de avance de T-040…T-045 (contratos, evidencia y hallazgos a BACKLOG) y pasa el PR único de S-107 a revisión independiente. Tras MERGED y el veredicto del dueño, M3 queda cumplida: conciliar `done` en las seis tareas y tomar [T-046](T-046-render-image.md). Si el dueño no acepta, vuelve a frontera con los hallazgos.
+Con T-040…T-045 conciliadas, la siguiente sesión retoma [T-046](T-046-render-image.md) para preparar la revisión independiente de PR52.
