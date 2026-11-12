@@ -1,6 +1,6 @@
 ---
 id: T-046
-status: mergeable
+status: done
 priority: P1
 size: M
 executor: junie
@@ -62,13 +62,15 @@ Cleanup: `down --volumes` solo del proyecto de smoke, tras verificar los labels 
 
 ## Checkpoint vigente
 
+**PR52 MERGED y conciliada el 2026-11-11 (Buenos Aires).** `gh pr view 52 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` devolvió exit 0 para [PR52](https://github.com/MatiasNicolasAcevedo/devnotes/pull/52), `state=MERGED`, `baseRefName=main`, `mergedAt=2026-11-12T00:48:47Z` (21:48:47 del día anterior en Buenos Aires), squash `222ae003f5db5fc887929ca98f9405ae67bd4d09` y HEAD `f4fbcca44017e1586a20ae5250dbd1371889b79a`. [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43129775306/job/130890723155). `origin/main` y `main` local quedaron en el squash al abrir [T-047](T-047-render-first-deploy.md).
+
+### Revisión independiente
+
 **Revisión independiente favorable (2026-11-11).** Reviewer en Codex, familia GPT-6, variante y esfuerzo no expuestos. Herramientas: Git, `gh`, PowerShell, Git Bash, Node y Docker. Esta transición documenta la revisión y el paso a merge. El diff técnico abarca la imagen, su operación local y la parametrización compartida de nginx, con las mismas rutas, sesión, CSRF y validación del origen de S-108.
 
 - `gh pr view 52` confirmó `OPEN`, fuera de borrador, HEAD `79aa92320bb8719fd59d567ee638bd2f380cf9c3` y base `main` `d230ee19e4a171bb73cf669c3fe4ced36b60a61c`, con [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43128857385/job/130887722784). La punta de `main` y el checkout limpio coincidieron con esos SHA. Se revisó el diff completo y GitHub informó cero hilos de revisión.
 - **RP-01 y RP-02.** Los artefactos de métricas y señales corroboran readiness `200` a 191,17 s, picos de 253,7/275,6 MiB, API anónima `401`, guardado y recuperación con OIDC ficticio y salida `0` por SIGTERM y `1` por caída de cada proceso. La revisión repitió `bash scripts/ci/test-render-entrypoint.sh`, verificó rechazo de `PORT=8080`, `65536`, `0` y `abc`, y probó el nginx de la imagen local `c41b1ab68be7` sin red ni volúmenes. Escuchó en `12345` como usuario no privilegiado con origen HTTPS ficticio, rechazó un Host ajeno (`400`) y respetó la frontera de Actuator (`404` fuera de readiness, `405` para POST a readiness). Contenedor revisor retirado y proyectos de smoke/STARTER con contenedores, redes y volúmenes `0/0/0` por etiquetas exactas.
 - **STARTER.** `bash scripts/verify.sh --policy origin/main` informó `FULL/STARTER`. El log y el JUnit saneado acreditan las cinco etapas en verde, 429 unitarias, 241 IT PostgreSQL y 49 E2E sin omisiones. Las huellas técnicas del smoke, el gate y el HEAD publicado coinciden, con la misma base. `node scripts/docs-check.mjs` y `git diff --check` pasaron. Se conserva el STARTER del implementer.
-
-La transición es solo Markdown. Verificar el HEAD remoto de esta transición, su base, `docs-check`, `diff --check` y `verify-required` antes de publicar el veredicto ligado a ambos SHA. Con el veredicto vigente y las condiciones de [AUTONOMY](../AUTONOMY.md#revisión-y-merge) cumplidas, seguir [merger](../agents/merger.md). T-047 se habilita al confirmar `MERGED` y se retoma con el dueño en sesión nueva.
 
 ### Evidencia de implementación
 
@@ -92,4 +94,4 @@ El primer avance `0e3c500` concilia T-050 y la postergación de T-045. **RP-01**
 
 ## Cierre y siguiente tarea
 
-PR único y revisión independiente. Tras MERGED, conciliar y tomar [T-047](T-047-render-first-deploy.md) con el dueño.
+PR52 conciliado en la rama de [T-047](T-047-render-first-deploy.md), que continúa con el dueño.

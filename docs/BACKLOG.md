@@ -8,12 +8,12 @@ Del plan original quedan hechos la activación de Groq y la portabilidad `.xlsx`
 
 | Orden | Contrato / resultado | Ejecuta | Dependencia |
 |---|---|---|---|
-| 1 | [T-046](tasks/T-046-render-image.md) · Imagen única y smoke local con 512 MB | Implementer | T-050 MERGED y T-045 aceptada |
-| 2 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | T-046 MERGED |
+| 1 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | [T-046 conciliada](tasks/T-046-render-image.md#checkpoint-vigente) |
+| 2 | [T-051](tasks/T-051-render-follow-up.md) · Ícono y voz en un PR y un despliegue | Dueño con un agente de frontera | T-047 MERGED |
 
 Retorno a frontera si el dueño emite «no aceptada» en T-047, ante una decisión fuera de contrato o al cerrar T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
 
-En T-047 evaluar la [franja de disponibilidad solicitada para el piloto](DEPLOYMENT.md#primer-deploy-y-aceptación-del-dueño), con las métricas de arranque y la cuota del workspace.
+El dueño aplazó medir el despertar por inactividad y probar la [sonda diaria](tasks/T-051-render-follow-up.md#sonda-aplazada).
 
 ### Hallazgos de T-039
 
@@ -47,6 +47,10 @@ Del [avance de T-050](tasks/T-050-ui-adjustments.md#avance-del-implementer-2026-
 - **Caso E2E intermitente del botón de enlace.** `daily-notes.spec.ts › T-020: visible link button…` falló una vez en desktop dentro del gate (al editar el enlace con el cursor dentro, el `href` no cambió) y pasó en mobile en esa corrida y cinco veces seguidas al repetirlo solo. Sin causa comprobada; una hipótesis sin verificar es que el ACK del guardado automático llegue entre abrir el diálogo y guardar.
 - **Perfil STARTER por archivos de `client/` fuera de `src/`.** `classify-diff.mjs` trata `client/index.html` y `client/public/` como STARTER, así que un cambio de aplicación que los toque exige tooling; el contrato de T-050 preveía solo el FULL de aplicación.
 - **El editor de voz rechaza pares sustitutos válidos.** En `useVoiceDraft.ts`, la comprobación del sustituto bajo también coincide cuando lo precede un sustituto alto. El caso con 🎙️ deja «Guardar» deshabilitado. Definir la corrección con un caso positivo de texto suplementario y negativos de sustitutos aislados, según S-105.
+
+## Hechas · I4 / M4 piloto en Render
+
+[T-046](tasks/T-046-render-image.md#checkpoint-vigente) · Imagen única y smoke local con 512 MB, RP-01 y RP-02 verificados, PR52 MERGED.
 
 ## Hechas · I3 / M3 portabilidad xlsx
 

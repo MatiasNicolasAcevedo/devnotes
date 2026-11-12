@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-046](tasks/T-046-render-image.md) · Imagen única para Render y smoke local con métricas |
+| Tarea y contrato | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy en Render y aceptación del dueño |
 | Estado | `mergeable` |
-| Acción actual | Verificar el HEAD de la transición revisora y publicar el veredicto de PR52. Con el veredicto vigente y los checks requeridos en verde, confirmar el cierre según [merger](agents/merger.md). |
-| Rama / PR | `codex/t-046-render-image` · [PR52](https://github.com/MatiasNicolasAcevedo/devnotes/pull/52) |
+| Acción actual | Verificar el HEAD de la transición revisora de PR53 y publicar el veredicto. Con el veredicto vigente y los checks en verde, confirmar el cierre según [merger](agents/merger.md). |
+| Rama / PR | `codex/t-047-render-first-deploy` · [PR53](https://github.com/MatiasNicolasAcevedo/devnotes/pull/53) |
 
-[T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED. [T-047](tasks/T-047-render-first-deploy.md) queda después de T-046 MERGED.
+[T-046](tasks/T-046-render-image.md#checkpoint-vigente) conciliada como `done` tras confirmar PR52 MERGED. [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED.
 
 PR de documentación: [PR50](https://github.com/MatiasNicolasAcevedo/devnotes/pull/50) MERGED, squash `915459cbabd9f3f557df4b9012c8b4db5572863c`, confirmado en GitHub el 2026-11-11 (mergedAt 2026-11-11T05:34:34Z), HEAD `484d4d6`, `verify-required` SUCCESS; lo mergeó el implementer de T-050 con autorización expresa del dueño en esa sesión.
 
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Consultá PR52 en GitHub según docs/agents/merger.md. Si está abierto, tomá la evidencia de docs/tasks/T-046-render-image.md y verificá el HEAD, la base y verify-required. Para hacer el squash, comprobá el veredicto APROBADO vigente y las demás condiciones de docs/AUTONOMY.md. Si está MERGED, registrá el SHA y la fecha y, en una sesión nueva de frontera con el dueño, conciliá T-046 en codex/t-047-render-first-deploy y retomá el contrato de docs/tasks/T-047-render-first-deploy.md. El dueño realiza las acciones reservadas o confirma cada una por separado.
+En una sesión nueva de implementación, confirmá PR53 MERGED en GitHub según docs/agents/merger.md y tomá T-051 según docs/tasks/T-051-render-follow-up.md. Desde main actualizado, abrí codex/t-051-render-follow-up y conciliá T-047 como done con el SHA y la fecha del squash. Integrá el ícono y coordiná un único deploy por SHA con el dueño para verificar el ícono en Brave y la app instalada en Windows y probar la voz con una muestra ficticia. El dueño informó que guardó GROQ_API_KEY y DEVNOTES_VOICE_ENABLED=true en Render. Aplicá el gate STARTER del contrato y respetá las confirmaciones del dueño para las acciones en Render. La sonda y la medición del despertar quedan aplazadas.
 ```
