@@ -2,14 +2,17 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
+## Planificación I5 autorizada el 2026-11-12
+
+[T-052](tasks/T-052-scope-expansion-plan.md) prepara los contratos de Trabajo/Personal, copia de la última nota anterior, navegación Windows/Android y sonda diaria de Render. Excepción: PR documental independiente junto a PR54; primero revisar/mergear planificación y conciliar T-051, después implementar una tarea por sesión/PR. Las otras propuestas del catálogo siguen sin seleccionar.
+
 ## Siguientes · plan del dueño del 2026-11-10, ajustado el 2026-11-11
 
 Del plan original quedan hechos la activación de Groq y la portabilidad `.xlsx` (ver [Hechas · I3](#hechas--i3--m3-portabilidad-xlsx)). El 2026-11-11 el dueño antepuso al despliegue una única tarea de ajustes de UI. Contratos: [S-108](specs/S-108-render-pilot.md), con la receta técnica en [DEPLOYMENT](DEPLOYMENT.md#piloto-de-devnotes-en-render-free). Una tarea y un PR por vez, con sesión nueva por tarea y por revisión; quien concilia un MERGED habilita la siguiente.
 
 | Orden | Contrato / resultado | Ejecuta | Dependencia |
 |---|---|---|---|
-| 1 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | [T-046 conciliada](tasks/T-046-render-image.md#checkpoint-vigente) |
-| 2 | [T-051](tasks/T-051-render-follow-up.md) · Ícono y voz en un PR y un despliegue | Dueño con un agente de frontera | T-047 MERGED |
+| 1 | [T-051](tasks/T-051-render-follow-up.md) · Ícono y voz; ejecución actual en PR54 | Dueño con un agente de frontera | T-047 conciliada como done en T-052 |
 
 Retorno a frontera si el dueño emite «no aceptada» en T-047, ante una decisión fuera de contrato o al cerrar T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
 

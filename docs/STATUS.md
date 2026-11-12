@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy en Render y aceptación del dueño |
-| Estado | `mergeable` |
-| Acción actual | Verificar el HEAD de la transición revisora de PR53 y publicar el veredicto. Con el veredicto vigente y los checks en verde, confirmar el cierre según [merger](agents/merger.md). |
-| Rama / PR | `codex/t-047-render-first-deploy` · [PR53](https://github.com/MatiasNicolasAcevedo/devnotes/pull/53) |
+| Tarea y contrato | [T-052](tasks/T-052-scope-expansion-plan.md) · Contratos de expansión I5 |
+| Estado | `in_progress` |
+| Acción actual | Completar y publicar el PR documental autorizado; preparar tareas para sesiones independientes. |
+| Rama / PR | `codex/t-052-scope-expansion-plan` · PR por publicar |
+
+Excepción del dueño: planificación junto a [PR54](https://github.com/MatiasNicolasAcevedo/devnotes/pull/54), que sigue OPEN/draft. No implica cierre ni aceptación de T-051. El estado draft de su archivo en esta base pertenece a main; su ejecución está en la rama de PR54. T-047 conciliada como done. FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
 
 [T-046](tasks/T-046-render-image.md#checkpoint-vigente) conciliada como `done` tras confirmar PR52 MERGED. [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED.
 
@@ -84,5 +86,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-En una sesión nueva de implementación, confirmá PR53 MERGED en GitHub según docs/agents/merger.md y tomá T-051 según docs/tasks/T-051-render-follow-up.md. Desde main actualizado, abrí codex/t-051-render-follow-up y conciliá T-047 como done con el SHA y la fecha del squash. Integrá el ícono y coordiná un único deploy por SHA con el dueño para verificar el ícono en Brave y la app instalada en Windows y probar la voz con una muestra ficticia. El dueño informó que guardó GROQ_API_KEY y DEVNOTES_VOICE_ENABLED=true en Render. Aplicá el gate STARTER del contrato y respetá las confirmaciones del dueño para las acciones en Render. La sonda y la medición del despertar quedan aplazadas.
+Retomá T-052 como planner en codex/t-052-scope-expansion-plan. Completá specs y tareas de espacios Trabajo/Personal, copia de la última nota anterior, navegación Windows/Android y sonda diaria de Render. Conservá la ejecución de T-051 en PR54 sin marcarla done. Publicá solo documentación contra main con checks documentales y CI liviana. No ejecutes FULL, STARTER ni E2E completo: están diferidos hasta solicitud expresa del dueño. Dejá revisión independiente como siguiente acción y no implementes las features en esta sesión.
 ```

@@ -1,6 +1,6 @@
 ---
 id: T-047
-status: mergeable
+status: done
 priority: P1
 size: S
 executor: frontier
@@ -50,6 +50,8 @@ Solo Markdown: DEPLOYMENT (evidencia del piloto y diagnóstico encontrado), esta
 | Documentación | DOCS_ONLY | `node scripts/docs-check.mjs`, `git diff --check` y `bash scripts/verify.sh --policy origin/main` | OK |
 
 ## Checkpoint vigente
+
+**Conciliación 2026-11-12 en T-052.** GitHub confirmó PR53 MERGED, squash `00407ef4a637369d3078d19aceab123be3b13521`, mergedAt `2026-11-12T03:18:19Z`, HEAD revisado `c124a404dc4e47b16dc335829a25dff6e2d85fbd`. Se conserva debajo la revisión y la evidencia originales. T-051 ya tiene ejecución independiente en PR54; T-052 es la excepción de planificación autorizada por el dueño.
 
 **2026-11-12 · Revisión independiente favorable.** Frontera como reviewer en Codex de escritorio, familia GPT-6, variante y esfuerzo no expuestos. Se usaron Git, `gh`, PowerShell, Git Bash y Node. El diff abarca seis archivos Markdown con la operación del piloto y la retoma de T-051. El impacto sobre comportamiento, API, permisos, datos y UI se limita a su documentación.
 
