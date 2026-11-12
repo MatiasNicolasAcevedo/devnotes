@@ -19,7 +19,7 @@ depends_on: [T-045, T-050]
 
 Preparar `deploy/render/Dockerfile` y `deploy/render/compose.smoke.yml` según [DEPLOYMENT · Piloto](../DEPLOYMENT.md#piloto-de-devnotes-en-render-free) y demostrar RP-01 y RP-02 de [S-108](../specs/S-108-render-pilot.md) desde un checkout limpio. No se crean recursos en Render.
 
-El dueño autorizó el avance técnico en `draft` tras el merge de [T-050](T-050-ui-adjustments.md), con la aceptación de [T-045](T-045-xlsx-journey.md#prueba-del-dueño) pospuesta. El PR queda en borrador hasta esa aceptación. La siguiente tarea es [T-047](T-047-render-first-deploy.md).
+El dueño autorizó el avance técnico en `draft` tras el merge de [T-050](T-050-ui-adjustments.md). La [aceptación de T-045](T-045-xlsx-journey.md#prueba-del-dueño) habilita el paso a revisión. La siguiente tarea es [T-047](T-047-render-first-deploy.md).
 
 ## Alcance y decisiones resueltas
 
@@ -68,9 +68,9 @@ El primer avance `0e3c500` concilia T-050 y la postergación de T-045. **RP-01**
 
 **RP-02** con el mismo checkout y proyecto. `bash scripts/ci/test-render-entrypoint.sh` pasó en Linux y Git Bash. En el contenedor real, `docker compose … kill -s SIGTERM app` devolvió 0 y los logs confirmaron el cierre de Spring y nginx. Al matar Java y nginx por separado, la app salió con código 1 en ambos casos. El ensayo adicional con SIGINT devolvió 0. Evidencia local en `e2e/artifacts/t046-smoke-c.log`, `e2e/artifacts/t046-smoke-c-metrics.log` y `e2e/artifacts/t046-smoke-c-signals.log`. Tras verificar etiquetas y aplicar `down --volumes`, los proyectos de smoke `devnotes-render-smoke-t046a`, `devnotes-render-smoke-t046b` y `devnotes-render-smoke-t046c` quedaron con contenedores/redes/volúmenes 0/0/0.
 
-**STARTER** del 2026-11-11, una ejecución del comando de la tabla con HEAD `f5057d28ca8854fdaecc6e2735993958a42eb2a1`, base `main` `d230ee19e4a171bb73cf669c3fe4ced36b60a61c`. Huellas técnicas HEAD/base `b104dc7c7582f3127e43489ca59196b3636763ee` / `52a1430c70fe68e6721cd3f0909b02f54dad6f94` (`git ls-tree -r` sin Markdown, pasado a `git hash-object --stdin`). Git Bash de Windows, Node 24.21.0, Compose v2.40.2, perfil FULL/STARTER. Exit 0 en docs (9 s), backend (455 s, 429 unitarias y 241 IT PostgreSQL, JaCoCo y Spotless), cliente (128 s), tooling (1887 s, incluidas las pruebas de proxy nginx/Vite) y Playwright (1180 s, 25/25 desktop y 24/24 mobile, cero omitidas). CI liviana local 118/118. Log `e2e/artifacts/t046-starter-99e4040.log` y JUnit saneado `e2e/artifacts/starter-e2e-t046/sanitized/junit.xml`. Limpieza verificada por etiquetas exactas: contenedores/redes/volúmenes 0/0/0 en `starter-verify-t046` y `starter-e2e-t046`.
+**STARTER** del 2026-11-11, una ejecución del comando de la tabla con HEAD `f5057d28ca8854fdaecc6e2735993958a42eb2a1`, base `main` `d230ee19e4a171bb73cf669c3fe4ced36b60a61c`. Huellas técnicas HEAD/base `b104dc7c7582f3127e43489ca59196b3636763ee` / `52a1430c70fe68e6721cd3f0909b02f54dad6f94`, reproducibles en Windows PowerShell con `git ls-tree -r $ref | Where-Object { $_ -notmatch '\.md$' } | git hash-object --stdin` para cada referencia `$ref`. Git Bash de Windows, Node 24.21.0, Compose v2.40.2, perfil FULL/STARTER. Exit 0 en docs (9 s), backend (455 s, 429 unitarias y 241 IT PostgreSQL, JaCoCo y Spotless), cliente (128 s), tooling (1887 s, incluidas las pruebas de proxy nginx/Vite) y Playwright (1180 s, 25/25 desktop y 24/24 mobile, cero omitidas). CI liviana local 118/118. Log `e2e/artifacts/t046-starter-99e4040.log` y JUnit saneado `e2e/artifacts/starter-e2e-t046/sanitized/junit.xml`. Limpieza verificada por etiquetas exactas: contenedores/redes/volúmenes 0/0/0 en `starter-verify-t046` y `starter-e2e-t046`.
 
-Salida técnica acreditada. Mantener el PR en borrador mientras el dueño tenga pendiente la aceptación de T-045.
+Salida técnica acreditada. Con T-045 aceptada, retomar [PR52](https://github.com/MatiasNicolasAcevedo/devnotes/pull/52) en sesión nueva, contrastar la evidencia con el HEAD y la base vigentes y publicar la transición a revisión independiente.
 
 ## Correcciones significativas
 

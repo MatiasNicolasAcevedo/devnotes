@@ -53,7 +53,7 @@ T-037 MERGED (`aef4213`, 2026-11-10) entregó la RC técnica. [T-039](tasks/T-03
 
 Prioridad del dueño del 2026-11-10. [S-107](specs/S-107-xlsx-portability.md): exportar todos los datos de la cuenta (diarias, versiones, voz y referencias) e importarlos solo en una cuenta vacía, con el archivo como respaldo y migración, no como editor. Tareas T-040 → T-041 → T-042 → T-043 → T-044 → T-045 (E2E de ida y vuelta y prueba del dueño), en la rama `codex/s-107-xlsx-portability` y un único PR, con gate integrado, control de avance y revisión al final. Salida: XL-01…10 y el veredicto del dueño.
 
-Estado al 2026-11-11: PR49 MERGED (squash `ff02bbd`), con XL-07…10 agregados durante la revisión. T-040…T-044 `done`. Falta solo la prueba del dueño de T-045 para dar M3 por cumplida.
+M3 cumplida el 2026-11-11. PR49 está MERGED (squash `ff02bbd`), con XL-07…10 agregados durante la revisión. T-040…T-045 quedan `done` con la [aceptación del dueño](tasks/T-045-xlsx-journey.md#prueba-del-dueño).
 
 ## I3 posterior · Ajustes de UI
 

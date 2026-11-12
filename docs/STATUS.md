@@ -4,14 +4,14 @@
 |---|---|
 | Tarea y contrato | [T-046](tasks/T-046-render-image.md) · Imagen única para Render y smoke local con métricas |
 | Estado | `draft` |
-| Acción actual | RP-01, RP-02 y STARTER verdes. El PR queda en borrador hasta la [aceptación de T-045](tasks/T-045-xlsx-journey.md#prueba-del-dueño). |
+| Acción actual | Con [T-045 aceptada](tasks/T-045-xlsx-journey.md#prueba-del-dueño), contrastar HEAD y base con el STARTER vigente de T-046 y preparar la revisión independiente de PR52. |
 | Rama / PR | `codex/t-046-render-image` · [PR52](https://github.com/MatiasNicolasAcevedo/devnotes/pull/52) |
 
-[T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED. El dueño pospuso T-045 y autorizó el avance de T-046 en borrador. [T-047](tasks/T-047-render-first-deploy.md) queda después de T-046 MERGED.
+[T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED. [T-047](tasks/T-047-render-first-deploy.md) queda después de T-046 MERGED.
 
 PR de documentación: [PR50](https://github.com/MatiasNicolasAcevedo/devnotes/pull/50) MERGED, squash `915459cbabd9f3f557df4b9012c8b4db5572863c`, confirmado en GitHub el 2026-11-11 (mergedAt 2026-11-11T05:34:34Z), HEAD `484d4d6`, `verify-required` SUCCESS; lo mergeó el implementer de T-050 con autorización expresa del dueño en esa sesión.
 
-S-107 (T-040…T-045): [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49) MERGED, squash `ff02bbd933418cec46f34b25715313580753d0ee`, confirmado en GitHub el 2026-11-11 (mergedAt 2026-11-11T04:02:14Z), HEAD revisado `706c494`. T-040…T-044 conciliadas como done; la rama compartida terminó y rige otra vez «una tarea, un PR».
+M3 cumplida. S-107 (T-040…T-045) está conciliada como `done` tras [PR49](https://github.com/MatiasNicolasAcevedo/devnotes/pull/49) MERGED y el [veredicto del dueño](tasks/T-045-xlsx-journey.md#prueba-del-dueño).
 
 Limpieza del 2026-11-11, autorizada por el dueño: PR38 cerrado sin merge por obsoleto (T-033 y T-034 ya estaban conciliadas en main) y su rama borrada; cleanup de T-049 hecho (worktree, rama local y remota, fixtures y pruebas en `.orchestrator`); retirados los stacks locales `starter-dev-devnotes-preview-1027` y un volumen `starter-dev-local-nginx` creado desde WSL, con sus datos ficticios. El stack local del dueño pasa a ser `starter-dev-local-nginx`, el nombre que ya usaban AGENTS y VOICE-RELEASE.
 
@@ -84,5 +84,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá T-046 como implementer en codex/t-046-render-image. Confirmá en GitHub PR52 en borrador contra main, HEAD, base y verify-required. Si sigue pendiente la aceptación de T-045, conservá el borrador. Cuando el dueño registre su aceptación, conciliá T-045 con resultado, conteos y SHA. Contrastá base y huellas técnicas con la evidencia STARTER de docs/tasks/T-046-render-image.md, ejecutá docs-check y publicá la transición a revisión independiente según el protocolo. Retomá T-047 en otra sesión tras confirmar T-046 MERGED.
+Retomá T-046 como implementer en codex/t-046-render-image. T-045 ya está aceptada y conciliada en docs/tasks/T-045-xlsx-journey.md. Confirmá en GitHub PR52 en borrador contra main, HEAD, base y verify-required. Contrastá base y huellas técnicas con la evidencia STARTER de docs/tasks/T-046-render-image.md, ejecutá docs-check y publicá la transición a revisión independiente según docs/agents/implementer.md. Tras confirmar PR52 MERGED, retomá T-047 con el dueño en una sesión nueva según docs/tasks/T-047-render-first-deploy.md.
 ```

@@ -139,7 +139,7 @@ Fusión, reemplazo o importación parcial; editar en Excel; CSV u otros formatos
 | [T-044](../tasks/T-044-xlsx-client.md) | Pantalla Datos | T-043 | XL-05 verde en la rama |
 | [T-045](../tasks/T-045-xlsx-journey.md) | Recorrido real de ida y vuelta, y prueba del dueño | T-044 | XL-06, FULL integrado, PR único MERGED y veredicto del dueño |
 
-Estado al 2026-11-11: PR49 MERGED (squash `ff02bbd`). T-040…T-044 están conciliadas como `done` y T-045 queda `blocked` solo por la prueba del dueño. Las reglas de abajo describen cómo se trabajó mientras duró la rama compartida; ya no rigen para tareas nuevas.
+Al 2026-11-11, PR49 está MERGED (squash `ff02bbd`) y T-040…T-045 están conciliadas como `done` con la [aceptación del dueño](../tasks/T-045-xlsx-journey.md#prueba-del-dueño). Las reglas de abajo documentan el trabajo en la rama compartida.
 
 **Una rama y un PR para toda la spec (decisión del dueño, 2026-11-10).** T-040…T-045 comparten la rama `codex/s-107-xlsx-portability`, creada desde `main` tras T-049 MERGED, y un único PR contra `main`. Es una excepción a «una tarea, un PR» y a «rama exacta de tarea», limitada a esta spec.
 
