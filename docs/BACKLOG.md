@@ -9,7 +9,7 @@ Del plan original quedan hechos la activación de Groq y la portabilidad `.xlsx`
 | Orden | Contrato / resultado | Ejecuta | Dependencia |
 |---|---|---|---|
 | 1 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | [T-046 conciliada](tasks/T-046-render-image.md#checkpoint-vigente) |
-| 2 | [T-051](tasks/T-051-render-follow-up.md) · Ícono, URL, voz y sonda diaria en un PR | Dueño con un agente de frontera | T-047 MERGED y decisiones del borrador |
+| 2 | [T-051](tasks/T-051-render-follow-up.md) · Ícono, voz y sonda diaria en un PR | Dueño con un agente de frontera | T-047 MERGED y decisiones del borrador |
 
 Retorno a frontera si el dueño emite «no aceptada» en T-047, ante una decisión fuera de contrato o al cerrar T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
 
