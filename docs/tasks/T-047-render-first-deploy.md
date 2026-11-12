@@ -1,6 +1,6 @@
 ---
 id: T-047
-status: blocked
+status: in_progress
 priority: P1
 size: S
 executor: frontier
@@ -57,7 +57,7 @@ Solo Markdown: DEPLOYMENT (evidencia del piloto y diagnóstico encontrado), esta
 
 Por pedido del dueño se agregó el MCP oficial de Render con `codex mcp add render --url https://mcp.render.com/mcp --oauth-client-id codex`. El dueño completó OAuth y reinició Codex. `codex mcp list --json` confirmó `render` habilitado y `auth_status=o_auth`. `list_workspaces` respondió desde esta sesión y el dueño confirmó el workspace personal como destino de los recursos del piloto. El health check se guardó desde el panel web y se confirmó con `get_service`.
 
-Tras la confirmación del dueño, se lanzó **Manual Deploy → Deploy a specific commit** para `222ae003f5db5fc887929ca98f9405ae67bd4d09` de `main` en `devnotes-pilot`. [El intento](../DEPLOYMENT.md#avance-del-piloto) compiló y falló durante el arranque. Spring informó que faltaba la URL del datasource. El dueño debe corregir `SPRING_DATASOURCE_URL` en **Environment** del Web Service con el JDBC interno, comprobar que el usuario y la contraseña estén guardados y avisar tras **Save only**. Entonces relanzar por SHA desde el panel, seguir el deploy con `get_deploy` y comprobar `GET https://devnotes-pilot.onrender.com/actuator/health/readiness` hasta `200` con `status: UP`. El servicio y su PostgreSQL son los recursos persistentes del piloto. Después siguen métricas, RP-03, RP-04 y el veredicto.
+El deploy por SHA quedó `live` y la sonda pública obtuvo `200` con `UP`. [DEPLOYMENT](../DEPLOYMENT.md#avance-del-piloto) conserva SHA, tiempo y RAM de arranque. El dueño debe completar el login real y, si usa una sola cuenta, importar y verificar el rechazo de la reimportación antes de guardar la nota de RP-03. Registrar RP-03 con reinicio y recuperación desde Chrome instalado, RP-04, RAM tras guardar, despertar por inactividad y veredicto explícito. El Web Service y PostgreSQL son los recursos persistentes del piloto.
 
 Comprobación del avance `3503f0d28550a4f70458822cdb31406d45c0748e` contra la base `222ae003f5db5fc887929ca98f9405ae67bd4d09`: `node scripts/docs-check.mjs` y `git diff --check` pasaron. Git Bash de Windows ejecutó `bash scripts/verify.sh --policy origin/main` fuera del sandbox porque MSYS devolvió `0xC0000022` dentro. Resultado `DOCS_ONLY` / `DOCUMENTATION`, cinco Markdown. Repetir sobre el HEAD del PR cuando quede registrada la evidencia del piloto.
 
@@ -65,6 +65,7 @@ Comprobación del avance `3503f0d28550a4f70458822cdb31406d45c0748e` contra la ba
 
 | Fecha / SHA | Problema y causa | Corrección | Prueba |
 |---|---|---|---|
+| 2026-11-11 · `222ae003` | Spring informó que faltaba la URL del datasource. En Environment estaban las dos claves `GOOGLE_CLIENT_*` y faltaban las tres `SPRING_DATASOURCE_*`. | El dueño cargó JDBC interno, usuario y contraseña en `devnotes-pilot`. | [Reensayo por SHA, `live` y readiness `200` con `UP`](../DEPLOYMENT.md#avance-del-piloto). |
 
 ## Cierre y siguiente tarea
 
