@@ -11,8 +11,9 @@ const STATES = {
 } as const
 
 /**
- * Estado del servidor en la barra: el dato proviene siempre de readiness (cada 5 s), nunca del bundle. Un fallo
- * retira el «Online» anterior aunque quede una respuesta previa en cache.
+ * Estado del servidor en la barra: el dato proviene siempre de readiness (al montar, al recuperar el foco y cada 60 s
+ * con el documento visible), nunca del bundle ni del guardado de notas. Un fallo retira el «Online» anterior aunque
+ * quede una respuesta previa en cache.
  */
 export function ServerStatus() {
   const readiness = useReadiness()
