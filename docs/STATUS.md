@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-055](tasks/T-055-service-activity-client.md) · Actividad diaria visible y sondeo moderado ([S-111](specs/S-111-render-daily-availability.md)) |
-| Estado | `in_review` |
-| Acción actual | [Corrección de B-3 publicada](tasks/T-055-service-activity-client.md#corrección-de-b-3-tras-r2). Esperar autorización expresa del dueño para iniciar la revisión independiente adicional. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Estado | `mergeable` |
+| Acción actual | [Revisión independiente adicional favorable](tasks/T-055-service-activity-client.md#revisión-independiente-adicional-de-b-3), con B-3 cerrado. Veredicto vinculado al HEAD/base y al check vigente en PR58. Esperar instrucción expresa del dueño para el merge. FULL/STARTER DIFERIDO POR EL DUEÑO. |
 | Rama / PR | `codex/t-055-service-activity-client` · [PR58](https://github.com/MatiasNicolasAcevedo/devnotes/pull/58) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
@@ -94,5 +94,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Solo con autorización expresa del dueño para la revisión adicional, retomá T-055 en una sesión nueva de Frontera como reviewer. Confirmá con gh pr view 58 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,isDraft,headRefName,headRefOid,baseRefName,baseRefOid,mergeable que PR58 sigue OPEN en codex/t-055-service-activity-client contra main fb8a3818ecdf3dcb10da3c0924af2bee45c84f26 y que el HEAD coincide con el SHA que indique el dueño al autorizar la revisión. Si difiere, informá el estado real y detenete. Leé STATUS, T-055, S-111 y el protocolo reviewer. En un checkout aislado, verificá B-3 sobre el HEAD publicado y el rojo/verde de la regresión de reconexión sin foco, navegación ni acción. Verificá las lecturas al abrir y tras pausar o reanudar, el diff contra la base, la evidencia dirigida y verify-required del SHA exacto. Preservá trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. Registrá el veredicto independiente para el dueño. Aplicá AUTONOMY según el veredicto y la evidencia del HEAD/base vigentes. T-056 queda pendiente de PR58 MERGED y de la conciliación de T-055.
+Solo con instrucción expresa del dueño para el merge, retomá T-055 como Frontera en rol merger y seguí docs/agents/merger.md y AUTONOMY. Consultá PR58 y comprobá que el HEAD y la base publicados coinciden con el comentario APROBADO de la revisión independiente adicional y que verify-required está en SUCCESS para ese HEAD. Si cambió el HEAD o la base, informá el estado real y devolvé a revisión. Preservá trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. T-056 queda para otra sesión tras confirmar PR58 MERGED y conciliar T-055.
 ```

@@ -1,13 +1,13 @@
 ---
 id: T-055
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M5
 spec: S-111
 depends_on: [T-054]
 branch: codex/t-055-service-activity-client
-role: implementer
+role: reviewer
 executor: frontier
 pr: 58
 ---
@@ -59,6 +59,19 @@ Los nombres nuevos de tests son archivos/clases que esta tarea debe crear. Confi
 Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`. Registrar **FULL/STARTER DIFERIDO POR EL DUEÑO**. No ejecutar FULL, STARTER, tooling completo ni E2E completo hasta solicitud expresa, aunque el clasificador dé FULL/STARTER. CI liviana/revisión independiente siguen obligatorias.
 
 ## Checkpoint vigente
+
+### Revisión independiente adicional de B-3
+
+**2026-11-13 · Frontera como reviewer en sesión nueva**, con autorización expresa del dueño tras R2. Codex de escritorio, PowerShell, Git, `gh`, Node 24.21.0 y npm 11.19.0. Variante efectiva del modelo y esfuerzo no verificados. Esta revisión publica una transición documental de T-055 y STATUS. El diff publicado de B-3 cambia cuándo se consulta el estado del detalle y conserva los contratos de API, permisos, datos y presentación.
+
+[PR58](https://github.com/MatiasNicolasAcevedo/devnotes/pull/58) OPEN, no draft, `codex/t-055-service-activity-client`. HEAD de fuentes revisadas `6e99b2d1741d34147de66bb1049233e757b1509b`, base publicada `main` `fb8a3818ecdf3dcb10da3c0924af2bee45c84f26`. [`verify-required` SUCCESS del HEAD de entrada](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43513348544/job/132188897368). El veredicto se publica en el PR con el SHA de la transición documental y su propio check.
+
+- **B-3 cerrado.** En un checkout aislado del HEAD publicado con dependencias del lockfile (`npm ci --offline --no-audit --no-fund`), `npm test -- --run src/features/serviceActivity/ServiceActivityDialog.test.tsx -t 'con el detalle abierto, recuperar la conexión no relee el estado'` pasó (exit 0, 1 prueba). El test espera la invalidación que sigue a la respuesta de `visit`, abre el detalle y comprueba un GET de estado con MSW. El ciclo offline/online con `onlineManager`, sin foco, navegación ni acción, conserva ese conteo. Al retirar temporalmente solo `refetchOnReconnect: false` de `useServiceActivityStatus`, el mismo test falló en la aserción posterior a reconectar (exit 1, `expected 2 to be 1`). La fuente se restauró byte por byte y el diff de código quedó vacío.
+- `npm test -- --run src/features/serviceActivity src/features/system/ServerStatus.test.tsx src/features/auth/SessionControls.test.tsx` pasó **62/62 en cinco archivos** después de restaurar la fuente. La prueba de acciones conserva el conteo acumulado de un GET al abrir, dos al pausar y tres al reanudar. También pasó el negativo de foco e intervalo con el detalle abierto.
+- `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build` salieron con código 0. Vite emitió el aviso preexistente de tamaño de chunk.
+- `node scripts/docs-check.mjs` pasó (124 Markdown, 68 tareas, HANDOFF 22/22). `git diff --check` y `git diff --check fb8a3818ecdf3dcb10da3c0924af2bee45c84f26...HEAD` salieron con código 0. `node scripts/ci/classify-diff.mjs --base fb8a3818ecdf3dcb10da3c0924af2bee45c84f26 --head HEAD --phase FULL` clasificó `FULL` / `APPLICATION` (20 rutas, 13 técnicas).
+
+**Resultado favorable, sin bloqueantes de revisión. FULL/STARTER DIFERIDO POR EL DUEÑO.** Se preservó `trailer/` del checkout principal. Las pruebas usaron MSW. Sigue pendiente la decisión documentada sobre las expectativas E2E de readiness antes de FULL. El merge queda a la espera de instrucción expresa del dueño. T-056 sigue pendiente de PR58 MERGED y de la conciliación de T-055.
 
 ### Corrección de B-3 tras R2
 
