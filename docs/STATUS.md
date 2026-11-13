@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-056](tasks/T-056-service-activity-journey.md) · Validación local y entrega medible de la sonda ([S-111](specs/S-111-render-daily-availability.md)) |
-| Estado | `in_review` |
-| Acción actual | Frontera como reviewer en una sesión independiente. Verificar la evidencia local y el protocolo de medición. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Estado | `mergeable` |
+| Acción actual | [Revisión independiente favorable](tasks/T-056-service-activity-journey.md#revisión-independiente-r1). Retomar el merge en una sesión posterior con el veredicto y la CI del HEAD/base publicados en PR59. Ensayo de Render pendiente de autorización expresa sobre SHA y ventana. FULL/STARTER DIFERIDO POR EL DUEÑO. |
 | Rama / PR | `codex/t-056-service-activity-journey` · [PR59](https://github.com/MatiasNicolasAcevedo/devnotes/pull/59) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
@@ -96,5 +96,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá T-056 como Frontera en rol reviewer, en una sesión independiente, y seguí docs/agents/reviewer.md y AUTONOMY. Confirmá PR59 abierto y listo para revisión contra main, la base publicada c95f81408a3612e5626a3da2ebefc870bb23d119 y verify-required SUCCESS para el HEAD vigente. Compará el diff y la evidencia del recorrido HTTP/PostgreSQL con dos actores ficticios, las interacciones de UI y el protocolo de medición de S-111. Emití el veredicto de revisión ligado a HEAD y base. Conservá trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render queda pendiente de autorización expresa sobre SHA y ventana. Dejá el merge y T-057 para sesiones posteriores.
+Retomá T-056 como Frontera en rol merger y seguí docs/agents/merger.md y AUTONOMY. Confirmá PR59 abierto y listo para revisión contra main, que HEAD y base coincidan con el comentario APROBADO de la revisión independiente y que verify-required esté en SUCCESS para ese HEAD. Si cambió HEAD o base, devolvé a revisión. Preservá trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana. T-057 queda para otra sesión tras confirmar PR59 MERGED y conciliar T-056.
 ```

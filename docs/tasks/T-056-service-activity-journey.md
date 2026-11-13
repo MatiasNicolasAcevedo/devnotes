@@ -1,13 +1,13 @@
 ---
 id: T-056
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M5
 spec: S-111
 depends_on: [T-055]
 branch: codex/t-056-service-activity-journey
-role: implementer
+role: reviewer
 executor: frontier
 pr: 59
 ---
@@ -88,6 +88,19 @@ Base `origin/main` verificada en `c95f81408a3612e5626a3da2ebefc870bb23d119`. T-0
 ### Entrega para revisión
 
 [PR59](https://github.com/MatiasNicolasAcevedo/devnotes/pull/59) contra `main`. Las fuentes dirigidas corresponden al commit técnico `4b84676755ea0184cfec0506ad6b1337d5f0e081`; el traspaso posterior solo cambia Markdown. `node scripts/docs-check.mjs` y `git diff --check` → exit 0. `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → exit 0, `policy=FULL`, `profile=APPLICATION`, 2 rutas técnicas. La excepción I5 conserva el diferimiento. Consultar el HEAD vigente y su check `verify-required` en el PR.
+
+### Revisión independiente R1
+
+**2026-11-13 · Frontera como reviewer en sesión independiente**, Codex de escritorio, PowerShell, Git Bash, Git, `gh`, Docker Linux, Java 21, Node 24.21.0 y npm 11.19.0. Variante del modelo y esfuerzo sin verificar. El diff agrega dos archivos de pruebas y actualiza documentación. Las fuentes de producción y los contratos de API, permisos, datos y UI conservan su comportamiento.
+
+[PR59](https://github.com/MatiasNicolasAcevedo/devnotes/pull/59) abierto y listo para revisión contra `main`, con HEAD de entrada `71b633cfa89ae6d32e50bf1eea208c75b8cd8d73` y base publicada `c95f81408a3612e5626a3da2ebefc870bb23d119`, que coincide con el squash de PR58. [`verify-required` SUCCESS del HEAD de entrada](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43523478310/job/132223355764). Sin hilos de revisión abiertos. Las fuentes técnicas coinciden con `4b84676755ea0184cfec0506ad6b1337d5f0e081`. El veredicto canónico queda en el PR, ligado al HEAD documental publicado y a la base.
+
+- **HTTP y PostgreSQL.** Desde `server/`, `./mvnw -q verify -Dtest=ServiceActivitySchedulerTest -Dit.test=ServiceActivityJourneyIT -Djacoco.skip=true` salió con código 0. Surefire 20/20 y Failsafe 1/1, sin omitidos. HTTP real en loopback, dos actores ficticios con OIDC, PostgreSQL 18.6 y dos contextos Spring sobre la misma base. Se verificó denegación del anónimo y de la otra cuenta, 403 sin CSRF, pausa persistida que resiste una nueva visita y un callback cancelado, reanudación explícita, recuperación de un solo disparo, conservación del último éxito tras timeout y ausencia de envío a medianoche exacta. Reloj, programación y transporte saliente controlados. Se confirmó el retiro de contenedores, redes y volúmenes propios por etiqueta exacta y la salida de Ryuk por ID.
+- **UI.** Desde `client/`, `npm test -- --run src/features/serviceActivity/ServiceActivityJourney.test.tsx src/features/serviceActivity/useServiceActivity.test.tsx src/features/serviceActivity/ServiceActivityDialog.test.tsx` salió con código 0, 28/28 en tres archivos. Los componentes con MSW verifican visita del dueño, corte y última respuesta en la zona del servicio, error de pausa sin cambio aparente, reintento y reanudación explícitos, Online independiente y falta de acceso de la otra cuenta. Las regresiones de visibilidad, cambio de día, foco, intervalo y reconexión también pasaron. `npm ci --offline` encontró una dependencia sin caché y se completó `npm ci` con red en el checkout aislado. Los checks estáticos y el build de la entrega tienen exit 0 sobre las mismas fuentes.
+- **Protocolo S-111.** [DEPLOYMENT](../DEPLOYMENT.md#ensayo-de-la-sonda-interna-en-render-free) fija control apagado de más de 20 min y ensayo activo de al menos 40 min con tres intervalos y el mismo SHA, servicio y plan. Exige clientes cerrados, silencio sin pings de observación, una medición final por ventana y evidencia de intentos e instancia. Un `200 UP` acredita la respuesta final. Si faltan datos para atribuir continuidad o suspensión, el resultado es inconcluso. La eficacia remota sigue pendiente de autorización expresa del dueño sobre SHA y ventana.
+- **Cierre.** `node scripts/docs-check.mjs`, `git diff --check` y `git diff --check c95f81408a3612e5626a3da2ebefc870bb23d119...HEAD` pasaron sobre la revisión. `node scripts/ci/classify-diff.mjs --base c95f81408a3612e5626a3da2ebefc870bb23d119 --head HEAD --phase FULL` dio `FULL` / `APPLICATION`, dos rutas técnicas. Evidencia local de revisión en `.orchestrator/t-056-review-logs/`. Se preservó `trailer/` en el checkout principal.
+
+**Resultado local favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El merge queda para una sesión posterior. T-057 espera la confirmación de PR59 MERGED y la conciliación de T-056.
 
 ## Cierre y siguiente tarea
 
