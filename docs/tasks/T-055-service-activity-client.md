@@ -1,6 +1,6 @@
 ---
 id: T-055
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 milestone: M5
@@ -60,6 +60,35 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
+### Revisión R1 · CAMBIOS REQUERIDOS
+
+**2026-11-13 · Junie como reviewer en sesión nueva**, distinta de la implementación, ejecutado con Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. Git, `gh`, Git Bash y Node 24.21.0 con npm 11.19.0 (`npm ci` del lockfile sin cambios, en el worktree). Impacto propio: solo esta transición documental de T-055/STATUS; sin cambios de comportamiento, API, permisos, datos ni UI. Ronda 1 de 2.
+
+Precondición: `gh pr view 58 …` → OPEN, no draft, base `main` `fb8a3818ecdf3dcb10da3c0924af2bee45c84f26`, `headRefOid` `ca3cfbed73335ffbc9e81e00335d4b419e09c111`, MERGEABLE; `verify-required` SUCCESS con `head_sha` exacto ([run 43504690115](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43504690115/job/132159136991)). Revisión en worktree aislado `--detach` de ese SHA; `trailer/` del checkout principal no se tocó. Diff completo contra `origin/main` leído: 19 rutas, sin backend, `package*.json`, `.env*`, workflows ni scripts.
+
+Comprobado sin hallazgos: `visit` solo tras auth + `capabilities.available` con `serviceDate` del servidor, documento visible y `csrfReady`, registrado en memoria por `owner|serviceDate` antes de enviar (sin reintento ni bucle); nunca `resume` automático, y `visit` respeta la pausa en el servidor (`ServiceAwakeWindow.visit`); `AccountMenu` con `key` por identidad; `sessionIsCurrent` en todas las peticiones y guardas de identidad en los callbacks; detalle en el menú de cuenta solo con `available`; estado con `enabled` solo abierto, `gcTime: 0`, sin foco ni intervalo; «Reintentar la sonda» usa `resume`, que en el servidor reabre una secuencia detenida; horas formateadas con `timeZone` fijo; readiness 60 s, `refetchIntervalInBackground: false`, foco activo. `withCsrfRenewal` sin cambios (403 sin reenvío). ARCHITECTURE, DEPLOYMENT, BACKLOG, STATUS y la conciliación de T-054 son coherentes con el código.
+
+Pruebas del reviewer, desde `client/`:
+
+- Dirigida del contrato: `npm test -- --run src/features/serviceActivity src/features/system/ServerStatus.test.tsx src/features/auth/SessionControls.test.tsx` → exit 0, 5 archivos, **58/58**.
+- `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm run build` → exit 0 (aviso de tamaño de chunk preexistente).
+- Mutantes propios con la dirigida, fuente restaurada desde copia (árbol limpio después): clave de intento sin fecha → 1 falla; intento registrado solo tras éxito → 2; readiness sin foco → 1; detalle sin `available` → 4; «Reanudar hoy» enviando `pause` → 1. **Sobreviven** (58/58): `visit` sin `csrfReady` (B-2); estado con `refetchOnWindowFocus: true` + intervalo de 60 s con el detalle abierto (B-3); formateador de hora sin `timeZone` (O-1); guardas de identidad redundantes por `key` y keys por dueño (`visit` sin `isCurrent()` previo, invalidaciones tardías sin guarda, `AccountMenu` sin `key`), `enabled: true` (equivalente: el contenido solo se monta abierto) y acciones sin `csrfReady` (O-2).
+- Pruebas temporales no versionadas, ya borradas: P1 reconexión tras la medianoche (B-1) falla con el código del PR; P2 CSRF pendiente → ninguna `visit` hasta liberar el CSRF y luego una sola: verde con el PR, rojo con el mutante sin `csrfReady`; P3 foco con el detalle abierto no relee el estado: verde con el PR, rojo con el mutante de foco.
+
+Cierre desde la raíz del worktree: `node scripts/docs-check.mjs` OK (124 Markdown, 68 tareas, HANDOFF 22/22); `git diff --check origin/main...HEAD` exit 0; `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → `policy=FULL`, `profile=APPLICATION`, 19 rutas, 13 técnicas. **FULL/STARTER DIFERIDO POR EL DUEÑO** según la [excepción I5](../TESTING.md#excepción-i5-del-2026-11-12): no se ejecutaron FULL, STARTER, `npm run verify`, E2E, deploys, variables de Render ni HTTP saliente real. El pendiente E2E de readiness sigue siendo decisión de frontera y no condiciona esta revisión.
+
+**B-1 (bloqueante) · Una reconexión de red, sin interacción del dueño, activa el día nuevo.** Evidencia: `useServiceActivityCapabilities` no fija `refetchOnReconnect` y hereda el `true` por defecto de TanStack Query (`app/queryClient.ts` solo apaga el foco). Con la página visible y la fecha de servicio vencida, un evento `online` re-consulta `capabilities`, llega el `serviceDate` nuevo y `useDailyVisit` envía `visit`. Escenario: escritorio con la pestaña visible toda la noche y un corte breve de Wi-Fi a las 02:00 → ventana activada ese día sin visita del dueño, consumiendo horas compartidas. Contradice S-111: el día nuevo solo lo activa «una interacción real de navegación/foco del dueño». Reproducción: test temporal con reloj 2026-11-14T02:30Z y `serviceDate` 2026-11-13, primera `visit`; luego `serviceDate` 2026-11-14, reloj +2,5 h y `onlineManager.setOnline(false)`/`(true)` sin foco ni navegación → `expected [ 'visit', 'visit' ] to deeply equal [ 'visit' ]`. Corrección suficiente: `refetchOnReconnect: false` en la consulta de `capabilities` (u otra forma que impida toda re-consulta no originada en foco/navegación), sin tocar readiness. Condición observable de cierre: test de regresión versionado equivalente en `useServiceActivity.test.tsx`, rojo sin la corrección y verde con ella; dirigida verde con cantidad ejecutada distinta de cero.
+
+**B-2 (bloqueante) · La regla «visit solo con CSRF listo» no tiene negativo.** Evidencia: el mutante que quita `!csrfReady` de `useDailyVisit` deja la dirigida 58/58, porque en las pruebas el CSRF siempre está listo antes que `capabilities`. Sin la guarda, un CSRF lento (arranque en frío) haría salir la `visit` sin token, recibir 403 y, por diseño sin reintento, dejar el día sin activar. AGENTS exige negativos en reglas críticas. Corrección suficiente: test con el endpoint CSRF retenido (p. ej. un `server.use` que espera una promesa y luego cae al backend simulado) que verifique cero `visit` mientras el CSRF está pendiente y exactamente una al liberarlo. Condición de cierre: el test mata el mutante sin `csrfReady` y pasa con el código.
+
+**B-3 (bloqueante) · «Estado leído solo al abrir y tras acción» no tiene negativo con el detalle abierto.** Evidencia: el mutante `refetchOnWindowFocus: true` + `refetchInterval: 60_000` en `useServiceActivityStatus` deja la dirigida 58/58; el test existente solo cuenta lecturas tras las acciones y después de cerrar. Corrección suficiente: con el detalle abierto, simular pérdida y recuperación de foco (`visibilitychange` con `bubbles: true`) y avanzar el reloj más de 60 s, verificando que `calls.status` no cambia. Condición de cierre: el test mata ese mutante y pasa con el código.
+
+**O-1 (no bloqueante) · El test «dispositivo en Asia/Tokyo» no simula la zona del dispositivo en este host.** `process.env.TZ = 'Asia/Tokyo'` se asigna después de importar el módulo y, en Node para Windows, `Intl` ignora `TZ` (`TZ=Asia/Tokyo node -e …` resuelve `America/Buenos_Aires`). El mutante sin `timeZone` en el formateador de hora pasa 9/9 en el host del dueño (zona Buenos Aires), aun lanzando Vitest con `TZ=Asia/Tokyo`; solo falla (6/9) con `TZ=UTC`, como en una CI Linux. El código es correcto, pero la evidencia «corte 00:00 con el dispositivo en Asia/Tokyo» no se demuestra localmente. Sugerido: afirmar además que los formateadores resuelven `SERVICE_ZONE` o comparar contra un formateador explícito de otra zona. No condiciona la aprobación.
+
+**O-2 (no bloqueante) · Guardas redundantes y acciones sin CSRF listo.** Los mutantes de guardas de identidad sobreviven porque `key={user.id}` desmonta el menú y las keys incluyen al dueño: sin efecto observable; pueden quedar como defensa. Las acciones del detalle ya se deshabilitan sin `csrfReady`, pero ningún test lo fija; opcional.
+
+Siguiente: sesión nueva de Junie como implementer en la misma rama/PR para B-1, B-2 y B-3 (O-1/O-2 si caben); después, revisión R2 en otra sesión nueva. No ejecutar T-056.
+
 ### Implementación
 
 **2026-11-12 · Implementación publicada, lista para revisión independiente.** Junie como implementer en sesión nueva, ejecutado con Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. Git, `gh`, Git Bash y Node 24.21.0 con el npm del proyecto. Sin deploys, sin variables de Render y sin HTTP saliente real: la API se simuló con MSW.
@@ -83,7 +112,7 @@ Pruebas, desde `client/`:
 
 **Pendiente para frontera antes de FULL (fuera de este contrato).** Con readiness cada 60 s solo visible, dos expectativas E2E heredadas de S-002/T-050 dejan de cumplirse y no se modificaron aquí (no se pueden ejecutar por I5): `e2e/tests/local-stack.spec.ts` exige detectar la caída y la recuperación de la DB con la página abierta en menos de 30 s, y `e2e/tests/system.spec.ts` espera volver a «Servidor conectado» en 20 s sin recargar («revalida solo cada 5 s»). S-111 decide la cadencia nueva pero no dice cómo quedan esos criterios. Opciones: ajustar esas pruebas y S-002 a la cadencia de S-111 (por ejemplo, revalidación por foco o plazo mayor) o fijar otra regla para E2E. Decisión de frontera/dueño; no bloquea la revisión local de T-055.
 
-Siguiente: revisión independiente de PR58 en sesión nueva. No ejecutar T-056 antes de PR58 MERGED y T-055 conciliada.
+Revisión independiente de PR58: [R1 con cambios requeridos](#revisión-r1--cambios-requeridos). No ejecutar T-056 antes de PR58 MERGED y T-055 conciliada.
 
 ### Correcciones significativas
 
