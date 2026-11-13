@@ -152,8 +152,15 @@ public class ServiceActivityScheduler implements DisposableBean {
         return properties.allowedOwner().isPresent() && probe.configured();
     }
 
-    /** Must hold monitor. */
+    /**
+     * Must hold monitor. Snapshots are read outside the monitor, so one taken before a window change may arrive after
+     * the alignment of that change; the row revision only grows, so an older snapshot is discarded instead of rolling
+     * {@code knownRevision} back and cancelling the newer window's task.
+     */
     private void align(Snapshot window, Instant now) {
+        if (knownRevision != null && window.revision() < knownRevision) {
+            return; // stale read: a newer window was already aligned
+        }
         boolean newActivation = knownRevision != null && knownRevision != window.revision();
         knownRevision = window.revision();
         if (stopped || !enabled() || !window.running(now)) {

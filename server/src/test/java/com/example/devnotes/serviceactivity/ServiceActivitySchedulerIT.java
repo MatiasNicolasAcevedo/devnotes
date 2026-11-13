@@ -126,13 +126,17 @@ class ServiceActivitySchedulerIT {
     @Autowired
     private ApplicationContext context;
 
+    /**
+     * Clears the window but keeps its revision growing, as production does: the shared scheduler discards snapshots
+     * older than the last revision it aligned (stale reads), so a reset to 0 would hide every later test's window.
+     */
     @BeforeEach
     void resetWindow() {
         CLOCK.set(BA_1000);
         TRANSPORT.reset();
         jdbc.update("""
                 UPDATE service_awake_window SET active_date = NULL, active_until = NULL, paused_date = NULL,
-                    revision = 0, last_attempt_at = NULL, last_success_at = NULL, consecutive_failures = 0,
+                    revision = revision + 1, last_attempt_at = NULL, last_success_at = NULL, consecutive_failures = 0,
                     last_result = 'NONE'
                 WHERE id = 1
                 """);
@@ -154,6 +158,7 @@ class ServiceActivitySchedulerIT {
 
     @Test
     void visitPlansAnImmediateAttemptAndEachResultIsPersisted() {
+        long cleared = revision();
         var started = service.start(OWNER, StartMode.VISIT);
         assertThat(started.nextAttemptAt()).isEqualTo(BA_1000);
         assertThat(TASKS.pending())
@@ -169,14 +174,14 @@ class ServiceActivitySchedulerIT {
         assertThat(instant(row, "last_attempt_at")).isEqualTo(BA_1000);
         assertThat(instant(row, "last_success_at")).isEqualTo(BA_1000);
         assertThat(row.get("consecutive_failures")).isEqualTo(0);
-        assertThat(row.get("revision")).isEqualTo(1L);
+        assertThat(row.get("revision")).isEqualTo(cleared + 1);
         assertThat(service.status(OWNER).nextAttemptAt()).isEqualTo(BA_1000.plus(TEN));
         assertThat(TASKS.pending()).hasSize(1);
 
         // Another tab's visit is idempotent: same window, same single task.
         service.start(OWNER, StartMode.VISIT);
         assertThat(TASKS.pending()).hasSize(1);
-        assertThat(row().get("revision")).isEqualTo(1L);
+        assertThat(revision()).isEqualTo(cleared + 1);
     }
 
     @Test
@@ -210,6 +215,7 @@ class ServiceActivitySchedulerIT {
 
     @Test
     void pauseCancelsThePlannedTaskAndAnOldCallbackLeavesThePausedRowAlone() {
+        long cleared = revision();
         service.start(OWNER, StartMode.VISIT);
         TASKS.runNext();
         var planned = TASKS.next().orElseThrow();
@@ -224,7 +230,7 @@ class ServiceActivitySchedulerIT {
         var row = row();
         assertThat(row.get("active_date")).isNull();
         assertThat(row.get("paused_date")).isNotNull();
-        assertThat(row.get("revision")).isEqualTo(2L);
+        assertThat(row.get("revision")).isEqualTo(cleared + 2);
     }
 
     @Test

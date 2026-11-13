@@ -81,6 +81,9 @@ class ServiceActivityProbeTest {
                 .contains(URI.create("https://notes.example.com:8443/actuator/health/readiness"));
         assertThat(ServiceActivityProbe.target(URI.create("https://93.184.215.14"), false))
                 .contains(URI.create("https://93.184.215.14/actuator/health/readiness"));
+        // A NAT64 literal is judged by the IPv4 it reaches: a public one stays usable.
+        assertThat(ServiceActivityProbe.target(URI.create("https://[64:ff9b::5db8:d70e]"), false))
+                .isPresent();
     }
 
     @ParameterizedTest
@@ -109,6 +112,13 @@ class ServiceActivityProbeTest {
                 "https://[fe80::1]",
                 "https://[fd00::1]",
                 "https://[::ffff:10.0.0.1]",
+                "https://[::127.0.0.1]",
+                "https://[::a9fe:a9fe]",
+                "https://[::10.0.0.1]",
+                "https://[64:ff9b::a9fe:a9fe]",
+                "https://[64:ff9b::127.0.0.1]",
+                "https://[64:ff9b::192.168.1.10]",
+                "https://[64:ff9b::100.64.0.1]",
                 "https://metadata.google.internal",
                 "https://db.internal",
                 "https://printer.local",

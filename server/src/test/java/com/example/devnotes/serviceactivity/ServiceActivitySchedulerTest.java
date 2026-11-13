@@ -1,6 +1,7 @@
 package com.example.devnotes.serviceactivity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -22,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
@@ -220,6 +223,50 @@ class ServiceActivitySchedulerTest {
                 .isEqualTo(clock.instant());
         tasks.runNext();
         assertThat(transport.targets).hasSize(3);
+        assertThat(window().getLastAttemptAt()).isEqualTo(clock.instant());
+    }
+
+    @Test
+    void aStaleReadAppliedAfterAResumeNeitherCancelsTheNewSequenceNorAnnouncesAPhantomAttempt() throws Exception {
+        visit();
+        window().pause(clock.instant());
+        // What a reader that started before the resume committed still holds: the paused row (same revision).
+        var pausedCopy = ServiceAwakeWindow.empty();
+        pausedCopy.visit(clock.instant());
+        pausedCopy.pause(clock.instant());
+        assertThat(pausedCopy.getRevision()).isEqualTo(window().getRevision());
+        var reached = new CountDownLatch(1);
+        var release = new CountDownLatch(1);
+        doAnswer(invocation -> {
+                    if (Thread.currentThread().getName().equals("stale-reader")) {
+                        reached.countDown();
+                        assertThat(release.await(10, TimeUnit.SECONDS)).isTrue();
+                        return Optional.of(pausedCopy);
+                    }
+                    return singleton();
+                })
+                .when(repository)
+                .findSingleton();
+        var staleReader = new Thread(scheduler::reconcile, "stale-reader"); // e.g. the pause's afterCommit
+        staleReader.start();
+        assertThat(reached.await(10, TimeUnit.SECONDS)).isTrue();
+
+        window().resume(clock.instant());
+        scheduler.reconcile();
+        assertThat(tasks.pending()).hasSize(1);
+
+        release.countDown();
+        staleReader.join(TimeUnit.SECONDS.toMillis(10));
+        assertThat(staleReader.isAlive()).isFalse();
+
+        assertThat(window().isRunning(clock.instant())).isTrue();
+        assertThat(tasks.pending())
+                .singleElement()
+                .extracting(ManualTaskScheduler.Task::at)
+                .isEqualTo(clock.instant());
+        assertThat(scheduler.expectedAttempt(window(), clock.instant())).isEqualTo(clock.instant());
+        tasks.runNext();
+        assertThat(transport.targets).hasSize(1);
         assertThat(window().getLastAttemptAt()).isEqualTo(clock.instant());
     }
 

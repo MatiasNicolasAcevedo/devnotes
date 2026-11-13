@@ -6,6 +6,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -155,6 +156,10 @@ public final class ServiceActivityProbe {
             return !(thisNetwork || carrierGradeNat || benchmarking || reserved);
         }
         if (address instanceof Inet6Address) {
+            Optional<InetAddress> embedded = embeddedIpv4(bytes);
+            if (embedded.isPresent()) {
+                return isPublicAddress(embedded.get()); // the IPv4 it reaches decides, as for ::ffff:0:0/96
+            }
             boolean uniqueLocal = (bytes[0] & 0xfe) == 0xfc;
             boolean documentation = (bytes[0] & 0xff) == 0x20
                     && (bytes[1] & 0xff) == 0x01
@@ -163,5 +168,25 @@ public final class ServiceActivityProbe {
             return !(uniqueLocal || documentation);
         }
         return false;
+    }
+
+    /** IPv4 embedded by IPv4-compatible ({@code ::/96}) or NAT64 well-known prefix ({@code 64:ff9b::/96}) literals. */
+    private static Optional<InetAddress> embeddedIpv4(byte[] ipv6) {
+        boolean compatible = true;
+        for (int i = 0; i < 12; i++) {
+            compatible &= ipv6[i] == 0;
+        }
+        boolean nat64 = ipv6[0] == 0x00 && ipv6[1] == 0x64 && (ipv6[2] & 0xff) == 0xff && (ipv6[3] & 0xff) == 0x9b;
+        for (int i = 4; nat64 && i < 12; i++) {
+            nat64 = ipv6[i] == 0;
+        }
+        if (!compatible && !nat64) {
+            return Optional.empty();
+        }
+        try {
+            return Optional.of(InetAddress.getByAddress(Arrays.copyOfRange(ipv6, 12, 16)));
+        } catch (UnknownHostException impossible) {
+            return Optional.empty();
+        }
     }
 }
