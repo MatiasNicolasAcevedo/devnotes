@@ -7,6 +7,7 @@ import com.example.devnotes.ServerApplication;
 import com.example.devnotes.TestcontainersConfiguration;
 import com.example.devnotes.security.OidcHttpBrowser;
 import com.example.devnotes.security.OidcHttpProvider;
+import com.example.devnotes.serviceactivity.application.ServiceActivityProbe;
 import java.net.http.HttpResponse;
 import java.time.Clock;
 import java.time.Instant;
@@ -31,10 +32,12 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.web.server.context.WebServerApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.bean.override.convention.TestBean;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.JsonNode;
@@ -42,7 +45,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Daily window over real HTTP, session, CSRF and PostgreSQL (S-111, T-053). The allowed account is a fictitious local
- * UUID; the Clock is controlled; nothing leaves the host (no scheduler or probe exists in this task).
+ * UUID; the Clock is controlled; nothing leaves the host (the probe sequence of T-054 is never run here).
  */
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -100,6 +103,23 @@ class ServiceActivityApiIT {
 
     @MockitoBean
     private Clock clock;
+
+    /** T-054: the probe sequence is planned but never run here, and its transport never opens a socket. */
+    @TestBean(name = "serviceActivityTaskScheduler", methodName = "manualTaskScheduler")
+    private TaskScheduler taskScheduler;
+
+    @TestBean(name = "serviceActivityProbeTransport", methodName = "unusedTransport")
+    private ServiceActivityProbe.Transport transport;
+
+    static TaskScheduler manualTaskScheduler() {
+        return new ManualTaskScheduler();
+    }
+
+    static ServiceActivityProbe.Transport unusedTransport() {
+        return target -> {
+            throw new AssertionError("ServiceActivityApiIT never sends a probe");
+        };
+    }
 
     private final AtomicReference<Instant> now = new AtomicReference<>(BA_2359);
 

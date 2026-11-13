@@ -11,11 +11,13 @@ import java.time.Instant;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Daily window and its operational permission (S-111, T-053). Only the operator-configured account may read or change
- * the window; every date and instant comes from the injected Clock in the fixed service zone. This task neither
- * schedules nor sends requests: {@code nextAttemptAt} stays null until the probe exists (T-054).
+ * the window, and only while the probe has a valid public destination; every date and instant comes from the injected
+ * Clock in the fixed service zone. After each committed change the probe sequence is aligned with the window (T-054).
  */
 @Service
 public class ServiceActivityService {
@@ -23,12 +25,20 @@ public class ServiceActivityService {
     private final ServiceActivityProperties properties;
     private final ServiceAwakeWindowRepository windows;
     private final Clock clock;
+    private final ServiceActivityProbe probe;
+    private final ServiceActivityScheduler scheduler;
 
     public ServiceActivityService(
-            ServiceActivityProperties properties, ServiceAwakeWindowRepository windows, Clock clock) {
+            ServiceActivityProperties properties,
+            ServiceAwakeWindowRepository windows,
+            Clock clock,
+            ServiceActivityProbe probe,
+            ServiceActivityScheduler scheduler) {
         this.properties = properties;
         this.windows = windows;
         this.clock = clock;
+        this.probe = probe;
+        this.scheduler = scheduler;
     }
 
     public Capabilities capabilities(UUID actor) {
@@ -49,7 +59,7 @@ public class ServiceActivityService {
     public ServiceActivityView status(UUID actor) {
         requireAccess(actor);
         var window = windows.findSingleton().orElseThrow(ServiceActivityUnavailableException::new);
-        return view(window, clock.instant());
+        return view(window, clock.instant(), scheduler);
     }
 
     @Transactional
@@ -61,7 +71,8 @@ public class ServiceActivityService {
             case VISIT -> window.visit(now);
             case RESUME -> window.resume(now);
         }
-        return view(window, now);
+        alignAfterCommit();
+        return view(window, now, scheduler);
     }
 
     @Transactional
@@ -70,15 +81,34 @@ public class ServiceActivityService {
         var window = windows.lockSingleton().orElseThrow(ServiceActivityUnavailableException::new);
         Instant now = clock.instant();
         window.pause(now);
-        return view(window, now);
+        alignAfterCommit();
+        return view(window, now, scheduler);
     }
 
     private boolean allowed(UUID actor) {
-        return actor != null && properties.allowedOwner().map(actor::equals).orElse(false);
+        return actor != null
+                && probe.configured()
+                && properties.allowedOwner().map(actor::equals).orElse(false);
     }
 
-    static ServiceActivityView view(ServiceAwakeWindow window, Instant now) {
+    /** The scheduler reads committed state only; without a transaction (unit tests) it aligns immediately. */
+    private void alignAfterCommit() {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            scheduler.reconcile();
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                scheduler.reconcile();
+            }
+        });
+    }
+
+    /** {@code nextAttemptAt} comes from the scheduler; null when the sequence is not running. */
+    static ServiceActivityView view(ServiceAwakeWindow window, Instant now, ServiceActivityScheduler scheduler) {
         boolean active = window.isActive(now);
+        Instant next = window.isRunning(now) ? scheduler.expectedAttempt(window, now) : null;
         return new ServiceActivityView(
                 active,
                 active ? window.getActiveUntil() : null,
@@ -87,6 +117,6 @@ public class ServiceActivityService {
                 window.getLastSuccessAt(),
                 window.getConsecutiveFailures(),
                 window.getLastResult(),
-                null);
+                next);
     }
 }
