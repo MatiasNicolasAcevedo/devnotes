@@ -1,3 +1,4 @@
+import { onlineManager } from '@tanstack/react-query'
 import { act, screen, waitFor } from '@testing-library/react'
 import { http as mock, HttpResponse } from 'msw'
 import { Link, Route, Routes } from 'react-router'
@@ -8,6 +9,7 @@ import { server } from '../../test/msw/server'
 import { installServiceActivityBackend } from '../../test/msw/serviceActivityBackend'
 import { renderWithProviders } from '../../test/render'
 import { clickLogout } from '../../test/session'
+import { AUTH_CSRF_PATH } from '../auth/api'
 import { AuthSessionProvider } from '../auth/AuthSessionProvider'
 import { SessionAlerts } from '../auth/SessionAlerts'
 import { SessionControls } from '../auth/SessionControls'
@@ -81,6 +83,8 @@ beforeEach(() => {
 
 afterEach(() => {
   Reflect.deleteProperty(document, 'visibilityState')
+  // El onlineManager es global: un test que simula un corte de red no deja a los siguientes sin conexión.
+  onlineManager.setOnline(true)
   vi.useRealTimers()
 })
 
@@ -117,6 +121,43 @@ describe('activación diaria por visita visible', () => {
 
     setVisibility('visible')
     await waitFor(() => expect(activity.modes()).toEqual(['visit']))
+  })
+
+  it('espera el CSRF antes de enviar una única visita', async () => {
+    const auth = installAuthBackend({ user: owner })
+    const activity = installServiceActivityBackend(auth, { allowedOwner: owner.id })
+    let csrfRequested = false
+    let releaseCsrf = () => {}
+    const heldCsrf = new Promise<void>((resolve) => {
+      releaseCsrf = resolve
+    })
+    server.use(
+      mock.get(
+        AUTH_CSRF_PATH,
+        async () => {
+          csrfRequested = true
+          await heldCsrf
+        },
+        { once: true },
+      ),
+    )
+    const { user } = renderApp()
+
+    try {
+      await waitFor(() => expect(csrfRequested).toBe(true))
+      await user.click(await screen.findByRole('button', { name: 'Cuenta de Dueña Ficticia' }))
+      expect(await screen.findByRole('menuitem', { name: 'Actividad del servidor' })).toBeVisible()
+      expect(screen.getByRole('menuitem', { name: 'Cerrar sesión' })).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      )
+      expect(activity.calls.starts).toHaveLength(0)
+    } finally {
+      releaseCsrf()
+    }
+
+    await waitFor(() => expect(activity.state.activeDate).toBe('2026-11-13'))
+    expect(activity.modes()).toEqual(['visit'])
   })
 
   it.each([
@@ -193,6 +234,32 @@ describe('activación diaria por visita visible', () => {
     await user.click(screen.getByRole('link', { name: 'Notas' }))
     await user.click(screen.getByRole('link', { name: 'Historial' }))
     expect(activity.modes()).toEqual(['visit', 'visit'])
+  })
+
+  it('una reconexión de red sin interacción del dueño no activa el día nuevo', async () => {
+    // Pestaña visible toda la noche: la fecha del servicio ya venció y la red se corta un momento.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-11-14T02:30:00Z'))
+    const auth = installAuthBackend({ user: owner })
+    const activity = installServiceActivityBackend(auth, {
+      allowedOwner: owner.id,
+      serviceDate: '2026-11-13',
+    })
+    renderApp()
+
+    await waitFor(() => expect(activity.modes()).toEqual(['visit']))
+    const capabilities = activity.calls.capabilities
+
+    activity.state.serviceDate = '2026-11-14'
+    vi.setSystemTime(new Date('2026-11-14T05:00:00Z'))
+    act(() => onlineManager.setOnline(false))
+    act(() => onlineManager.setOnline(true))
+    await act(() => new Promise((resolve) => setTimeout(resolve, 100)))
+
+    // Sin foco ni navegación, el evento `online` no vuelve a preguntar la fecha ni activa la ventana.
+    expect(activity.modes()).toEqual(['visit'])
+    expect(activity.state.activeDate).toBe('2026-11-13')
+    expect(activity.calls.capabilities).toBe(capabilities)
   })
 
   it('ningún timer pregunta ni activa con la página abierta sin interacción', async () => {

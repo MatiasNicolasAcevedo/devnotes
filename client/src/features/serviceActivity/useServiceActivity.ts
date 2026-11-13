@@ -38,7 +38,7 @@ export function useDocumentVisible() {
 
 /**
  * Disponibilidad de la ventana para la cuenta. Se revalida al recuperar el foco o al navegar si pasó un minuto, así un
- * día nuevo se detecta por una interacción real del dueño y no por un timer nocturno.
+ * día nuevo se detecta por una interacción real del dueño y no por un timer nocturno ni por una reconexión de red.
  */
 export function useServiceActivityCapabilities(owner: string) {
   const isCurrent = useOwnerIsCurrent(owner)
@@ -61,6 +61,8 @@ export function useServiceActivityCapabilities(owner: string) {
     queryFn: ({ signal }) => fetchCapabilities({ signal, sessionIsCurrent: isCurrent }),
     staleTime: CAPABILITIES_STALE_MS,
     refetchOnWindowFocus: true,
+    // Un evento `online` tras un corte de red no es interacción del dueño: no debe traer la fecha del día nuevo.
+    refetchOnReconnect: false,
     retry: false,
   })
 }

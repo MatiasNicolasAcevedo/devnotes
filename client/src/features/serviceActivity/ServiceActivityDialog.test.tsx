@@ -1,7 +1,7 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import { http as mock, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { buildAuthUser, problemResponse } from '../../test/factories'
 import { installAuthBackend } from '../../test/msw/authBackend'
 import { server } from '../../test/msw/server'
@@ -107,6 +107,37 @@ describe('detalle de actividad del servidor', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
     await new Promise((resolve) => setTimeout(resolve, 50))
     expect(activity.calls.status).toBe(3)
+  })
+
+  it('con el detalle abierto, recuperar el foco y esperar más de un minuto no relee el estado', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+    let visibility: DocumentVisibilityState = 'visible'
+    Object.defineProperty(document, 'visibilityState', {
+      configurable: true,
+      get: () => visibility,
+    })
+
+    try {
+      const { user, activity } = setup()
+      await vi.waitFor(() => expect(activity.modes()).toEqual(['visit']))
+      const dialog = await openDetail(user)
+      await windowStatus(dialog)
+      expect(activity.calls.status).toBe(1)
+
+      for (const state of ['hidden', 'visible'] as const) {
+        visibility = state
+        await act(async () => {
+          document.dispatchEvent(new Event('visibilitychange', { bubbles: true }))
+        })
+      }
+      await act(() => vi.advanceTimersByTimeAsync(61_000))
+      await act(() => new Promise((resolve) => setTimeout(resolve, 50)))
+      expect(dialog).toBeVisible()
+      expect(activity.calls.status).toBe(1)
+    } finally {
+      Reflect.deleteProperty(document, 'visibilityState')
+      vi.useRealTimers()
+    }
   })
 
   it('tres fallos: «No se pudo comprobar la sonda» y el reintento explícito reabre con resume', async () => {
