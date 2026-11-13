@@ -2,12 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-054](tasks/T-054-service-activity-scheduler.md) · Sonda interna cancelable y acotada ([S-111](specs/S-111-render-daily-availability.md)) |
-| Estado | `mergeable` |
-| Acción actual | [Revisión R2](tasks/T-054-service-activity-scheduler.md#revisión-r2--favorable) favorable de PR57, sin bloqueantes: B-1 y O-1 de R1 cerradas; O-2 informativa no bloqueante. Dirigidos 20 + 50 + 10 IT verdes y mutantes fallando como corresponde; FULL/STARTER DIFERIDO POR EL DUEÑO. Publicar el veredicto sobre el HEAD de esta transición, con CI verde, y squash merge elegible. Después T-055 concilia T-054 como `done`. |
-| Rama / PR | `codex/t-054-service-activity-scheduler` · [PR57](https://github.com/MatiasNicolasAcevedo/devnotes/pull/57) OPEN |
+| Tarea y contrato | [T-055](tasks/T-055-service-activity-client.md) · Actividad diaria visible y sondeo moderado ([S-111](specs/S-111-render-daily-availability.md)) |
+| Estado | `in_progress` |
+| Acción actual | Implementación de T-055 en el cliente: activación por visita visible, pausa/reanudación y detalle en el menú de cuenta, readiness cada 60 s solo visible. T-054 conciliada como `done`. |
+| Rama / PR | `codex/t-055-service-activity-client` · PR pendiente |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+
+[T-054](tasks/T-054-service-activity-scheduler.md#conciliación): [PR57](https://github.com/MatiasNicolasAcevedo/devnotes/pull/57) MERGED, squash `fb8a3818ecdf3dcb10da3c0924af2bee45c84f26`, mergedAt 2026-11-13T02:34:08Z (2026-11-12 en Buenos Aires), HEAD aprobado `f79fbea`, `verify-required` SUCCESS. Conciliada como `done`.
 
 [T-053](tasks/T-053-service-activity-window.md#conciliación): [PR56](https://github.com/MatiasNicolasAcevedo/devnotes/pull/56) MERGED, squash `29306a6ca54d73cb3ba8a34e8700b7e419e9c427`, mergedAt 2026-11-13T00:57:08Z (2026-11-12 en Buenos Aires), HEAD aprobado `f8cbabc`, `verify-required` SUCCESS. Conciliada como `done`.
 

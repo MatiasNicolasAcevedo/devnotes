@@ -1,6 +1,6 @@
 ---
 id: T-055
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M5
@@ -60,7 +60,11 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. Al tomar la tarea, registrar SHA/base, comandos, resultados y pendientes. Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
+### Inicio
+
+**2026-11-12 · Junie como implementer en sesión nueva**, ejecutado con Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. Precondición: `gh pr view 57 …` → `MERGED` contra `main`, squash `fb8a3818ecdf3dcb10da3c0924af2bee45c84f26`, `mergedAt` `2026-11-13T02:34:08Z`, `headRefOid` `f79fbea` igual al del veredicto `APROBADO` de R2. [T-054 conciliada](T-054-service-activity-scheduler.md#conciliación) en el primer commit de esta rama. Rama desde `main` `fb8a381`; `trailer/` (ajeno, sin versionar) no se toca. Pasa de `draft` a `in_progress`.
+
+Plan preparado en T-052 el 2026-11-12. Al tomar la tarea, registrar SHA/base, comandos, resultados y pendientes. Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
 
 ## Cierre y siguiente tarea
 
