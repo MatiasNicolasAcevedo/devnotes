@@ -39,7 +39,17 @@ Groq (con q) es el candidato investigado, distinto de Grok/xAI. Cuotas y políti
 
 Intención confirmada por el dueño el 2026-11-10, en orden: (1) activar Groq y probar M2-RC1; (2) exportar e importar en `.xlsx` todos los datos de la propia cuenta (diarias, versiones, voz y referencias), con importación solo en cuenta vacía y el archivo como respaldo y migración, no como editor ([S-107](docs/specs/S-107-xlsx-portability.md)); (3) si todo sale bien, un piloto en Render Free con Google real y migración por `.xlsx` ([S-108](docs/specs/S-108-render-pilot.md)). Esto amplía lo que I1 dejaba fuera (importación/exportación y despliegue) solo en ese alcance. Recursos, secretos, Google real y gastos siguen reservados al dueño.
 
-## Datos, reglas y permisos
+## I5 acordada el 2026-11-12 · Espacios y continuidad diaria
+
+El dueño seleccionó Trabajo/Personal dentro de la misma cuenta, sin categorías por ahora. También pidió empezar una fecha copiando una nota anterior con un botón explícito. Confirmó que, si ayer no tiene nota, se sugiera la última anterior del mismo espacio mostrando la fecha. Las capturas Windows/Android orientan un selector en lugar del DevNotes duplicado de la barra interna, color de contexto con contraste, etiquetas visibles y áreas táctiles cómodas. No se seleccionaron las otras propuestas del catálogo de 50.
+
+Contratos preparados para revisión: [S-109](docs/specs/S-109-private-spaces.md) (espacios, migración y navegación); [S-110](docs/specs/S-110-previous-day-copy.md) (copia explícita y segura); [S-111](docs/specs/S-111-render-daily-availability.md) (investigación/ventana diaria de Render). La continuidad diaria copia el documento de trabajo guardado; no reemplaza contenido ni versiones manuales y no se dispara al abrir. Espacios separa diario/versiones/voz/referencias, migra lo existente a Trabajo, mantiene ambos espacios en respaldo v2 y acepta respaldos v1 en Trabajo.
+
+El dueño informó espera aproximada de dos minutos en Render alrededor de las 19:20. La sonda interna antes propuesta no estaba implementada; el sondeo del navegador no sobrevive a su cierre/suspensión. S-111 prepara una opción interna apagada por defecto, con eficacia remota por demostrar y alternativas externas documentadas. No implica contratar, activar ni desplegar recursos.
+
+El dueño autorizó una rama y PR **solo documental** para [T-052](docs/tasks/T-052-scope-expansion-plan.md) mientras PR54 continúa abierto. Implementación posterior en sesiones independientes y secuenciales, después de ambos cierres. FULL/STARTER/E2E completo diferidos hasta solicitud expresa según [TESTING](docs/TESTING.md#excepción-i5-del-2026-11-12). Las reglas de datos siguientes describen lo vigente; S-109 sustituirá la unicidad por `(propietario, espacio, fecha)` al implementarse, sin cambiar la propiedad de cuenta.
+
+## Datos vigentes, reglas y permisos
 
 - **NotaDiaria:** UUID, propietario local, fecha calendario sin hora, contenido estructurado (texto/enlaces/separadores), última modificación UTC y revisión técnica contra escrituras concurrentes. Única por `(propietario, fecha)`.
 - **VersionDiaria:** UUID, nota asociada, misma fecha de la nota, copia estructurada y timestamp UTC del guardado manual. Máximo una por nota. Editar el trabajo no cambia la copia; solo otra acción manual la reemplaza.

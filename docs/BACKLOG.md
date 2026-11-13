@@ -2,18 +2,41 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
+## Planificación I5 autorizada el 2026-11-12
+
+[T-052](tasks/T-052-scope-expansion-plan.md) prepara los contratos de Trabajo/Personal, copia de la última nota anterior, navegación Windows/Android y sonda diaria de Render. Excepción: PR documental independiente junto a PR54; primero revisar/mergear planificación y conciliar T-051, después implementar una tarea por sesión/PR. Las propuestas 2, 9, 16, 21, 22, 24 y 34 quedan seleccionadas para después de I5 en [Expansión futura](FUTURE-FEATURES.md); no alteran esta cola.
+
+| Orden | Tarea / resultado | Dependencia |
+|---|---|---|
+| 1 | [T-053](tasks/T-053-service-activity-window.md) · Ventana y permiso operativo | T-052 y T-051 MERGED/conciliadas |
+| 2 | [T-054](tasks/T-054-service-activity-scheduler.md) · Scheduler y HTTP acotado | T-053 |
+| 3 | [T-055](tasks/T-055-service-activity-client.md) · Visita diaria, pausa y estado | T-054 |
+| 4 | [T-056](tasks/T-056-service-activity-journey.md) · Validación local, ensayo remoto separado | T-055 |
+| 5 | [T-057](tasks/T-057-space-storage.md) · Migración a Trabajo | T-056 |
+| 6 | [T-058](tasks/T-058-daily-spaces.md) · Diario/versiones por espacio | T-057 |
+| 7 | [T-059](tasks/T-059-reference-spaces.md) · Referencias/búsqueda por espacio | T-058 |
+| 8 | [T-060](tasks/T-060-voice-spaces.md) · Biblioteca de voz por espacio | T-059 |
+| 9 | [T-061](tasks/T-061-xlsx-spaces-codec.md) · Codec v1/v2 | T-060 |
+| 10 | [T-062](tasks/T-062-xlsx-spaces-api.md) · Respaldo integral de ambos espacios | T-061 |
+| 11 | [T-063](tasks/T-063-space-client-context.md) · Contexto y navegación segura | T-062 |
+| 12 | [T-064](tasks/T-064-space-navigation.md) · Selector y UI responsiva | T-063 |
+| 13 | [T-065](tasks/T-065-spaces-journey.md) · Recorrido dirigido de espacios | T-064 |
+| 14 | [T-066](tasks/T-066-copy-previous-api.md) · Copia protegida en servidor | T-065 |
+| 15 | [T-067](tasks/T-067-copy-previous-client.md) · Botón y recorrido diario | T-066 |
+
+Todas draft solo por la dependencia indicada; máximo cinco ready y una implementación activa. La eficacia remota de la sonda no bloquea T-057: T-056 distingue cierre local de ensayo con el dueño. Contratos y criterios en S-109…S-111. No ejecutar FULL al completar la tabla sin solicitud expresa del dueño.
+
 ## Siguientes · plan del dueño del 2026-11-10, ajustado el 2026-11-11
 
 Del plan original quedan hechos la activación de Groq y la portabilidad `.xlsx` (ver [Hechas · I3](#hechas--i3--m3-portabilidad-xlsx)). El 2026-11-11 el dueño antepuso al despliegue una única tarea de ajustes de UI. Contratos: [S-108](specs/S-108-render-pilot.md), con la receta técnica en [DEPLOYMENT](DEPLOYMENT.md#piloto-de-devnotes-en-render-free). Una tarea y un PR por vez, con sesión nueva por tarea y por revisión; quien concilia un MERGED habilita la siguiente.
 
 | Orden | Contrato / resultado | Ejecuta | Dependencia |
 |---|---|---|---|
-| 1 | [T-047](tasks/T-047-render-first-deploy.md) · Primer deploy, migración `.xlsx` y aceptación | Dueño con un agente de frontera | [T-046 conciliada](tasks/T-046-render-image.md#checkpoint-vigente) |
-| 2 | [T-051](tasks/T-051-render-follow-up.md) · Ícono y voz en un PR y un despliegue | Dueño con un agente de frontera | T-047 MERGED |
+| 1 | [T-051](tasks/T-051-render-follow-up.md) · Ícono y voz; ejecución actual en PR54 | Dueño con un agente de frontera | T-047 conciliada como done en T-052 |
 
 Retorno a frontera si el dueño emite «no aceptada» en T-047, ante una decisión fuera de contrato o al cerrar T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
 
-El dueño aplazó medir el despertar por inactividad y probar la [sonda diaria](tasks/T-051-render-follow-up.md#sonda-aplazada).
+El aplazamiento de la sonda en T-051 se retoma como investigación y contrato en [S-111](specs/S-111-render-daily-availability.md), a pedido del dueño del 2026-11-12. No hay implementación ni activación remota acreditadas por ese contrato.
 
 ### Hallazgos de T-039
 

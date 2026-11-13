@@ -87,6 +87,18 @@ Decisión del dueño del 2026-11-10 para avanzar hacia el piloto de despliegue. 
 Desde la decisión del dueño de entregar S-107 en una rama y un PR, el FULL integrado ya no espera a T-044 `MERGED`: se ejecuta una vez sobre el HEAD final de `codex/s-107-xlsx-portability`, al cerrar T-045 y antes de pedir la revisión. Clasificar el diff acumulado desde `c5e37cc4b73ad038ac35edf29c66131416bb4a34`, ejecutar el FULL local con fixtures ficticias y añadir tooling si el perfil acumulado es STARTER. Revisar esa evidencia en el control de avance de T-040…T-045 y exigir el gate verde antes de la revisión independiente. Tras el MERGED de ese PR rige nuevamente el cierre ordinario por alcance. El reensayo externo del dueño sigue el contrato de T-049.
 
 ## Cuándo ejecutar FULL
+
+### Excepción I5 del 2026-11-12
+
+Instrucción expresa del dueño durante [T-052](tasks/T-052-scope-expansion-plan.md): para la planificación y la serie de mejoras definida allí, **no ejecutar FULL de aplicación, FULL E2E, STARTER ni tooling completo hasta que el dueño lo solicite expresamente**. No arrancarlos al cerrar cada tarea, al revisar ni por el resultado conservador de `--policy`. El diferimiento incluye T-051 pendiente y las tareas de I5 que concrete T-052; no modifica los gates de otras iniciativas futuras.
+
+Cada PR técnico de esa serie conserva pruebas dirigidas según riesgo, negativos de reglas críticas, bugfix primero rojo, `node scripts/docs-check.mjs`, `git diff --check` y clasificación del diff contra la base publicada. Los tests E2E dirigidos usan `--grep` y proyecto explícito, API propia real, PostgreSQL/OIDC ficticios y cleanup del harness. Conservar assertions, cobertura configurada, retries y deadlines; un IT dirigido usa `-Djacoco.skip=true` para no presentar cobertura parcial como gate global, sin cambiar umbrales del proyecto.
+
+Con esa evidencia se puede publicar y pasar a revisión/merge independiente bajo AUTONOMY, registrando **FULL/STARTER DIFERIDO POR EL DUEÑO**, nunca aprobado ni implícitamente satisfecho. CI `verify-required` sobre HEAD final sigue obligatoria y solo acredita su alcance liviano. T-052 es DOCS_ONLY: checks documentales, sin stacks ni pruebas de aplicación.
+
+Cuando el dueño pida el integrado, usar el diff acumulado desde `00407ef4a637369d3078d19aceab123be3b13521`, incluyendo los cambios posteriores de T-051 y esta serie. Si la base cambia con otras tareas, reconciliar su alcance antes de clasificar. Ejecutar una vez sobre fuentes congeladas el gate que corresponda al perfil acumulado, con checkpoint, SHA/base, recursos propios, logs saneados y cleanup. No programar ni lanzar ese gate ahora. La excepción no es autorización de despliegue.
+
+### Regla general fuera de la excepción
 Dirigidos mientras se implementa. Un FULL de aplicación válido al cerrar fuentes técnicas y tooling si STARTER, con SHA/base, huella antes/después, comandos, logs saneados y cleanup en la tarea. No editar fuentes durante la corrida. Una transición solo Markdown conserva esa evidencia si base/fuentes técnicas coinciden; ejecutar docs-check y los checks afectados. Cambios de fuentes/base, falta de evidencia o riesgo concreto requieren revalidar lo afectado. La revisión es independiente y no repite FULL por rutina.
 
 DOCS_ONLY acepta solo archivos regulares A/M de Markdown raíz/docs, AGENTS/CLAUDE conocidos y LICENSE. Código/scripts/workflows/locks, Markdown técnico, renombres/borrados, modos especiales, diff vacío o error exigen FULL. El clasificador conservador no sustituye comprobar las fuentes probadas.
