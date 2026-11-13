@@ -51,15 +51,15 @@ Solo Markdown: DEPLOYMENT (evidencia del piloto y diagnóstico encontrado), esta
 
 ## Checkpoint vigente
 
-**Conciliación 2026-11-12 en T-052.** GitHub confirmó PR53 MERGED, squash `00407ef4a637369d3078d19aceab123be3b13521`, mergedAt `2026-11-12T03:18:19Z`, HEAD revisado `c124a404dc4e47b16dc335829a25dff6e2d85fbd`. Se conserva debajo la revisión y la evidencia originales. T-051 ya tiene ejecución independiente en PR54; T-052 es la excepción de planificación autorizada por el dueño.
+**2026-11-12 · Conciliada como `done` al iniciar T-051.** `gh pr view 53 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName,statusCheckRollup` salió con código 0. [PR53](https://github.com/MatiasNicolasAcevedo/devnotes/pull/53) `MERGED` contra `main`, squash `00407ef4a637369d3078d19aceab123be3b13521`, `mergedAt` `2026-11-12T03:18:19Z`, HEAD `c124a404dc4e47b16dc335829a25dff6e2d85fbd`, [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43147054398/job/130947206715). Continúa [T-051](T-051-render-follow-up.md). T-052 confirmó en GitHub los mismos datos en paralelo, como excepción de planificación autorizada por el dueño.
+
+### Revisión independiente
 
 **2026-11-12 · Revisión independiente favorable.** Frontera como reviewer en Codex de escritorio, familia GPT-6, variante y esfuerzo no expuestos. Se usaron Git, `gh`, PowerShell, Git Bash y Node. El diff abarca seis archivos Markdown con la operación del piloto y la retoma de T-051. El impacto sobre comportamiento, API, permisos, datos y UI se limita a su documentación.
 
 - GitHub y `git ls-remote` confirmaron PR53 abierto contra `main` `222ae003f5db5fc887929ca98f9405ae67bd4d09`, HEAD `9b8ec4253b086937416db16ea4ec9482ee8b467d` y cero hilos de revisión. GitHub confirmó PR52 `MERGED` con ese SHA de `main`.
 - Sobre el checkout limpio del HEAD publicado, `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` pasaron. `bash scripts/verify.sh --policy origin/main` devolvió `DOCS_ONLY` / `DOCUMENTATION`, seis archivos. El [job `verify-required`](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43146464561/job/130945325495) pasó con los mismos SHA de HEAD y base.
 - El dueño aceptó la persistencia en Brave tras el reinicio. Omitió en Render la importación y el `409` de RP-04 y aplazó la medición del despertar por inactividad. [Evidencia y decisiones del piloto](../DEPLOYMENT.md#avance-del-piloto).
-
-Verificar el HEAD publicado de esta transición, su base, el gate documental y `verify-required`. Publicar el veredicto ligado a ambos SHA y aplicar [el protocolo de merge](../agents/merger.md).
 
 ### Entrega del piloto
 

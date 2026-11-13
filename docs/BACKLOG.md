@@ -4,7 +4,7 @@ Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este í
 
 ## Planificación I5 autorizada el 2026-11-12
 
-[T-052](tasks/T-052-scope-expansion-plan.md) prepara los contratos de Trabajo/Personal, copia de la última nota anterior, navegación Windows/Android y sonda diaria de Render. Excepción: PR documental independiente junto a PR54; primero revisar/mergear planificación y conciliar T-051, después implementar una tarea por sesión/PR. Las propuestas 2, 9, 16, 21, 22, 24 y 34 quedan seleccionadas para después de I5 en [Expansión futura](FUTURE-FEATURES.md); no alteran esta cola.
+[T-052](tasks/T-052-scope-expansion-plan.md#conciliación), done tras PR55 MERGED, preparó los contratos de Trabajo/Personal, copia de la última nota anterior, navegación Windows/Android y sonda diaria de Render. Excepción: PR documental independiente junto a PR54; primero revisar/mergear planificación y conciliar T-051, después implementar una tarea por sesión/PR. Las propuestas 2, 9, 16, 21, 22, 24 y 34 quedan seleccionadas para después de I5 en [Expansión futura](FUTURE-FEATURES.md); no alteran esta cola.
 
 | Orden | Tarea / resultado | Dependencia |
 |---|---|---|
@@ -32,9 +32,9 @@ Del plan original quedan hechos la activación de Groq y la portabilidad `.xlsx`
 
 | Orden | Contrato / resultado | Ejecuta | Dependencia |
 |---|---|---|---|
-| 1 | [T-051](tasks/T-051-render-follow-up.md) · Ícono y voz; ejecución actual en PR54 | Dueño con un agente de frontera | T-047 conciliada como done en T-052 |
+| 1 | [T-051](tasks/T-051-render-follow-up.md) · Ícono y voz en un PR y un despliegue; ejecución en PR54 | Dueño con un agente de frontera | [T-047 conciliada](tasks/T-047-render-first-deploy.md#checkpoint-vigente) |
 
-Retorno a frontera si el dueño emite «no aceptada» en T-047, ante una decisión fuera de contrato o al cerrar T-047. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
+Retorno a frontera ante una decisión fuera de contrato o al cerrar T-051. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
 
 El aplazamiento de la sonda en T-051 se retoma como investigación y contrato en [S-111](specs/S-111-render-daily-availability.md), a pedido del dueño del 2026-11-12. No hay implementación ni activación remota acreditadas por ese contrato.
 
@@ -74,6 +74,8 @@ Del [avance de T-050](tasks/T-050-ui-adjustments.md#avance-del-implementer-2026-
 ## Hechas · I4 / M4 piloto en Render
 
 [T-046](tasks/T-046-render-image.md#checkpoint-vigente) · Imagen única y smoke local con 512 MB, RP-01 y RP-02 verificados, PR52 MERGED.
+
+[T-047](tasks/T-047-render-first-deploy.md#checkpoint-vigente) · Primer deploy y aceptación del piloto en Brave, PR53 MERGED. El dueño omitió la importación en Render.
 
 ## Hechas · I3 / M3 portabilidad xlsx
 

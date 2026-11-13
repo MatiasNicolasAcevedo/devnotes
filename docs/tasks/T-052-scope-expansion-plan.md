@@ -1,6 +1,6 @@
 ---
 id: T-052
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M5
@@ -106,3 +106,7 @@ Observaciones no bloqueantes (cierre en la tarea indicada, sin replanificar):
 | O-4 | PROJECT_CONTEXT dice que no se seleccionaron otras propuestas; FUTURE-FEATURES selecciona siete para después de I5 | Aclarar en la próxima planificación de frontera; no afecta I5 |
 
 Transición: `mergeable`. Esta transición cambia HEAD; el veredicto `APROBADO` se publica en PR55 con el SHA nuevo solo después de docs-check y `verify-required` verde sobre ese SHA. El merge sigue [merger](../agents/merger.md); T-052 pasa a done en el primer avance de la siguiente rama autorizada, tras confirmar MERGED.
+
+## Conciliación
+
+**2026-11-12 · Conciliada como `done` en la rama de T-051.** Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio, como implementer de frontera de T-051; esfuerzo no expuesto. `gh pr view 55 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` salió con código 0: [PR55](https://github.com/MatiasNicolasAcevedo/devnotes/pull/55) `MERGED` contra `main`, squash `9463bb03d288da586c3953508ba184a2f2e571d0`, `mergedAt` `2026-11-13T00:03:28Z` (2026-11-12 21:03 en Buenos Aires), HEAD `49c5019a8bd895fa36ccb659934a92d32fde6340`, [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43333787614/job/131584708030). La observación O-3 se cierra al integrar `main` en PR54 con `git merge`, conservando la evidencia de T-051 y la cola I5. T-053 sigue esperando PR54 MERGED y T-051 conciliada.

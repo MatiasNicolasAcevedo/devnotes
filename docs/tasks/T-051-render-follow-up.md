@@ -1,6 +1,6 @@
 ---
 id: T-051
-status: draft
+status: mergeable
 priority: P1
 size: M
 milestone: M4
@@ -9,7 +9,7 @@ depends_on: [T-047]
 branch: codex/t-051-render-follow-up
 role: implementer
 executor: frontier
-pr: null
+pr: 54
 ---
 
 # T-051 · Ícono y voz en Render
@@ -41,9 +41,41 @@ El dueño pidió dejar la sonda para después y avanzar con el ícono y la voz. 
 ## Pasos y pruebas
 
 1. Desde `main` actualizado tras PR53 MERGED, abrir la rama indicada. Copiar el SVG local sobre `client/public/favicon.svg` y añadir los PNG de 192 y 512 px al manifiesto. Ajustar `client/src/app/manifest.test.ts` para comprobar los tres tamaños sin perder los datos de instalación existentes.
-2. Desde `client/`, ejecutar `npm test -- --run src/app/manifest.test.ts`. Gate de cierre desde la raíz en Git Bash: `COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-t051 STARTER_E2E_PROJECT=starter-e2e-t051 STARTER_SERVER_TESTS=container bash scripts/verify.sh --starter`. Conservar `node scripts/docs-check.mjs`, `git diff --check` y `bash scripts/verify.sh --policy origin/main`.
-3. Con el gate verde, publicar el SHA de prueba y coordinar un solo deploy manual con el dueño. Comprobar readiness y el nuevo ícono. El dueño prueba voz con la muestra ficticia bajo las condiciones de VOICE-RELEASE y confirma el veredicto. Registrar evidencia saneada en el mismo PR.
+2. Desde `client/`, ejecutar `npm test -- --run src/app/manifest.test.ts`. Conservar `node scripts/docs-check.mjs`, `git diff --check` y `bash scripts/verify.sh --policy origin/main`. El dueño exceptuó el gate STARTER para adelantar el deploy de prueba el 2026-11-12.
+3. Publicar el SHA de prueba y coordinar un solo deploy manual en `devnotes-pilot`, con confirmación expresa del dueño para ese SHA. Comprobar readiness y el nuevo ícono. El dueño prueba voz con la muestra ficticia bajo las condiciones de VOICE-RELEASE y confirma el veredicto. Registrar evidencia saneada en el mismo PR.
 
 ## Checkpoint vigente
 
-Frontera en Codex de escritorio, familia GPT-6, variante y esfuerzo no expuestos. Git, PowerShell, MCP de Render y documentación oficial. Insumos conservados en `.orchestrator/t051-inputs/`, con copias del ICO y del ejemplo Java verificadas por SHA-256. Pendiente para `ready`: T-047 MERGED. El cambio de assets en `client/public` exige el perfil STARTER según [TESTING](../TESTING.md#frecuencia-y-alcance-del-gate).
+### Revisión independiente
+
+**2026-11-12 · Revisión independiente favorable de PR54, sin bloqueantes.** Frontera como reviewer y merger en sesión nueva, distinta de la autora: Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. Git, `gh`, Git Bash y Node. La independencia es de sesión: la última sesión autora usó el mismo modelo y herramienta. Impacto revisado: presentación del favicon y del ícono de la app instalada; sin cambios de API, permisos, datos ni lógica de UI.
+
+- `gh pr view 54`: `OPEN`, no draft, contra `main`, `MERGEABLE`/`CLEAN`, sin comentarios ni revisiones previas. HEAD `5979b005316275566a711c8a77b5f5fc37781f2a`, base `9463bb03d288da586c3953508ba184a2f2e571d0`, igual a `origin/main` y al merge-base. [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43335472592/job/131590430499) con ese `headSha`.
+- Worktree limpio y aislado del HEAD publicado, sin `trailer/` ni `plantilla/`. Diff de código limitado a `client/public/favicon.svg`, los dos PNG, `manifest.json` y `manifest.test.ts`; el resto es Markdown de T-051, la integración `d825e27` y la conciliación de T-052 y T-047. `git diff f6a23c7 HEAD -- client server scripts .github` vacío: el código aceptado por el dueño en el piloto es el mismo del HEAD.
+- Cabeceras PNG: 192 × 192 y 512 × 512, RGBA de 8 bits. El manifiesto conserva nombre, `start_url`, `scope`, `display` y colores; `index.html` sigue enlazando favicon y manifiesto, sin service worker.
+- La aceptación del dueño cubre las cuatro confirmaciones previas de [VOICE-RELEASE](../VOICE-RELEASE.md#habilitación-segura-del-proveedor) (cuenta propia en nivel permitido, audio sintético no personal, retención aceptada, sin pago nuevo) y los límites públicos coinciden con su revalidación. Está saneada: sin claves, cookies, correos, capturas ni texto transcrito; el identificador del servicio en Render ya figura en DEPLOYMENT de `main`.
+- Gate local bajo la [excepción I5](../TESTING.md#excepción-i5-del-2026-11-12): `npm test -- --run src/app/manifest.test.ts` desde `client/` tras `npm ci`, 4/4; `node scripts/docs-check.mjs` OK (124 Markdown, 68 tareas, HANDOFF 22/22); `git diff --check origin/main...HEAD` OK; `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`: `policy=FULL`, `profile=STARTER`, diez rutas, cinco técnicas. **FULL/STARTER DIFERIDO POR EL DUEÑO**, no aprobado ni implícitamente satisfecho; E2E, deploys y sonda no se ejecutaron.
+- Observación no bloqueante: el manifiesto no declara un ícono `maskable`; Windows lo muestra bien según el dueño, y la presentación en Android queda para la navegación Android de I5 si el dueño la observa.
+
+Transición: `mergeable`. Esta transición cambia HEAD; el veredicto `APROBADO` se publica en PR54 con el SHA nuevo después de docs-check y `verify-required` verde sobre ese SHA. El merge sigue [merger](../agents/merger.md); T-051 pasa a `done` en el primer avance de la rama de T-053, tras confirmar MERGED.
+
+### Aceptación del dueño e integración de `main`
+
+**2026-11-12 · Aceptación del dueño e integración de `main`.** Frontera como implementer en sesión nueva: Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. Git, `gh`, Git Bash, PowerShell, Node y `curl`. Impacto sin cambios respecto de la implementación: presentación del favicon y del ícono de la app instalada; la voz usa la configuración del piloto. Sin deploy nuevo, sin consulta del panel de Render y sin cambio de variables.
+
+- Precondición: `gh pr view 55` confirmó [PR55](https://github.com/MatiasNicolasAcevedo/devnotes/pull/55) `MERGED`, squash `9463bb03d288da586c3953508ba184a2f2e571d0`, `mergedAt` `2026-11-13T00:03:28Z`. [T-052 conciliada](T-052-scope-expansion-plan.md#conciliación) como `done`.
+- Antes de integrar: PR54 OPEN/draft, HEAD `9a2ed719a16be94a2f5a2c0866ff4a0e94371df6`, base `main`, `CONFLICTING`, [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43149360497/job/130954621683) en ese HEAD. GET público de `/actuator/health/readiness` en `devnotes-pilot`: HTTP `200` y `UP` tras ~73 s de despertar. `favicon.svg` (finales de línea normalizados) y los PNG de 192 y 512 px servidos coinciden byte a byte con la rama, cuyo único commit de código es `f6a23c7`; el HTML sigue enlazando favicon y manifiesto.
+- Integración con `git merge origin/main` (merge `d825e27`), sin rebase ni force push. Conflictos en STATUS, BACKLOG y T-047 resueltos conservando la evidencia de T-051 y la cola I5 (cierra la O-3 de la revisión de T-052). El trabajo se hizo en un worktree propio porque otra sesión volvió el checkout principal a `main` durante la retoma; `trailer/` quedó intacto.
+- **Condiciones de Groq confirmadas por el dueño antes de enviar audio:** cuenta propia en plan Free, sin contratación ni pago nuevo, solo audio sintético ficticio, retención aceptada según [VOICE-RELEASE](../VOICE-RELEASE.md#habilitación-segura-del-proveedor). Límites públicos sin cambios desde la revalidación de esta tarea.
+- **Aceptación del dueño, 2026-11-12, sobre `f6a23c7` live:** favicon nuevo en la pestaña de Brave; ícono nuevo en la app instalada en Windows (Inicio, barra de tareas y ventana); login con Google y reapertura de una nota diaria existente; con la muestra TTS ficticia, transcripción a texto editable, edición, guardado y reapertura desde la biblioteca de voz. Las cuatro áreas OK. Sin datos personales, capturas ni texto transcrito registrados.
+- Checks de cierre bajo la [excepción I5](../TESTING.md#excepción-i5-del-2026-11-12), sin FULL ni STARTER: `npm test -- --run src/app/manifest.test.ts` desde `client/` 4/4; `node scripts/docs-check.mjs` OK (124 Markdown, 68 tareas, HANDOFF 22/22); `git diff --check` OK; `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` y `bash scripts/verify.sh --policy origin/main`: `FULL` / `STARTER`, diez rutas, cinco técnicas (íconos, manifiesto y su test). El HEAD final exige `verify-required` verde.
+- Siguiente: revisión independiente de PR54 en sesión nueva. La sonda y la medición del despertar siguen en [S-111](../specs/S-111-render-daily-availability.md).
+
+### Implementación y deploy de prueba
+
+**2026-11-12 · Implementación.** Frontera como implementer en Codex de escritorio, familia GPT-6, variante y esfuerzo no expuestos. Git, `gh`, PowerShell, Git Bash, Node, MCP de Render y documentación oficial. Base `main` `00407ef4a637369d3078d19aceab123be3b13521` tras [conciliar T-047](T-047-render-first-deploy.md#checkpoint-vigente). El favicon SVG y los PNG de 192 y 512 px usan los insumos del dueño. El cambio de producto alcanza la presentación de la pestaña y de la app instalada. La voz usa la configuración del piloto indicada por el dueño.
+
+- `npm test -- --run src/app/manifest.test.ts` desde `client/`: 4/4. Verificación de los tres archivos de ícono y de las dimensiones PNG mediante cabeceras IHDR: OK. `npm run build`: OK, con aviso de tamaño del bundle. Los cuatro archivos públicos están en `dist`. `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD`: OK. `bash scripts/verify.sh --policy origin/main` en Git Bash: `FULL` / `STARTER`, nueve rutas, cinco técnicas. STARTER exceptuado por el dueño para el deploy de prueba.
+- [PR54](https://github.com/MatiasNicolasAcevedo/devnotes/pull/54) abierto como borrador. SHA de prueba publicado y verificado en GitHub: `f6a23c7ec7587baa004d85b8a4187058b9fff255`, con [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43148200959/job/130950912772). Render confirmó `devnotes-pilot` Free, enlazado a `main` con auto-deploy desactivado.
+- Con autorización explícita del dueño para ese SHA y la revisión independiente pendiente, se inició un único [deploy por SHA en Render](https://dashboard.render.com/web/srv-dbqhfqei0phs73cmkbs0/deploys/dep-dbqj6bajnfac738rp65g) mediante el panel en Brave. Render registró `live` para `f6a23c7ec7587baa004d85b8a4187058b9fff255`, inicio `2026-11-12T03:31:57Z` y fin `2026-11-12T03:33:52Z`. El GET público de `/actuator/health/readiness` devolvió HTTP `200` y `UP`. El HTML público enlaza el favicon y el manifiesto. El manifiesto y los tres íconos devolvieron `200` y coinciden con `client/dist`, comparando los PNG byte a byte y el SVG con finales de línea normalizados.
+- Pendiente la aceptación del dueño en Brave, Windows y voz. Muestra local TTS `es-ES` de 11,44 s, ficticia, en `.orchestrator/t051-voice-sample.wav` (ignorada por Git). Groq sigue publicando soporte de WebM en `whisper-large-v3-turbo`, hasta 25 MB por archivo en Free, 20 solicitudes/min, 2.000/día, 7.200 s/h y 28.800 s/día, con elegibilidad ZDR. Antes de enviar, el dueño confirma plan, gasto y retención según [VOICE-RELEASE](../VOICE-RELEASE.md#habilitación-segura-del-proveedor). [Formato](https://console.groq.com/docs/speech-to-text) · [Cuota](https://console.groq.com/docs/rate-limits) · [Retención](https://console.groq.com/docs/your-data). La sonda y la medición del despertar siguen aplazadas.
