@@ -49,8 +49,8 @@ class ReferenceItemMigrationIT {
                     .toList();
             assertThat(versioned)
                     .extracting(migration -> migration.getVersion().toString())
-                    .containsExactly("1", "2", "3", "4", "5");
-            assertThat(all.info().current().getVersion().toString()).isEqualTo("5");
+                    .containsExactly("1", "2", "3", "4", "5", "6");
+            assertThat(all.info().current().getVersion().toString()).isEqualTo("6");
             if (existing) assertThat(versioned.getFirst().getChecksum()).isEqualTo(checksum);
             try (var connection = DriverManager.getConnection(
                             POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());

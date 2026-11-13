@@ -56,6 +56,9 @@ class SecurityConfigTest {
     private com.example.devnotes.portability.application.PortabilityImportService portabilityImport;
 
     @MockitoBean
+    private com.example.devnotes.serviceactivity.application.ServiceActivityService serviceActivity;
+
+    @MockitoBean
     private IdentityService identityService;
 
     @Autowired
