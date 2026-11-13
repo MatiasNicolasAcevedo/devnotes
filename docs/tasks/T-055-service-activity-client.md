@@ -1,6 +1,6 @@
 ---
 id: T-055
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M5
@@ -188,6 +188,10 @@ Revisión independiente de PR58: [R1 con cambios requeridos](#revisión-r1--camb
 **2026-11-12 · Junie como implementer en sesión nueva**, ejecutado con Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. Precondición: `gh pr view 57 …` → `MERGED` contra `main`, squash `fb8a3818ecdf3dcb10da3c0924af2bee45c84f26`, `mergedAt` `2026-11-13T02:34:08Z`, `headRefOid` `f79fbea` igual al del veredicto `APROBADO` de R2. [T-054 conciliada](T-054-service-activity-scheduler.md#conciliación) en el primer commit de esta rama. Rama desde `main` `fb8a381`; `trailer/` (ajeno, sin versionar) no se toca. Pasa de `draft` a `in_progress`.
 
 Plan preparado en T-052 el 2026-11-12. Al tomar la tarea, registrar SHA/base, comandos, resultados y pendientes. Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
+
+## Conciliación
+
+**2026-11-13 · Conciliada como `done` en la rama de T-056.** `gh pr view 58 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` salió con código 0. PR58 figura `MERGED` contra `main`, con squash `c95f81408a3612e5626a3da2ebefc870bb23d119` y `mergedAt` `2026-11-13T22:02:19Z` (19:02:19 en Buenos Aires). El comentario de cierre registra B-3 resuelto, el veredicto independiente para HEAD `cbfc9a0024650ab226084746e60ddaee4abb6637` sobre base `fb8a3818ecdf3dcb10da3c0924af2bee45c84f26` y `verify-required` SUCCESS para esa revisión. [Cierre de PR58](https://github.com/MatiasNicolasAcevedo/devnotes/pull/58#issuecomment-6866030504).
 
 ## Cierre y siguiente tarea
 
