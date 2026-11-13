@@ -1,6 +1,6 @@
 ---
 id: T-054
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M5
@@ -57,6 +57,21 @@ Los nombres nuevos de tests son archivos/clases que esta tarea debe crear. Confi
 Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`. Registrar **FULL/STARTER DIFERIDO POR EL DUEÑO**. No ejecutar FULL, STARTER, tooling completo ni E2E completo hasta solicitud expresa, aunque el clasificador dé FULL/STARTER. CI liviana/revisión independiente siguen obligatorias.
 
 ## Checkpoint vigente
+
+### Revisión R2 · favorable
+
+**2026-11-12 · Junie como reviewer en sesión nueva**, distinta de la implementación, de la corrección y de la revisión R1, ejecutado con Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. Git, `gh`, Git Bash, Maven Wrapper con JDK 21.0.9, Docker Desktop (motor Linux 28.5.1) y Node. Impacto propio: solo esta transición documental de T-054/STATUS; sin cambios de comportamiento, API, permisos, datos ni UI. Ronda 2 de 2 (última).
+
+Precondición: `gh pr view 57 …` → OPEN, no draft, base `main` `29306a6ca54d73cb3ba8a34e8700b7e419e9c427`, `headRefOid` `394e9168764285914e9cf0a752e86d88439db063`, MERGEABLE; `verify-required` SUCCESS sobre ese SHA. Revisión en worktree aislado `--detach` de ese SHA; `trailer/` del checkout principal no se tocó. Leídos el diff de la corrección (`445ea90..394e916`, 7 rutas) y el completo contra `origin/main` (16 rutas): sin `pom.xml`, migraciones, `.env*`, `application*`, OpenAPI, cliente, workflows ni scripts.
+
+- **B-1 cerrado.** `align` descarta toda instantánea con revisión menor que `knownRevision` antes de tocar el estado; la revisión de la fila solo crece (`visit`/`pause`/`resume` incrementan, `recordAttempt` no la cambia) y no hay borrado de la fila en código de producción, así que el descarte no puede ocultar una ventana nueva. Con el disparo conservado, `expectedAttempt` vuelve a anunciar el instante planificado. `aStaleReadAppliedAfterAResumeNeitherCancelsTheNewSequenceNorAnnouncesAPhantomAttempt` reproduce el escenario de R1, verifica el disparo, `nextAttemptAt` y el envío posterior. El reinicio de `ServiceActivitySchedulerIT` pasa a `revision = revision + 1` y sus tres aserciones de revisión siguen siendo exactas (relativas a la revisión del reinicio), sin debilitarse.
+- **O-1 cerrada.** Los literales `::/96` y `64:ff9b::/96` se juzgan por la IPv4 embebida con las reglas de IPv4, sin DNS; siete negativos (loopback, link-local, privada y CGNAT embebidas) y un positivo con IPv4 pública embebida. `::` y `::1` siguen rechazados (IPv4 embebida `0.0.0.0/8`).
+- Prueba dirigida, desde `server/`: `./mvnw -q verify -Dtest=ServiceActivitySchedulerTest,ServiceActivityProbeTest -Dit.test=ServiceActivitySchedulerIT -Djacoco.skip=true` → exit 0: `ServiceActivitySchedulerTest` 20/20, `ServiceActivityProbeTest` 50/50 y `ServiceActivitySchedulerIT` 10/10 con PostgreSQL real; 0 fallos, errores y omitidos según los reportes. La salida no contiene `db.internal`, el destino ni `onrender`.
+- Mutantes temporales, cada uno restaurado con `git checkout` (árbol limpio después), con `-Dspotless.check.skip=true` solo para no mezclar formato: sin el descarte de lecturas viejas → `ServiceActivitySchedulerTest` 1/20 falla (el test nuevo, línea 264); `plan` sin corte de medianoche → 1/20 (`neverSendsAtOrAfterTheExclusiveMidnight`); `Redirect.NORMAL` → `ServiceActivityProbeTest` 2/50; sin `@Lock(PESSIMISTIC_WRITE)` en `lockSingleton` → `ServiceActivitySchedulerIT` 3/10 (los tres casos de fila retenida; corrida solo del IT con `-Dtest=NoSuchUnitTest -Dsurefire.failIfNoSpecifiedTests=false`); sin la evaluación de IPv4 embebida → `ServiceActivityProbeTest` 7/50.
+- Cierre desde la raíz del worktree: `node scripts/docs-check.mjs` OK (124 Markdown, 68 tareas, HANDOFF 22/22); `git diff --check origin/main...HEAD` exit 0; `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → `policy=FULL`, `profile=APPLICATION`, 16 rutas, 12 técnicas. **FULL/STARTER DIFERIDO POR EL DUEÑO** según la [excepción I5](../TESTING.md#excepción-i5-del-2026-11-12): no se ejecutaron FULL, STARTER, E2E, deploys, variables de Render ni HTTP saliente real.
+- **O-2 (no bloqueante, informativa).** Otros formatos IPv6 que transportan IPv4 (prefijo NAT64 local `64:ff9b:1::/48`, 6to4 `2002::/16`, Teredo) se siguen tratando como IPv6 global. Riesgo bajo por la misma razón que O-1: el origen lo fija el operador, no el usuario. No condiciona la aprobación ni requiere otra ronda.
+
+Sin bloqueantes. Siguiente: publicar el veredicto `APROBADO` sobre el HEAD de esta transición con `verify-required` verde y squash merge elegible según [AUTONOMY](../AUTONOMY.md#revisión-y-merge). Después, sesión nueva que concilia T-054 como `done` y toma T-055.
 
 ### Corrección R1 · lista para revisión R2
 
