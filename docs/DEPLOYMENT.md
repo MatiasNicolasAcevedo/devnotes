@@ -51,7 +51,7 @@ Para medir el despertar, el dueño hará manualmente el primer GET público a `/
 
 El dueño eligió despertar DevNotes con su primera visita manual del día. Aplazó la sonda de 10 min hasta las 00:00 en `America/Argentina/Buenos_Aires`; el diseño previsto quedó en [T-051](tasks/T-051-render-follow-up.md#sonda-aplazada). Si la activación fuese a las 07:00 todos los días, la franja sumaría 527 h en un mes de 31 días, más el arranque, el tiempo hasta la suspensión y el tráfico fuera de horario. Los Web Services Free comparten 750 h mensuales por workspace. [Cuota e inactividad](https://render.com/docs/free#free-web-services).
 
-El piloto funciona bajo la suspensión por inactividad de Render Free y la sonda externa queda como propuesta. La ventana de DevNotes consulta readiness cada 5 s para actualizar su indicador Online. Mientras el navegador siga haciendo esas peticiones, cuentan como tráfico entrante a cualquier hora. Con todas las ventanas cerradas y sin otras peticiones, Render puede suspender el servicio a los 15 minutos.
+El piloto funciona bajo la suspensión por inactividad de Render Free y la sonda externa queda como propuesta. Desde T-055, la ventana de DevNotes consulta readiness al abrir, al recuperar el foco y cada 60 s solo con la página visible para actualizar su indicador Online; en segundo plano no consulta. Esas peticiones cuentan como tráfico entrante mientras ocurren, pero no son un keepalive. Con todas las ventanas cerradas y sin otras peticiones, Render puede suspender el servicio a los 15 minutos.
 
 #### Avance del piloto
 

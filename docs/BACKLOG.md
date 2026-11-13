@@ -9,7 +9,7 @@ Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este í
 | Orden | Tarea / resultado | Dependencia |
 |---|---|---|
 | 1 | [T-053](tasks/T-053-service-activity-window.md#conciliación) · Ventana y permiso operativo; done tras PR56 MERGED (squash `29306a6`) | T-052 y T-051 MERGED/conciliadas |
-| 2 | [T-054](tasks/T-054-service-activity-scheduler.md) · Scheduler y HTTP acotado | T-053 |
+| 2 | [T-054](tasks/T-054-service-activity-scheduler.md#conciliación) · Scheduler y HTTP acotado; done tras PR57 MERGED (squash `fb8a381`) | T-053 |
 | 3 | [T-055](tasks/T-055-service-activity-client.md) · Visita diaria, pausa y estado | T-054 |
 | 4 | [T-056](tasks/T-056-service-activity-journey.md) · Validación local, ensayo remoto separado | T-055 |
 | 5 | [T-057](tasks/T-057-space-storage.md) · Migración a Trabajo | T-056 |

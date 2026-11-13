@@ -1,6 +1,6 @@
 ---
 id: T-054
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M5
@@ -142,3 +142,7 @@ Impacto: **comportamiento** nuevo detrás del interruptor apagado por defecto (s
 ## Cierre y siguiente tarea
 
 No done hasta MERGED comprobado. Tras MERGED confirmado, la siguiente sesión concilia esta tarea y toma T-055 si sus dependencias están done. No modificar protecciones, incorporar otras propuestas ni desplegar por pasar tests locales.
+
+## Conciliación
+
+**2026-11-12 · Conciliada como `done` en la rama de T-055.** Junie como implementer de T-055, ejecutado con Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. `gh pr view 57 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` salió con código 0: [PR57](https://github.com/MatiasNicolasAcevedo/devnotes/pull/57) `MERGED` contra `main`, squash `fb8a3818ecdf3dcb10da3c0924af2bee45c84f26`, `mergedAt` `2026-11-13T02:34:08Z` (2026-11-12 23:34 en Buenos Aires). HEAD aprobado y mergeado `f79fbea1827a18b84ead26c817514d5def6a2437`, igual al del veredicto `APROBADO` de la revisión R2 publicado en el PR, con [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43352932122/job/131648070714). Sin deploy ni cambio de variables. La observación O-2 de R2 queda informativa, fuera de T-055.

@@ -5,6 +5,11 @@ import MenuItem from '@mui/material/MenuItem'
 import { useState } from 'react'
 import { Link as RouterLink, useLocation } from 'react-router'
 import { PersonIcon } from '../../shared/ui/icons'
+import { ServiceActivityDialog } from '../serviceActivity/ServiceActivityDialog'
+import {
+  useDailyVisit,
+  useServiceActivityCapabilities,
+} from '../serviceActivity/useServiceActivity'
 import { sessionLabel, useSession } from './sessionContext'
 
 /** Estado de sesión en la barra superior: menú de usuario con «Cerrar sesión» o acceso al ingreso. */
@@ -12,8 +17,11 @@ export function SessionControls() {
   const { status, user } = useSession()
   const { pathname } = useLocation()
 
-  // Se monta solo con sesión: al terminar, el menú abierto se descarta y no reaparece con otra identidad.
-  if (status === 'authenticated' && user) return <AccountMenu label={sessionLabel(user)} />
+  // Se monta solo con sesión y por identidad: al terminar o cambiar de cuenta, el menú y el detalle abiertos se
+  // descartan y no reaparecen con otra identidad.
+  if (status === 'authenticated' && user) {
+    return <AccountMenu key={user.id} owner={user.id} label={sessionLabel(user)} />
+  }
 
   if (status === 'visitor' && pathname !== '/login') {
     return (
@@ -26,10 +34,16 @@ export function SessionControls() {
   return null
 }
 
-function AccountMenu({ label }: { label: string }) {
+function AccountMenu({ owner, label }: { owner: string; label: string }) {
   const { logout, logoutPending, csrfReady } = useSession()
   const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const [activityOpen, setActivityOpen] = useState(false)
   const open = anchor !== null
+  // Solo la cuenta habilitada recibe `available: true`; para las demás no hay activación ni detalle.
+  const { data: capabilities } = useServiceActivityCapabilities(owner)
+  const serviceDate = capabilities?.available ? capabilities.serviceDate : null
+  const available = serviceDate !== null
+  useDailyVisit(owner, csrfReady, serviceDate)
 
   return (
     <>
@@ -59,6 +73,16 @@ function AccountMenu({ label }: { label: string }) {
         >
           {label}
         </MenuItem>
+        {available ? (
+          <MenuItem
+            onClick={() => {
+              setAnchor(null)
+              setActivityOpen(true)
+            }}
+          >
+            Actividad del servidor
+          </MenuItem>
+        ) : null}
         <MenuItem
           disabled={logoutPending || !csrfReady}
           onClick={() => {
@@ -69,6 +93,14 @@ function AccountMenu({ label }: { label: string }) {
           {logoutPending ? 'Cerrando sesión…' : 'Cerrar sesión'}
         </MenuItem>
       </Menu>
+      {available ? (
+        <ServiceActivityDialog
+          owner={owner}
+          open={activityOpen}
+          csrfReady={csrfReady}
+          onClose={() => setActivityOpen(false)}
+        />
+      ) : null}
     </>
   )
 }

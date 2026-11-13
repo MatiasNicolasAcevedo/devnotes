@@ -1,6 +1,6 @@
 import { act, screen, waitFor } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { server } from '../../test/msw/server'
 import { renderWithProviders } from '../../test/render'
 import { NARROW_VIEWPORT, setViewportWidth } from '../../test/viewport'
@@ -11,6 +11,29 @@ const READY_KEY = ['system', 'readiness'] as const
 
 const online = () => screen.queryByRole('status', { name: 'Servidor conectado' })
 const offline = () => screen.queryByRole('status', { name: 'Servidor sin conexión' })
+
+let visibility: DocumentVisibilityState = 'visible'
+
+/** Como en el navegador: el evento sube del documento a window, donde lo escucha el focusManager de Query. */
+function setVisibility(next: DocumentVisibilityState) {
+  visibility = next
+  act(() => {
+    document.dispatchEvent(new Event('visibilitychange', { bubbles: true }))
+  })
+}
+
+/** Deja correr respuestas pendientes con el reloj real (los intervalos siguen simulados). */
+const settle = () => act(() => new Promise((resolve) => setTimeout(resolve, 50)))
+
+beforeEach(() => {
+  visibility = 'visible'
+  Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => visibility })
+})
+
+afterEach(() => {
+  Reflect.deleteProperty(document, 'visibilityState')
+  vi.useRealTimers()
+})
 
 describe('ServerStatus', () => {
   it('muestra «Conectando» hasta la primera respuesta y después «Online»', async () => {
@@ -89,19 +112,55 @@ describe('ServerStatus', () => {
     expect(offline()).not.toBeInTheDocument()
   })
 
-  it('revalida cada 5 s y detecta la caída con la página abierta', async () => {
+  it('revalida cada 60 s con el documento visible: ni antes ni cada 5 s', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
     let available = true
+    let calls = 0
     server.use(
-      http.get(READY, () =>
-        HttpResponse.json({ status: available ? 'UP' : 'DOWN' }, { status: available ? 200 : 503 }),
-      ),
+      http.get(READY, () => {
+        calls++
+        return HttpResponse.json(
+          { status: available ? 'UP' : 'DOWN' },
+          { status: available ? 200 : 503 },
+        )
+      }),
     )
     renderWithProviders(<ServerStatus />)
     expect(await screen.findByRole('status', { name: 'Servidor conectado' })).toBeVisible()
+    expect(calls).toBe(1)
     available = false
-    await waitFor(() => expect(offline()).toBeVisible(), { timeout: 6500 })
+
+    await act(() => vi.advanceTimersByTimeAsync(59_000))
+    await settle()
+    expect(calls).toBe(1)
+    expect(online()).toBeVisible()
+
+    await act(() => vi.advanceTimersByTimeAsync(1_000))
+    await vi.waitFor(() => expect(offline()).toBeVisible())
+    expect(calls).toBe(2)
     expect(online()).not.toBeInTheDocument()
-  }, 10_000)
+  })
+
+  it('con el documento oculto no consulta en segundo plano; al volver a verse revalida', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+    let calls = 0
+    server.use(
+      http.get(READY, () => {
+        calls++
+        return HttpResponse.json({ status: 'UP' })
+      }),
+    )
+    renderWithProviders(<ServerStatus />)
+    expect(await screen.findByRole('status', { name: 'Servidor conectado' })).toBeVisible()
+
+    setVisibility('hidden')
+    await act(() => vi.advanceTimersByTimeAsync(10 * 60_000))
+    await settle()
+    expect(calls).toBe(1)
+
+    setVisibility('visible')
+    await vi.waitFor(() => expect(calls).toBe(2))
+  })
 
   it.each([
     ['conectado', true, 'Servidor conectado', 'Online'],

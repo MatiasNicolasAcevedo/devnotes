@@ -2,12 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-054](tasks/T-054-service-activity-scheduler.md) · Sonda interna cancelable y acotada ([S-111](specs/S-111-render-daily-availability.md)) |
+| Tarea y contrato | [T-055](tasks/T-055-service-activity-client.md) · Actividad diaria visible y sondeo moderado ([S-111](specs/S-111-render-daily-availability.md)) |
 | Estado | `mergeable` |
-| Acción actual | [Revisión R2](tasks/T-054-service-activity-scheduler.md#revisión-r2--favorable) favorable de PR57, sin bloqueantes: B-1 y O-1 de R1 cerradas; O-2 informativa no bloqueante. Dirigidos 20 + 50 + 10 IT verdes y mutantes fallando como corresponde; FULL/STARTER DIFERIDO POR EL DUEÑO. Publicar el veredicto sobre el HEAD de esta transición, con CI verde, y squash merge elegible. Después T-055 concilia T-054 como `done`. |
-| Rama / PR | `codex/t-054-service-activity-scheduler` · [PR57](https://github.com/MatiasNicolasAcevedo/devnotes/pull/57) OPEN |
+| Acción actual | [Revisión independiente adicional favorable](tasks/T-055-service-activity-client.md#revisión-independiente-adicional-de-b-3), con B-3 cerrado. Veredicto vinculado al HEAD/base y al check vigente en PR58. Esperar instrucción expresa del dueño para el merge. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-055-service-activity-client` · [PR58](https://github.com/MatiasNicolasAcevedo/devnotes/pull/58) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+
+[T-054](tasks/T-054-service-activity-scheduler.md#conciliación): [PR57](https://github.com/MatiasNicolasAcevedo/devnotes/pull/57) MERGED, squash `fb8a3818ecdf3dcb10da3c0924af2bee45c84f26`, mergedAt 2026-11-13T02:34:08Z (2026-11-12 en Buenos Aires), HEAD aprobado `f79fbea`, `verify-required` SUCCESS. Conciliada como `done`.
 
 [T-053](tasks/T-053-service-activity-window.md#conciliación): [PR56](https://github.com/MatiasNicolasAcevedo/devnotes/pull/56) MERGED, squash `29306a6ca54d73cb3ba8a34e8700b7e419e9c427`, mergedAt 2026-11-13T00:57:08Z (2026-11-12 en Buenos Aires), HEAD aprobado `f8cbabc`, `verify-required` SUCCESS. Conciliada como `done`.
 
@@ -92,5 +94,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-En una sesión nueva de Junie como implementer, tomá T-055 (docs/tasks/T-055-service-activity-client.md, contrato S-111). Precondición: con gh pr view 57 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName confirmá PR57 MERGED contra main (mergedAt y mergeCommit.oid no vacíos) y que el headRefOid coincide con el SHA del veredicto APROBADO publicado en PR57; si no, informá el estado real y no sigas. Desde main actualizado abrí codex/t-055-service-activity-client y, en su primer avance, conciliá T-054 como done con el squash SHA, mergedAt y el HEAD aprobado, actualizando T-054, STATUS y BACKLOG si cambia la cola. T-055 estaba draft solo por dependencias: pasala a in_progress y ejecutá su contrato con los tests dirigidos de la tarea desde client/ (npm test -- --run src/features/serviceActivity src/features/system/ServerStatus.test.tsx src/features/auth/SessionControls.test.tsx con cantidad ejecutada distinta de cero, más npm run typecheck, npm run lint, npm run format:check y npm run build), reglas críticas con negativos y cierre con node scripts/docs-check.mjs, git diff --check y node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL. La observación O-2 de la revisión R2 de T-054 es informativa y no forma parte de T-055. FULL/STARTER siguen diferidos por la excepción I5 de TESTING: registrá FULL/STARTER DIFERIDO POR EL DUEÑO y no ejecutes FULL, STARTER, npm run verify, E2E completo, deploys, variables de Render ni HTTP saliente real. Publicá con rutas explícitas y footer Refs, exigí verify-required verde en el HEAD final, pasá el PR a ready e in_review y dejá en STATUS el único prompt para una sesión revisora independiente. No ejecutes T-056 en esa sesión.
+Solo con instrucción expresa del dueño para el merge, retomá T-055 como Frontera en rol merger y seguí docs/agents/merger.md y AUTONOMY. Consultá PR58 y comprobá que el HEAD y la base publicados coinciden con el comentario APROBADO de la revisión independiente adicional y que verify-required está en SUCCESS para ese HEAD. Si cambió el HEAD o la base, informá el estado real y devolvé a revisión. Preservá trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. T-056 queda para otra sesión tras confirmar PR58 MERGED y conciliar T-055.
 ```
