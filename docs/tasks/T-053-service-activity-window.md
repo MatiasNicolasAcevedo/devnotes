@@ -1,6 +1,6 @@
 ---
 id: T-053
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M5
@@ -100,3 +100,7 @@ Impacto: **datos** (migración V6 `service_awake_window`, fila singleton `id=1` 
 ## Cierre y siguiente tarea
 
 No done hasta MERGED comprobado. Tras MERGED confirmado, la siguiente sesión concilia esta tarea y toma T-054 si sus dependencias están done. No modificar protecciones, incorporar otras propuestas ni desplegar por pasar tests locales.
+
+## Conciliación
+
+**2026-11-12 · Conciliada como `done` en la rama de T-054.** Junie como implementer de T-054, ejecutado con Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. `gh pr view 56 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` salió con código 0: [PR56](https://github.com/MatiasNicolasAcevedo/devnotes/pull/56) `MERGED` contra `main`, squash `29306a6ca54d73cb3ba8a34e8700b7e419e9c427`, `mergedAt` `2026-11-13T00:57:08Z` (2026-11-12 21:57 en Buenos Aires). HEAD aprobado y mergeado `f8cbabccaf3a970d00df04bd2999ce1c997ea87d`, igual al del veredicto `APROBADO` publicado en el PR, con [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43340956143/job/131608830849). Sin deploy ni cambio de variables. La observación O-1 pasa a [T-054](T-054-service-activity-scheduler.md).
