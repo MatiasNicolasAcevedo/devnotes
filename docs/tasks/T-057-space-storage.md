@@ -1,6 +1,6 @@
 ---
 id: T-057
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M5
@@ -8,7 +8,7 @@ spec: S-109
 depends_on: [T-056]
 branch: codex/t-057-space-storage
 role: implementer
-executor: junie
+executor: frontier
 pr: null
 ---
 
@@ -18,7 +18,7 @@ pr: null
 
 Conservar todos los registros existentes en Trabajo y permitir igual fecha en dos espacios sin duplicados dentro de uno.
 
-Draft **solo por dependencias**: T-056 MERGED y conciliada. Contrato completo en S-109; al cumplirse las dependencias no se necesita otra sesión planner. Cada tarea/revisión usa sesión independiente.
+[T-056 MERGED y conciliada](T-056-service-activity-journey.md#conciliación). Contrato completo en S-109. Cada tarea/revisión usa sesión independiente.
 
 ## Alcance y decisiones resueltas
 
@@ -58,7 +58,11 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. Al tomar la tarea, registrar SHA/base, comandos, resultados y pendientes. Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
+**2026-11-13 · Frontera en rol implementer**, Codex de escritorio, PowerShell, Git Bash, Git, `gh`, Docker Linux, Java 21 y Node 24.21.0. Variante del modelo y esfuerzo sin verificar. Alcance de datos y comportamiento: migración a Trabajo, unicidad diaria por espacio y soporte de persistencia para los dos valores. La API, autorización de cuenta y UI conservan el contrato vigente en esta etapa.
+
+`git ls-remote origin refs/heads/main refs/heads/codex/t-057-space-storage` confirmó `main` en `ac48bdef2d976dc045446556b553e7f7ca41430a`, sin rama publicada de T-057. `git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main` actualizó la base y `gh pr list --state open` devolvió cero PR abiertos. Worktree aislado `.orchestrator/t-057/`, checkout principal y `trailer/` preservados.
+
+Próximo paso: verificar el caso de migración desde V6 y ejecutar Maven dirigido desde `server/`. PostgreSQL 18.6 efímero de Testcontainers con puerto asignado por Docker y cleanup propio; registrar la sesión y verificar retiro por etiqueta exacta. Salidas locales en `.orchestrator/t-057-logs/` y reportes Maven en `server/target/`. **FULL/STARTER DIFERIDO POR EL DUEÑO.** Render pendiente de autorización expresa sobre SHA y ventana.
 
 ## Cierre y siguiente tarea
 

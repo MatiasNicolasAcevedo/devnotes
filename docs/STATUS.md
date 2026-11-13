@@ -2,12 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-056](tasks/T-056-service-activity-journey.md) · Validación local y entrega medible de la sonda ([S-111](specs/S-111-render-daily-availability.md)) |
-| Estado | `mergeable` |
-| Acción actual | [Revisión independiente favorable](tasks/T-056-service-activity-journey.md#revisión-independiente-r1). Retomar el merge en una sesión posterior con el veredicto y la CI del HEAD/base publicados en PR59. Ensayo de Render pendiente de autorización expresa sobre SHA y ventana. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-056-service-activity-journey` · [PR59](https://github.com/MatiasNicolasAcevedo/devnotes/pull/59) |
+| Tarea y contrato | [T-057](tasks/T-057-space-storage.md) · Migración a Trabajo y enum de espacio ([S-109](specs/S-109-private-spaces.md)) |
+| Estado | `in_progress` |
+| Acción actual | Implementar la migración y verificarla con PostgreSQL 18. Ensayo de Render pendiente de autorización expresa sobre SHA y ventana. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-057-space-storage` |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+
+[T-056](tasks/T-056-service-activity-journey.md#conciliación) conciliada como `done` tras PR59 MERGED.
 
 [T-055](tasks/T-055-service-activity-client.md#conciliación) conciliada como `done` tras PR58 MERGED.
 
@@ -96,5 +98,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá T-056 como Frontera en rol merger y seguí docs/agents/merger.md y AUTONOMY. Confirmá PR59 abierto y listo para revisión contra main, que HEAD y base coincidan con el comentario APROBADO de la revisión independiente y que verify-required esté en SUCCESS para ese HEAD. Si cambió HEAD o base, devolvé a revisión. Preservá trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana. T-057 queda para otra sesión tras confirmar PR59 MERGED y conciliar T-056.
+Retomá T-057 como Frontera en rol implementer según docs/agents/implementer.md y AUTONOMY. Verificá la base publicada de main y retomá el checkpoint de T-057 en codex/t-057-space-storage. Completá la migración y las pruebas dirigidas con PostgreSQL 18 y, con los checks verdes, publicá el PR y dejalo listo para revisión independiente. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
 ```
