@@ -1,6 +1,6 @@
 ---
 id: T-055
-status: changes_requested
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -8,7 +8,7 @@ spec: S-111
 depends_on: [T-054]
 branch: codex/t-055-service-activity-client
 role: implementer
-executor: junie
+executor: frontier
 pr: 58
 ---
 
@@ -59,6 +59,19 @@ Los nombres nuevos de tests son archivos/clases que esta tarea debe crear. Confi
 Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`. Registrar **FULL/STARTER DIFERIDO POR EL DUEÑO**. No ejecutar FULL, STARTER, tooling completo ni E2E completo hasta solicitud expresa, aunque el clasificador dé FULL/STARTER. CI liviana/revisión independiente siguen obligatorias.
 
 ## Checkpoint vigente
+
+### Corrección de R1
+
+**2026-11-13 · Corrección lista para revisión R2 de Frontera en sesión independiente.** Junie inició B-1 en Claude Code con `claude-opus-5[1m]`; la sesión se detuvo por decisión del dueño. Frontera terminó y verificó la corrección en Codex, con PowerShell, Git, `gh`, Node 24.21.0 y npm 11.19.0. El dueño indicó GPT-6.1 Sol para Codex; modelo efectivo y esfuerzo no comprobados desde las herramientas de esta sesión. La continuidad con Frontera quedó acordada en [AUTONOMY](../AUTONOMY.md#continuidad-con-frontera-desde-el-2026-11-13).
+
+Precondición y comprobación antes de publicar: `gh pr view 58 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,isDraft,headRefOid,baseRefName,mergeable` devolvió OPEN, base `main`, no draft, MERGEABLE, HEAD documental de R1 `1e74be2ba83ff7e60e904f439bf952bd667ab0d3`. Base remota `fb8a3818ecdf3dcb10da3c0924af2bee45c84f26`. Corrección técnica en `9a84a3416ddc0a2abd0bd634217833ecf88cc9f1`.
+
+Impacto de comportamiento: una reconexión ya no relee `capabilities`, con lo que no activa otra ventana tras medianoche. El cambio productivo se limita a esa consulta. B-2 y B-3 añaden regresiones con MSW. O-1 y O-2 siguen como observaciones no bloqueantes de R1.
+
+- B-1 se reprodujo primero en rojo sobre el código de R1: dos `visit` al pasar al día de servicio siguiente y reconectar por `onlineManager`, sin foco ni navegación. Verde con `refetchOnReconnect: false`.
+- Mutantes, de a uno con `npm test -- --run src/features/serviceActivity/<archivo>.test.tsx -t '<caso>'`: reconexión en `capabilities` produjo dos visitas; sin guarda CSRF se registró una visita antes de liberar el endpoint; foco habilitado e intervalo de 60 s en la consulta de estado produjeron, por separado, dos lecturas con el detalle abierto. Cada mutante falló por la aserción esperada (exit 1, una prueba fallida). Fuente restaurada después de cada corrida.
+- Desde `client/`, `npm test -- --run src/features/serviceActivity src/features/system/ServerStatus.test.tsx src/features/auth/SessionControls.test.tsx` → 61/61 en cinco archivos. `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build` → exit 0. El build conservó el aviso preexistente de tamaño de chunk.
+- Cierre: `node scripts/docs-check.mjs` OK (124 Markdown, 68 tareas, HANDOFF 22/22) en una copia temporal de archivos versionados para preservar `trailer/`; `git diff --check` exit 0; `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → `policy=FULL`, `profile=APPLICATION`, 13 rutas técnicas. **FULL/STARTER DIFERIDO POR EL DUEÑO**. Sin `npm run verify`, E2E, deploys, variables de Render ni HTTP saliente real de la aplicación. Sigue pendiente la decisión sobre expectativas E2E de readiness antes de FULL. T-056 queda pendiente de PR58 MERGED y la conciliación de T-055.
 
 ### Revisión R1 · CAMBIOS REQUERIDOS
 
@@ -121,6 +134,9 @@ Revisión independiente de PR58: [R1 con cambios requeridos](#revisión-r1--camb
 | El evento `visibilitychange` de prueba no llegaba al `focusManager` de Query, que escucha en `window`; el foco simulado no revalidaba | El evento se despacha con `bubbles: true`, como en el navegador | `useServiceActivity.test.tsx`, `ServerStatus.test.tsx` · `df4ad96` |
 | El test «sin timer» no detectaba un `refetchInterval` agregado: el intervalo real se creaba antes de simular el reloj | Intervalos simulados desde el montaje y esperas con `vi.waitFor` | Mutante con `refetchInterval` falla 1/13 · `df4ad96` |
 | El simulador comparaba el header CSRF con la cookie que la SPA acababa de leer, así un 403 no era reproducible | Compara con el token vigente del backend de auth simulado | `ServiceActivityDialog.test.tsx` 403 sin reenvío · `df4ad96` |
+| B-1: Query reconsultaba capabilities al reconectar y habilitaba una nueva visita sin interacción | Desactivar `refetchOnReconnect` en capabilities | Rojo previo y mutante de reconexión: dos visitas · `9a84a34` |
+| B-2: el CSRF simulado siempre llegaba antes de que la SPA pudiera intentar una visita | Retener el endpoint CSRF hasta comprobar cero intentos y después una visita | Sin guarda: una visita antes de liberar CSRF · `9a84a34` |
+| B-3: los conteos previos no cubrían foco ni intervalo con el detalle abierto | Despachar visibilidad y avanzar 61 s con el detalle abierto, manteniendo una lectura | Mutantes de foco e intervalo por separado: dos lecturas · `9a84a34` |
 
 ### Inicio
 

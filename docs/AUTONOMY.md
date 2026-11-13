@@ -16,6 +16,10 @@ El dueño autorizó expresamente [T-052](tasks/T-052-scope-expansion-plan.md), r
 
 El dueño difirió FULL/STARTER hasta pedirlos expresamente durante esta serie; rige [TESTING](TESTING.md#excepción-i5-del-2026-11-12). Conservar CI liviana, pruebas dirigidas y revisión independiente. Crear contratos no autoriza deploys, planes pagos, herramientas globales ni recursos externos.
 
+### Continuidad con Frontera desde el 2026-11-13
+
+Por decisión del dueño, Frontera termina T-055 y continúa las tareas pendientes del [backlog](BACKLOG.md), incluidas las [ideas de nuevas funcionalidades](FUTURE-FEATURES.md) cuando tengan contrato. Junie queda en pausa para esta serie. El dueño elige Codex o Claude Code al abrir cada sesión según su disponibilidad. El prompt de STATUS se dirige a Frontera y especifica el rol de esa sesión. Las nuevas funcionalidades se orientan principalmente a frontend, con los cambios de otras capas que requiera cada contrato. Rigen una tarea y un PR en curso, la revisión en una sesión independiente y los permisos ya acordados.
+
 ### Política general
 
 - Frontera define producto, arquitectura, contratos y adopción M0. Modelo/herramienta/esfuerzo solo según lo realmente expuesto, sin inventar versión.
