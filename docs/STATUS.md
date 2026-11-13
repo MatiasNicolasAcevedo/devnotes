@@ -4,8 +4,12 @@
 |---|---|
 | Tarea y contrato | [T-051](tasks/T-051-render-follow-up.md) · Ícono y voz en Render |
 | Estado | `in_progress` |
-| Acción actual | Recoger la aceptación del dueño en Brave, Windows y voz sobre el SHA activo en `devnotes-pilot`. |
-| Rama / PR | `codex/t-051-render-follow-up` · [PR54](https://github.com/MatiasNicolasAcevedo/devnotes/pull/54) |
+| Acción actual | `main` integrada en PR54. Recoger la aceptación del dueño en Brave, Windows y voz sobre el SHA activo en `devnotes-pilot`. T-053 sigue bloqueada hasta PR54 MERGED y T-051 conciliada. |
+| Rama / PR | `codex/t-051-render-follow-up` · [PR54](https://github.com/MatiasNicolasAcevedo/devnotes/pull/54) OPEN/draft |
+
+FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+
+[T-052](tasks/T-052-scope-expansion-plan.md#conciliación): [PR55](https://github.com/MatiasNicolasAcevedo/devnotes/pull/55) MERGED, squash `9463bb03d288da586c3953508ba184a2f2e571d0`, mergedAt 2026-11-13T00:03:28Z (2026-11-12 en Buenos Aires), HEAD `49c5019`, `verify-required` SUCCESS. Conciliada como `done`.
 
 [T-047](tasks/T-047-render-first-deploy.md#checkpoint-vigente), [T-046](tasks/T-046-render-image.md#checkpoint-vigente) y [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliadas como `done`.
 
@@ -84,5 +88,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-En una sesión de implementación, retomá T-051 y verificá PR54 y el deploy activo de f6a23c7ec7587baa004d85b8a4187058b9fff255 en devnotes-pilot. El único deploy ya quedó live y pasaron readiness y la comparación de los archivos públicos de ícono. Recogé la aceptación del dueño del favicon en Brave, el ícono de la app instalada en Windows, el login y reapertura de una nota, y la transcripción, edición, guardado y reapertura de una muestra sintética ficticia según VOICE-RELEASE. Registrá el resultado saneado en PR54 y prepará la revisión independiente. STARTER quedó exceptuado por el dueño para el deploy de prueba. La sonda y la medición del despertar quedan aplazadas.
+En una sesión nueva de implementación de frontera, cerrá T-051 antes de habilitar T-053. Precondición: con gh pr view 55 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName confirmá PR55 MERGED (mergedAt y mergeCommit.oid no vacíos); si no, informá el estado real y no sigas. Retomá codex/t-051-render-follow-up y PR54 (OPEN/draft) y comprobá HEAD/base/CI y el deploy live f6a23c7ec7587baa004d85b8a4187058b9fff255 en devnotes-pilot. Integrá origin/main con git merge, sin rebase ni force push, y resolvé los conflictos de STATUS, BACKLOG y T-047 conservando la evidencia de T-051 y la cola I5; conciliá T-052 como done con el SHA y la fecha del squash de PR55. Recogé la aceptación pendiente del dueño: favicon en Brave, ícono de la app instalada en Windows, login y reapertura de una nota, y transcripción, edición, guardado y reapertura de una muestra sintética ficticia según VOICE-RELEASE, con plan, gasto y retención de Groq confirmados por el dueño antes de enviar. Registrá el resultado saneado en T-051. FULL/STARTER siguen diferidos por la excepción I5 de TESTING: corré solo src/app/manifest.test.ts, docs-check, git diff --check y la clasificación, y exigí verify-required verde en el HEAD final. Con la aceptación registrada, pasá PR54 a ready y dejá en STATUS el único prompt para una sesión revisora independiente que lo revise y, si es elegible según AUTONOMY, lo mergee; sin aceptación, dejá T-051 blocked con la pregunta concreta al dueño. No implementes T-053: solo con PR54 MERGED y T-051 conciliada la sesión siguiente toma T-053-service-activity-window.
 ```

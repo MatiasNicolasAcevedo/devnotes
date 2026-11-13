@@ -10,6 +10,14 @@ Frontera y Junie pueden leer Git/PR/CI, crear ramas, editar dentro del contrato,
 
 ## Ejecutores y continuidad
 
+### Excepción documental I5 del 2026-11-12
+
+El dueño autorizó expresamente [T-052](tasks/T-052-scope-expansion-plan.md), rama `codex/t-052-scope-expansion-plan` y un PR de planificación contra main aunque PR54 de T-051 siga abierto. Esta excepción prevalece sobre WIP1 y sobre la regla de no abrir un PR separado de planificación, solo para la coexistencia de **PR54 + PR documental T-052**. No habilita dos implementaciones, ramas compartidas futuras ni revisar/mergear trabajo propio. Los estados de las tareas son los de cada rama: T-051 conserva en esta base el contrato draft de main; su ejecución actual sigue en PR54 y debe conciliarse antes de implementar I5. No modificar el validador para esta excepción.
+
+El dueño difirió FULL/STARTER hasta pedirlos expresamente durante esta serie; rige [TESTING](TESTING.md#excepción-i5-del-2026-11-12). Conservar CI liviana, pruebas dirigidas y revisión independiente. Crear contratos no autoriza deploys, planes pagos, herramientas globales ni recursos externos.
+
+### Política general
+
 - Frontera define producto, arquitectura, contratos y adopción M0. Modelo/herramienta/esfuerzo solo según lo realmente expuesto, sin inventar versión.
 - Junie implementa tareas predefinidas de las iteraciones acordadas. La planificación I2 solicitada por el dueño el 2026-10-31 concreta T-017 y T-027…T-037 en S-105 v2, con la misma política operativa; no habilita activación externa, pagos ni audio personal. Otra **sesión nueva** de Junie revisa y puede hacer merge elegible; la sesión autora no revisa ni mergea su trabajo. Excepción inicial confirmada expresamente por el dueño en la sesión de adopción: **la primera revisión de T-000 será de frontera en sesión nueva**, con la misma política de merge elegible y sin aprobar su implementación propia. Capacidades Junie sin comprobar continúan pendientes, no se acreditan por esa revisión.
 - `POR_SESION`: el dueño abre cada sesión con el único prompt de STATUS. Sin dispatcher, instalación, autenticación, delegación o lanzamiento automático de otro agente. Cada tarea y revisión usa sesión nueva; correcciones vuelven al implementer en otra sesión.

@@ -51,7 +51,7 @@ Solo Markdown: DEPLOYMENT (evidencia del piloto y diagnóstico encontrado), esta
 
 ## Checkpoint vigente
 
-**2026-11-12 · Conciliada como `done` al iniciar T-051.** `gh pr view 53 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName,statusCheckRollup` salió con código 0. [PR53](https://github.com/MatiasNicolasAcevedo/devnotes/pull/53) `MERGED` contra `main`, squash `00407ef4a637369d3078d19aceab123be3b13521`, `mergedAt` `2026-11-12T03:18:19Z`, HEAD `c124a404dc4e47b16dc335829a25dff6e2d85fbd`, [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43147054398/job/130947206715). Continúa [T-051](T-051-render-follow-up.md).
+**2026-11-12 · Conciliada como `done` al iniciar T-051.** `gh pr view 53 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName,statusCheckRollup` salió con código 0. [PR53](https://github.com/MatiasNicolasAcevedo/devnotes/pull/53) `MERGED` contra `main`, squash `00407ef4a637369d3078d19aceab123be3b13521`, `mergedAt` `2026-11-12T03:18:19Z`, HEAD `c124a404dc4e47b16dc335829a25dff6e2d85fbd`, [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43147054398/job/130947206715). Continúa [T-051](T-051-render-follow-up.md). T-052 confirmó en GitHub los mismos datos en paralelo, como excepción de planificación autorizada por el dueño.
 
 ### Revisión independiente
 
