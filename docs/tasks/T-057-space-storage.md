@@ -1,15 +1,15 @@
 ---
 id: T-057
-status: draft
+status: mergeable
 priority: P1
 size: M
 milestone: M5
 spec: S-109
 depends_on: [T-056]
 branch: codex/t-057-space-storage
-role: implementer
-executor: junie
-pr: null
+role: reviewer
+executor: frontier
+pr: 60
 ---
 
 # T-057 · Migración de datos a Trabajo y enum de espacio
@@ -18,7 +18,7 @@ pr: null
 
 Conservar todos los registros existentes en Trabajo y permitir igual fecha en dos espacios sin duplicados dentro de uno.
 
-Draft **solo por dependencias**: T-056 MERGED y conciliada. Contrato completo en S-109; al cumplirse las dependencias no se necesita otra sesión planner. Cada tarea/revisión usa sesión independiente.
+[T-056 MERGED y conciliada](T-056-service-activity-journey.md#conciliación). Contrato completo en S-109. Cada tarea/revisión usa sesión independiente.
 
 ## Alcance y decisiones resueltas
 
@@ -58,7 +58,42 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. Al tomar la tarea, registrar SHA/base, comandos, resultados y pendientes. Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
+**2026-11-13 · Frontera en rol implementer**, Codex de escritorio, PowerShell, Git Bash, Git, `gh`, Docker Linux, Java 21 y Node 24.21.0. Variante del modelo y esfuerzo sin verificar. Alcance de datos y comportamiento: migración a Trabajo, unicidad diaria por espacio y soporte de persistencia para los dos valores. La API, autorización de cuenta y UI conservan el contrato vigente en esta etapa.
+
+`git ls-remote origin refs/heads/main refs/heads/codex/t-057-space-storage` confirmó `main` en `ac48bdef2d976dc045446556b553e7f7ca41430a`, sin rama publicada de T-057. `git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main` actualizó la base y `gh pr list --state open` devolvió cero PR abiertos. Worktree aislado `.orchestrator/t-057/`, checkout principal y `trailer/` preservados.
+
+Conciliación en `133feff83312ba8adeca950a46d84b20bbf8392a`. Antes de V7, desde `server/`, `./mvnw -q test-compile dependency:properties failsafe:integration-test failsafe:verify -Dit.test=PrivateSpaceMigrationIT -Djacoco.skip=true` → exit 1. El único caso cargó las cuatro colecciones ficticias en PostgreSQL 18.6 desde V6 y falló en el paso de upgrade con `No migration with a target version 7 could be found`. Se confirmó la salida de PostgreSQL y Ryuk por ID.
+
+`./mvnw -q verify -Dtest=PrivateSpaceTest -Dit.test=PrivateSpaceMigrationIT,DailyNoteRepositoryIT -Djacoco.skip=true` → exit 0, 10/10 unitarios, 1/1 migración y 12/12 repositorio, sin omitidos. PostgreSQL 18.6 efímero y Spotless OK. Se verificaron los dos espacios para la misma fecha, los rechazos de duplicados, los valores estrictos, la integridad de versiones y la lectura/escritura JPA. Se confirmó la salida de los dos PostgreSQL y Ryuk por ID exacto.
+
+`./mvnw -q verify -Dtest=PrivateSpaceTest -Dit.test=ReferenceItemMigrationIT,ReferenceItemRepositoryIT,VoiceNoteServiceIT,PortabilityImportServiceIT -Djacoco.skip=true` → exit 0, 10/10 unitarios repetidos y 43/43 IT adicionales (1 migración histórica, 6 repositorio de referencias, 24 servicio de voz, 12 importación), sin omitidos. La migración histórica probó esquema vacío y upgrade de V1 poblado a V7. Cleanup de la corrida adicional por `org.testcontainers.sessionId=14205d4d-bd97-4378-af0e-dab8b16ea33c`: 0 contenedores, 0 redes y 0 volúmenes, con retiro de los cuatro PostgreSQL y Ryuk confirmado por ID. Salidas locales `migration-red.log`, `backend-directed.log` y `backend-compat.log` en `.orchestrator/t-057-logs/`; reportes Maven en `server/target/`.
+
+### Decisiones de compatibilidad y correcciones
+
+| Problema o condición | Arreglo | Prueba |
+|---|---|---|
+| V6 conserva la unicidad diaria por cuenta y fecha | V7 la cambia a cuenta, espacio y fecha. Añade índices con espacio y conserva los índices previos de referencias y voz para las consultas vigentes por propietario | `PrivateSpaceMigrationIT` rojo previo sin V7 y verde con V7 |
+| La regresión histórica fijaba V6 como última versión | Actualizar las aserciones de la secuencia y del destino a V7 y conservar la comprobación del checksum de V1 | `ReferenceItemMigrationIT` verde en la corrida adicional |
+
+**FULL/STARTER DIFERIDO POR EL DUEÑO.** Render pendiente de autorización expresa sobre SHA y ventana.
+
+### Entrega para revisión
+
+[PR60](https://github.com/MatiasNicolasAcevedo/devnotes/pull/60) contra `main`. Las fuentes de las pruebas corresponden al commit técnico `b76fef38e7190bb6c9e9d9ff0c4e836a52175d1e` sobre la base publicada `ac48bdef2d976dc045446556b553e7f7ca41430a`. `node scripts/docs-check.mjs`, `git diff --check` y `git diff --check origin/main...HEAD` → exit 0. `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → exit 0, `policy=FULL`, `profile=APPLICATION`, nueve rutas técnicas. El traspaso solo modifica Markdown. Consultar el HEAD vigente y su `verify-required` en PR60.
+
+Control I5 al llegar a T-057: T-053…T-056 están conciliadas. T-057 tiene evidencia dirigida y queda pendiente de revisión independiente y merge. T-058 sigue condicionada por ese cierre. El integrado sigue diferido y el ensayo remoto de S-111 tiene autorización pendiente. Los checks dirigidos no detectaron hallazgos que cambien la cola.
+
+### Revisión independiente R1
+
+**2026-11-13 · Frontera como reviewer en sesión independiente**, Codex de escritorio, PowerShell, Git Bash, Git, `gh`, Docker Linux, Java 21 y Node 24.21.0. Variante del modelo y esfuerzo sin verificar. Se revisó el diff publicado en `.orchestrator/t-057-review/`, con el checkout principal y `trailer/` preservados.
+
+`gh pr view 60` confirmó PR60 `OPEN`, listo para revisión contra `main`, sin conversaciones de revisión. `git ls-remote origin refs/heads/main refs/heads/codex/t-057-space-storage refs/pull/60/head` confirmó que la rama publicada y el PR apuntaban a `4d5ef395a1c02cb4e8f4abbe7dfbf8a9a35d81b0`, con base publicada y merge-base `ac48bdef2d976dc045446556b553e7f7ca41430a`. La API de Actions confirmó la asociación del run `43529157454` a ese PR y a ambos SHA. [`verify-required` SUCCESS del HEAD de entrada](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43529157454/job/132242273296).
+
+- **Migración y compatibilidad.** V1…V6 conservan su contenido. V7 agrega `space` obligatorio con default `work` y un CHECK estricto en cada tabla, incorpora los índices por espacio y cambia la unicidad diaria a `(owner_id, space, note_date)`. La versión conserva su FK y su unicidad por nota. Los constructores vigentes escriben Trabajo explícitamente. T-058 incorpora el filtro de espacio a las consultas diarias y de versiones antes de habilitar Personal en la API.
+- **Evidencia independiente.** Desde `server/`, `./mvnw -o -B -q verify -Dtest=PrivateSpaceTest -Dit.test=PrivateSpaceMigrationIT,DailyNoteRepositoryIT -Djacoco.skip=true` → exit 0. Surefire 10/10 y Failsafe 13/13, sin omitidos. PostgreSQL 18.6 aplicó una migración sobre V6 poblado. La comparación de filas verificó IDs, contenido, relaciones, revisiones y timestamps de las cuatro colecciones. Pasaron la misma fecha en ambos espacios, los rechazos de duplicados en cada espacio y de valores inválidos o nulos, la lectura/escritura JPA y los negativos de FK y unicidad de versiones. Se comprobó por ID el retiro de los dos PostgreSQL y Ryuk. Evidencia local en `.orchestrator/t-057-review/backend-review.log` y reportes Maven del mismo worktree.
+- **Evidencia de la entrega.** Se cotejaron los logs saneados del rojo por V7 ausente y los 43 IT adicionales verdes de compatibilidad, con PostgreSQL 18.6 y migración histórica V1→V7. El traspaso desde `b76fef38e7190bb6c9e9d9ff0c4e836a52175d1e` mantiene las mismas fuentes técnicas. `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` pasaron. El clasificador informó `FULL` / `APPLICATION`, nueve rutas técnicas.
+
+**Resultado favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El veredicto canónico queda en PR60 con el SHA documental de esta transición y la base publicada, después de verificar la CI de ese HEAD. El ensayo de Render sigue pendiente de autorización expresa sobre SHA y ventana.
 
 ## Cierre y siguiente tarea
 

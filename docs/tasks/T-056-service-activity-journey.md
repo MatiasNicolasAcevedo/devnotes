@@ -1,6 +1,6 @@
 ---
 id: T-056
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M5
@@ -102,6 +102,6 @@ Base `origin/main` verificada en `c95f81408a3612e5626a3da2ebefc870bb23d119`. T-0
 
 **Resultado local favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El merge queda para una sesión posterior. T-057 espera la confirmación de PR59 MERGED y la conciliación de T-056.
 
-## Cierre y siguiente tarea
+## Conciliación
 
-No done hasta MERGED comprobado. Tras MERGED confirmado, la siguiente sesión concilia esta tarea y toma T-057 si sus dependencias están done. No modificar protecciones, incorporar otras propuestas ni desplegar por pasar tests locales.
+**2026-11-13 · Conciliada como `done` en la rama de T-057.** `gh pr view 59 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` salió con código 0. PR59 figura `MERGED` contra `main`, squash `ac48bdef2d976dc045446556b553e7f7ca41430a` y `mergedAt` `2026-11-13T23:22:38Z` (20:22:38 en Buenos Aires). El comentario de cierre acredita la revisión independiente y `verify-required` SUCCESS para HEAD `1031ca976b845ff75099a51443d2b0a0a11f8008` sobre base `c95f81408a3612e5626a3da2ebefc870bb23d119`. El ensayo de Render sigue pendiente de autorización expresa sobre SHA y ventana. [Cierre de PR59](https://github.com/MatiasNicolasAcevedo/devnotes/pull/59#issuecomment-6867452085).

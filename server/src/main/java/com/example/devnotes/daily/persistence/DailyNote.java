@@ -1,8 +1,11 @@
 package com.example.devnotes.daily.persistence;
 
+import com.example.devnotes.shared.space.PrivateSpace;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
@@ -22,6 +25,10 @@ public class DailyNote {
 
     @Column(name = "owner_id", nullable = false, updatable = false)
     private UUID ownerId;
+
+    @Column(nullable = false, length = 8, updatable = false)
+    @Enumerated(EnumType.STRING)
+    private PrivateSpace space;
 
     @Column(name = "note_date", nullable = false, updatable = false)
     private LocalDate noteDate;
@@ -43,6 +50,7 @@ public class DailyNote {
 
     public DailyNote(UUID ownerId, LocalDate noteDate, JsonNode content, Instant now) {
         this.ownerId = ownerId;
+        this.space = PrivateSpace.WORK;
         this.noteDate = noteDate;
         this.content = content;
         this.revision = 1;
@@ -62,6 +70,10 @@ public class DailyNote {
 
     public UUID getOwnerId() {
         return ownerId;
+    }
+
+    public PrivateSpace getSpace() {
+        return space;
     }
 
     public LocalDate getNoteDate() {

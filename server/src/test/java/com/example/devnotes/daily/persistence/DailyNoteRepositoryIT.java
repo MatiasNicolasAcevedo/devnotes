@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.devnotes.TestcontainersConfiguration;
+import com.example.devnotes.shared.space.PrivateSpace;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -43,6 +45,9 @@ class DailyNoteRepositoryIT {
     @Autowired
     private JdbcTemplate jdbc;
 
+    @Autowired
+    private EntityManager entityManager;
+
     private UUID owner() {
         var id = UUID.randomUUID();
         jdbc.update(
@@ -66,6 +71,18 @@ class DailyNoteRepositoryIT {
         assertThat(note.getNoteDate()).isEqualTo(date);
         assertThat(note.getCreatedAt()).isEqualTo(NOW);
         assertThat(note.getUpdatedAt()).isEqualTo(NOW);
+        assertThat(jdbc.queryForObject("SELECT space FROM daily_note WHERE id = ?", String.class, note.getId()))
+                .isEqualTo("work");
+        entityManager.clear();
+        assertThat(repository.findById(note.getId()).orElseThrow().getSpace()).isEqualTo(PrivateSpace.WORK);
+    }
+
+    @Test
+    void readsPersonalSpaceFromTheDatabase() {
+        var note = repository.saveAndFlush(new DailyNote(owner(), LocalDate.of(2026, 10, 20), EMPTY_DOC, NOW));
+        jdbc.update("UPDATE daily_note SET space = 'personal' WHERE id = ?", note.getId());
+        entityManager.clear();
+        assertThat(repository.findById(note.getId()).orElseThrow().getSpace()).isEqualTo(PrivateSpace.PERSONAL);
     }
 
     @Test
