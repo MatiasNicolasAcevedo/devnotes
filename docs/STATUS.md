@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-057](tasks/T-057-space-storage.md) · Migración a Trabajo y enum de espacio ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `in_progress` |
-| Acción actual | Implementar la migración y verificarla con PostgreSQL 18. Ensayo de Render pendiente de autorización expresa sobre SHA y ventana. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-057-space-storage` |
+| Estado | `in_review` |
+| Acción actual | Revisar en una sesión independiente la migración, el mapeo y la evidencia de PostgreSQL 18. Ensayo de Render pendiente de autorización expresa sobre SHA y ventana. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-057-space-storage` · [PR60](https://github.com/MatiasNicolasAcevedo/devnotes/pull/60) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
 
@@ -98,5 +98,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá T-057 como Frontera en rol implementer según docs/agents/implementer.md y AUTONOMY. Verificá la base publicada de main y retomá el checkpoint de T-057 en codex/t-057-space-storage. Completá la migración y las pruebas dirigidas con PostgreSQL 18 y, con los checks verdes, publicá el PR y dejalo listo para revisión independiente. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+Retomá T-057 como Frontera en rol reviewer, en una sesión independiente, según docs/agents/reviewer.md y AUTONOMY. Confirmá PR60 abierto y listo para revisión contra main. Verificá que el HEAD publicado coincide con la rama codex/t-057-space-storage, que la base es ac48bdef2d976dc045446556b553e7f7ca41430a y que verify-required corresponde al HEAD revisado. Revisá el diff y la evidencia de PostgreSQL 18.6 de T-057, incluidos V6→V7, unicidad por espacio y preservación de versiones. Registrá el veredicto y los SHA de HEAD y base según el protocolo. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
 ```

@@ -1,6 +1,6 @@
 ---
 id: T-057
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -9,7 +9,7 @@ depends_on: [T-056]
 branch: codex/t-057-space-storage
 role: implementer
 executor: frontier
-pr: null
+pr: 60
 ---
 
 # T-057 · Migración de datos a Trabajo y enum de espacio
@@ -76,6 +76,12 @@ Conciliación en `133feff83312ba8adeca950a46d84b20bbf8392a`. Antes de V7, desde 
 | La regresión histórica fijaba V6 como última versión | Actualizar las aserciones de la secuencia y del destino a V7 y conservar la comprobación del checksum de V1 | `ReferenceItemMigrationIT` verde en la corrida adicional |
 
 **FULL/STARTER DIFERIDO POR EL DUEÑO.** Render pendiente de autorización expresa sobre SHA y ventana.
+
+### Entrega para revisión
+
+[PR60](https://github.com/MatiasNicolasAcevedo/devnotes/pull/60) contra `main`. Las fuentes de las pruebas corresponden al commit técnico `b76fef38e7190bb6c9e9d9ff0c4e836a52175d1e` sobre la base publicada `ac48bdef2d976dc045446556b553e7f7ca41430a`. `node scripts/docs-check.mjs`, `git diff --check` y `git diff --check origin/main...HEAD` → exit 0. `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → exit 0, `policy=FULL`, `profile=APPLICATION`, nueve rutas técnicas. El traspaso solo modifica Markdown. Consultar el HEAD vigente y su `verify-required` en PR60.
+
+Control I5 al llegar a T-057: T-053…T-056 están conciliadas. T-057 tiene evidencia dirigida y queda pendiente de revisión independiente y merge. T-058 sigue condicionada por ese cierre. El integrado sigue diferido y el ensayo remoto de S-111 tiene autorización pendiente. Los checks dirigidos no detectaron hallazgos que cambien la cola.
 
 ## Cierre y siguiente tarea
 
