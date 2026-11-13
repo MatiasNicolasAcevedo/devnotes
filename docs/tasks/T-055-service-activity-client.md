@@ -1,6 +1,6 @@
 ---
 id: T-055
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -9,7 +9,7 @@ depends_on: [T-054]
 branch: codex/t-055-service-activity-client
 role: implementer
 executor: junie
-pr: null
+pr: 58
 ---
 
 # T-055 · Actividad diaria visible y sondeo moderado
@@ -59,6 +59,39 @@ Los nombres nuevos de tests son archivos/clases que esta tarea debe crear. Confi
 Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`. Registrar **FULL/STARTER DIFERIDO POR EL DUEÑO**. No ejecutar FULL, STARTER, tooling completo ni E2E completo hasta solicitud expresa, aunque el clasificador dé FULL/STARTER. CI liviana/revisión independiente siguen obligatorias.
 
 ## Checkpoint vigente
+
+### Implementación
+
+**2026-11-12 · Implementación publicada, lista para revisión independiente.** Junie como implementer en sesión nueva, ejecutado con Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. Git, `gh`, Git Bash y Node 24.21.0 con el npm del proyecto. Sin deploys, sin variables de Render y sin HTTP saliente real: la API se simuló con MSW.
+
+Impacto: **comportamiento/UI** nuevos solo para la cuenta con `capabilities.available` (interruptor del servidor apagado por defecto); **readiness** pasa de cada 5 s también en segundo plano a montar/foco/cada 60 s solo visible; **API**: consume sin cambios el contrato de T-053/T-054; sin cambios de permisos (el servidor autoriza), datos, dependencias, configuración ni backend. Código en `df4ad96`, base `main` `fb8a381`; [PR58](https://github.com/MatiasNicolasAcevedo/devnotes/pull/58).
+
+- Nuevos `features/serviceActivity/api.ts` (esquemas Zod estrictos: unión `capabilities`, estado con instantes ISO UTC y `lastResult` cerrado; `start` con body exacto `{mode}` y `pause` sin cuerpo, ambos con `withCsrfRenewal` sin reenvío), `useServiceActivity.ts` y `ServiceActivityDialog.tsx`. Query keys privadas `['serviceActivity', owner, …]`, descartadas por el logout/cambio de identidad existente.
+- Activación: `AccountMenu` (montado por identidad con `key`) consulta capabilities y, con CSRF listo y documento visible, envía `visit` una sola vez por `owner|serviceDate` del servidor; el intento se registra en memoria antes de enviar, así un error no reintenta ni entra en bucle. Un día nuevo se detecta solo por foco o navegación con capabilities vencidas (60 s); no hay timer propio. `sessionIsCurrent` evita que un 401 tardío de otra identidad cierre la sesión vigente; la respuesta tardía solo invalida el estado si la identidad sigue siendo la misma.
+- Detalle «Actividad del servidor» en el menú de cuenta, sin icono nuevo en la barra: estado («Activo hasta las 00:00», «Pausada por hoy», «No se pudo comprobar la sonda», «Inactiva hoy»), corte con fecha y zona del servicio, última respuesta/intento/éxito, fallos y próximo intento, texto fijo de S-111 y aclaración de que «Online» y la sonda no son guardado de notas. Estado leído solo al abrir y tras pausar/reanudar (`gcTime: 0`, sin foco ni intervalo). Acciones explícitas: pausar, reanudar, reintentar la sonda tras tres fallos y activar hoy (`resume`). Errores de consulta y de acción en alertas propias, sin presentar la acción como aplicada.
+- Readiness: `refetchInterval` 60 s, `refetchIntervalInBackground: false`, `refetchOnWindowFocus: true`.
+- MSW por defecto responde `capabilities` `{available:false}` (interruptor apagado); `test/msw/serviceActivityBackend.ts` simula start/pause/estado, 401/403/404, pausa del día y CSRF contra el token del backend de auth.
+
+Pruebas, desde `client/`:
+
+- Dirigida del contrato: `npm test -- --run src/features/serviceActivity src/features/system/ServerStatus.test.tsx src/features/auth/SessionControls.test.tsx` → exit 0, 5 archivos y **58/58** (`api.test.ts` 19, `useServiceActivity.test.tsx` 13, `ServiceActivityDialog.test.tsx` 9, `ServerStatus.test.tsx` 12, `SessionControls.test.tsx` 5). Cubre una activación por fecha pese a renders/foco/re-consultas, documento oculto sin activar y activación al volverse visible, otra cuenta/interruptor apagado/visitante/capabilities fuera de contrato sin activar ni detalle, pausa respetada al reabrir y en otra pestaña (solo `visit`, nunca `resume`), fecha del servidor con el dispositivo ya en el día siguiente y día nuevo solo al navegar, seis horas sin interacción sin consultas, error de activación sin reintento y con escritura intacta, respuesta tardía tras logout, 401 tardío de otra identidad, 401 vigente que termina la sesión, corte 00:00 con el dispositivo en `Asia/Tokyo`, pausa/reanudación/reintento/activación explícitos, 404, red caída con reintento, pausa rechazada (500) y 403 CSRF sin reenvío, readiness sin consulta antes de 60 s ni en segundo plano.
+- Mutantes temporales sobre la fuente, cada uno restaurado desde copia (árbol limpio después): sin registro de intentos → 3 fallos; fecha del dispositivo → 1; sin chequeo de visibilidad → 1; `visit` sin `sessionIsCurrent` → 1; `visit` enviado como `resume` → 8; readiness cada 5 s → 1; readiness en segundo plano → 1; sin revalidar al navegar → 1; `refetchInterval` de 60 s en capabilities → 1.
+- Por riesgo (handler MSW por defecto y menú compartidos), no gate: `npx vitest --run` → 51 archivos, 711/711.
+- `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build` → exit 0 (el build mantiene el aviso de tamaño de chunk ya existente).
+- Cierre desde la raíz: `git diff --check origin/main...HEAD` exit 0; `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → `policy=FULL`, `profile=APPLICATION`, 19 rutas, 13 técnicas; `node scripts/docs-check.mjs` OK (124 Markdown, 68 tareas, HANDOFF 22/22) en un worktree limpio del HEAD, porque el checkout principal contiene `trailer/`, ajeno y sin versionar. **FULL/STARTER DIFERIDO POR EL DUEÑO** según la [excepción I5](../TESTING.md#excepción-i5-del-2026-11-12): no se ejecutaron FULL, STARTER, `npm run verify`, E2E, deploys, variables de Render ni HTTP saliente real. No se afirma cobertura total.
+- Logs locales saneados en `.orchestrator/t055-*.log` (ignorado). Sin stacks, contenedores ni el stack persistente del dueño.
+
+**Pendiente para frontera antes de FULL (fuera de este contrato).** Con readiness cada 60 s solo visible, dos expectativas E2E heredadas de S-002/T-050 dejan de cumplirse y no se modificaron aquí (no se pueden ejecutar por I5): `e2e/tests/local-stack.spec.ts` exige detectar la caída y la recuperación de la DB con la página abierta en menos de 30 s, y `e2e/tests/system.spec.ts` espera volver a «Servidor conectado» en 20 s sin recargar («revalida solo cada 5 s»). S-111 decide la cadencia nueva pero no dice cómo quedan esos criterios. Opciones: ajustar esas pruebas y S-002 a la cadencia de S-111 (por ejemplo, revalidación por foco o plazo mayor) o fijar otra regla para E2E. Decisión de frontera/dueño; no bloquea la revisión local de T-055.
+
+Siguiente: revisión independiente de PR58 en sesión nueva. No ejecutar T-056 antes de PR58 MERGED y T-055 conciliada.
+
+### Correcciones significativas
+
+| Problema / causa | Arreglo | Prueba / SHA |
+|---|---|---|
+| El evento `visibilitychange` de prueba no llegaba al `focusManager` de Query, que escucha en `window`; el foco simulado no revalidaba | El evento se despacha con `bubbles: true`, como en el navegador | `useServiceActivity.test.tsx`, `ServerStatus.test.tsx` · `df4ad96` |
+| El test «sin timer» no detectaba un `refetchInterval` agregado: el intervalo real se creaba antes de simular el reloj | Intervalos simulados desde el montaje y esperas con `vi.waitFor` | Mutante con `refetchInterval` falla 1/13 · `df4ad96` |
+| El simulador comparaba el header CSRF con la cookie que la SPA acababa de leer, así un 403 no era reproducible | Compara con el token vigente del backend de auth simulado | `ServiceActivityDialog.test.tsx` 403 sin reenvío · `df4ad96` |
 
 ### Inicio
 
