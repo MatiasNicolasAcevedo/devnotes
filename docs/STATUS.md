@@ -2,12 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-051](tasks/T-051-render-follow-up.md) · Ícono y voz en Render |
-| Estado | `mergeable` |
-| Acción actual | [Revisión independiente](tasks/T-051-render-follow-up.md#revisión-independiente) favorable de PR54, sin bloqueantes. Publicar el veredicto sobre el HEAD de esta transición, con CI verde, y squash merge elegible. Después T-053 concilia T-051 como `done`. |
-| Rama / PR | `codex/t-051-render-follow-up` · [PR54](https://github.com/MatiasNicolasAcevedo/devnotes/pull/54) OPEN |
+| Tarea y contrato | [T-053](tasks/T-053-service-activity-window.md) · Ventana diaria y autorización de la sonda ([S-111](specs/S-111-render-daily-availability.md)) |
+| Estado | `in_progress` |
+| Acción actual | Junie implementer ejecuta el contrato de T-053: migración V6, ventana persistida, autorización por cuenta habilitada y API privada con flag apagado por defecto. Sin scheduler, HTTP saliente ni Render. |
+| Rama / PR | `codex/t-053-service-activity-window` · PR pendiente |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+
+[T-051](tasks/T-051-render-follow-up.md#conciliación): [PR54](https://github.com/MatiasNicolasAcevedo/devnotes/pull/54) MERGED, squash `d722b0a82cfdfc01b6f97d26d7b4820eb8791606`, mergedAt 2026-11-13T00:21:12Z (2026-11-12 en Buenos Aires), HEAD aprobado `170420c`, `verify-required` SUCCESS. Conciliada como `done`.
 
 [T-052](tasks/T-052-scope-expansion-plan.md#conciliación): [PR55](https://github.com/MatiasNicolasAcevedo/devnotes/pull/55) MERGED, squash `9463bb03d288da586c3953508ba184a2f2e571d0`, mergedAt 2026-11-13T00:03:28Z (2026-11-12 en Buenos Aires), HEAD `49c5019`, `verify-required` SUCCESS. Conciliada como `done`.
 

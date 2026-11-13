@@ -1,6 +1,6 @@
 ---
 id: T-051
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M4
@@ -79,3 +79,7 @@ Transición: `mergeable`. Esta transición cambia HEAD; el veredicto `APROBADO` 
 - [PR54](https://github.com/MatiasNicolasAcevedo/devnotes/pull/54) abierto como borrador. SHA de prueba publicado y verificado en GitHub: `f6a23c7ec7587baa004d85b8a4187058b9fff255`, con [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43148200959/job/130950912772). Render confirmó `devnotes-pilot` Free, enlazado a `main` con auto-deploy desactivado.
 - Con autorización explícita del dueño para ese SHA y la revisión independiente pendiente, se inició un único [deploy por SHA en Render](https://dashboard.render.com/web/srv-dbqhfqei0phs73cmkbs0/deploys/dep-dbqj6bajnfac738rp65g) mediante el panel en Brave. Render registró `live` para `f6a23c7ec7587baa004d85b8a4187058b9fff255`, inicio `2026-11-12T03:31:57Z` y fin `2026-11-12T03:33:52Z`. El GET público de `/actuator/health/readiness` devolvió HTTP `200` y `UP`. El HTML público enlaza el favicon y el manifiesto. El manifiesto y los tres íconos devolvieron `200` y coinciden con `client/dist`, comparando los PNG byte a byte y el SVG con finales de línea normalizados.
 - Pendiente la aceptación del dueño en Brave, Windows y voz. Muestra local TTS `es-ES` de 11,44 s, ficticia, en `.orchestrator/t051-voice-sample.wav` (ignorada por Git). Groq sigue publicando soporte de WebM en `whisper-large-v3-turbo`, hasta 25 MB por archivo en Free, 20 solicitudes/min, 2.000/día, 7.200 s/h y 28.800 s/día, con elegibilidad ZDR. Antes de enviar, el dueño confirma plan, gasto y retención según [VOICE-RELEASE](../VOICE-RELEASE.md#habilitación-segura-del-proveedor). [Formato](https://console.groq.com/docs/speech-to-text) · [Cuota](https://console.groq.com/docs/rate-limits) · [Retención](https://console.groq.com/docs/your-data). La sonda y la medición del despertar siguen aplazadas.
+
+## Conciliación
+
+**2026-11-12 · Conciliada como `done` en la rama de T-053.** Junie como implementer de T-053, ejecutado con Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. `gh pr view 54 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` salió con código 0: [PR54](https://github.com/MatiasNicolasAcevedo/devnotes/pull/54) `MERGED` contra `main`, squash `d722b0a82cfdfc01b6f97d26d7b4820eb8791606`, `mergedAt` `2026-11-13T00:21:12Z` (2026-11-12 21:21 en Buenos Aires). HEAD aprobado y mergeado `170420c5a4aa26a34811b98c2f933affd87e2ac5`, con veredicto `APROBADO` publicado en el PR sobre ese SHA y [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43336260492/job/131593086158). Sin deploy nuevo ni cambio de variables en esta conciliación. La sonda sigue en [S-111](../specs/S-111-render-daily-availability.md), que empieza con [T-053](T-053-service-activity-window.md).
