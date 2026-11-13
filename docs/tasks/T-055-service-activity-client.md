@@ -1,6 +1,6 @@
 ---
 id: T-055
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 milestone: M5
@@ -59,6 +59,22 @@ Los nombres nuevos de tests son archivos/clases que esta tarea debe crear. Confi
 Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`. Registrar **FULL/STARTER DIFERIDO POR EL DUEÑO**. No ejecutar FULL, STARTER, tooling completo ni E2E completo hasta solicitud expresa, aunque el clasificador dé FULL/STARTER. CI liviana/revisión independiente siguen obligatorias.
 
 ## Checkpoint vigente
+
+### Revisión R2 · CAMBIOS REQUERIDOS
+
+**2026-11-13 · Frontera como reviewer en sesión independiente, ronda 2 de 2.** Codex de escritorio, PowerShell, Git, `gh`, Node 24.21.0 y npm 11.19.0. Variante del modelo y esfuerzo sin verificación en esta sesión. Impacto de R2 limitado a la transición documental de la tarea y STATUS.
+
+[PR58](https://github.com/MatiasNicolasAcevedo/devnotes/pull/58) OPEN, no draft, rama `codex/t-055-service-activity-client`. HEAD de fuentes revisadas `d3a672185de65a3a0a3548d35936aa62569d3447`, base `main` `fb8a3818ecdf3dcb10da3c0924af2bee45c84f26`. `git merge-base --is-ancestor` confirmó `9a84a3416ddc0a2abd0bd634217833ecf88cc9f1` como ancestro y `git log --name-status` mostró solo tres Markdown posteriores. [`verify-required` SUCCESS en el HEAD de entrada](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43509436594/job/132175530963). El comentario R2 en el PR registra el SHA documental final y su check.
+
+- **B-1 cerrado.** Una reconexión tras medianoche con el documento visible conserva la fecha consultada y una sola `visit`. La prueba publicada falla al habilitar la reconexión en `capabilities`: dos `visit` en vez de una. La prueba de navegación conserva la activación del nuevo día.
+- **B-2 cerrado.** Con `capabilities` resuelta y el CSRF retenido, se observan cero POST de inicio. Al liberar el CSRF sale una sola `visit`. Quitar `!csrfReady` registra un POST antes de liberar el endpoint y hace fallar la aserción.
+- **B-3 cubre foco e intervalo, con un bloqueante pendiente.** Con el detalle abierto, los mutantes individuales de foco e intervalo de 60 s hacen fallar la aserción de una sola lectura. En la fuente publicada, `useServiceActivityStatus` hereda `refetchOnReconnect: true`. Con la visita inicial ya completada y el detalle mostrando el estado, una reconexión por `onlineManager.setOnline(false)` y luego `true` dispara un segundo GET sin acción del dueño. La prueba temporal en `ServiceActivityDialog.test.tsx` falló con `expected 2 to be 1` y pasó al fijar `refetchOnReconnect: false` solo en la consulta de estado. S-111 limita las lecturas a la apertura y las acciones. Cierre observable: versionar el negativo de reconexión con el detalle abierto, rojo antes y verde con la corrección, y conservar las lecturas de apertura y pausa/reanudación.
+
+Evidencia independiente en un worktree `--detach` del SHA publicado con `npm ci --no-audit --no-fund` sobre el lockfile. Desde `client/`, `npm test -- --run src/features/serviceActivity src/features/system/ServerStatus.test.tsx src/features/auth/SessionControls.test.tsx` pasó **61/61 en 5 archivos**. `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build` salieron con código 0. El build emitió el aviso de tamaño de chunk ya registrado. Los cuatro mutantes se ejecutaron individualmente con `npm test -- --run <archivo> -t <caso>` y cada uno falló por su aserción con código 1. La prueba temporal y los mutantes se retiraron, con huellas restauradas y diff de fuentes vacío. Se preservó `trailer/` del checkout principal.
+
+`node scripts/docs-check.mjs` pasó (124 Markdown, 68 tareas, HANDOFF 22/22). `git diff --check` pasó. `node scripts/ci/classify-diff.mjs --base fb8a3818ecdf3dcb10da3c0924af2bee45c84f26 --head HEAD --phase FULL` clasificó `FULL` / `APPLICATION` (20 rutas, 13 técnicas). **FULL/STARTER DIFERIDO POR EL DUEÑO**. Se usó MSW para el tráfico de la aplicación. O-1, O-2 y el pendiente de E2E de readiness conservan el alcance registrado en R1.
+
+**Decisión del dueño tras agotar R2.** Propuesta: Frontera como implementer corrige únicamente la reconexión del estado en la misma rama/PR y publica la regresión rojo/verde, dirigida y checks sobre HEAD/base. Para llegar a merge, el dueño debe autorizar expresamente una revisión independiente adicional. Esa sesión verifica B-3 y la evidencia vigente, registra su veredicto con `verify-required` del HEAD final y aplica AUTONOMY si se cumplen las condiciones. T-056 depende de PR58 MERGED y de la conciliación de T-055.
 
 ### Corrección de R1
 

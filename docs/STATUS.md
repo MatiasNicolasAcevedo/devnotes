@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-055](tasks/T-055-service-activity-client.md) · Actividad diaria visible y sondeo moderado ([S-111](specs/S-111-render-daily-availability.md)) |
-| Estado | `in_review` |
-| Acción actual | [Corrección de R1](tasks/T-055-service-activity-client.md#corrección-de-r1) lista para revisión R2 de Frontera en sesión nueva. B-1, B-2 y B-3 verificados con cuatro mutantes y dirigida 61/61. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Estado | `changes_requested` |
+| Acción actual | [R2 de Frontera](tasks/T-055-service-activity-client.md#revisión-r2--cambios-requeridos) cierra B-1 y B-2. B-3 pendiente: reconectar con el detalle abierto relee el estado. Dirigida 61/61 y cuatro mutantes detectados. Rondas agotadas, decisión del dueño sobre la corrección acotada y la revisión adicional. FULL/STARTER DIFERIDO POR EL DUEÑO. |
 | Rama / PR | `codex/t-055-service-activity-client` · [PR58](https://github.com/MatiasNicolasAcevedo/devnotes/pull/58) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
@@ -94,5 +94,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-En una sesión nueva de Frontera como reviewer, hacé R2 de T-055 (docs/tasks/T-055-service-activity-client.md, contrato S-111) en PR58, rama codex/t-055-service-activity-client. Primero ejecutá gh pr view 58 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,isDraft,headRefOid,baseRefName,mergeable y verificá PR58 OPEN, base main y HEAD publicado con la corrección 9a84a3416ddc0a2abd0bd634217833ecf88cc9f1 como ancestro y solo documentación posterior. Si no se cumple, informá el estado real y detenete. Revisá B-1, B-2 y B-3 contra la base publicada, la evidencia de los cuatro mutantes y el gate dirigido. Conservá FULL/STARTER DIFERIDO POR EL DUEÑO. No ejecutes FULL, STARTER, npm run verify, E2E, deploys, variables de Render ni HTTP saliente real de la aplicación. Preservá trailer/ del checkout principal. Registrá el veredicto R2 para HEAD/base y verificá verify-required sobre el HEAD final conforme a AUTONOMY y al protocolo reviewer. No ejecutes T-056.
+T-055 agotó R2 con CAMBIOS REQUERIDOS en PR58. Si el dueño autoriza retomar la corrección, en una sesión nueva de Frontera como implementer confirmá con gh pr view 58 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,isDraft,headRefOid,baseRefName,mergeable que PR58 sigue OPEN contra main y que HEAD/base coinciden con el comentario R2. Si difieren, informá el estado real y detenete. Corregí solo B-3 en codex/t-055-service-activity-client según docs/tasks/T-055-service-activity-client.md y S-111. Versioná la regresión de reconexión con el detalle abierto, primero roja por la segunda lectura de estado y después verde con refetchOnReconnect: false en useServiceActivityStatus. Ejecutá la dirigida del contrato, typecheck, lint, format:check, build, docs-check, diff-check y clasificación. Preservá trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. No ejecutes FULL, STARTER, npm run verify, E2E, deploys, variables de Render ni HTTP saliente real de la aplicación. Publicá la evidencia en la misma rama y PR. La revisión independiente adicional requiere autorización expresa del dueño. No ejecutes T-056.
 ```
