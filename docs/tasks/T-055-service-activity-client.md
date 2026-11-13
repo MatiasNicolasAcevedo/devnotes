@@ -1,6 +1,6 @@
 ---
 id: T-055
-status: changes_requested
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -59,6 +59,21 @@ Los nombres nuevos de tests son archivos/clases que esta tarea debe crear. Confi
 Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`. Registrar **FULL/STARTER DIFERIDO POR EL DUEÑO**. No ejecutar FULL, STARTER, tooling completo ni E2E completo hasta solicitud expresa, aunque el clasificador dé FULL/STARTER. CI liviana/revisión independiente siguen obligatorias.
 
 ## Checkpoint vigente
+
+### Corrección de B-3 tras R2
+
+**2026-11-13 · Frontera como implementer en sesión nueva.** Codex de escritorio, PowerShell, Git, `gh`, Node 24.21.0 y npm 11.19.0. Modelo efectivo y esfuerzo sin verificación. El cambio de comportamiento se limita a la consulta de estado del detalle. La reconexión conserva el estado visible y las lecturas siguen ocurriendo al abrir y tras pausar o reanudar. API, permisos, datos y presentación conservan su contrato.
+
+[PR58](https://github.com/MatiasNicolasAcevedo/devnotes/pull/58) OPEN, rama `codex/t-055-service-activity-client`, HEAD de entrada `cec01dd421039b96ff317bbb0b36afe953bb7344` y base publicada `main` `fb8a3818ecdf3dcb10da3c0924af2bee45c84f26`, comprobados con `gh pr view 58 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,isDraft,headRefName,headRefOid,baseRefName,baseRefOid,mergeable` al iniciar y antes del push. HEAD técnico publicado `7eaf278d5f42bc5e1319f44bd2c0e11d0567fc29`. Este cierre documental conserva las fuentes de ese commit. El SHA documental vigente y su `verify-required` se consultan en el PR.
+
+Pruebas en un worktree aislado, con `npm ci --no-audit --no-fund` del lockfile y MSW para la API. Se preservó `trailer/` del checkout principal.
+
+- `npm test -- --run src/features/serviceActivity/ServiceActivityDialog.test.tsx -t 'con el detalle abierto, recuperar la conexión no relee el estado'` → **rojo** sobre la fuente de `cec01dd` (exit 1, 1 prueba fallida). Tras completar `visit` y abrir el detalle hubo un GET. El ciclo offline/online con `onlineManager`, sin foco, navegación ni acción, produjo `expected 2 to be 1`. **Verde** con `refetchOnReconnect: false` solo en `useServiceActivityStatus` (exit 0, 1 prueba pasó).
+- `npm test -- --run src/features/serviceActivity src/features/system/ServerStatus.test.tsx src/features/auth/SessionControls.test.tsx` → exit 0, **62/62 en cinco archivos**. Conserva los casos de lectura al abrir, al pausar y al reanudar, y el negativo de foco e intervalo con el detalle abierto.
+- `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build` → exit 0. El build conservó el aviso preexistente de tamaño de chunk.
+- Desde la raíz aislada, `node scripts/docs-check.mjs` → OK (124 Markdown, 68 tareas, HANDOFF 22/22). `git diff --check` y `git diff --check fb8a3818ecdf3dcb10da3c0924af2bee45c84f26...HEAD` → exit 0. `node scripts/ci/classify-diff.mjs --base fb8a3818ecdf3dcb10da3c0924af2bee45c84f26 --head HEAD --phase FULL` → `FULL` / `APPLICATION` (20 rutas, 13 técnicas).
+
+**FULL/STARTER DIFERIDO POR EL DUEÑO**. Sin `npm run verify`, E2E, deploys, cambios de variables de Render ni HTTP saliente real de la aplicación. La revisión independiente adicional queda a la espera de autorización expresa del dueño. El prompt vigente está en [STATUS](../STATUS.md#prompt-de-la-siguiente-sesión).
 
 ### Revisión R2 · CAMBIOS REQUERIDOS
 
@@ -153,6 +168,7 @@ Revisión independiente de PR58: [R1 con cambios requeridos](#revisión-r1--camb
 | B-1: Query reconsultaba capabilities al reconectar y habilitaba una nueva visita sin interacción | Desactivar `refetchOnReconnect` en capabilities | Rojo previo y mutante de reconexión: dos visitas · `9a84a34` |
 | B-2: el CSRF simulado siempre llegaba antes de que la SPA pudiera intentar una visita | Retener el endpoint CSRF hasta comprobar cero intentos y después una visita | Sin guarda: una visita antes de liberar CSRF · `9a84a34` |
 | B-3: los conteos previos no cubrían foco ni intervalo con el detalle abierto | Despachar visibilidad y avanzar 61 s con el detalle abierto, manteniendo una lectura | Mutantes de foco e intervalo por separado: dos lecturas · `9a84a34` |
+| B-3 de R2: la consulta de estado heredaba la revalidación al recuperar la conexión | Desactivar `refetchOnReconnect` en `useServiceActivityStatus` | Rojo con dos GET, verde con uno · `7eaf278` |
 
 ### Inicio
 
