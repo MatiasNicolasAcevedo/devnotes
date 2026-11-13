@@ -1,6 +1,6 @@
 ---
 id: T-052
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M5
@@ -78,3 +78,31 @@ No done con PR abierto. Una sesión revisora independiente verifica el PR docume
 ## Ampliación documental solicitada después de publicar PR55
 
 2026-11-12: el dueño solicita registrar siete ideas para después de I5 en el mismo PR. Se añade [FUTURE-FEATURES](../FUTURE-FEATURES.md), enlazado desde BACKLOG y ROADMAP. Son direcciones de producto pendientes de contrato, no nuevas tareas ni cambios a S-109…S-111. Se recomienda panel secundario de consulta y resultados de búsqueda agrupados. Misma sesión de frontera/planner y herramientas ya registradas; se conserva revisión independiente y prohibición de FULL/STARTER. Validación de esta ampliación: docs-check sobre copia de archivos publicables, diff-check y CI documental del nuevo HEAD.
+
+## Revisión independiente
+
+**2026-11-12 · Reviewer + merger, sesión distinta de la autora.** Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. Herramientas: Git, `gh`, Git Bash, PowerShell y Node. Impacto: transición documental; sin cambio de comportamiento/API/permisos/datos/UI.
+
+Hechos remotos antes de la transición: PR55 OPEN, no draft, `MERGEABLE`/`CLEAN`, HEAD `aae71be0c21590b656254cc3671bd8b3b46b5ed8`, base main `00407ef4a637369d3078d19aceab123be3b13521` (= merge-base), [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43332360671) con `headSha` igual al HEAD, sin comentarios ni revisiones previas. PR53 MERGED (`00407ef`, 2026-11-12T03:18:19Z, HEAD `c124a40`) coincide con la conciliación de T-047. PR54 OPEN/draft, HEAD `9a2ed719a16be94a2f5a2c0866ff4a0e94371df6`, misma base, sin revisión; T-051 `in_progress` en su rama con aceptación del dueño pendiente.
+
+Verificación en worktree aislado del HEAD publicado (sin `trailer/` ni `plantilla/`): `node scripts/docs-check.mjs` exit 0 (124 Markdown, 68 tareas, HANDOFF 22/22); `git diff --check origin/main...HEAD` exit 0; `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → `DOCS_ONLY` / `DOCUMENTATION`, 29 archivos A/M. Sin FULL, STARTER, E2E, stacks, deploys ni sonda. `trailer/` local intacto.
+
+Veredicto del contenido: **favorable, sin bloqueantes.**
+
+- S-109: dos espacios enum fijos, migración de todo lo existente a Trabajo con V7 o siguiente libre, unicidad `(owner, space, date)`, 404 indistinguible entre espacios, `space` ausente = work y 400 sin mutación, guardias de cambio por estado (flush/ACK, voz, grabación, importación), contexto capturado por operación, navegación ≥768 px / inferior móvil, Datos global y respaldo `.xlsx` v2 con lectura exacta v1→Trabajo y rechazo de referencias cruzadas.
+- S-110: GET de sugerencia sin escritura (200/204), POST con `sourceRevision`/`expectedRevision`, CAS + vacío atómicos, errores 404/409 explícitos, sin autocopia, sin sobrescritura, fecha y espacio visibles antes del click, undo local y sin reintento automático.
+- S-111: flag apagado por defecto, ventana por visita visible del dueño hasta medianoche de Buenos Aires, pausa del día, generación contra callbacks tardíos, tres fallos, destino solo desde `APP_PUBLIC_URL`. Separa explícitamente la aceptación local del ensayo remoto autorizado; declara «inconcluso» sin evidencia y no afirma eficacia en Render.
+- T-053…T-067: cadena lineal coherente con BACKLOG/ROADMAP/specs (T-053 requiere T-051 y T-052 MERGED/conciliadas; T-056→T-057; T-065→T-066), controles tras T-057/T-062/T-067. Los tests existentes citados en los comandos dirigidos existen en main.
+- FUTURE-FEATURES: ideas 2, 9, 16, 21, 22, 24 y 34 registradas para después de I5, sin tareas ni dependencias sobre T-053…T-067.
+- AGENTS/AUTONOMY/TESTING/STATUS/BACKLOG/ROADMAP: excepción documental limitada a PR54 + PR55 y FULL/STARTER diferidos hasta solicitud expresa del dueño, con CI liviana y revisión independiente conservadas.
+
+Observaciones no bloqueantes (cierre en la tarea indicada, sin replanificar):
+
+| ID | Evidencia | Condición de cierre |
+|---|---|---|
+| O-1 | `client/src/features/auth/SessionControls.test.tsx` (T-055/T-064) y `client/src/app/AppShell.test.tsx` (T-064) no existen en main; Vitest ignora un filtro sin coincidencias si otro filtro sí coincide | La tarea crea esos archivos y registra el número de tests ejecutados por archivo, distinto de cero |
+| O-2 | S-111 dice «TaskScheduler existente», pero main no tiene `@EnableScheduling` ni bean `TaskScheduler`; Spring Boot no lo autoconfigura sin scheduling habilitado | T-054 lo provee con Spring (habilitar scheduling o bean explícito) sin dependencia nueva y lo registra |
+| O-3 | PR54 y PR55 modifican `docs/STATUS.md`, `docs/BACKLOG.md` y T-047 | Al integrar main en PR54, resolver conservando la evidencia de T-051 y la cola I5; nuevo HEAD exige CI y revisión vigentes |
+| O-4 | PROJECT_CONTEXT dice que no se seleccionaron otras propuestas; FUTURE-FEATURES selecciona siete para después de I5 | Aclarar en la próxima planificación de frontera; no afecta I5 |
+
+Transición: `mergeable`. Esta transición cambia HEAD; el veredicto `APROBADO` se publica en PR55 con el SHA nuevo solo después de docs-check y `verify-required` verde sobre ese SHA. El merge sigue [merger](../agents/merger.md); T-052 pasa a done en el primer avance de la siguiente rama autorizada, tras confirmar MERGED.

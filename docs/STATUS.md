@@ -3,11 +3,11 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-052](tasks/T-052-scope-expansion-plan.md) · Contratos de expansión I5 |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente del PR documental sobre HEAD/base publicados; implementación espera también el cierre de PR54. |
+| Estado | `mergeable` |
+| Acción actual | Revisión independiente favorable de PR55, sin bloqueantes ([evidencia](tasks/T-052-scope-expansion-plan.md#revisión-independiente)). Publicar veredicto sobre el HEAD de esta transición, con CI verde, y squash merge elegible. Después cerrar T-051/PR54 antes de habilitar T-053. |
 | Rama / PR | `codex/t-052-scope-expansion-plan` · [PR55](https://github.com/MatiasNicolasAcevedo/devnotes/pull/55) OPEN |
 
-Excepción del dueño: planificación junto a [PR54](https://github.com/MatiasNicolasAcevedo/devnotes/pull/54), que sigue OPEN/draft. No implica cierre ni aceptación de T-051. El estado draft de su archivo en esta base pertenece a main; su ejecución está en la rama de PR54. T-047 conciliada como done. FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+Excepción del dueño: planificación junto a [PR54](https://github.com/MatiasNicolasAcevedo/devnotes/pull/54), que sigue OPEN/draft (HEAD `9a2ed71`, sin revisión): falta la aceptación del dueño en Brave, Windows y voz, la integración de main y la revisión independiente con merge elegible. No implica cierre ni aceptación de T-051. El estado draft de su archivo en esta base pertenece a main; su ejecución está en la rama de PR54. T-047 conciliada como done. FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
 
 [T-046](tasks/T-046-render-image.md#checkpoint-vigente) conciliada como `done` tras confirmar PR52 MERGED. [T-050](tasks/T-050-ui-adjustments.md#checkpoint-vigente) conciliada como `done` tras confirmar PR51 MERGED.
 
@@ -86,5 +86,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-En una sesión revisora independiente, revisá T-052 en codex/t-052-scope-expansion-plan sobre el HEAD/base publicados de PR55 contra main. Verificá S-109, S-110, S-111, tareas T-053…T-067, compatibilidad XLSX y excepciones en AUTONOMY/TESTING. Corré solo docs-check, diff-check y clasificación documental; exigí CI verify-required verde. No ejecutes FULL/STARTER/E2E completo, no despliegues ni actives la sonda. PR54/T-051 conserva su cierre independiente pendiente; no marcarla done por este PR. Si el plan queda aprobado y MERGED, la siguiente sesión reconcilia T-052; si T-051 sigue abierto retoma su cierre, y solo con ambos conciliados habilita T-053. No implementar producto durante la revisión.
+En una sesión nueva de implementación de frontera, cerrá T-051 antes de habilitar T-053. Precondición: con gh pr view 55 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName confirmá PR55 MERGED (mergedAt y mergeCommit.oid no vacíos); si no, informá el estado real y no sigas. Retomá codex/t-051-render-follow-up y PR54 (OPEN/draft) y comprobá HEAD/base/CI y el deploy live f6a23c7ec7587baa004d85b8a4187058b9fff255 en devnotes-pilot. Integrá origin/main con git merge, sin rebase ni force push, y resolvé los conflictos de STATUS, BACKLOG y T-047 conservando la evidencia de T-051 y la cola I5; conciliá T-052 como done con el SHA y la fecha del squash de PR55. Recogé la aceptación pendiente del dueño: favicon en Brave, ícono de la app instalada en Windows, login y reapertura de una nota, y transcripción, edición, guardado y reapertura de una muestra sintética ficticia según VOICE-RELEASE, con plan, gasto y retención de Groq confirmados por el dueño antes de enviar. Registrá el resultado saneado en T-051. FULL/STARTER siguen diferidos por la excepción I5 de TESTING: corré solo src/app/manifest.test.ts, docs-check, git diff --check y la clasificación, y exigí verify-required verde en el HEAD final. Con la aceptación registrada, pasá PR54 a ready y dejá en STATUS el único prompt para una sesión revisora independiente que lo revise y, si es elegible según AUTONOMY, lo mergee; sin aceptación, dejá T-051 blocked con la pregunta concreta al dueño. No implementes T-053: solo con PR54 MERGED y T-051 conciliada la sesión siguiente toma T-053-service-activity-window.
 ```
