@@ -1,6 +1,6 @@
 ---
 id: T-056
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -9,7 +9,7 @@ depends_on: [T-055]
 branch: codex/t-056-service-activity-journey
 role: implementer
 executor: frontier
-pr: null
+pr: 59
 ---
 
 # T-056 · Validación local y entrega medible de la sonda
@@ -84,6 +84,10 @@ Base `origin/main` verificada en `c95f81408a3612e5626a3da2ebefc870bb23d119`. T-0
 ### Resultado en Render
 
 **Pendiente de autorización expresa sobre SHA y ventana.** El [protocolo de medición](../DEPLOYMENT.md#ensayo-de-la-sonda-interna-en-render-free) fija control, ensayo, evidencia y cierre. Sin deploy ni cambios de variables. La evidencia local permite pasar a revisión independiente con la eficacia remota pendiente.
+
+### Entrega para revisión
+
+[PR59](https://github.com/MatiasNicolasAcevedo/devnotes/pull/59) contra `main`. Las fuentes dirigidas corresponden al commit técnico `4b84676755ea0184cfec0506ad6b1337d5f0e081`; el traspaso posterior solo cambia Markdown. `node scripts/docs-check.mjs` y `git diff --check` → exit 0. `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → exit 0, `policy=FULL`, `profile=APPLICATION`, 2 rutas técnicas. La excepción I5 conserva el diferimiento. Consultar el HEAD vigente y su check `verify-required` en el PR.
 
 ## Cierre y siguiente tarea
 
