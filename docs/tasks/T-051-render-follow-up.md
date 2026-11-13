@@ -1,6 +1,6 @@
 ---
 id: T-051
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M4
@@ -45,6 +45,21 @@ El dueño pidió dejar la sonda para después y avanzar con el ícono y la voz. 
 3. Publicar el SHA de prueba y coordinar un solo deploy manual en `devnotes-pilot`, con confirmación expresa del dueño para ese SHA. Comprobar readiness y el nuevo ícono. El dueño prueba voz con la muestra ficticia bajo las condiciones de VOICE-RELEASE y confirma el veredicto. Registrar evidencia saneada en el mismo PR.
 
 ## Checkpoint vigente
+
+### Revisión independiente
+
+**2026-11-12 · Revisión independiente favorable de PR54, sin bloqueantes.** Frontera como reviewer y merger en sesión nueva, distinta de la autora: Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. Git, `gh`, Git Bash y Node. La independencia es de sesión: la última sesión autora usó el mismo modelo y herramienta. Impacto revisado: presentación del favicon y del ícono de la app instalada; sin cambios de API, permisos, datos ni lógica de UI.
+
+- `gh pr view 54`: `OPEN`, no draft, contra `main`, `MERGEABLE`/`CLEAN`, sin comentarios ni revisiones previas. HEAD `5979b005316275566a711c8a77b5f5fc37781f2a`, base `9463bb03d288da586c3953508ba184a2f2e571d0`, igual a `origin/main` y al merge-base. [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43335472592/job/131590430499) con ese `headSha`.
+- Worktree limpio y aislado del HEAD publicado, sin `trailer/` ni `plantilla/`. Diff de código limitado a `client/public/favicon.svg`, los dos PNG, `manifest.json` y `manifest.test.ts`; el resto es Markdown de T-051, la integración `d825e27` y la conciliación de T-052 y T-047. `git diff f6a23c7 HEAD -- client server scripts .github` vacío: el código aceptado por el dueño en el piloto es el mismo del HEAD.
+- Cabeceras PNG: 192 × 192 y 512 × 512, RGBA de 8 bits. El manifiesto conserva nombre, `start_url`, `scope`, `display` y colores; `index.html` sigue enlazando favicon y manifiesto, sin service worker.
+- La aceptación del dueño cubre las cuatro confirmaciones previas de [VOICE-RELEASE](../VOICE-RELEASE.md#habilitación-segura-del-proveedor) (cuenta propia en nivel permitido, audio sintético no personal, retención aceptada, sin pago nuevo) y los límites públicos coinciden con su revalidación. Está saneada: sin claves, cookies, correos, capturas ni texto transcrito; el identificador del servicio en Render ya figura en DEPLOYMENT de `main`.
+- Gate local bajo la [excepción I5](../TESTING.md#excepción-i5-del-2026-11-12): `npm test -- --run src/app/manifest.test.ts` desde `client/` tras `npm ci`, 4/4; `node scripts/docs-check.mjs` OK (124 Markdown, 68 tareas, HANDOFF 22/22); `git diff --check origin/main...HEAD` OK; `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`: `policy=FULL`, `profile=STARTER`, diez rutas, cinco técnicas. **FULL/STARTER DIFERIDO POR EL DUEÑO**, no aprobado ni implícitamente satisfecho; E2E, deploys y sonda no se ejecutaron.
+- Observación no bloqueante: el manifiesto no declara un ícono `maskable`; Windows lo muestra bien según el dueño, y la presentación en Android queda para la navegación Android de I5 si el dueño la observa.
+
+Transición: `mergeable`. Esta transición cambia HEAD; el veredicto `APROBADO` se publica en PR54 con el SHA nuevo después de docs-check y `verify-required` verde sobre ese SHA. El merge sigue [merger](../agents/merger.md); T-051 pasa a `done` en el primer avance de la rama de T-053, tras confirmar MERGED.
+
+### Aceptación del dueño e integración de `main`
 
 **2026-11-12 · Aceptación del dueño e integración de `main`.** Frontera como implementer en sesión nueva: Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. Git, `gh`, Git Bash, PowerShell, Node y `curl`. Impacto sin cambios respecto de la implementación: presentación del favicon y del ícono de la app instalada; la voz usa la configuración del piloto. Sin deploy nuevo, sin consulta del panel de Render y sin cambio de variables.
 
