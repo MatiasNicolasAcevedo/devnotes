@@ -1,6 +1,6 @@
 ---
 id: T-051
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M4
@@ -45,6 +45,18 @@ El dueño pidió dejar la sonda para después y avanzar con el ícono y la voz. 
 3. Publicar el SHA de prueba y coordinar un solo deploy manual en `devnotes-pilot`, con confirmación expresa del dueño para ese SHA. Comprobar readiness y el nuevo ícono. El dueño prueba voz con la muestra ficticia bajo las condiciones de VOICE-RELEASE y confirma el veredicto. Registrar evidencia saneada en el mismo PR.
 
 ## Checkpoint vigente
+
+**2026-11-12 · Aceptación del dueño e integración de `main`.** Frontera como implementer en sesión nueva: Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. Git, `gh`, Git Bash, PowerShell, Node y `curl`. Impacto sin cambios respecto de la implementación: presentación del favicon y del ícono de la app instalada; la voz usa la configuración del piloto. Sin deploy nuevo, sin consulta del panel de Render y sin cambio de variables.
+
+- Precondición: `gh pr view 55` confirmó [PR55](https://github.com/MatiasNicolasAcevedo/devnotes/pull/55) `MERGED`, squash `9463bb03d288da586c3953508ba184a2f2e571d0`, `mergedAt` `2026-11-13T00:03:28Z`. [T-052 conciliada](T-052-scope-expansion-plan.md#conciliación) como `done`.
+- Antes de integrar: PR54 OPEN/draft, HEAD `9a2ed719a16be94a2f5a2c0866ff4a0e94371df6`, base `main`, `CONFLICTING`, [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43149360497/job/130954621683) en ese HEAD. GET público de `/actuator/health/readiness` en `devnotes-pilot`: HTTP `200` y `UP` tras ~73 s de despertar. `favicon.svg` (finales de línea normalizados) y los PNG de 192 y 512 px servidos coinciden byte a byte con la rama, cuyo único commit de código es `f6a23c7`; el HTML sigue enlazando favicon y manifiesto.
+- Integración con `git merge origin/main` (merge `d825e27`), sin rebase ni force push. Conflictos en STATUS, BACKLOG y T-047 resueltos conservando la evidencia de T-051 y la cola I5 (cierra la O-3 de la revisión de T-052). El trabajo se hizo en un worktree propio porque otra sesión volvió el checkout principal a `main` durante la retoma; `trailer/` quedó intacto.
+- **Condiciones de Groq confirmadas por el dueño antes de enviar audio:** cuenta propia en plan Free, sin contratación ni pago nuevo, solo audio sintético ficticio, retención aceptada según [VOICE-RELEASE](../VOICE-RELEASE.md#habilitación-segura-del-proveedor). Límites públicos sin cambios desde la revalidación de esta tarea.
+- **Aceptación del dueño, 2026-11-12, sobre `f6a23c7` live:** favicon nuevo en la pestaña de Brave; ícono nuevo en la app instalada en Windows (Inicio, barra de tareas y ventana); login con Google y reapertura de una nota diaria existente; con la muestra TTS ficticia, transcripción a texto editable, edición, guardado y reapertura desde la biblioteca de voz. Las cuatro áreas OK. Sin datos personales, capturas ni texto transcrito registrados.
+- Checks de cierre bajo la [excepción I5](../TESTING.md#excepción-i5-del-2026-11-12), sin FULL ni STARTER: `npm test -- --run src/app/manifest.test.ts` desde `client/` 4/4; `node scripts/docs-check.mjs` OK (124 Markdown, 68 tareas, HANDOFF 22/22); `git diff --check` OK; `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` y `bash scripts/verify.sh --policy origin/main`: `FULL` / `STARTER`, diez rutas, cinco técnicas (íconos, manifiesto y su test). El HEAD final exige `verify-required` verde.
+- Siguiente: revisión independiente de PR54 en sesión nueva. La sonda y la medición del despertar siguen en [S-111](../specs/S-111-render-daily-availability.md).
+
+### Implementación y deploy de prueba
 
 **2026-11-12 · Implementación.** Frontera como implementer en Codex de escritorio, familia GPT-6, variante y esfuerzo no expuestos. Git, `gh`, PowerShell, Git Bash, Node, MCP de Render y documentación oficial. Base `main` `00407ef4a637369d3078d19aceab123be3b13521` tras [conciliar T-047](T-047-render-first-deploy.md#checkpoint-vigente). El favicon SVG y los PNG de 192 y 512 px usan los insumos del dueño. El cambio de producto alcanza la presentación de la pestaña y de la app instalada. La voz usa la configuración del piloto indicada por el dueño.
 
