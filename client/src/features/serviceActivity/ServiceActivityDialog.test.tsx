@@ -1,3 +1,4 @@
+import { onlineManager } from '@tanstack/react-query'
 import { act, screen, waitFor, within } from '@testing-library/react'
 import { http as mock, HttpResponse } from 'msw'
 import { Route, Routes } from 'react-router'
@@ -16,6 +17,7 @@ import {
   SERVICE_ACTIVITY_PATH,
   SERVICE_ACTIVITY_PAUSE_PATH,
   SERVICE_ACTIVITY_START_PATH,
+  serviceActivityQueryKeys,
 } from './api'
 import { PROBE_NOTICE } from './ServiceActivityDialog'
 
@@ -137,6 +139,32 @@ describe('detalle de actividad del servidor', () => {
     } finally {
       Reflect.deleteProperty(document, 'visibilityState')
       vi.useRealTimers()
+    }
+  })
+
+  it('con el detalle abierto, recuperar la conexión no relee el estado', async () => {
+    const { user, activity, queryClient } = setup()
+    const statusQuery = { queryKey: serviceActivityQueryKeys.status(owner.id) }
+    const invalidateQueries = vi.spyOn(queryClient, 'invalidateQueries')
+    const wasOnline = onlineManager.isOnline()
+
+    try {
+      // La visita inicial invalida el estado cuando termina, antes de abrir el detalle.
+      await waitFor(() => expect(invalidateQueries).toHaveBeenCalledWith(statusQuery))
+      expect(activity.modes()).toEqual(['visit'])
+      const dialog = await openDetail(user)
+      expect(await windowStatus(dialog)).toHaveTextContent('Activo hasta las 00:00')
+      expect(activity.calls.status).toBe(1)
+
+      act(() => onlineManager.setOnline(false))
+      await act(async () => onlineManager.setOnline(true))
+      await waitFor(() => expect(queryClient.isFetching(statusQuery)).toBe(0))
+
+      expect(dialog).toBeVisible()
+      expect(activity.calls.status).toBe(1)
+    } finally {
+      onlineManager.setOnline(wasOnline)
+      invalidateQueries.mockRestore()
     }
   })
 

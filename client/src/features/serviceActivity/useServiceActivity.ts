@@ -106,6 +106,7 @@ export function useServiceActivityStatus(owner: string, open: boolean) {
     staleTime: 0,
     gcTime: 0,
     refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     retry: false,
   })
 }
