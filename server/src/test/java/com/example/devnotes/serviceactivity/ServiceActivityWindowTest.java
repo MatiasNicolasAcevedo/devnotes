@@ -6,6 +6,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.example.devnotes.serviceactivity.application.ServiceActivityProbe;
+import com.example.devnotes.serviceactivity.application.ServiceActivityScheduler;
 import com.example.devnotes.serviceactivity.application.ServiceActivityService;
 import com.example.devnotes.serviceactivity.application.ServiceActivityUnavailableException;
 import com.example.devnotes.serviceactivity.config.ServiceActivityProperties;
@@ -15,6 +17,7 @@ import com.example.devnotes.serviceactivity.domain.StartMode;
 import com.example.devnotes.serviceactivity.persistence.ServiceAwakeWindow;
 import com.example.devnotes.serviceactivity.persistence.ServiceAwakeWindowRepository;
 import com.example.devnotes.serviceactivity.web.ServiceActivityControllerAccess;
+import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -27,7 +30,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
-/** Daily window rules with a controlled Clock (S-111, T-053). No Spring context, no database, no network. */
+/** Daily window rules with a controlled Clock (S-111, T-053/T-054). No Spring context, no database, no network. */
 class ServiceActivityWindowTest {
 
     private static final UUID OWNER = UUID.fromString("01900000-0000-7000-8000-00000000abcd");
@@ -201,6 +204,20 @@ class ServiceActivityWindowTest {
     }
 
     @Test
+    void withoutAPublicHttpsOriginEvenTheOwnerIsDeniedAndNothingIsSent() {
+        for (var origin : new String[] {"http://devnotes.example.com", "https://10.0.0.8", "https://localhost"}) {
+            var repository = mock(ServiceAwakeWindowRepository.class);
+            var service = service(
+                    new ServiceActivityProperties(true, OWNER.toString()), repository, BA_2359, URI.create(origin));
+            assertThat(service.capabilities(OWNER).available()).as(origin).isFalse();
+            assertThatThrownBy(() -> service.status(OWNER)).isInstanceOf(ServiceActivityUnavailableException.class);
+            assertThatThrownBy(() -> service.start(OWNER, StartMode.VISIT))
+                    .isInstanceOf(ServiceActivityUnavailableException.class);
+            verifyNoInteractions(repository);
+        }
+    }
+
+    @Test
     void anotherAccountCannotReadOrChangeTheWindow() {
         var repository = mock(ServiceAwakeWindowRepository.class);
         var service = service(new ServiceActivityProperties(true, OWNER.toString()), repository, BA_2359);
@@ -274,6 +291,13 @@ class ServiceActivityWindowTest {
 
     private static ServiceActivityService service(
             ServiceActivityProperties properties, ServiceAwakeWindowRepository repository, Instant now) {
-        return new ServiceActivityService(properties, repository, Clock.fixed(now, ZoneOffset.UTC));
+        return service(properties, repository, now, URI.create("https://devnotes.example.com"));
+    }
+
+    private static ServiceActivityService service(
+            ServiceActivityProperties properties, ServiceAwakeWindowRepository repository, Instant now, URI origin) {
+        var probe = ServiceActivityProbe.of(origin, false, target -> ProbeResult.UP);
+        return new ServiceActivityService(
+                properties, repository, Clock.fixed(now, ZoneOffset.UTC), probe, mock(ServiceActivityScheduler.class));
     }
 }

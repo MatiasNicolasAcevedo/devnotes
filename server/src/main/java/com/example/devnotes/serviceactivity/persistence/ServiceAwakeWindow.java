@@ -98,12 +98,51 @@ public class ServiceAwakeWindow {
 
     /** Active only for the current service day, before its exclusive midnight and without a pause of that day. */
     public boolean isActive(Instant now) {
-        LocalDate today = ServiceCalendar.serviceDate(now);
-        return activeDate != null && activeDate.equals(today) && !today.equals(pausedDate) && now.isBefore(activeUntil);
+        return active(activeDate, activeUntil, pausedDate, now);
     }
 
     public boolean pausedOn(Instant now) {
         return ServiceCalendar.serviceDate(now).equals(pausedDate);
+    }
+
+    /** Active and not stopped by consecutive failures: the probe sequence may send now (S-111, T-054). */
+    public boolean isRunning(Instant now) {
+        return running(activeDate, activeUntil, pausedDate, consecutiveFailures, now);
+    }
+
+    /** Same rule as {@link #isRunning(Instant)} over copied values (scheduler snapshots). */
+    public static boolean running(
+            LocalDate activeDate, Instant activeUntil, LocalDate pausedDate, int consecutiveFailures, Instant now) {
+        return active(activeDate, activeUntil, pausedDate, now) && consecutiveFailures < MAX_CONSECUTIVE_FAILURES;
+    }
+
+    private static boolean active(LocalDate activeDate, Instant activeUntil, LocalDate pausedDate, Instant now) {
+        LocalDate today = ServiceCalendar.serviceDate(now);
+        return activeDate != null
+                && activeUntil != null
+                && activeDate.equals(today)
+                && !today.equals(pausedDate)
+                && now.isBefore(activeUntil);
+    }
+
+    /**
+     * Records the outcome of an attempt sent for {@code expectedRevision}. A callback of an older window generation
+     * (pause, resume or another service day happened meanwhile) is discarded and never touches the new window. The
+     * revision is not bumped: attempts do not create a new window. Returns true when recorded.
+     */
+    public boolean recordAttempt(long expectedRevision, Instant attemptedAt, Instant completedAt, ProbeResult result) {
+        if (expectedRevision != revision || result == null || result == ProbeResult.NONE) {
+            return false;
+        }
+        lastAttemptAt = attemptedAt;
+        lastResult = result;
+        if (result == ProbeResult.UP) {
+            lastSuccessAt = completedAt;
+            consecutiveFailures = 0;
+        } else if (consecutiveFailures < MAX_CONSECUTIVE_FAILURES) {
+            consecutiveFailures++;
+        }
+        return true;
     }
 
     private void activate(LocalDate today) {
