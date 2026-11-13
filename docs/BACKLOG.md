@@ -32,7 +32,7 @@ Del plan original quedan hechos la activación de Groq y la portabilidad `.xlsx`
 
 | Orden | Contrato / resultado | Ejecuta | Dependencia |
 |---|---|---|---|
-| 1 | [T-051](tasks/T-051-render-follow-up.md) · Ícono y voz en un PR y un despliegue; ejecución en PR54 | Dueño con un agente de frontera | [T-047 conciliada](tasks/T-047-render-first-deploy.md#checkpoint-vigente) |
+| 1 | [T-051](tasks/T-051-render-follow-up.md#conciliación) · Ícono y voz en un PR y un despliegue; done tras PR54 MERGED (squash `d722b0a`) | Dueño con un agente de frontera | [T-047 conciliada](tasks/T-047-render-first-deploy.md#checkpoint-vigente) |
 
 Retorno a frontera ante una decisión fuera de contrato o al cerrar T-051. Los hallazgos del dueño se registran aquí con pasos, esperado/observado, navegador y SHA.
 

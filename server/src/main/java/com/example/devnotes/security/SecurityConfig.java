@@ -91,6 +91,12 @@ public class SecurityConfig {
                             .authenticated()
                             .requestMatchers(HttpMethod.DELETE, "/api/v1/voice-notes/{id}")
                             .authenticated()
+                            .requestMatchers(
+                                    HttpMethod.GET, "/api/v1/service-activity/capabilities", "/api/v1/service-activity")
+                            .authenticated()
+                            .requestMatchers(
+                                    HttpMethod.POST, "/api/v1/service-activity/start", "/api/v1/service-activity/pause")
+                            .authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/v1/portability/export")
                             .authenticated()
                             .requestMatchers(
