@@ -1,6 +1,6 @@
 ---
 id: T-054
-status: changes_requested
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -58,6 +58,22 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
+### Corrección R1 · lista para revisión R2
+
+**2026-11-12 · Junie como implementer en sesión nueva**, distinta de la revisión, ejecutado con Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. Git, `gh`, Git Bash, Maven Wrapper con JDK 21.0.9, Docker Desktop (motor Linux 28.5.1) y Node 24.21.0. Impacto: **comportamiento** corregido dentro del contrato (una lectura vieja ya no cancela la secuencia de una ventana nueva; literales IPv6 con IPv4 embebida no pública dejan la sonda sin configurar); sin cambios de API, permisos, datos, migraciones, dependencias, configuración ni UI.
+
+- Precondición: `gh pr view 57 …` → OPEN, no draft, base `main` `29306a6`, `headRefOid` `445ea90` con el comentario CAMBIOS REQUERIDOS R1, MERGEABLE, `verify-required` SUCCESS. Rama local avanzada por fast-forward a `445ea90`; `trailer/` no se tocó.
+- **B-1, rojo primero:** `aStaleReadAppliedAfterAResumeNeitherCancelsTheNewSequenceNorAnnouncesAPhantomAttempt` en `ServiceActivitySchedulerTest` (visit → pause → hilo `stale-reader` cuyo `findSingleton` devuelve una copia de la fila pausada y se bloquea → `resume` + `reconcile` dejan 1 tarea → se libera el hilo viejo). Sin la corrección: `./mvnw -q test -Dtest=ServiceActivitySchedulerTest -Djacoco.skip=true` exit 1, 1/20 falla con `Expected size: 1 but was: 0`. Arreglo: `align` descarta toda instantánea con revisión menor que `knownRevision` (la revisión de la fila solo crece), así no retrocede la revisión conocida ni cancela el disparo nuevo; `expectedAttempt` vuelve a coincidir con la tarea planificada. El test además ejecuta ese disparo y comprueba el envío.
+- **Fixture del IT:** `ServiceActivitySchedulerIT` reiniciaba `revision = 0` entre tests con el scheduler compartido del contexto; con la corrección esa fila «retrocedida» se descartaba (6 fallos y 1 error). El reinicio ahora conserva la monotonía de producción (`revision = revision + 1`) y las tres aserciones absolutas de revisión pasan a ser relativas. `ServiceActivityApiIT` también reinicia a 0 pero no ejecuta tareas y queda verde sin cambios.
+- **O-1, rojo primero:** siete negativos nuevos en `ServiceActivityProbeTest` (`[::127.0.0.1]`, `[::a9fe:a9fe]`, `[::10.0.0.1]`, `[64:ff9b::a9fe:a9fe]`, `[64:ff9b::127.0.0.1]`, `[64:ff9b::192.168.1.10]`, `[64:ff9b::100.64.0.1]`) fallaron 7/50 antes del arreglo. Arreglo: los literales `::/96` y `64:ff9b::/96` se juzgan por la IPv4 embebida con las mismas reglas que una IPv4 literal; positivo `[64:ff9b::5db8:d70e]` (IPv4 pública) sigue aceptado. Sin DNS.
+- Código en `540887687dd36cc33a54b225e4e0d0e0e0dd6259`.
+- **Prueba dirigida**, desde `server/`: `./mvnw -q verify -Dtest=ServiceActivitySchedulerTest,ServiceActivityProbeTest -Dit.test=ServiceActivitySchedulerIT -Djacoco.skip=true` → exit 0: `ServiceActivitySchedulerTest` 20/20, `ServiceActivityProbeTest` 50/50 y `ServiceActivitySchedulerIT` 10/10 con PostgreSQL real; 0 fallos, errores y omitidos según los reportes.
+- **IT por riesgo**, no FULL: `./mvnw -q verify -Djacoco.skip=true -Dit.test='ServiceActivitySchedulerIT,ServiceActivityApiIT,ServerApplicationIT,OpenApiContractIT,PublicOriginIT,ReadinessIT,ReferenceItemMigrationIT'` → exit 0: 540/540 unitarios y 46/46 IT (`ServiceActivityApiIT` 10/10); `spotless:check` OK dentro de `verify`. Los logs no contienen el UUID ficticio del dueño, el destino ni `db.internal`.
+- **Mutantes** temporales sobre `5408876`, cada uno restaurado con `git checkout` (árbol limpio después): sin el descarte de lecturas viejas → `ServiceActivitySchedulerTest` 1/20 falla (el test nuevo); `plan` sin corte de medianoche → 1/20; `Redirect.NORMAL` → `ServiceActivityProbeTest` 2/50; sin `@Lock(PESSIMISTIC_WRITE)` → `ServiceActivitySchedulerIT` 3/10 (los tres casos de fila retenida). Corridas de mutantes con `-Dspotless.check.skip=true` solo para no mezclar formato.
+- Cierre desde la raíz: `git diff --check origin/main...HEAD` exit 0; `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → `policy=FULL`, `profile=APPLICATION`, 12 rutas técnicas; `node scripts/docs-check.mjs` en worktree limpio del HEAD documental. **FULL/STARTER DIFERIDO POR EL DUEÑO** según la [excepción I5](../TESTING.md#excepción-i5-del-2026-11-12): no se ejecutaron FULL, STARTER, E2E, deploys, variables de Render ni HTTP saliente real.
+- Logs locales saneados en `.orchestrator/t054-r1-*.log` y `.orchestrator/t054-b1-*.log`/`t054-o1-*.log` (ignorados). Recursos propios: contenedores efímeros de Testcontainers retirados por Ryuk.
+- Siguiente: revisión R2 independiente de PR57 en sesión nueva, **última ronda permitida**. No ejecutar T-055.
+
 ### Revisión R1 · CAMBIOS REQUERIDOS
 
 **2026-11-12 · Junie como reviewer en sesión nueva**, distinta de la implementación, ejecutado con Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. Git, `gh`, Git Bash, Maven Wrapper con JDK 21.0.9, Docker Desktop (motor Linux 28.5.1), Node y `jshell`. Impacto propio: solo esta transición documental de T-054/STATUS; sin cambios de comportamiento, API, permisos, datos ni UI. Ronda 1 de 2.
@@ -104,6 +120,9 @@ Impacto: **comportamiento** nuevo detrás del interruptor apagado por defecto (s
 |---|---|---|
 | `ServiceActivityApiIT` 10 errores: la recuperación en `ApplicationReadyEvent` leía el `Clock` mockeado antes de su stub y la excepción tiraba el contexto; riesgo real de que una capacidad opcional impidiera arrancar | Alineación y tick nunca lanzan (log sin detalles); con el interruptor apagado ni siquiera leen la DB | `ServiceActivityApiIT` 10/10 y `anUnexpectedFailureNeverEscapesStartupOrAWindowChange` · `bd8137c` |
 | `ServiceActivityApiIT` habría emitido sondas reales a loopback al activar la ventana | Scheduler manual que nunca ejecuta y transporte que falla si se usa | `ServiceActivityApiIT` 10/10 · `bd8137c` |
+| R1 B-1: `align` aplicaba una instantánea leída fuera del monitor sin compararla con `knownRevision`; una lectura vieja posterior a la alineación de un `resume` retrocedía la revisión conocida, cancelaba el disparo nuevo y `nextAttemptAt` anunciaba un intento inexistente | `align` descarta instantáneas con revisión menor que `knownRevision` (revisión monótona) | Rojo 1/20 → `aStaleReadAppliedAfterAResume…` verde; dirigido 20 + 50 + 10 IT · `5408876` |
+| Con B-1 corregido, `ServiceActivitySchedulerIT` reiniciaba `revision = 0` entre tests y el scheduler compartido descartaba la ventana (6 fallos, 1 error) | El reinicio conserva la monotonía (`revision + 1`); aserciones de revisión relativas | `ServiceActivitySchedulerIT` 10/10 · `5408876` |
+| R1 O-1: literales `::/96` y `64:ff9b::/96` con IPv4 embebida no pública se aceptaban como públicos | Se juzgan por la IPv4 embebida | Rojo 7/50 → `ServiceActivityProbeTest` 50/50 · `5408876` |
 
 ## Cierre y siguiente tarea
 
