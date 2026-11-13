@@ -1,6 +1,6 @@
 ---
 id: T-056
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M5
@@ -8,7 +8,7 @@ spec: S-111
 depends_on: [T-055]
 branch: codex/t-056-service-activity-journey
 role: implementer
-executor: junie
+executor: frontier
 pr: null
 ---
 
@@ -18,7 +18,7 @@ pr: null
 
 Entregar evidencia local del ciclo diario y protocolo reproducible para decidir la eficacia de la sonda en Render.
 
-Draft **solo por dependencias**: T-055 MERGED y conciliada. Contrato completo en S-111; al cumplirse las dependencias no se necesita otra sesión planner. Cada tarea/revisión usa sesión independiente.
+[T-055 MERGED y conciliada](T-055-service-activity-client.md#conciliación). Contrato completo en S-111. Cada tarea/revisión usa sesión independiente.
 
 ## Alcance y decisiones resueltas
 
@@ -63,7 +63,11 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. Al tomar la tarea, registrar SHA/base, comandos, resultados y pendientes. Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
+**2026-11-13 · Frontera en rol implementer**, Codex de escritorio, PowerShell, Git Bash, Git y gh. Variante del modelo y esfuerzo sin verificar. Ejecutor según [AUTONOMY](../AUTONOMY.md#continuidad-con-frontera-desde-el-2026-11-13). Impacto: pruebas de comportamiento HTTP, permisos, persistencia y UI existentes, más protocolo operativo. Fuentes de producción, contrato API, permisos, migraciones y UI sin cambios.
+
+HEAD inicial y base `origin/main` verificados en `c95f81408a3612e5626a3da2ebefc870bb23d119`. Worktree aislado en `.orchestrator/t-056/`; checkout principal y `trailer/` preservados. Próximo paso: crear los recorridos y ejecutar los comandos dirigidos. PostgreSQL 18.6 efímero por Testcontainers con etiqueta de sesión y cleanup por cierre/Ryuk; si queda un recurso, comprobar su etiqueta exacta antes de intervenir. OIDC en loopback, Clock, scheduler y transporte ficticios. Logs locales ignorados bajo `.orchestrator/t-056-logs/`.
+
+**FULL/STARTER DIFERIDO POR EL DUEÑO.** Ensayo Render pendiente de autorización expresa sobre SHA y ventana.
 
 ## Cierre y siguiente tarea
 
