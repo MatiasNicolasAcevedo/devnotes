@@ -65,9 +65,25 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 **2026-11-13 · Frontera en rol implementer**, Codex de escritorio, PowerShell, Git Bash, Git y gh. Variante del modelo y esfuerzo sin verificar. Ejecutor según [AUTONOMY](../AUTONOMY.md#continuidad-con-frontera-desde-el-2026-11-13). Impacto: pruebas de comportamiento HTTP, permisos, persistencia y UI existentes, más protocolo operativo. Fuentes de producción, contrato API, permisos, migraciones y UI sin cambios.
 
-HEAD inicial y base `origin/main` verificados en `c95f81408a3612e5626a3da2ebefc870bb23d119`. Worktree aislado en `.orchestrator/t-056/`; checkout principal y `trailer/` preservados. Próximo paso: crear los recorridos y ejecutar los comandos dirigidos. PostgreSQL 18.6 efímero por Testcontainers con etiqueta de sesión y cleanup por cierre/Ryuk; si queda un recurso, comprobar su etiqueta exacta antes de intervenir. OIDC en loopback, Clock, scheduler y transporte ficticios. Logs locales ignorados bajo `.orchestrator/t-056-logs/`.
+Base `origin/main` verificada en `c95f81408a3612e5626a3da2ebefc870bb23d119`. T-055 conciliada en `ac5cd3c`. Worktree aislado en `.orchestrator/t-056/`; checkout principal y `trailer/` preservados. Se confirmó por etiqueta exacta el retiro de los recursos efímeros de PostgreSQL y la salida de Ryuk. Las redes y volúmenes históricos ajenos con prefijo `starter-e2e-` quedaron intactos. Logs locales ignorados bajo `.orchestrator/t-056-logs/`.
 
-**FULL/STARTER DIFERIDO POR EL DUEÑO.** Ensayo Render pendiente de autorización expresa sobre SHA y ventana.
+### Resultado local
+
+- `./mvnw -q verify -Dtest=ServiceActivitySchedulerTest -Dit.test=ServiceActivityJourneyIT -Djacoco.skip=true` → exit 0, `ServiceActivitySchedulerTest` 20/20 y `ServiceActivityJourneyIT` 1/1, sin fallos ni omitidos, Spotless OK. HTTP real y dos actores OIDC ficticios en loopback. PostgreSQL 18.6 en Testcontainers y un segundo contexto Spring sobre la misma base. Se comprobó la pausa persistida, la reanudación explícita, la recuperación del único disparo, la persistencia de UP y timeout, y un callback tardío que no envía a las 00:00 exactas. Clock, programación y transporte controlados. Reportes Surefire/Failsafe en `server/target/` y salida en `backend-final.log`.
+- `npm test -- --run src/features/serviceActivity/ServiceActivityJourney.test.tsx` → exit 0, 2/2. Interacción desde el menú de cuenta, última respuesta, aviso sobre reinicios, pausa fallida y reintento explícito, reanudación, indicador Online independiente y menú de la otra cuenta. API simulada con MSW.
+- `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build` → exit 0. Vite emitió el aviso de tamaño de chunks.
+- **FULL/STARTER DIFERIDO POR EL DUEÑO.** Sin `npm run verify`, E2E ni tráfico HTTP saliente real de la aplicación.
+
+### Correcciones de la verificación
+
+| Problema y causa | Arreglo | Prueba |
+|---|---|---|
+| `npm ci` no resolvió el registro desde el sandbox | Repetir con acceso de red en el worktree, desde el lockfile | Exit 0, 384 paquetes |
+| Maven exit 1 por formato del nuevo Java, con 21 casos verdes | `./mvnw -q spotless:apply` | Mismo Maven dirigido con exit 0 |
+
+### Resultado en Render
+
+**Pendiente de autorización expresa sobre SHA y ventana.** El [protocolo de medición](../DEPLOYMENT.md#ensayo-de-la-sonda-interna-en-render-free) fija control, ensayo, evidencia y cierre. Sin deploy ni cambios de variables. La evidencia local permite pasar a revisión independiente con la eficacia remota pendiente.
 
 ## Cierre y siguiente tarea
 
