@@ -2,6 +2,7 @@ package com.example.devnotes.reference.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.example.devnotes.TestcontainersConfiguration;
 import java.sql.DriverManager;
 import java.time.Instant;
 import java.util.UUID;
@@ -14,7 +15,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @Testcontainers
 class ReferenceItemMigrationIT {
     @Container
-    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:18.6");
+    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(TestcontainersConfiguration.POSTGRES_IMAGE);
 
     @Test
     void migratesEmptyAndExistingV1SchemasWithoutChangingIdentityOrAppliedV1() throws Exception {
@@ -49,8 +50,8 @@ class ReferenceItemMigrationIT {
                     .toList();
             assertThat(versioned)
                     .extracting(migration -> migration.getVersion().toString())
-                    .containsExactly("1", "2", "3", "4", "5", "6");
-            assertThat(all.info().current().getVersion().toString()).isEqualTo("6");
+                    .containsExactly("1", "2", "3", "4", "5", "6", "7");
+            assertThat(all.info().current().getVersion().toString()).isEqualTo("7");
             if (existing) assertThat(versioned.getFirst().getChecksum()).isEqualTo(checksum);
             try (var connection = DriverManager.getConnection(
                             POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());

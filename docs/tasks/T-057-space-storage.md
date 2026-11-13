@@ -62,7 +62,20 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 `git ls-remote origin refs/heads/main refs/heads/codex/t-057-space-storage` confirmó `main` en `ac48bdef2d976dc045446556b553e7f7ca41430a`, sin rama publicada de T-057. `git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main` actualizó la base y `gh pr list --state open` devolvió cero PR abiertos. Worktree aislado `.orchestrator/t-057/`, checkout principal y `trailer/` preservados.
 
-Próximo paso: verificar el caso de migración desde V6 y ejecutar Maven dirigido desde `server/`. PostgreSQL 18.6 efímero de Testcontainers con puerto asignado por Docker y cleanup propio; registrar la sesión y verificar retiro por etiqueta exacta. Salidas locales en `.orchestrator/t-057-logs/` y reportes Maven en `server/target/`. **FULL/STARTER DIFERIDO POR EL DUEÑO.** Render pendiente de autorización expresa sobre SHA y ventana.
+Conciliación en `133feff83312ba8adeca950a46d84b20bbf8392a`. Antes de V7, desde `server/`, `./mvnw -q test-compile dependency:properties failsafe:integration-test failsafe:verify -Dit.test=PrivateSpaceMigrationIT -Djacoco.skip=true` → exit 1. El único caso cargó las cuatro colecciones ficticias en PostgreSQL 18.6 desde V6 y falló en el paso de upgrade con `No migration with a target version 7 could be found`. Se confirmó la salida de PostgreSQL y Ryuk por ID.
+
+`./mvnw -q verify -Dtest=PrivateSpaceTest -Dit.test=PrivateSpaceMigrationIT,DailyNoteRepositoryIT -Djacoco.skip=true` → exit 0, 10/10 unitarios, 1/1 migración y 12/12 repositorio, sin omitidos. PostgreSQL 18.6 efímero y Spotless OK. Se verificaron los dos espacios para la misma fecha, los rechazos de duplicados, los valores estrictos, la integridad de versiones y la lectura/escritura JPA. Se confirmó la salida de los dos PostgreSQL y Ryuk por ID exacto.
+
+`./mvnw -q verify -Dtest=PrivateSpaceTest -Dit.test=ReferenceItemMigrationIT,ReferenceItemRepositoryIT,VoiceNoteServiceIT,PortabilityImportServiceIT -Djacoco.skip=true` → exit 0, 10/10 unitarios repetidos y 43/43 IT adicionales (1 migración histórica, 6 repositorio de referencias, 24 servicio de voz, 12 importación), sin omitidos. La migración histórica probó esquema vacío y upgrade de V1 poblado a V7. Cleanup de la corrida adicional por `org.testcontainers.sessionId=14205d4d-bd97-4378-af0e-dab8b16ea33c`: 0 contenedores, 0 redes y 0 volúmenes, con retiro de los cuatro PostgreSQL y Ryuk confirmado por ID. Salidas locales `migration-red.log`, `backend-directed.log` y `backend-compat.log` en `.orchestrator/t-057-logs/`; reportes Maven en `server/target/`.
+
+### Decisiones de compatibilidad y correcciones
+
+| Problema o condición | Arreglo | Prueba |
+|---|---|---|
+| V6 conserva la unicidad diaria por cuenta y fecha | V7 la cambia a cuenta, espacio y fecha. Añade índices con espacio y conserva los índices previos de referencias y voz para las consultas vigentes por propietario | `PrivateSpaceMigrationIT` rojo previo sin V7 y verde con V7 |
+| La regresión histórica fijaba V6 como última versión | Actualizar las aserciones de la secuencia y del destino a V7 y conservar la comprobación del checksum de V1 | `ReferenceItemMigrationIT` verde en la corrida adicional |
+
+**FULL/STARTER DIFERIDO POR EL DUEÑO.** Render pendiente de autorización expresa sobre SHA y ventana.
 
 ## Cierre y siguiente tarea
 

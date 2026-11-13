@@ -1,7 +1,10 @@
 package com.example.devnotes.voice.persistence;
 
+import com.example.devnotes.shared.space.PrivateSpace;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
@@ -19,6 +22,10 @@ public class VoiceNote {
     @Column(name = "owner_id", nullable = false, updatable = false)
     private UUID ownerId;
 
+    @Column(nullable = false, length = 8, updatable = false)
+    @Enumerated(EnumType.STRING)
+    private PrivateSpace space;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String text;
 
@@ -35,6 +42,7 @@ public class VoiceNote {
 
     public VoiceNote(UUID ownerId, String text, Instant now) {
         this.ownerId = ownerId;
+        this.space = PrivateSpace.WORK;
         this.text = text;
         this.revision = 1;
         this.createdAt = now;
@@ -53,6 +61,10 @@ public class VoiceNote {
 
     public UUID getOwnerId() {
         return ownerId;
+    }
+
+    public PrivateSpace getSpace() {
+        return space;
     }
 
     public String getText() {
