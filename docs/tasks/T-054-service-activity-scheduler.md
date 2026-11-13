@@ -1,6 +1,6 @@
 ---
 id: T-054
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 milestone: M5
@@ -57,6 +57,29 @@ Los nombres nuevos de tests son archivos/clases que esta tarea debe crear. Confi
 Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`. Registrar **FULL/STARTER DIFERIDO POR EL DUEÑO**. No ejecutar FULL, STARTER, tooling completo ni E2E completo hasta solicitud expresa, aunque el clasificador dé FULL/STARTER. CI liviana/revisión independiente siguen obligatorias.
 
 ## Checkpoint vigente
+
+### Revisión R1 · CAMBIOS REQUERIDOS
+
+**2026-11-12 · Junie como reviewer en sesión nueva**, distinta de la implementación, ejecutado con Claude Opus 5.5 (`claude-opus-5-5`) en Claude Code, app de escritorio; esfuerzo no expuesto. Git, `gh`, Git Bash, Maven Wrapper con JDK 21.0.9, Docker Desktop (motor Linux 28.5.1), Node y `jshell`. Impacto propio: solo esta transición documental de T-054/STATUS; sin cambios de comportamiento, API, permisos, datos ni UI. Ronda 1 de 2.
+
+Precondición: `gh pr view 57 …` → OPEN, no draft, base `main` `29306a6ca54d73cb3ba8a34e8700b7e419e9c427`, `headRefOid` `3c7e090fcf4cce191cb2a269dbd87b90c491d9cd`, MERGEABLE; `verify-required` SUCCESS con `head_sha` exacto ([run 43346709064](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43346709064/job/131627692601)). Revisión en worktree aislado `--detach` de ese SHA; `trailer/` del checkout principal no se tocó. Diff completo contra `origin/main` leído: 16 rutas, sin `pom.xml`, `.env*`, cliente, workflows ni scripts.
+
+Comprobado sin hallazgos: un único `ThreadPoolTaskScheduler` propio (bean `TaskScheduler`, Boot conserva su executor) y solo `schedule(Runnable, Instant)` con `ScheduledFuture` cancelable; sin `@EnableScheduling`, `@Scheduled` ni tareas periódicas. Primer intento inmediato tras activación y siguiente a 10 min del envío; `plan` no agenda en o después de `activeUntil` y el tick re-lee la ventana (flag, revisión, pausa, fallos, corte) antes de enviar. Recuperación en `ApplicationReadyEvent` con un único slot `max(ahora, lastAttemptAt + 10 min)`, sin catch-up ni reanudar ventanas vencidas, pausadas o detenidas. `recordAttempt` bajo `lockSingleton` y solo para la revisión capturada; tres fallos detienen hasta `resume`. Destino `APP_PUBLIC_URL` + `/actuator/health/readiness`; loopback solo con `test`/`e2e` sin `google`. Transporte JDK: connect 5 s, plazo total 15 s, cuerpo ≤ 1 KiB, `Redirect.NEVER`, sin cookie handler ni authenticator; solo 200 JSON objeto con `status:"UP"` es `up`. Logs del scheduler y de configuración sin owner id, destino ni excepción; sin deploys ni variables de Render.
+
+Pruebas del reviewer, desde `server/` en Git Bash:
+
+- `./mvnw -q verify -Dtest=ServiceActivitySchedulerTest,ServiceActivityProbeTest -Dit.test=ServiceActivitySchedulerIT -Djacoco.skip=true` → exit 0: `ServiceActivityProbeTest` 43/43, `ServiceActivitySchedulerTest` 19/19 y `ServiceActivitySchedulerIT` 10/10 con PostgreSQL real; 0 fallos, errores y omitidos. La salida no contiene el UUID ficticio del dueño, el destino ni `db.internal`.
+- **Cierre de O-1 de T-053:** mutante temporal sin `@Lock(PESSIMISTIC_WRITE)` en `lockSingleton` → `ServiceActivitySchedulerIT` exit 1, 3/10 fallos (`aResumeWhileAPauseHoldsTheRow…`, `aPauseWhileAResumeHoldsTheRow…`, `aProbeResultArrivingWhileAPauseHoldsTheRow…`, este último por estado). O-1 queda **cerrada**. Fuente restaurada.
+- Mutantes propios, restaurados: `plan` sin corte de medianoche → `ServiceActivitySchedulerTest` 1/19 falla; `Redirect.NORMAL` → `ServiceActivityProbeTest` 2/43 fallan.
+- `jshell` sobre `ServiceActivityProbe.target(…, false)`: rechaza `169.254.169.254`, `[fe80::1]`, `[::ffff:127.0.0.1]`, `[::ffff:a9fe:a9fe]`; acepta `devnotes.onrender.com`, `[::127.0.0.1]` y `[64:ff9b::a9fe:a9fe]` (ver O-1).
+
+Cierre desde la raíz del worktree: `node scripts/docs-check.mjs` OK (124 Markdown, 68 tareas, HANDOFF 22/22); `git diff --check origin/main...HEAD` exit 0; `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → `policy=FULL`, `profile=APPLICATION`, 12 rutas técnicas. **FULL/STARTER DIFERIDO POR EL DUEÑO** según la [excepción I5](../TESTING.md#excepción-i5-del-2026-11-12): no se ejecutaron FULL, STARTER, E2E, deploys, variables de Render ni HTTP saliente real.
+
+**B-1 (bloqueante) · Una lectura vieja aplicada después de una alineación nueva cancela la secuencia de la ventana reanudada.** Evidencia: `ServiceActivityScheduler.alignWithWindow` lee la fila con `read()` fuera de `monitor` y `align` la aplica sin compararla con `knownRevision`. Si una lectura tomada antes de que se confirme un cambio (p. ej. el `reconcile()` final de un tick tras un intento descartado o un tercer fallo, o el `afterCommit` de una pausa en otra pestaña) se aplica después de la alineación de ese cambio (`resume`), `align` retrocede `knownRevision` a la revisión vieja y, como esa ventana no corre, `cancel()` elimina el disparo de la ventana nueva. Queda una ventana vigente sin intentos hasta otro cambio o un reinicio, y `expectedAttempt` sigue anunciando `nextAttemptAt` = ahora (revisión conocida distinta). Contradice S-111: el callback viejo no debe sobrescribir el estado de la ventana nueva y el reintento explícito debe reabrir la secuencia. Reproducción determinista con un test temporal no versionado en `ServiceActivitySchedulerTest` (visit → pause → un hilo cuyo `findSingleton` devuelve una copia de la fila pausada y se bloquea → `resume` + `reconcile` dejan 1 tarea → al liberar el hilo viejo): `Expected size: 1 but was: 0`, con `window().isRunning(now)` verdadero. Corrección suficiente: descartar en `align` toda instantánea con revisión menor que `knownRevision` (la revisión de la fila es monótona) u otra ordenación equivalente, sin anunciar `nextAttemptAt` sin disparo planificado. Condición observable de cierre: test de regresión versionado equivalente al descrito, rojo sin la corrección y verde con ella; el comando dirigido verde con cantidad ejecutada distinta de cero; los mutantes de esta revisión siguen fallando.
+
+**O-1 (no bloqueante) · Literales IPv6 con IPv4 embebida pasan como públicos.** `[::127.0.0.1]` (IPv4-compatible) y `[64:ff9b::a9fe:a9fe]` (NAT64 hacia `169.254.169.254`) se aceptan; `PublicOrigin` solo exige HTTPS. Riesgo bajo: el origen lo fija el operador. Corrección sugerida, opcional en esta ronda: evaluar la IPv4 embebida de `::/96` y `64:ff9b::/96` (o rechazar literales IPv6 no globales) con negativos en `ServiceActivityProbeTest`. No condiciona la aprobación.
+
+Siguiente: sesión nueva de Junie como implementer en la misma rama/PR para B-1 (y O-1 si cabe); después, revisión R2 en otra sesión nueva. No ejecutar T-055.
 
 ### Implementación
 
