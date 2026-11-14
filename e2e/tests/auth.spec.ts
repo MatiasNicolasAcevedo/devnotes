@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { test, expect, control, readiness, login, label, layout, keyboardActivate, issuer, accountButton, expectLoggedIn, notesUrl } from './fixtures';
+import { test, expect, control, readiness, login, label, layout, keyboardActivate, issuer, accountButton, expectLoggedIn, notesUrl, returnToForeground } from './fixtures';
 
 test.describe.configure({ timeout: 90_000 });
 
@@ -80,7 +80,7 @@ test('backend restart expires the session once without redirects; a different id
     if (request.isNavigationRequest()) redirects++;
   });
   const expired = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/auth/me');
-  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange', { bubbles: true })));
+  await returnToForeground(page);
   expect((await expired).status()).toBe(401);
   // Notas agrega su propio aviso para visitantes: se elige el de sesión.
   await expect(page.getByRole('alert').filter({ hasText: 'La sesión terminó' })).toContainText('La sesión terminó. Volvé a ingresar.');

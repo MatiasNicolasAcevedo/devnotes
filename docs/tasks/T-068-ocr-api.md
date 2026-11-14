@@ -1,6 +1,6 @@
 ---
 id: T-068
-status: blocked
+status: in_progress
 priority: P1
 size: M
 milestone: M6
@@ -51,6 +51,16 @@ Los nombres `Ocr*` son clases a crear. Guardar recuentos Surefire y Failsafe. De
 
 ## Checkpoint vigente
 
+Frontera reabrió el cierre técnico en `.orchestrator/t-068-ocr-api` sobre `31a9da0464ad790008f611860dc5975235209ac8`. GitHub reconfirmó PR70 MERGED contra main, `verify-required` verde y squash `405e7e58b5133220acd2e9c8c425594323469124` igual a main remoto, con cero PR abiertos.
+
+El ensayo nginx aislado reprodujo dos fallos del harness. El login ficticio completó callback 302 y `GET /api/v1/auth/me` 200, pero el menú podía cerrarse por el cambio de ruta al espacio predeterminado. Esperar la URL final de Notas antes de abrir el menú permitió completar login, recarga, preservación de identidad y Swagger. Luego se reprodujo la espera de `database-outage`: PostgreSQL estaba detenido y una sonda de loopback al nginx propio obtuvo `503 {"status":"DOWN"}` mientras el navegador no hacía una nueva consulta de readiness. Los dos ensayos rojos (`t068-frontier-red.log` y `t068-frontier-outage-red.log`) devolvieron 1, con 0/0/0 contenedores/redes/volúmenes por etiqueta exacta al terminar.
+
+Frontera acotó la corrección a sincronizar el login del ensayo y verificar caída y recuperación al volver al primer plano en los ensayos de [S-002](../specs/S-002-local-stack.md#frontend). La aplicación conserva el contrato de T-055 (al montar, al volver al primer plano y cada 60 s visible). Las pruebas conservan las ventanas de 30 s para DB y 20 s para la recuperación del indicador en el smoke de sistema, HTTP contra PostgreSQL/API/OIDC reales con fixtures y los negativos existentes.
+
+`STARTER_LOCAL_TEST_PREFIX=starter-dev-test-t068green bash scripts/test-dev-stack.sh nginx` pasó (exit 0, `t068-frontier-green-nginx.log`): caída y recuperación en 7,34 s y 5,87 s a 1280 px, y 7,32 s y 0,92 s a 375 px. También pasó idempotencia, propiedad, persistencia, reingreso y Swagger. `STARTER_E2E_PROJECT=starter-e2e-t068-foreground bash scripts/e2e.sh --project desktop --grep "real database outage|compiled shell displays the real server status|backend restart expires the session"` pasó 3/3 (exit 0, `t068-frontier-directed-e2e.log`). Ambos usaron valores ficticios y OCR apagado. Siguiente paso: STARTER completo de T-068 con fuentes congeladas.
+
+## Evidencia previa de la API y del gate
+
 El 2026-11-14 el dueño eligió **Trabajo y Personal**, con aviso visible antes de cada envío. GitHub reconfirmó PR70 MERGED contra main, squash y punta de main `405e7e58b5133220acd2e9c8c425594323469124`, y cero PR abiertos. Plan incorporado desde `.orchestrator/plan-post-i5` al worktree propio `.orchestrator/t-068-ocr-api`.
 
 Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Docker Desktop Linux, Git Bash y Node 24.21.0. La implementación agrega una API privada, autorización de OCR por espacio y configuración exclusiva del servidor. La UI corresponde a T-069 y la clave real a T-071.
@@ -61,13 +71,14 @@ Cierre técnico sobre `6679b531e0adb85ee3a258ab19a9eb38360d9699`, base `405e7e58
 
 Diagnóstico aislado con `bash scripts/test-dev-stack.sh nginx` sobre el SHA base, exit 1 en login (`t068-baseline-nginx.log`). Con marcadores de etapa saneados y las mismas aserciones y tiempos, tanto la base como el candidato fallaron en `login-account-menu`, exit 1 (`t068-baseline-diag-nginx.log` y `t068-candidate-diag-nginx.log`). El fallo de login se observa en la base. La comparación no alcanzó `database-outage`, por lo que falta determinar la causa de ese fallo del gate. Contenedores, redes y volúmenes propios verificados ausentes, imágenes propias retiradas por etiqueta y worktree temporal retirado. Los logs de diagnóstico quedan locales e ignorados.
 
-Bloqueo de cierre: STARTER de T-068 incompleto y sin PR. Frontera debe decidir el alcance de la corrección del ensayo nginx y comprobar la transición a offline después de detener PostgreSQL con evidencia saneada. Retomar el gate de T-068 al resolverlo y entregar a una sesión revisora independiente. FULL/STARTER acumulado de I5 sigue diferido.
+FULL/STARTER acumulado de I5 sigue diferido.
 
 ## Correcciones de implementación
 
 | Problema y causa | Corrección y evidencia |
 |---|---|
 | STARTER sobre `d555c17` salió 1 en backend. `SecurityConfigTest` carga todos los controladores en un slice MVC y faltaba el doble de `OcrExtractionService`. | Registrar el doble en el slice y conservar sus aserciones. `./mvnw -o -q -Dtest=SecurityConfigTest test`, 13/13, exit 0. Primer gate en `t068-gate.log`, docs verde y suites posteriores sin ejecutar. |
+| El menú se abría durante la canonicalización de Notas. Las pruebas de caída/recuperación esperaban la cadencia anterior de readiness. | Esperar la ruta autenticada y simular regreso al primer plano con el backend en el estado esperado. Rojo aislado, lifecycle nginx y Playwright dirigido con HTTP/DB/OIDC reales en el checkpoint. |
 
 ## Cierre y siguiente tarea
 

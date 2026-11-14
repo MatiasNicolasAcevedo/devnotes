@@ -174,6 +174,11 @@ export function serverStatus(page: Page, name: string) {
   return page.getByRole('banner').getByRole('status', { name, exact: true });
 }
 
+/** Exercise foreground revalidation in headless Chromium without navigating or intercepting real requests. */
+export async function returnToForeground(page: Page) {
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange', { bubbles: true })));
+}
+
 export async function csrfHeaders(page: Page) {
   expect((await page.request.get('/api/v1/auth/csrf')).status()).toBe(204);
   const csrf = (await page.context().cookies()).find(cookie => cookie.name === 'XSRF-TOKEN');
