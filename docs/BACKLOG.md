@@ -170,8 +170,6 @@ Hallazgo de pruebas daily fuera de T-036. En el cliente Linux del gate, MSW regi
 
 Hallazgo de pruebas de voz fuera de T-060 (revisión R1 de PR63, preexistente). `VoiceTranscriptionApiIT#transcriptionRequiresCsrf` acepta 400, 403 o 415 cuando falta CSRF y envía un multipart vacío, así que no prueba que el filtro rechace la petición. Exigir 403 con un multipart válido sin cabecera y con token erróneo, y que el proveedor local no reciba solicitudes.
 
-Decisión de contrato pendiente antes de implementar T-062 (revisión R1 de PR64, 2026-11-13; no es defecto de T-061). S-109 conserva la regla S-106 de aceptar átomos `reference` estructuralmente válidos aunque su destino no exista, y `DailyContent.validate` no mira el espacio: una nota o versión de Personal puede guardar un átomo con el UUID de una referencia de Trabajo de la misma cuenta (por ejemplo, al pegar contenido copiado de una nota de Trabajo). S-109 también exige que el lector rechace todo el libro si un átomo apunta a una referencia incluida de otro espacio, y T-061 lo implementa así. Cuando T-062 exporte los espacios reales, esa cuenta producirá un respaldo v2 que su propio importador rechaza con `IMPORT_INVALID_RECORD`. Frontera/dueño decide antes de T-062 una de estas salidas: el exportador neutraliza esos átomos, el guardado rechaza átomos de otro espacio o el lector los trata como «no disponible». Condición de cierre: prueba export→import de una cuenta con un átomo de otro espacio con el resultado decidido.
-
 ## Posterior a M2-RC1
 
 Fuera de esta versión de voz quedan streaming, audio persistido, integración automática con CLI/daily y Safari/iOS. La portabilidad y el despliegue tienen contrato propio (S-107 y S-108). Las demás opciones de ROADMAP conservan su carácter futuro.

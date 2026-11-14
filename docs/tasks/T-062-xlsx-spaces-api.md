@@ -1,6 +1,6 @@
 ---
 id: T-062
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M5
@@ -8,7 +8,7 @@ spec: S-109
 depends_on: [T-061]
 branch: codex/t-062-xlsx-spaces-api
 role: implementer
-executor: junie
+executor: frontier
 pr: null
 ---
 
@@ -18,11 +18,24 @@ pr: null
 
 Exportar/importar cuenta completa con Trabajo y Personal sin pérdidas ni mezclas parciales.
 
-Draft **solo por dependencias**: T-061 MERGED y conciliada. Contrato completo en S-109; al cumplirse las dependencias no se necesita otra sesión planner. Cada tarea/revisión usa sesión independiente.
+Dependencia cumplida: T-061 MERGED y [conciliada](T-061-xlsx-spaces-codec.md#conciliación) en el primer avance de esta rama. Contrato completo en S-109. Cada tarea/revisión usa sesión independiente.
 
 ## Alcance y decisiones resueltas
 
 SQL/proyecciones space, escrituras v2, asociaciones espacio+fecha. Cuenta vacía global bajo transacción; reforzar carreras con diario/ref/voz si hace falta. Preview versión real, counts y countsBySpace; import devuelve ambos conteos. Sin filtro de exportación por espacio.
+
+Orden determinista del libro v2: referencias y voz por `createdAt` e `id` sin agrupar por espacio, como S-107; diarias y versiones por fecha y, dentro de una misma fecha, Trabajo antes que Personal.
+
+### Decisión del dueño del 2026-11-13
+
+Observación de la revisión R1 de PR64: la API guarda átomos `reference` que apuntan a una referencia de otro espacio de la misma cuenta (regla S-106), y el lector de T-061 rechazaba el libro v2 que los contenía, así que exportar una cuenta real podía producir un respaldo que su propio importador rechaza. Opciones presentadas: (a) el exportador neutraliza esos átomos; (b) el guardado de diarias y versiones los rechaza; (c) el lector los acepta y el importador no les reescribe el ID. **El dueño eligió (c), la recomendada.**
+
+Consecuencias en esta tarea, ya incorporadas a [S-109](../specs/S-109-private-spaces.md#portabilidad-xlsx-v2):
+
+- El lector v2 acepta un átomo a una referencia incluida de otro espacio y conserva el documento sin cambios. Las pruebas de rechazo de T-061 pasan a probar la aceptación.
+- El importador reescribe un átomo solo si su referencia está incluida en el archivo y es del mismo espacio que la nota o versión. El átomo cruzado conserva su UUID original, como un huérfano, y la app lo muestra como «Referencia no disponible», igual que antes de exportar.
+- El exportador no altera el contenido y el guardado de diarias y versiones no cambia.
+- Prueba de cierre: cuenta con una nota y una versión de Personal que contienen un átomo a una referencia de Trabajo propia. Exportar e importar en una cuenta vacía da 201, el átomo conserva el UUID original y la referencia de Trabajo recreada tiene otro UUID, sin `IMPORT_INVALID_RECORD`.
 
 El contrato autoriza desarrollo local con fixtures. Deploys, variables/sonda en Render y ensayo remoto requieren autorización del dueño sobre SHA y ventana concretos.
 
@@ -44,7 +57,7 @@ El contrato autoriza desarrollo local con fixtures. Deploys, variables/sonda en 
 
 ## Aceptación y pruebas
 
-Dos cuentas, v2 dos espacios misma fecha, IDs/refs correctos, v1 work; cuenta con solo Personal rechaza. Carrera import vs nota en cada espacio, dos imports, rollback total; sumas correctas; sin éxito falso ni filtro space.
+Dos cuentas, v2 dos espacios misma fecha, IDs/refs correctos, v1 work; cuenta con solo Personal rechaza. Carrera import vs nota en cada espacio, dos imports, rollback total; sumas correctas; sin éxito falso ni filtro space. Export→import de un átomo de otro espacio según la decisión del dueño.
 
 Desde `server/`, Git Bash con JDK 21 y Docker Linux activo:
 
@@ -58,7 +71,13 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. Al tomar la tarea, registrar SHA/base, comandos, resultados y pendientes. Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
+2026-11-13 · Frontera en rol implementer, Claude Code de escritorio (Claude Opus 5.5, esfuerzo sin verificar), Git Bash, PowerShell, Git, `gh`, Node, Java 21 y Docker Linux. Worktree propio `.orchestrator/t-062` desde `main` `df2891c`; checkout principal y `trailer/` sin tocar. Precondición: `gh pr view 64` → MERGED, squash `df2891c`, mergedAt 2026-11-14T01:38:06Z, HEAD `b6f1251`.
+
+Impacto previsto: comportamiento (la exportación lleva el espacio real y la importación lo restaura), API (`version` real y `countsBySpace` en vista previa e importación, campos aditivos), datos (escrituras con `space` explícito; ningún cambio de esquema), permisos sin cambios y UI sin cambios en esta tarea.
+
+Primer avance: conciliación de T-061, decisión del dueño en S-109 y en este contrato y retiro de la entrada de BACKLOG. Siguiente paso: pruebas en rojo e implementación.
+
+Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
 
 ## Cierre y siguiente tarea
 
