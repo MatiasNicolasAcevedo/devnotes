@@ -15,8 +15,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 /**
- * Plain inserts of an imported account (S-107). Every row gets the identifier chosen by the caller,
- * {@code revision = 1} and the instants of the file; there is no upsert and no edit CAS.
+ * Plain inserts of an imported account (S-107). Every row gets the identifier chosen by the caller, the
+ * explicit private space of its record (S-109; versions inherit their note's), {@code revision = 1} and the
+ * instants of the file; there is no upsert and no edit CAS.
  *
  * The caller owns the transaction: {@link #lockOwner} serializes imports of one account, and
  * {@link #accountEmpty} must be checked under that lock before inserting.
@@ -36,7 +37,10 @@ public class PortabilityWriteRepository {
                 .isEmpty();
     }
 
-    /** True when the owner has no daily notes, voice notes or references (versions hang from daily notes). */
+    /**
+     * True when the owner has no daily notes, voice notes or references in any space (versions hang from daily
+     * notes): data only in Personal makes the account not empty (S-109).
+     */
     public boolean accountEmpty(UUID ownerId) {
         Boolean empty = jdbc.queryForObject(
                 "SELECT NOT (EXISTS (SELECT 1 FROM daily_note WHERE owner_id = ?) "
@@ -56,6 +60,7 @@ public class PortabilityWriteRepository {
             rows.add(new Object[] {
                 ids.get(i),
                 ownerId,
+                record.space().value(),
                 record.title(),
                 record.description(),
                 timestamp(record.createdAt()),
@@ -63,8 +68,8 @@ public class PortabilityWriteRepository {
             });
         }
         jdbc.batchUpdate(
-                "INSERT INTO reference_item (id, owner_id, title, description, created_at, updated_at) "
-                        + "VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO reference_item (id, owner_id, space, title, description, created_at, updated_at) "
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?)",
                 rows);
     }
 
@@ -75,6 +80,7 @@ public class PortabilityWriteRepository {
             rows.add(new Object[] {
                 ids.get(i),
                 ownerId,
+                record.space().value(),
                 record.date(),
                 record.content().toString(),
                 timestamp(record.createdAt()),
@@ -82,12 +88,15 @@ public class PortabilityWriteRepository {
             });
         }
         jdbc.batchUpdate(
-                "INSERT INTO daily_note (id, owner_id, note_date, content, revision, created_at, updated_at) "
-                        + "VALUES (?, ?, ?, CAST(? AS jsonb), 1, ?, ?)",
+                "INSERT INTO daily_note (id, owner_id, space, note_date, content, revision, created_at, updated_at) "
+                        + "VALUES (?, ?, ?, ?, CAST(? AS jsonb), 1, ?, ?)",
                 rows);
     }
 
-    /** {@code noteIds.get(i)} is the already inserted daily note of {@code records.get(i)}. */
+    /**
+     * {@code noteIds.get(i)} is the already inserted daily note of the space and date of {@code records.get(i)};
+     * the version has no space column of its own.
+     */
     public void insertDailyVersions(List<UUID> ids, List<UUID> noteIds, List<DailyVersionRecord> records) {
         List<Object[]> rows = new ArrayList<>(records.size());
         for (int i = 0; i < records.size(); i++) {
@@ -106,12 +115,17 @@ public class PortabilityWriteRepository {
         for (int i = 0; i < records.size(); i++) {
             VoiceNoteRecord record = records.get(i);
             rows.add(new Object[] {
-                ids.get(i), ownerId, record.text(), timestamp(record.createdAt()), timestamp(record.updatedAt())
+                ids.get(i),
+                ownerId,
+                record.space().value(),
+                record.text(),
+                timestamp(record.createdAt()),
+                timestamp(record.updatedAt())
             });
         }
         jdbc.batchUpdate(
-                "INSERT INTO voice_note (id, owner_id, text, revision, created_at, updated_at) "
-                        + "VALUES (?, ?, ?, 1, ?, ?)",
+                "INSERT INTO voice_note (id, owner_id, space, text, revision, created_at, updated_at) "
+                        + "VALUES (?, ?, ?, ?, 1, ?, ?)",
                 rows);
     }
 

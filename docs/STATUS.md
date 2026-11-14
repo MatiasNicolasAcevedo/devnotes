@@ -2,12 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-061](tasks/T-061-xlsx-spaces-codec.md) · Formato XLSX v2 y lectura de respaldos v1 ([S-109](specs/S-109-private-spaces.md)) |
+| Tarea y contrato | [T-062](tasks/T-062-xlsx-spaces-api.md) · Respaldo integral y restauración de ambos espacios ([S-109](specs/S-109-private-spaces.md)) |
 | Estado | `mergeable` |
-| Acción actual | Revisión favorable de PR64 según la [revisión de T-061](tasks/T-061-xlsx-spaces-codec.md#revisión-independiente-r1). El merge requiere autorización expresa del dueño. Antes de implementar T-062, frontera/dueño decide la observación de átomos de otro espacio registrada en BACKLOG. Paso intermedio: no desplegar hasta T-062. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-061-xlsx-spaces-codec` · [PR64](https://github.com/MatiasNicolasAcevedo/devnotes/pull/64) |
+| Acción actual | Revisión favorable de PR65 según la [revisión de T-062](tasks/T-062-xlsx-spaces-api.md#revisión-independiente-r1). El merge requiere autorización expresa del dueño. Paso intermedio: Datos acepta la vista previa v2 recién en T-064, así que no desplegar. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-062-xlsx-spaces-api` · [PR65](https://github.com/MatiasNicolasAcevedo/devnotes/pull/65) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+
+[T-061](tasks/T-061-xlsx-spaces-codec.md#conciliación) conciliada como `done` tras PR64 MERGED.
 
 [T-060](tasks/T-060-voice-spaces.md#conciliación) conciliada como `done` tras PR63 MERGED.
 
@@ -106,5 +108,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera en rol reviewer en una sesión nueva, distinta de la implementación, y revisá PR64 de MatiasNicolasAcevedo/devnotes (T-061, docs/tasks/T-061-xlsx-spaces-codec.md) sobre el HEAD y la base publicados, en un checkout aislado. Comprobá verify-required del HEAD vigente, el formato v2, la lectura exacta del fixture v1 como Trabajo, los negativos de espacio, clave, mezcla, duplicados y referencias cruzadas, y la conservación de límites, fragmentación y controles ZIP con las pruebas dirigidas de la tarea. Registrá el veredicto en la tarea y en PR64; no mergees sin autorización según docs/AUTONOMY.md. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+Actuá como Frontera en rol reviewer en una sesión nueva, distinta de la implementación, y revisá PR65 de MatiasNicolasAcevedo/devnotes (T-062, docs/tasks/T-062-xlsx-spaces-api.md) sobre el HEAD y la base publicados, en un checkout aislado. Comprobá verify-required del HEAD vigente, la decisión del dueño (opción c) en S-109 y en la tarea, la proyección y escritura de space, la asociación de versiones por espacio+fecha, la reescritura de átomos solo dentro de su espacio con el átomo cruzado intacto, la cuenta vacía global, la version real y countsBySpace, con el comando dirigido de la tarea y PostgreSQL real. Registrá el veredicto en la tarea y en PR65; no mergees sin autorización según docs/AUTONOMY.md. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. No despliegues; el ensayo de Render requiere autorización expresa sobre SHA y ventana.
 ```

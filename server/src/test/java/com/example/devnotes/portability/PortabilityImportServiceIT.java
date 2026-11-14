@@ -2,6 +2,7 @@ package com.example.devnotes.portability;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -10,6 +11,8 @@ import com.example.devnotes.TestcontainersConfiguration;
 import com.example.devnotes.portability.application.ImportAccountNotEmptyException;
 import com.example.devnotes.portability.application.PortabilityExportService;
 import com.example.devnotes.portability.application.PortabilityImportService;
+import com.example.devnotes.portability.application.PortabilityImportService.ImportResult;
+import com.example.devnotes.portability.application.PortabilityImportService.SpaceCounts;
 import com.example.devnotes.portability.persistence.PortabilityWriteRepository;
 import com.example.devnotes.portability.xlsx.PortabilityRecords;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyNoteRecord;
@@ -27,6 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.sql.SQLException;
 import java.time.Instant;
@@ -44,6 +48,8 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -70,6 +76,13 @@ class PortabilityImportServiceIT {
     private static final UUID VOICE_ONE = UUID.fromString("01900000-0000-7000-8000-000000000201");
     private static final LocalDate DAY_ONE = LocalDate.parse("2026-10-19");
     private static final LocalDate DAY_TWO = LocalDate.parse("2026-10-21");
+    private static final UUID WORK_REF = UUID.fromString("01900000-0000-7000-8000-000000000301");
+    private static final UUID PERSONAL_REF = UUID.fromString("01900000-0000-7000-8000-000000000302");
+    private static final UUID WORK_VOICE = UUID.fromString("01900000-0000-7000-8000-000000000401");
+    private static final UUID PERSONAL_VOICE = UUID.fromString("01900000-0000-7000-8000-000000000402");
+    private static final Counts NONE = new Counts(0, 0, 0, 0);
+    private static final Counts ONE_EACH = new Counts(1, 1, 1, 1);
+    private static final String V1_FIXTURE = "/portability/xlsx/devnotes-v1.xlsx";
 
     @Autowired
     private PortabilityImportService service;
@@ -179,6 +192,47 @@ class PortabilityImportServiceIT {
                         Instant.parse("2026-11-01T09:05:00Z"))));
     }
 
+    /**
+     * Both spaces on the same date. Each note and version points to the reference of its own space and, after
+     * it, to the reference of the other space (an atom the API accepts; owner decision c of T-062).
+     */
+    private static PortabilityRecords twoSpaces() {
+        Instant created = Instant.parse("2026-10-21T09:00:00Z");
+        Instant edited = Instant.parse("2026-10-21T10:00:00.000001Z");
+        return new PortabilityRecords(
+                List.of(
+                        new ReferenceRecord(PrivateSpace.WORK, WORK_REF, "Runbook de Trabajo", "", created, created),
+                        new ReferenceRecord(
+                                PrivateSpace.PERSONAL, PERSONAL_REF, "Lista Personal", "Ficticia", created, edited)),
+                List.of(
+                        new DailyNoteRecord(
+                                PrivateSpace.WORK,
+                                DAY_TWO,
+                                document("Trabajo", WORK_REF.toString(), PERSONAL_REF.toString()),
+                                created,
+                                edited),
+                        new DailyNoteRecord(
+                                PrivateSpace.PERSONAL,
+                                DAY_TWO,
+                                document("Personal", PERSONAL_REF.toString(), WORK_REF.toString()),
+                                created,
+                                edited)),
+                List.of(
+                        new DailyVersionRecord(
+                                PrivateSpace.WORK,
+                                DAY_TWO,
+                                document("Trabajo guardado", WORK_REF.toString(), PERSONAL_REF.toString()),
+                                created),
+                        new DailyVersionRecord(
+                                PrivateSpace.PERSONAL,
+                                DAY_TWO,
+                                document("Personal guardado", PERSONAL_REF.toString(), WORK_REF.toString()),
+                                edited)),
+                List.of(
+                        new VoiceNoteRecord(PrivateSpace.WORK, WORK_VOICE, "Idea de Trabajo", created, edited),
+                        new VoiceNoteRecord(PrivateSpace.PERSONAL, PERSONAL_VOICE, "Idea Personal", edited, created)));
+    }
+
     private static PortabilityRecords referencesOnly() {
         return new PortabilityRecords(fullRecords().references(), List.of(), List.of(), List.of());
     }
@@ -212,29 +266,67 @@ class PortabilityImportServiceIT {
     }
 
     private void seedReference(UUID ownerId) {
+        seedReference(ownerId, PrivateSpace.WORK);
+    }
+
+    private void seedReference(UUID ownerId, PrivateSpace space) {
         jdbc.update(
-                "INSERT INTO reference_item (id, owner_id, title, description, created_at, updated_at) "
-                        + "VALUES (?, ?, 'Previa', '', now(), now())",
+                "INSERT INTO reference_item (id, owner_id, space, title, description, created_at, updated_at) "
+                        + "VALUES (?, ?, ?, 'Previa', '', now(), now())",
                 UUID.randomUUID(),
-                ownerId);
+                ownerId,
+                space.value());
     }
 
     private void seedVoice(UUID ownerId) {
+        seedVoice(ownerId, PrivateSpace.WORK);
+    }
+
+    private void seedVoice(UUID ownerId, PrivateSpace space) {
         jdbc.update(
-                "INSERT INTO voice_note (id, owner_id, text, revision, created_at, updated_at) "
-                        + "VALUES (?, ?, 'Previa', 1, now(), now())",
+                "INSERT INTO voice_note (id, owner_id, space, text, revision, created_at, updated_at) "
+                        + "VALUES (?, ?, ?, 'Previa', 1, now(), now())",
                 UUID.randomUUID(),
-                ownerId);
+                ownerId,
+                space.value());
     }
 
     private void seedDaily(UUID ownerId, LocalDate date) {
+        seedDaily(ownerId, PrivateSpace.WORK, date);
+    }
+
+    private void seedDaily(UUID ownerId, PrivateSpace space, LocalDate date) {
         jdbc.update(
-                "INSERT INTO daily_note (id, owner_id, note_date, content, revision, created_at, updated_at) "
-                        + "VALUES (?, ?, ?, CAST(? AS jsonb), 1, now(), now())",
+                "INSERT INTO daily_note (id, owner_id, space, note_date, content, revision, created_at, updated_at) "
+                        + "VALUES (?, ?, ?, ?, CAST(? AS jsonb), 1, now(), now())",
                 UUID.randomUUID(),
                 ownerId,
+                space.value(),
                 date,
                 document("Previa").toString());
+    }
+
+    private long owned(String table, UUID ownerId, PrivateSpace space) {
+        return jdbc.queryForObject(
+                "SELECT count(*) FROM " + table + " WHERE owner_id = ? AND space = ?",
+                Long.class,
+                ownerId,
+                space.value());
+    }
+
+    private static byte[] versionOneFixture() throws IOException {
+        try (InputStream in = PortabilityImportServiceIT.class.getResourceAsStream(V1_FIXTURE)) {
+            assertThat(in).as("v1 fixture").isNotNull();
+            return in.readAllBytes();
+        }
+    }
+
+    private static Counts counts(PortabilityRecords records) {
+        return new Counts(
+                records.references().size(),
+                records.dailyNotes().size(),
+                records.dailyVersions().size(),
+                records.voiceNotes().size());
     }
 
     @Test
@@ -280,9 +372,10 @@ class PortabilityImportServiceIT {
         seedReference(other);
         seedDaily(other, DAY_TWO);
 
-        Counts counts = service.importInto(owner, workbook(source));
+        ImportResult imported = service.importInto(owner, workbook(source));
 
-        assertThat(counts).isEqualTo(new Counts(2, 2, 1, 1));
+        assertThat(imported.counts()).isEqualTo(new Counts(2, 2, 1, 1));
+        assertThat(imported.countsBySpace()).isEqualTo(new SpaceCounts(new Counts(2, 2, 1, 1), NONE));
         PortabilityRecords result = exported(owner);
 
         // References: same values and instants, fresh UUIDv7 identifiers.
@@ -363,8 +456,10 @@ class PortabilityImportServiceIT {
     void importOfAnEmptyWorkbookSucceedsAndWritesNothing() {
         List<Long> before = rows();
 
-        assertThat(service.importInto(owner, workbook(PortabilityRecords.empty())))
-                .isEqualTo(new Counts(0, 0, 0, 0));
+        ImportResult imported = service.importInto(owner, workbook(PortabilityRecords.empty()));
+
+        assertThat(imported.counts()).isEqualTo(NONE);
+        assertThat(imported.countsBySpace()).isEqualTo(new SpaceCounts(NONE, NONE));
 
         assertThat(rows()).isEqualTo(before);
     }
@@ -468,7 +563,7 @@ class PortabilityImportServiceIT {
         for (int round = 0; round < 5; round++) {
             List<Object> outcomes = importTwiceAtOnce(workbook(referencesOnly()));
 
-            assertThat(outcomes).filteredOn(Counts.class::isInstance).hasSize(1);
+            assertThat(outcomes).filteredOn(ImportResult.class::isInstance).hasSize(1);
             assertThat(outcomes)
                     .filteredOn(ImportAccountNotEmptyException.class::isInstance)
                     .hasSize(1);
@@ -481,7 +576,7 @@ class PortabilityImportServiceIT {
     void twoSimultaneousImportsOfAFullAccountLeaveExactlyOneCopy() throws Exception {
         List<Object> outcomes = importTwiceAtOnce(workbook(fullRecords()));
 
-        assertThat(outcomes).filteredOn(Counts.class::isInstance).hasSize(1);
+        assertThat(outcomes).filteredOn(ImportResult.class::isInstance).hasSize(1);
         assertThat(outcomes)
                 .filteredOn(ImportAccountNotEmptyException.class::isInstance)
                 .hasSize(1);
@@ -502,10 +597,11 @@ class PortabilityImportServiceIT {
                 .insertVoiceNotes(eq(owner), any(), any());
         List<Long> before = rows();
 
-        assertThatThrownBy(() -> service.importInto(owner, workbook(fullRecords())))
-                .isInstanceOf(ImportAccountNotEmptyException.class);
-
-        assertThat(rows()).isEqualTo(before);
+        for (PortabilityRecords records : List.of(fullRecords(), twoSpaces())) {
+            assertThatThrownBy(() -> service.importInto(owner, workbook(records)))
+                    .isInstanceOf(ImportAccountNotEmptyException.class);
+            assertThat(rows()).isEqualTo(before);
+        }
     }
 
     @Test
@@ -528,11 +624,200 @@ class PortabilityImportServiceIT {
                 .when(writeRepository)
                 .insertReferences(eq(owner), any(), any());
 
-        assertThat(service.importInto(owner, workbook(fullRecords()))).isEqualTo(new Counts(2, 2, 1, 1));
+        assertThat(service.importInto(owner, workbook(fullRecords())).counts()).isEqualTo(new Counts(2, 2, 1, 1));
 
         // The import committed whole; the late write then hits the unique date and fails on its own.
         assertThatThrownBy(() -> concurrent.get(10, TimeUnit.SECONDS)).hasRootCauseInstanceOf(SQLException.class);
         assertThat(owned("daily_note", owner)).isEqualTo(2);
         assertThat(owned("reference_item", owner)).isEqualTo(2);
+    }
+
+    // ── Two spaces (S-109, T-062) ──
+
+    @Test
+    void previewReportsTheBookVersionAndCountsBySpace() throws IOException {
+        byte[] v1File = versionOneFixture();
+        Counts v1Counts = counts(reader.read(v1File).records());
+
+        var v2 = service.preview(owner, workbook(twoSpaces()));
+        var v1 = service.preview(owner, v1File);
+
+        assertThat(v2.version()).isEqualTo(2);
+        assertThat(v2.counts()).isEqualTo(new Counts(2, 2, 2, 2));
+        assertThat(v2.countsBySpace()).isEqualTo(new SpaceCounts(ONE_EACH, ONE_EACH));
+        assertThat(v1.version()).isEqualTo(1);
+        assertThat(v1Counts).isNotEqualTo(NONE);
+        assertThat(v1.counts()).isEqualTo(v1Counts);
+        assertThat(v1.countsBySpace()).isEqualTo(new SpaceCounts(v1Counts, NONE));
+    }
+
+    @Test
+    void bothSpacesOnTheSameDateAreRestoredInTheirOwnSpace() throws Exception {
+        PortabilityRecords source = twoSpaces();
+        UUID other = newOwner();
+        seedDaily(other, PrivateSpace.PERSONAL, DAY_TWO);
+
+        ImportResult imported = service.importInto(owner, workbook(source));
+
+        assertThat(imported.counts()).isEqualTo(new Counts(2, 2, 2, 2));
+        assertThat(imported.countsBySpace()).isEqualTo(new SpaceCounts(ONE_EACH, ONE_EACH));
+        for (String table : List.of("reference_item", "daily_note", "voice_note")) {
+            assertThat(owned(table, owner, PrivateSpace.WORK)).as(table).isEqualTo(1);
+            assertThat(owned(table, owner, PrivateSpace.PERSONAL)).as(table).isEqualTo(1);
+        }
+
+        PortabilityRecords result = exported(owner);
+        assertThat(result.references())
+                .extracting(ReferenceRecord::space, ReferenceRecord::title)
+                .containsExactly(
+                        tuple(PrivateSpace.WORK, "Runbook de Trabajo"), tuple(PrivateSpace.PERSONAL, "Lista Personal"));
+        String newWork = result.references().get(0).id().toString();
+        String newPersonal = result.references().get(1).id().toString();
+        assertThat(List.of(newWork, newPersonal)).doesNotContain(WORK_REF.toString(), PERSONAL_REF.toString());
+
+        // Atoms follow the reference of their own space; the atom to the other space keeps its original id.
+        assertThat(result.dailyNotes())
+                .containsExactly(
+                        new DailyNoteRecord(
+                                PrivateSpace.WORK,
+                                DAY_TWO,
+                                document("Trabajo", newWork, PERSONAL_REF.toString()),
+                                source.dailyNotes().get(0).createdAt(),
+                                source.dailyNotes().get(0).updatedAt()),
+                        new DailyNoteRecord(
+                                PrivateSpace.PERSONAL,
+                                DAY_TWO,
+                                document("Personal", newPersonal, WORK_REF.toString()),
+                                source.dailyNotes().get(1).createdAt(),
+                                source.dailyNotes().get(1).updatedAt()));
+        // Each version hangs from the note of its own space and date.
+        assertThat(result.dailyVersions())
+                .containsExactly(
+                        new DailyVersionRecord(
+                                PrivateSpace.WORK,
+                                DAY_TWO,
+                                document("Trabajo guardado", newWork, PERSONAL_REF.toString()),
+                                source.dailyVersions().get(0).savedAt()),
+                        new DailyVersionRecord(
+                                PrivateSpace.PERSONAL,
+                                DAY_TWO,
+                                document("Personal guardado", newPersonal, WORK_REF.toString()),
+                                source.dailyVersions().get(1).savedAt()));
+        assertThat(result.voiceNotes())
+                .extracting(VoiceNoteRecord::space, VoiceNoteRecord::text)
+                .containsExactly(
+                        tuple(PrivateSpace.WORK, "Idea de Trabajo"), tuple(PrivateSpace.PERSONAL, "Idea Personal"));
+
+        // The other account keeps its own Personal note of the same date.
+        assertThat(owned("daily_note", other, PrivateSpace.PERSONAL)).isEqualTo(1);
+        assertThat(owned("daily_note", other, PrivateSpace.WORK)).isZero();
+    }
+
+    @Test
+    void versionOneBookIsImportedIntoWorkOnly() throws Exception {
+        ImportResult imported = service.importInto(owner, versionOneFixture());
+
+        assertThat(imported.counts()).isNotEqualTo(NONE);
+        assertThat(imported.countsBySpace()).isEqualTo(new SpaceCounts(imported.counts(), NONE));
+        for (String table : List.of("reference_item", "daily_note", "voice_note")) {
+            assertThat(owned(table, owner, PrivateSpace.PERSONAL)).as(table).isZero();
+        }
+        PortabilityRecords result = exported(owner);
+        assertThat(counts(result)).isEqualTo(imported.counts());
+        assertThat(result.dailyNotes()).extracting(DailyNoteRecord::space).containsOnly(PrivateSpace.WORK);
+        assertThat(result.dailyVersions()).extracting(DailyVersionRecord::space).containsOnly(PrivateSpace.WORK);
+        assertThat(result.references()).extracting(ReferenceRecord::space).containsOnly(PrivateSpace.WORK);
+        assertThat(result.voiceNotes()).extracting(VoiceNoteRecord::space).containsOnly(PrivateSpace.WORK);
+    }
+
+    @Test
+    void accountWithDataOnlyInPersonalIsNotEmpty() {
+        byte[] file = workbook(twoSpaces());
+        UUID withReference = newOwner();
+        UUID withDaily = newOwner();
+        UUID withVoice = newOwner();
+        seedReference(withReference, PrivateSpace.PERSONAL);
+        // A date absent from the file: the rejection must come from the rule, not from a collision.
+        seedDaily(withDaily, PrivateSpace.PERSONAL, LocalDate.parse("2020-01-01"));
+        seedVoice(withVoice, PrivateSpace.PERSONAL);
+        List<Long> before = rows();
+
+        for (UUID target : List.of(withReference, withDaily, withVoice)) {
+            assertThat(service.preview(target, file).accountEmpty()).isFalse();
+            assertThatThrownBy(() -> service.importInto(target, file))
+                    .isInstanceOf(ImportAccountNotEmptyException.class);
+        }
+
+        assertThat(rows()).isEqualTo(before);
+    }
+
+    @Test
+    void twoSimultaneousImportsOfBothSpacesLeaveExactlyOneCopy() throws Exception {
+        List<Object> outcomes = importTwiceAtOnce(workbook(twoSpaces()));
+
+        assertThat(outcomes).filteredOn(ImportResult.class::isInstance).hasSize(1);
+        assertThat(outcomes)
+                .filteredOn(ImportAccountNotEmptyException.class::isInstance)
+                .hasSize(1);
+        for (String table : List.of("reference_item", "daily_note", "voice_note")) {
+            assertThat(owned(table, owner, PrivateSpace.WORK)).as(table).isEqualTo(1);
+            assertThat(owned(table, owner, PrivateSpace.PERSONAL)).as(table).isEqualTo(1);
+        }
+        assertThat(exported(owner).dailyVersions()).hasSize(2);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @EnumSource(PrivateSpace.class)
+    void aNoteWrittenInEitherSpaceDuringTheImportWaitsAndNeverInterleaves(PrivateSpace space) throws Exception {
+        // While the import holds the owner lock, another connection creates a note of the file in one space.
+        CompletableFuture<Void> concurrent = new CompletableFuture<>();
+        doAnswer(invocation -> {
+                    CompletableFuture.runAsync(() -> seedDaily(owner, space, DAY_TWO))
+                            .whenComplete((ok, failure) -> {
+                                if (failure == null) {
+                                    concurrent.complete(null);
+                                } else {
+                                    concurrent.completeExceptionally(failure);
+                                }
+                            });
+                    // Give the other connection time to reach the lock before the import goes on.
+                    Thread.sleep(300);
+                    assertThat(concurrent).isNotDone();
+                    return invocation.callRealMethod();
+                })
+                .when(writeRepository)
+                .insertReferences(eq(owner), any(), any());
+
+        assertThat(service.importInto(owner, workbook(twoSpaces())).counts()).isEqualTo(new Counts(2, 2, 2, 2));
+
+        // The import committed whole; the late write then hits the unique space and date and fails on its own.
+        assertThatThrownBy(() -> concurrent.get(10, TimeUnit.SECONDS)).hasRootCauseInstanceOf(SQLException.class);
+        assertThat(owned("daily_note", owner, PrivateSpace.WORK)).isEqualTo(1);
+        assertThat(owned("daily_note", owner, PrivateSpace.PERSONAL)).isEqualTo(1);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @EnumSource(PrivateSpace.class)
+    void aNoteCommittedInEitherSpaceJustBeforeTheLockRejectsTheImport(PrivateSpace space) {
+        // The other write commits right before the import takes the lock, on a date absent from the file.
+        // It runs on another connection, so it commits outside the import transaction.
+        doAnswer(invocation -> {
+                    CompletableFuture.runAsync(() -> seedDaily(owner, space, LocalDate.parse("2020-01-01")))
+                            .get(10, TimeUnit.SECONDS);
+                    return invocation.callRealMethod();
+                })
+                .when(writeRepository)
+                .lockOwner(owner);
+        List<Long> before = rows();
+
+        assertThatThrownBy(() -> service.importInto(owner, workbook(twoSpaces())))
+                .isInstanceOf(ImportAccountNotEmptyException.class);
+
+        // Only the concurrent note is new: nothing of the file was written.
+        List<Long> after = rows();
+        assertThat(after.get(1)).isEqualTo(before.get(1) + 1);
+        assertThat(List.of(after.get(0), after.get(2), after.get(3), after.get(4)))
+                .isEqualTo(List.of(before.get(0), before.get(2), before.get(3), before.get(4)));
+        assertThat(owned("daily_note", owner, space)).isEqualTo(1);
     }
 }

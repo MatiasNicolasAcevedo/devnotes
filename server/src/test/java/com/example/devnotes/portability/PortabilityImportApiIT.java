@@ -247,9 +247,11 @@ class PortabilityImportApiIT {
         assertThat(empty.headers().firstValue("Content-Type").orElseThrow()).startsWith("application/json");
         assertThat(empty.headers().firstValue("Cache-Control").orElseThrow()).contains("no-store");
         assertThat(JSON.readTree(empty.body()))
-                .isEqualTo(JSON.readTree("{\"format\":\"devnotes-xlsx\",\"version\":1,\"exportedAt\":\"" + exportedAt
+                .isEqualTo(JSON.readTree("{\"format\":\"devnotes-xlsx\",\"version\":2,\"exportedAt\":\"" + exportedAt
                         + "\",\"counts\":{\"references\":2,\"dailyNotes\":2,\"dailyVersions\":1,\"voiceNotes\":2},"
-                        + "\"accountEmpty\":true}"));
+                        + "\"countsBySpace\":{\"work\":{\"references\":2,\"dailyNotes\":2,\"dailyVersions\":1,"
+                        + "\"voiceNotes\":2},\"personal\":{\"references\":0,\"dailyNotes\":0,\"dailyVersions\":0,"
+                        + "\"voiceNotes\":0}},\"accountEmpty\":true}"));
         assertThat(notEmpty.statusCode()).isEqualTo(200);
         assertThat(JSON.readTree(notEmpty.body()).get("accountEmpty").asBoolean())
                 .isFalse();
@@ -455,7 +457,10 @@ class PortabilityImportApiIT {
         assertThat(imported.headers().firstValue("Cache-Control").orElseThrow()).contains("no-store");
         assertThat(JSON.readTree(imported.body()))
                 .isEqualTo(JSON.readTree(
-                        "{\"counts\":{\"references\":2,\"dailyNotes\":2,\"dailyVersions\":1,\"voiceNotes\":2}}"));
+                        "{\"counts\":{\"references\":2,\"dailyNotes\":2,\"dailyVersions\":1,\"voiceNotes\":2},"
+                                + "\"countsBySpace\":{\"work\":{\"references\":2,\"dailyNotes\":2,"
+                                + "\"dailyVersions\":1,\"voiceNotes\":2},\"personal\":{\"references\":0,"
+                                + "\"dailyNotes\":0,\"dailyVersions\":0,\"voiceNotes\":0}}}"));
 
         PortabilityRecords copy = reader.read(exportBytes(b)).records();
 

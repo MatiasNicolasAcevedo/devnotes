@@ -403,9 +403,9 @@ class XlsxSpacesRoundTripTest {
 
     @ParameterizedTest(name = "{0}")
     @ValueSource(strings = {"diarias", "versiones"})
-    void includedReferenceOfTheOtherSpaceRejectsTheWholeBook(String sheetName) {
+    void includedReferenceOfTheOtherSpaceIsAcceptedUnchanged(String sheetName) {
         List<RawSheet> sheets = validSheetsV2();
-        // A Personal note and version pointing to the Trabajo reference of the book.
+        // A Personal note and version pointing to the Trabajo reference of the book (owner decision c, T-062).
         String doc = document(REF_ID).toString();
         String json = sheetName.equals("diarias")
                 ? "{\"date\":\"" + DATE + "\",\"content\":" + doc
@@ -417,27 +417,24 @@ class XlsxSpacesRoundTripTest {
         sheet(sheets, "devnotes").rows.get(5).set(1, "2");
         sheet(sheets, sheetName).rows.get(2).set(3, inSpace(json, "personal"));
 
-        XlsxCodecException error = reject(sheets);
+        PortabilityRecords records = reader.read(build(sheets)).records();
 
-        assertThat(error.getCode()).isEqualTo(IMPORT_INVALID_RECORD);
-        assertThat(error.getSheet()).isEqualTo(sheetName);
-        assertThat(error.getRow()).isEqualTo(3);
+        JsonNode content = sheetName.equals("diarias")
+                ? records.dailyNotes().get(1).content()
+                : records.dailyVersions().get(1).content();
+        assertThat(records.references()).extracting(ReferenceRecord::space).containsExactly(WORK);
+        assertThat(content).isEqualTo(document(REF_ID));
     }
 
     @Test
-    void crossSpaceReferenceNestedDeepInTheDocumentIsRejected() throws IOException {
+    void crossSpaceReferenceNestedDeepInTheDocumentIsKeptAsIs() throws IOException {
         PortabilityRecords records = new PortabilityRecords(
                 List.of(new ReferenceRecord(PERSONAL, PERSONAL_REF, "Privada", "", T1, T1)),
                 List.of(new DailyNoteRecord(WORK, DAY, document(PERSONAL_REF.toString()), T1, T2)),
-                List.of(),
+                List.of(new DailyVersionRecord(WORK, DAY, document(PERSONAL_REF.toString()), T3)),
                 List.of());
 
-        XlsxCodecException error = catchThrowableOfType(XlsxCodecException.class, () -> reader.read(write(records)));
-
-        assertThat(error).isNotNull();
-        assertThat(error.getCode()).isEqualTo(IMPORT_INVALID_RECORD);
-        assertThat(error.getSheet()).isEqualTo("diarias");
-        assertThat(error.getRow()).isEqualTo(2);
+        assertThat(reader.read(write(records)).records()).isEqualTo(records);
     }
 
     @ParameterizedTest(name = "versión {0}")

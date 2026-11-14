@@ -1,6 +1,6 @@
 ---
 id: T-061
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M5
@@ -102,6 +102,10 @@ Cobertura de aceptación: igual fecha en ambos espacios conserva notas, versione
 - Observación no bloqueante, fuera de T-061. La API guarda átomos `reference` de otro espacio y S-109 exige rechazar el libro que los contiene, así que T-062 podría exportar respaldos que su propio importador rechaza. Queda en BACKLOG como decisión de frontera/dueño antes de implementar T-062.
 
 **Resultado favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El veredicto canónico se publica en PR64 con el HEAD documental y la base vigentes, después de comprobar la CI de ese par. No se mergea sin autorización expresa del dueño según [AUTONOMY](../AUTONOMY.md#revisión-y-merge). El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+
+## Conciliación
+
+GitHub confirmó [PR64](https://github.com/MatiasNicolasAcevedo/devnotes/pull/64) MERGED contra `main` el 2026-11-14T01:38:06Z (2026-11-13 en Buenos Aires). Squash `df2891c2e0d132c531c4e33a9fb60009f05ba989`, [HEAD aprobado](https://github.com/MatiasNicolasAcevedo/devnotes/pull/64#issuecomment-6869475535) `b6f1251f508cd7d31b475f6fbc7f18c67213bd3e` y [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43541498428/job/132282849936). `git ls-remote` confirmó el squash como punta de `main` publicado y `git merge-base --is-ancestor` comprobó su inclusión tras el fetch. T-061 queda `done`. La observación de átomos de otro espacio quedó resuelta por el dueño en [T-062](T-062-xlsx-spaces-api.md#decisión-del-dueño-del-2026-11-13).
 
 ## Cierre y siguiente tarea
 
