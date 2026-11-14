@@ -1,6 +1,6 @@
 ---
 id: T-066
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -9,7 +9,7 @@ depends_on: [T-065]
 branch: codex/t-066-copy-previous-api
 role: implementer
 executor: frontier
-pr: null
+pr: 69
 ---
 
 # T-066 · Copia transaccional de la última nota anterior
@@ -82,6 +82,8 @@ Ambos comandos → exit 0. Surefire 87/87 (`CopyPreviousDailyNoteTest` 3, `Daily
 
 **FULL/STARTER DIFERIDO POR EL DUEÑO.**
 
+Checks desde raíz en el worktree de T-066. `node scripts/docs-check.mjs` → exit 0 (124 Markdown, 68 tareas, HANDOFF 22/22), `git diff --check` y `git diff --check origin/main...HEAD` → exit 0, `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → exit 0 (`FULL/APPLICATION`, 17 rutas, 14 técnicas). Fuentes verificadas en `d7c2a67c0d0c5d6c33b2c2a850d6b37a53195f26` (árbol `server` `3d86932cee0e02b00b42549c336c3fd908c0430f`); la transición a revisión solo modifica Markdown. El check remoto del HEAD vigente se consulta en [PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69/checks).
+
 ## Correcciones
 
 | Problema y causa | Arreglo y prueba |
@@ -90,4 +92,4 @@ Ambos comandos → exit 0. Surefire 87/87 (`CopyPreviousDailyNoteTest` 3, `Daily
 
 ## Cierre y siguiente tarea
 
-No done hasta MERGED comprobado. Tras MERGED confirmado, la siguiente sesión concilia esta tarea y toma T-067 si sus dependencias están done. No modificar protecciones, incorporar otras propuestas ni desplegar por pasar tests locales.
+Implementación publicada en [PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69). Retoma en sesión revisora independiente sobre HEAD y base publicados. No done hasta MERGED comprobado. Tras MERGED confirmado, la siguiente sesión concilia esta tarea y toma T-067 si sus dependencias están done. No modificar protecciones, incorporar otras propuestas ni desplegar por pasar tests locales.

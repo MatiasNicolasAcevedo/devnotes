@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-066](tasks/T-066-copy-previous-api.md) · Copia transaccional de la última nota anterior ([S-110](specs/S-110-previous-day-copy.md)) |
-| Estado | `in_progress` |
-| Acción actual | Implementación y pruebas dirigidas de API. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-066-copy-previous-api` · PR pendiente |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente de PR69 sobre HEAD y base publicados. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-066-copy-previous-api` · [PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
 
@@ -116,5 +116,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera en rol implementer para T-066 (S-110). Confirmá PR68 MERGED y retomá el checkpoint de la tarea en el worktree propio. Completá la API y las pruebas dirigidas con PostgreSQL, docs-check, diff-check y clasificación contra main. Publicá un único PR contra main, confirmá verify-required del HEAD publicado y prepará la revisión independiente. FULL/STARTER DIFERIDO POR EL DUEÑO. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Preservá checkout principal, trailer/ y worktrees ajenos. Render requiere autorización expresa separada sobre SHA y ventana.
+Actuá como Frontera en rol reviewer independiente para PR69 (T-066, S-110). Leé AGENTS.md, docs/AUTONOMY.md, docs/agents/reviewer.md, la tarea y la spec. Confirmá en GitHub que PR69 está abierto contra main, con base a0321ec0a5c134b39628ac85609408980a42ec92 y verify-required SUCCESS sobre el HEAD publicado. Revisá ese HEAD en un worktree propio y contrastá CP-01…07 del servidor, en especial aislamiento, contrato HTTP, snapshot y carreras, con la evidencia dirigida de la tarea. Publicá el veredicto independiente ligado al HEAD y la base según el protocolo, y dejá la transición y el siguiente prompt en STATUS. El merge requiere una sesión posterior. FULL/STARTER DIFERIDO POR EL DUEÑO. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Preservá checkout principal, trailer/ y worktrees ajenos. Render requiere autorización expresa separada sobre SHA y ventana.
 ```
