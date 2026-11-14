@@ -17,5 +17,6 @@
 *.webp binary
 *.jar binary
 *.zip binary
+*.xlsx binary
 *.woff binary
 *.woff2 binary

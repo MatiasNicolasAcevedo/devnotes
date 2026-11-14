@@ -96,7 +96,11 @@ public class PortabilityImportService {
             DailyNoteRecord note = records.dailyNotes().get(i);
             noteIds.put(note.date(), newNoteIds.get(i));
             notes.add(new DailyNoteRecord(
-                    note.date(), rewritten(note.content(), referenceIds), note.createdAt(), note.updatedAt()));
+                    note.space(),
+                    note.date(),
+                    rewritten(note.content(), referenceIds),
+                    note.createdAt(),
+                    note.updatedAt()));
         }
         repository.insertDailyNotes(ownerId, newNoteIds, notes);
 
@@ -104,10 +108,11 @@ public class PortabilityImportService {
                 new ArrayList<>(records.dailyVersions().size());
         List<UUID> versionNoteIds = new ArrayList<>(records.dailyVersions().size());
         for (DailyVersionRecord version : records.dailyVersions()) {
-            // The reader guarantees a daily note of the same date for every version.
+            // The reader guarantees a daily note of the same space and date for every version. Until T-062 keys
+            // notes by space and date (S-109), this intermediate step is not deployed.
             versionNoteIds.add(Objects.requireNonNull(noteIds.get(version.date())));
             versions.add(new DailyVersionRecord(
-                    version.date(), rewritten(version.content(), referenceIds), version.savedAt()));
+                    version.space(), version.date(), rewritten(version.content(), referenceIds), version.savedAt()));
         }
         repository.insertDailyVersions(newIds(versions.size()), versionNoteIds, versions);
 

@@ -16,6 +16,7 @@ import com.example.devnotes.portability.xlsx.XlsxWorkbookReader;
 import com.example.devnotes.portability.xlsx.XlsxWorkbookWriter;
 import com.example.devnotes.security.OidcHttpBrowser;
 import com.example.devnotes.security.OidcHttpProvider;
+import com.example.devnotes.shared.space.PrivateSpace;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -264,6 +265,7 @@ class PortabilityExportApiIT {
                 .containsExactly(TIE_REFERENCE_FIRST, TIE_REFERENCE_SECOND, refFirst, refSecond);
         assertThat(records.references().get(0))
                 .isEqualTo(new ReferenceRecord(
+                        PrivateSpace.WORK,
                         UUID.fromString(TIE_REFERENCE_FIRST),
                         "Empate 101",
                         "",
@@ -271,6 +273,7 @@ class PortabilityExportApiIT {
                         Instant.parse(TIE_INSTANT)));
         assertThat(records.references().get(2))
                 .isEqualTo(new ReferenceRecord(
+                        PrivateSpace.WORK,
                         UUID.fromString(refFirst),
                         "Runbook ficticio",
                         "Pasos ficticios de A",
@@ -311,6 +314,7 @@ class PortabilityExportApiIT {
                 .containsExactly(TIE_VOICE_FIRST, TIE_VOICE_SECOND, voiceFirst, voiceSecond);
         assertThat(records.voiceNotes().get(1))
                 .isEqualTo(new VoiceNoteRecord(
+                        PrivateSpace.WORK,
                         UUID.fromString(TIE_VOICE_SECOND),
                         "Voz empate 202",
                         Instant.parse(TIE_INSTANT),

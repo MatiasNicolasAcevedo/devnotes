@@ -22,6 +22,7 @@ import com.example.devnotes.portability.xlsx.XlsxTestBooks;
 import com.example.devnotes.portability.xlsx.XlsxWorkbookReader;
 import com.example.devnotes.portability.xlsx.XlsxWorkbookWriter;
 import com.example.devnotes.portability.xlsx.XlsxWorkbookWriter.Counts;
+import com.example.devnotes.shared.space.PrivateSpace;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
@@ -139,12 +140,14 @@ class PortabilityImportServiceIT {
         return new PortabilityRecords(
                 List.of(
                         new ReferenceRecord(
+                                PrivateSpace.WORK,
                                 REF_ONE,
                                 "Runbook ficticio",
                                 "Pasos ficticios",
                                 Instant.parse("2026-10-01T08:00:00.000001Z"),
                                 Instant.parse("2026-10-02T08:00:00.000002Z")),
                         new ReferenceRecord(
+                                PrivateSpace.WORK,
                                 REF_TWO,
                                 "=SUMA(1;2)",
                                 "",
@@ -152,20 +155,24 @@ class PortabilityImportServiceIT {
                                 Instant.parse("2026-10-03T08:00:00Z"))),
                 List.of(
                         new DailyNoteRecord(
+                                PrivateSpace.WORK,
                                 DAY_ONE,
                                 document("Nota anterior", REF_TWO.toString()),
                                 Instant.parse("2026-10-19T12:00:00.123456Z"),
                                 Instant.parse("2026-10-19T12:00:00.123456Z")),
                         new DailyNoteRecord(
+                                PrivateSpace.WORK,
                                 DAY_TWO,
                                 document("Texto editado", REF_ONE.toString(), ORPHAN, REF_ONE.toString()),
                                 Instant.parse("2026-10-21T09:00:00Z"),
                                 Instant.parse("2026-10-21T10:30:00.5Z"))),
                 List.of(new DailyVersionRecord(
+                        PrivateSpace.WORK,
                         DAY_TWO,
                         document("Texto guardado", REF_ONE.toString(), ORPHAN),
                         Instant.parse("2026-10-21T09:15:00.000009Z"))),
                 List.of(new VoiceNoteRecord(
+                        PrivateSpace.WORK,
                         VOICE_ONE,
                         "Idea ficticia\n",
                         Instant.parse("2026-11-01T09:00:00Z"),
@@ -286,6 +293,7 @@ class PortabilityImportServiceIT {
             assertThat(actual.id()).isNotIn(REF_ONE, REF_TWO);
             assertThat(actual.id().version()).isEqualTo(7);
             assertThat(new ReferenceRecord(
+                            PrivateSpace.WORK,
                             expected.id(),
                             actual.title(),
                             actual.description(),
@@ -300,17 +308,20 @@ class PortabilityImportServiceIT {
         assertThat(result.dailyNotes())
                 .containsExactly(
                         new DailyNoteRecord(
+                                PrivateSpace.WORK,
                                 DAY_ONE,
                                 document("Nota anterior", newTwo),
                                 source.dailyNotes().get(0).createdAt(),
                                 source.dailyNotes().get(0).updatedAt()),
                         new DailyNoteRecord(
+                                PrivateSpace.WORK,
                                 DAY_TWO,
                                 document("Texto editado", newOne, ORPHAN, newOne),
                                 source.dailyNotes().get(1).createdAt(),
                                 source.dailyNotes().get(1).updatedAt()));
         assertThat(result.dailyVersions())
                 .containsExactly(new DailyVersionRecord(
+                        PrivateSpace.WORK,
                         DAY_TWO,
                         document("Texto guardado", newOne, ORPHAN),
                         source.dailyVersions().get(0).savedAt()));
@@ -320,7 +331,8 @@ class PortabilityImportServiceIT {
         VoiceNoteRecord voice = result.voiceNotes().get(0);
         assertThat(voice.id()).isNotEqualTo(VOICE_ONE);
         assertThat(voice.id().version()).isEqualTo(7);
-        assertThat(new VoiceNoteRecord(VOICE_ONE, voice.text(), voice.createdAt(), voice.updatedAt()))
+        assertThat(new VoiceNoteRecord(
+                        PrivateSpace.WORK, VOICE_ONE, voice.text(), voice.createdAt(), voice.updatedAt()))
                 .isEqualTo(source.voiceNotes().get(0));
 
         // Technical revisions restart, and the version hangs from the note of its own date.

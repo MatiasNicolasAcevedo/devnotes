@@ -5,6 +5,7 @@ import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyVersionReco
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ReferenceRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.VoiceNoteRecord;
 import com.example.devnotes.portability.xlsx.XlsxWorkbookWriter.Counts;
+import com.example.devnotes.shared.space.PrivateSpace;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +24,8 @@ import org.springframework.stereotype.Repository;
  * Read-only queries of one owner's account for the export (S-107), in the deterministic order of the format.
  *
  * Every query filters by owner. Rows are fetched through a cursor, so the caller must run inside a
- * transaction and close each stream; nothing here writes.
+ * transaction and close each stream; nothing here writes. Records carry {@code PrivateSpace.WORK} until T-062
+ * projects the space column (S-109); this intermediate step is not deployed.
  */
 @Repository
 public class PortabilityReadRepository {
@@ -54,6 +56,7 @@ public class PortabilityReadRepository {
                 "SELECT id, title, description, created_at, updated_at FROM reference_item "
                         + "WHERE owner_id = ? ORDER BY created_at, id",
                 (rs, row) -> new ReferenceRecord(
+                        PrivateSpace.WORK,
                         rs.getObject("id", UUID.class),
                         rs.getString("title"),
                         rs.getString("description"),
@@ -67,6 +70,7 @@ public class PortabilityReadRepository {
                 "SELECT note_date, content::text AS content, created_at, updated_at FROM daily_note "
                         + "WHERE owner_id = ? ORDER BY note_date",
                 (rs, row) -> new DailyNoteRecord(
+                        PrivateSpace.WORK,
                         rs.getObject("note_date", LocalDate.class),
                         json(rs.getString("content")),
                         instant(rs, "created_at"),
@@ -79,6 +83,7 @@ public class PortabilityReadRepository {
                 "SELECT dn.note_date, dv.content::text AS content, dv.saved_at FROM daily_version dv "
                         + "JOIN daily_note dn ON dn.id = dv.note_id WHERE dn.owner_id = ? ORDER BY dn.note_date",
                 (rs, row) -> new DailyVersionRecord(
+                        PrivateSpace.WORK,
                         rs.getObject("note_date", LocalDate.class),
                         json(rs.getString("content")),
                         instant(rs, "saved_at")),
@@ -89,6 +94,7 @@ public class PortabilityReadRepository {
         return jdbc.queryForStream(
                 "SELECT id, text, created_at, updated_at FROM voice_note WHERE owner_id = ? ORDER BY created_at, id",
                 (rs, row) -> new VoiceNoteRecord(
+                        PrivateSpace.WORK,
                         rs.getObject("id", UUID.class),
                         rs.getString("text"),
                         instant(rs, "created_at"),
