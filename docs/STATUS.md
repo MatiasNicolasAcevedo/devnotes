@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-065](tasks/T-065-spaces-journey.md) · Recorrido dirigido de espacios y respaldo ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente de PR68. Dirigidos desktop y mobile verdes; Android físico pendiente del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Estado | `mergeable` |
+| Acción actual | [R1 favorable de PR68](tasks/T-065-spaces-journey.md#revisión-independiente-r1). Merge pendiente en otra sesión y sujeto a autorización expresa del dueño. Android físico pendiente del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
 | Rama / PR | `codex/t-065-spaces-journey` · [PR68](https://github.com/MatiasNicolasAcevedo/devnotes/pull/68) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
@@ -114,5 +114,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera en rol reviewer en una sesión nueva e independiente de la implementación. Revisá PR68 de MatiasNicolasAcevedo/devnotes (T-065, S-109), rama codex/t-065-spaces-journey, en un worktree propio. Confirmá el HEAD vigente en GitHub, descendiente del commit técnico eae5484a9b901c443f15b915308f9ff1cf86e12b con cierre solo documental, la base main dc18096cc25e53f07212143c3b62558c416fffd2 y verify-required SUCCESS. Leé docs/agents/reviewer.md y docs/tasks/T-065-spaces-journey.md. Contrastá SP-01 a SP-10 con las fuentes, los negativos, los dos actores OIDC, los JUnit saneados desktop/mobile, el IT de migración y el cleanup por labels exactos. Ejecutá los dirigidos necesarios y registrá el veredicto en la tarea y PR68, ligado a HEAD/base. FULL/STARTER DIFERIDO POR EL DUEÑO. Android físico con teclado real y zoom nativo pendiente del dueño. Preservá checkout principal, trailer/ y worktrees ajenos. No mergees ni inicies T-066 en esta sesión. Render requiere autorización expresa separada sobre SHA y ventana.
+Actuá como Frontera en rol merger para PR68 (T-065, S-109) cuando el dueño autorice expresamente el merge. Leé la revisión R1 de la tarea y docs/agents/merger.md. Confirmá en GitHub que HEAD y base coinciden con el veredicto del PR, verify-required SUCCESS y conversaciones bloqueantes resueltas. FULL/STARTER DIFERIDO POR EL DUEÑO. Android físico con teclado y zoom nativos pendiente del dueño. Preservá checkout principal, trailer/ y worktrees ajenos. Render requiere autorización expresa separada sobre SHA y ventana.
 ```
