@@ -1,6 +1,6 @@
 ---
 id: T-062
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M5
@@ -126,6 +126,10 @@ Pendiente: revisión independiente de [PR65](https://github.com/MatiasNicolasAce
 - Paso intermedio confirmado: el cliente sigue con `version: z.literal(1)` y Datos rechazará la vista previa v2 hasta T-064. No desplegar.
 
 **Resultado favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El veredicto canónico se publica en PR65 con el HEAD documental y la base vigentes, después de comprobar la CI de ese par. No se mergea sin autorización expresa del dueño según [AUTONOMY](../AUTONOMY.md#revisión-y-merge). El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+
+## Conciliación
+
+GitHub confirmó [PR65](https://github.com/MatiasNicolasAcevedo/devnotes/pull/65) MERGED contra `main` el 2026-11-14T02:07:09Z (2026-11-13 en Buenos Aires). Squash `40361d85c6a31b51b8eafb610370c3c5b1975e6e`, HEAD aprobado `22cb1c3ed47fcbf2a1ed05b3cc39eca5ba278248` con el [veredicto R1 `APROBADO`](https://github.com/MatiasNicolasAcevedo/devnotes/pull/65#issuecomment-6869906723) y [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43544335246). El [cierre de PR65](https://github.com/MatiasNicolasAcevedo/devnotes/pull/65#issuecomment-6869922114) registra la autorización expresa del dueño y el merge sin `--admin`. `git ls-remote` confirmó el squash como punta de `main` publicado y `git merge-base --is-ancestor` comprobó su inclusión tras el fetch. T-062 queda `done`. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
 
 ## Cierre y siguiente tarea
 

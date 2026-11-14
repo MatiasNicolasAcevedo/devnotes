@@ -1,6 +1,6 @@
 ---
 id: T-063
-status: draft
+status: in_progress
 priority: P1
 size: L
 milestone: M5
@@ -18,7 +18,7 @@ pr: null
 
 Atar cada lectura, mutación y borrador a cuenta/espacio fijos incluso en navegación/respuestas tardías.
 
-Draft **solo por dependencias**: T-062 MERGED y conciliada. Contrato completo en S-109; al cumplirse las dependencias no se necesita otra sesión planner. Cada tarea/revisión usa sesión independiente.
+Habilitada al cumplirse su única dependencia: T-062 MERGED y [conciliada](T-062-xlsx-spaces-api.md#conciliación). Contrato completo en S-109; al cumplirse las dependencias no se necesita otra sesión planner. Cada tarea/revisión usa sesión independiente.
 
 ## Alcance y decisiones resueltas
 
@@ -60,7 +60,9 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. Al tomar la tarea, registrar SHA/base, comandos, resultados y pendientes. Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
+2026-11-13 · Rol Junie implementer ejecutado por Claude Opus 5.5 en Claude Code de escritorio (esfuerzo de razonamiento expuesto en la sesión: 15), con Git Bash, PowerShell, Git, `gh` y Node 24.21.0. Sesión nueva. Worktree propio `.orchestrator/t-063` desde `main` `40361d8`; checkout principal y `trailer/` sin tocar. Precondición: `gh pr view 65` → MERGED contra `main`, squash `40361d8`, mergedAt 2026-11-14T02:07:09Z, HEAD `22cb1c3`. T-062 conciliada como `done`.
+
+En curso: implementación del contrato en `client/`.
 
 ## Cierre y siguiente tarea
 
