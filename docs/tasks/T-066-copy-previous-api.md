@@ -1,6 +1,6 @@
 ---
 id: T-066
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 milestone: M5
@@ -90,6 +90,37 @@ Checks desde raíz en el worktree de T-066. `node scripts/docs-check.mjs` → ex
 |---|---|
 | La primera corrida con la API, sobre la base publicada, dio 87/87 unitarios y 11/11 IT de diario. El IT ampliado de OpenAPI dio 5/6 porque la aserción histórica de Referencias omitía `space`, ya documentado en `origin/main`. | Actualizar la lista exacta esperada de parámetros; conservar la comprobación del resto del contrato. Selección dirigida repetida, 87/87 y 17/17 en verde. |
 
+## Revisión independiente R1
+
+2026-11-14. Frontera reviewer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git, gh, Git Bash, JDK 21 y Docker Desktop Linux. GitHub confirmó [PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69) `OPEN` contra `main`, HEAD inicial `9a8cdc56420abe29a6d650c2852a0e88bcb37d89`, base `a0321ec0a5c134b39628ac85609408980a42ec92` y [`verify-required` SUCCESS para ese HEAD](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43610862642/job/132495390315). Worktrees propios `.orchestrator/t-066-review` y `.orchestrator/t-066-review-base`. El árbol `server` revisado es `3d86932cee0e02b00b42549c336c3fd908c0430f`, igual al de la evidencia del autor.
+
+Desde `server/` con Git Bash y JDK 21:
+
+```bash
+./mvnw -o -B -q verify -Dtest=CopyPreviousDailyNoteTest,DailyContentTest -Dit.test=CopyPreviousDailyNoteApiIT,DailySpaceApiIT,OpenApiContractIT -Djacoco.skip=true
+./mvnw -o -B -q test -Dtest=SecurityConfigTest -Djacoco.skip=true
+```
+
+- Selección del autor repetida en el HEAD inicial, exit 0. Surefire 87/87 y Failsafe 17/17 (7 copia, 4 aislamiento de diario, 6 OpenAPI), cero fallos, errores u omitidos. HTTP con OIDC ficticio y PostgreSQL 18.6 real. Cleanup de los cuatro contenedores propios por coincidencia de IDs exactos y label Testcontainers, cero restantes. Logs locales en `server/target/` de los worktrees de revisión.
+- `SecurityConfigTest`, exit 1 en el HEAD inicial, 13 errores al cargar el contexto. Mismo comando en la base, exit 0 con 13/13, cero fallos, errores u omitidos.
+
+| Criterio | Contraste de servidor |
+|---|---|
+| CP-01 | El POST conserva el árbol de texto, enlaces, separadores y referencias. La creación recibe UUID v7, revisión 1 y timestamps propios. |
+| CP-02–03 | Consulta por propietario y espacio, estrictamente anterior y descendente, sin ventana. Excluye fechas futuras y documentos de párrafos blancos. El GET devuelve solo metadatos o 204 sin cuerpo y las filas permanecen intactas. |
+| CP-04 | Cuerpo exacto, fechas y revisiones estrictas. 404 indistinguible para fuentes ajenas y ausentes; 409 ante cambios de revisión o contenido. La transacción bloquea la fila existente hasta el CAS y la restricción única arbitra el alta. Los dos IT de carrera observan el bloqueo en PostgreSQL y comprueban que el escritor rival conserva el destino. |
+| CP-05 | La revisión y el JSON de la fuente explícita se leen juntos; el guardado persiste un snapshot validado. Se conserva el vínculo de referencia, el origen y ambas versiones manuales. El destino vacío existente conserva ID y `createdAt`. |
+| CP-06 | Rutas exactas, sesión, CSRF en POST y `no-store`. Owner derivado de sesión y espacio validado. El dirigido verifica negativas de acceso y logout. OpenAPI exige sesión y CSRF juntos en POST. |
+| CP-07 | El replay con revisiones originales devuelve 409; la recarga recupera una sola copia. Un PUT posterior puede volver al vacío con CAS y las ediciones de ambos días son independientes. |
+
+El manejo de respuestas tardías, el undo en la interfaz y CP-08 corresponden a T-067. **FULL/STARTER DIFERIDO POR EL DUEÑO.** En raíz, `node scripts/docs-check.mjs` y `git diff --check a0321ec0...HEAD` pasaron; `node scripts/ci/classify-diff.mjs --base a0321ec0a5c134b39628ac85609408980a42ec92 --head HEAD --phase FULL` clasificó `FULL/APPLICATION` (14 rutas técnicas). La transición de R1 modifica solo esta tarea y STATUS. El veredicto ligado al HEAD final y la base se publica en PR69.
+
+### B-1 · Regresión bloqueante en `SecurityConfigTest`
+
+`DailyNoteController` ahora requiere `CopyPreviousDailyNoteService` en el constructor. El slice global `@WebMvcTest` de `SecurityConfigTest` carga el controlador, pero no registra este servicio. Spring informa `No qualifying bean of type 'com.example.devnotes.daily.application.CopyPreviousDailyNoteService' available`; las 13 aserciones de seguridad quedan sin ejecutarse. La base verde confirma la regresión del PR.
+
+Corrección suficiente: registrar `CopyPreviousDailyNoteService` como `@MockitoBean` en ese slice, conservando sus aserciones y los IT con PostgreSQL/OIDC ficticio. Cierre observable: `SecurityConfigTest` 13/13 y selección dirigida de T-066 verde en el HEAD corregido, docs-check y verify-required SUCCESS del HEAD publicado. Registrar evidencia y pedir R2 en una sesión independiente.
+
 ## Cierre y siguiente tarea
 
-Implementación publicada en [PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69). Retoma en sesión revisora independiente sobre HEAD y base publicados. No done hasta MERGED comprobado. Tras MERGED confirmado, la siguiente sesión concilia esta tarea y toma T-067 si sus dependencias están done. No modificar protecciones, incorporar otras propuestas ni desplegar por pasar tests locales.
+Retoma en sesión Frontera implementer para corregir B-1 en la misma rama y [PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69). SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño. El merge corresponde a una sesión posterior con veredicto favorable vigente; T-067 queda tras MERGED confirmado. Render requiere autorización expresa separada sobre SHA y ventana.
