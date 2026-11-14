@@ -1,6 +1,6 @@
 ---
 id: T-066
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M5
@@ -143,6 +143,32 @@ El manejo de respuestas tardías, el undo en la interfaz y CP-08 corresponden a 
 
 Corrección suficiente: registrar `CopyPreviousDailyNoteService` como `@MockitoBean` en ese slice, conservando sus aserciones y los IT con PostgreSQL/OIDC ficticio. Cierre observable: `SecurityConfigTest` 13/13 y selección dirigida de T-066 verde en el HEAD corregido, docs-check y verify-required SUCCESS del HEAD publicado. Registrar evidencia y pedir R2 en una sesión independiente.
 
+## Revisión independiente R2
+
+2026-11-14. Frontera reviewer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git, gh, Git Bash, JDK 21 y Docker Desktop Linux. Worktree propio `.orchestrator/t-066-review-r2`, HEAD de entrada `251ad7673891bb08cb4f9c4a225d070bce70109a` y base publicada `a0321ec0a5c134b39628ac85609408980a42ec92`. El HEAD contiene B-1 `ab7f93c265c4aa5698188ac9f51d9a5dd4d38f90` y conserva su árbol `server` `371d0c67a8e54a29d948e30dee46aff777c37878`.
+
+Desde `server/` con Git Bash y Maven offline:
+
+```bash
+./mvnw -o -B -q test -Dtest=SecurityConfigTest -Djacoco.skip=true
+./mvnw -o -B -q verify -Dtest=CopyPreviousDailyNoteTest,DailyContentTest -Dit.test=CopyPreviousDailyNoteApiIT,DailySpaceApiIT,OpenApiContractIT -Djacoco.skip=true
+```
+
+- Ambos comandos dieron exit 0. Surefire: `SecurityConfigTest` 13/13, `CopyPreviousDailyNoteTest` 3/3 y `DailyContentTest` 84/84. Failsafe: `CopyPreviousDailyNoteApiIT` 7/7, `DailySpaceApiIT` 4/4 y `OpenApiContractIT` 6/6. Cero fallos, errores u omitidos. Los IT de diario ejercitaron HTTP/OIDC ficticio y PostgreSQL real `postgres:18.6` iniciado por Testcontainers.
+- Cleanup confirmado con `docker ps -aq --no-trunc --filter label=org.testcontainers=true`: cero coincidencias con los cuatro IDs exactos del log de la corrida (tres PostgreSQL y un Ryuk). Logs locales `server/target/t066-r2-*.log` y reportes Surefire/Failsafe del worktree R2.
+- B-1 cerrado. El diff de `SecurityConfigTest.java` contra R1 agrega el import y `@MockitoBean CopyPreviousDailyNoteService`. Las 13 pruebas conservan sus aserciones. Los IT verifican ambas rutas nuevas y sus negativos de sesión/CSRF sobre HTTP.
+
+| Criterio | Contraste R2 del servidor |
+|---|---|
+| CP-01 | El POST conserva el árbol de texto, enlaces, separadores y referencias. La copia recibe UUID v7, revisión 1 y timestamps propios. |
+| CP-02–03 | GET selecciona por propietario y espacio, del pasado más reciente hacia atrás y sin ventana. Salta los blancos Unicode, ofrece viernes entre huecos y excluye futuro. Devuelve solo metadatos o 204 sin cuerpo y las filas quedan intactas. |
+| CP-04 | Fechas, revisiones y cuerpo estricto. Fuentes ajenas, de otro espacio o ausentes reciben 404 indistinguible. Revisión obsoleta, origen vaciado y destino con contenido reciben 409. Los dos IT de carrera observan el bloqueo real y verifican que el escritor rival conserva el destino. |
+| CP-05 | La copia persiste el snapshot de la fuente explícita incluso si aparece otra más reciente. Conserva la referencia, el origen y las versiones manuales. La fila vacía existente conserva su ID y `createdAt`. |
+| CP-06 | Rutas exactas y `no-store`. Propietario de la sesión, espacio validado y CSRF en POST. Los IT verifican negativas de acceso, logout y sesión/CSRF conjuntos en OpenAPI. |
+| CP-07 | El replay que simula pérdida de ACK recibe 409, GET recupera una sola copia y un PUT con la revisión confirmada puede guardar el vacío. Las ediciones posteriores de origen y destino son independientes. |
+
+`node scripts/docs-check.mjs`, `git diff --check` y `git diff --check a0321ec0a5c134b39628ac85609408980a42ec92...HEAD` pasan. El clasificador contra la base publicada informa `FULL/APPLICATION`, 18 rutas, 15 técnicas. **FULL/STARTER DIFERIDO POR EL DUEÑO.** El paso a `mergeable` modifica solo esta tarea y STATUS. El [veredicto canónico en PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69) se publica después de comprobar `verify-required` SUCCESS del HEAD de esta transición contra la misma base.
+
 ## Cierre y siguiente tarea
 
-B-1 publicado en [PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69), pendiente de R2 independiente. SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño. El merge corresponde a una sesión posterior con veredicto favorable vigente. T-067 se habilita tras confirmar PR69 MERGED. Render requiere autorización expresa separada sobre SHA y ventana.
+R2 cerró B-1 y dejó [PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69) para merge en sesión independiente, condicionado al veredicto vigente y a las comprobaciones de AUTONOMY. SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño. T-067 se habilita tras confirmar PR69 MERGED. Render requiere autorización expresa separada sobre SHA y ventana.
