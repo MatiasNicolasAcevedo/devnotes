@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-061](tasks/T-061-xlsx-spaces-codec.md) · Formato XLSX v2 y lectura de respaldos v1 ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente de PR64 según la [entrega de T-061](tasks/T-061-xlsx-spaces-codec.md#entrega-para-revisión), sobre el HEAD y la base publicados. Paso intermedio: no desplegar hasta T-062. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Estado | `mergeable` |
+| Acción actual | Revisión favorable de PR64 según la [revisión de T-061](tasks/T-061-xlsx-spaces-codec.md#revisión-independiente-r1). El merge requiere autorización expresa del dueño. Antes de implementar T-062, frontera/dueño decide la observación de átomos de otro espacio registrada en BACKLOG. Paso intermedio: no desplegar hasta T-062. FULL/STARTER DIFERIDO POR EL DUEÑO. |
 | Rama / PR | `codex/t-061-xlsx-spaces-codec` · [PR64](https://github.com/MatiasNicolasAcevedo/devnotes/pull/64) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).

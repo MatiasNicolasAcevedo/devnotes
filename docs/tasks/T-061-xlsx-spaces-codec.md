@@ -1,6 +1,6 @@
 ---
 id: T-061
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M5
@@ -56,7 +56,7 @@ Los nombres nuevos de tests son archivos/clases que esta tarea debe crear. Confi
 
 Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`. Registrar **FULL/STARTER DIFERIDO POR EL DUEÑO**. No ejecutar FULL, STARTER, tooling completo ni E2E completo hasta solicitud expresa, aunque el clasificador dé FULL/STARTER. CI liviana/revisión independiente siguen obligatorias.
 
-#### Checkpoint vigente
+## Checkpoint vigente
 
 **2026-11-13 · Frontera en rol implementer**, Claude Code de escritorio (Claude Opus 5.5, esfuerzo sin verificar), Git Bash, PowerShell, Git, `gh`, Java 21.0.9 y Docker Linux 28.5.1. Impacto: formato del respaldo `.xlsx` (escritura v2, lectura v1/v2) dentro del códec; sin cambios de API HTTP, permisos, esquema ni UI. La exportación ya escribe v2, pero la persistencia y el servicio de importación compilan con Trabajo hasta T-062: este paso intermedio no se despliega.
 
@@ -86,6 +86,23 @@ Cobertura de aceptación: igual fecha en ambos espacios conserva notas, versione
 
 [PR64](https://github.com/MatiasNicolasAcevedo/devnotes/pull/64) contra `main`. Fuentes probadas en `423c63d` sobre la base publicada `0dcf38c6873d64be35d1312e37b5cf1fdf004248`. `node scripts/docs-check.mjs` y `git diff --check` → exit 0. `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → exit 0, `policy=FULL`, `profile=STARTER` (incluye `.gitattributes`), 17 rutas técnicas. Este traspaso solo cambia Markdown. Próximo paso: revisión independiente del HEAD y la base publicados, con `verify-required` para el HEAD vigente.
 
- Cierre y siguiente tarea
+## Revisión independiente R1
+
+2026-11-13 · Frontera en rol reviewer, Claude Code de escritorio (Claude Opus 5.5, esfuerzo sin verificar), Git Bash, PowerShell, Git, `gh`, Node, Java 21.0.9 y Docker Linux. Sesión distinta de la implementación. Checkout aislado con `git worktree add --detach` en el directorio temporal de la sesión, HEAD `00839b8519f05bd1c580415cc6a2689271e33738`, base publicada `0dcf38c6873d64be35d1312e37b5cf1fdf004248`. Checkout principal y `trailer/` sin tocar.
+
+- PR64 OPEN, no draft, contra `main`, `MERGEABLE`. `gh pr view` y `git fetch` coincidieron en HEAD y base; `git merge-base` de la rama con `main` es la base publicada. [CI de entrada](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43540949439/job/132281159133) con `verify-required` SUCCESS para `00839b8`. Fuentes técnicas de `423c63d`; `00839b8` solo cambia Markdown.
+- Formato v2. El escritor agrega `space` al final de cada `dato_json`, la columna `espacio` (`Trabajo`/`Personal`) al final de las cuatro hojas y solo en la parte 1, y claves `work:`/`personal:` + fecha en diarias y versiones; voz y referencias conservan el UUID. Hojas, orden, fragmentación (`FRAGMENT_UNITS`), `MAX_RECORDS` y `MAX_UNCOMPRESSED_BYTES` sin cambios. El lector no lee la columna legible: el JSON es la autoridad.
+- Lectura v1. Las cabeceras `*_V1` son idénticas a las de la base; v1 exige los campos exactos previos, sin `space`, y entrega Trabajo. El fixture `devnotes-v1.xlsx` tiene SHA-256 `7e7f784b…a4ad4a9c5` (comprobado por separado). Lo descomprimí: meta `version 1`, cabeceras v1 sin `espacio`, claves de fecha simples, ningún `space` en los JSON y una diaria en dos partes. `immutableVersionOneFixtureIsReadExactlyAsTrabajo` compara el modelo completo y `versionOneToModelToVersionTwoToModelIsIntact` cubre el ciclo.
+- Negativos. En v2, `space` ausente, en mayúsculas, en español, vacío, con espacio inicial, desconocido, numérico, nulo o repetido se rechaza con hoja y fila (`PrivateSpace.parse` lanza una excepción que `deliver` convierte en `IMPORT_INVALID_RECORD`). También se rechazan una clave sin prefijo, de otro espacio, en mayúsculas o con prefijo en voz. Hay rechazo para cada mezcla: v1 con `space`, v1 con cabeceras o columna v2, y v2 con cabeceras v1 o una hoja v1. Los duplicados de diaria o versión por espacio+fecha se detectan por clave en la parte 1; también la versión cuya nota solo existe en el otro espacio. Las versiones `3`, `0`, `2.0`, `02` y `v2` son `IMPORT_UNSUPPORTED_FORMAT`. Una referencia incluida de otro espacio en diarias, versiones o anidada rechaza el libro, con el mismo emparejamiento de átomos que `PortabilityImportService.rewritten`. Un átomo a una referencia ausente sigue aceptado.
+- Límites y ZIP. 10 000/10 001 registros con los dos espacios, 64 MiB inflados, 65 entradas, DOCTYPE, fórmula en `espacio` y celda extra después de `espacio` mantienen el rechazo en v2; `XlsxZipInspectionTest` 29/29 sin cambios. Las suites existentes solo agregan `PrivateSpace.WORK` a los constructores y cambian el ejemplo de versión desconocida de 2 a 3; no se debilitó ninguna aserción.
+- Paso intermedio. `PortabilityReadRepository` etiqueta todo como Trabajo y `PortabilityImportService` sigue usando la fecha como clave e insertando con el default `work`. Así lo pide el contrato hasta T-062, y el alcance de T-062 cubre proyecciones, escrituras y asociaciones espacio+fecha. Render tiene auto-deploy desactivado ([DEPLOYMENT](../DEPLOYMENT.md)); no desplegar este paso.
+- Pruebas dirigidas, desde `server/` en Git Bash. `./mvnw -o -B test -Dtest=XlsxSpacesRoundTripTest,XlsxWorkbookReaderTest,XlsxWorkbookRoundTripTest,XlsxZipInspectionTest,XlsxTextTest -Djacoco.skip=true` → exit 0, 238/238: `XlsxSpacesRoundTripTest` 50, `XlsxWorkbookReaderTest` 138, `XlsxWorkbookRoundTripTest` 12, `XlsxZipInspectionTest` 29 y `XlsxTextTest` 9. Con PostgreSQL real, `./mvnw -o -B verify -Dtest='Xlsx*Test,PortabilityExportServiceTest' -Dit.test=PortabilityExportApiIT,PortabilityImportApiIT,PortabilityImportServiceIT -Djacoco.skip=true` → exit 0: Spotless OK, Surefire 242/242 y Failsafe 31/31 (8 + 11 + 12), sin omitidos; Flyway identificó PostgreSQL 18.6 en los tres contextos. No quedó ningún contenedor de esta corrida; un Ryuk ajeno que estaba activo no se tocó. Logs locales fuera del repositorio.
+- Checks locales. `node scripts/docs-check.mjs` OK, `git diff --check 0dcf38c HEAD` OK, `node scripts/ci/classify-diff.mjs --base 0dcf38c --head HEAD --phase FULL` → `policy=FULL`, `profile=STARTER`, 17 rutas técnicas.
+- Corrección documental de esta revisión: la entrega había bajado `## Checkpoint vigente` a `####` y había quitado el `##` de `## Cierre y siguiente tarea`. Ambos encabezados se restauran en este commit.
+- Observación no bloqueante, fuera de T-061. La API guarda átomos `reference` de otro espacio y S-109 exige rechazar el libro que los contiene, así que T-062 podría exportar respaldos que su propio importador rechaza. Queda en BACKLOG como decisión de frontera/dueño antes de implementar T-062.
+
+**Resultado favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El veredicto canónico se publica en PR64 con el HEAD documental y la base vigentes, después de comprobar la CI de ese par. No se mergea sin autorización expresa del dueño según [AUTONOMY](../AUTONOMY.md#revisión-y-merge). El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+
+## Cierre y siguiente tarea
 
 No done hasta MERGED comprobado. Tras MERGED confirmado, la siguiente sesión concilia esta tarea y toma T-062 si sus dependencias están done. No modificar protecciones, incorporar otras propuestas ni desplegar por pasar tests locales.
