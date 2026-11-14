@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-067](tasks/T-067-copy-previous-client.md) · Empezar el día desde una nota anterior ([S-110](specs/S-110-previous-day-copy.md)) |
-| Estado | `changes_requested` |
-| Acción actual | El dueño decide si autoriza una corrección acotada del [B-2 reproducido en R2](tasks/T-067-copy-previous-client.md#revisión-independiente-r2) y una revisión independiente adicional. |
+| Estado | `in_review` |
+| Acción actual | Frontera reviewer verifica en sesión independiente R3 la [corrección de B-2](tasks/T-067-copy-previous-client.md#corrida-de-corrección-b-2-tras-r2) publicada en PR70. |
 | Rama / PR | `codex/t-067-copy-previous-client` · [PR70](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
@@ -118,5 +118,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Si el dueño autorizó una corrección acotada y una revisión adicional tras R2, actuá como Frontera implementer en sesión independiente para T-067 (S-110). Confirmá HEAD/base de PR70 y seguí la condición de cierre de B-2 en la tarea. Reproducí primero en rojo la respuesta perdida, el cambio de fecha y el GET fallido al volver, y conservá los negativos de B-1. Publicá en la misma rama y dejá evidencia para la siguiente revisión independiente. FULL/STARTER DIFERIDO POR EL DUEÑO. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Render requiere autorización expresa separada sobre SHA y ventana.
+Actuá como Frontera reviewer en una sesión nueva e independiente para R3 de T-067 (S-110) en PR70 de MatiasNicolasAcevedo/devnotes. Leé AGENTS.md, docs/AUTONOMY.md, docs/agents/reviewer.md, STATUS, T-067 y el comentario R2 (https://github.com/MatiasNicolasAcevedo/devnotes/pull/70#issuecomment-6883295325). Confirmá que PR70 sigue abierto contra main, obtené el HEAD publicado y la base efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb, y verificá verify-required SUCCESS sobre ese HEAD. Revisá en un worktree propio la corrección d3ba00d59ecf2c69b0e229e7c01e8f7e604b4814 de B-2. Repetí Vitest con la selección registrada y comprobá un POST por gesto, la pérdida de respuesta seguida de cambio de fecha y GET 500 al volver, «Sin confirmar», «Recargar nota», el editor en solo lectura y «Guardar versión» deshabilitado, la lectura concluyente y el aislamiento por fecha, espacio y sesión. Conservá los negativos de B-1 y cotejá los checks locales, los JUnit saneados desktop/mobile y sus árboles. Registrá el veredicto independiente sobre HEAD/base en T-067 y PR70 según el protocolo de revisión. La aprobación y el eventual merge siguen AUTONOMY. Preservá el checkout principal, trailer/ y los worktrees ajenos. FULL/STARTER DIFERIDO POR EL DUEÑO. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Render requiere autorización expresa separada sobre SHA y ventana.
 ```

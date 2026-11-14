@@ -1,6 +1,6 @@
 ---
 id: T-067
-status: changes_requested
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -63,9 +63,22 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-La [revisión independiente R2](#revisión-independiente-r2) cierra B-1 y mantiene B-2 abierto al volver a la fecha tras perder la respuesta del POST. Las dos rondas previstas están agotadas. El dueño decide si autoriza una corrección acotada en la misma rama y una revisión adicional independiente. **FULL/STARTER DIFERIDO POR EL DUEÑO.** SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Render requiere autorización expresa separada sobre SHA y ventana.
+El dueño autorizó el 2026-11-14 la corrección acotada de B-2 y una revisión independiente adicional. La corrección técnica `d3ba00d59ecf2c69b0e229e7c01e8f7e604b4814` está publicada en PR70 contra `main`, base `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb`. R3 debe comprobar el HEAD/base vigentes, su `verify-required` y la evidencia de la corrección en un checkout independiente. El prompt está en [STATUS](../STATUS.md#prompt-de-la-siguiente-sesión).
+
+**FULL/STARTER DIFERIDO POR EL DUEÑO.** SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Render requiere autorización expresa separada sobre SHA y ventana.
 
 ## Evidencia dirigida
+
+### Corrida de corrección B-2 tras R2
+
+Frontera implementer en Codex Desktop (GPT-6, variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Node 24.21.0, Git Bash y Docker. Worktree propio `.orchestrator/t-067-fix-b2-codex` desde el HEAD del [veredicto R2](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70#issuecomment-6883295325), `83b6b16f2e9b28c6ecace28ff4a06353c92b0839`. GitHub confirmó PR70 abierto contra `main` y [`verify-required` SUCCESS para el HEAD de entrada](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43634276463/job/132567530494). La recuperación muestra el estado real de guardado y bloquea las escrituras del cliente durante la incertidumbre. Usa la API, los permisos y el esquema de T-066.
+
+- Rojo antes de editar producción, desde `client/`: `npm test -- --run src/features/daily/CopyPreviousNote.test.tsx -t 'al salir y volver a la fecha'`, exit 1, 1 fallo y 13 omitidos por el filtro. Tras perder la respuesta del POST y volver a la fecha, MSW dio GET 500. La barra mostró «Guardado» donde el test esperaba «Sin confirmar». Salida en `e2e/artifacts/t067-b2-vitest/red.log`.
+- Verde desde `client/`: la misma selección de diez archivos de la [corrida R1](#corrida-de-corrección-r1), **184/184**, exit 0. Salida en `e2e/artifacts/t067-b2-vitest/green.log`. La regresión comprueba un POST por gesto, editor en solo lectura y guardado manual bloqueado tras el GET 500, y recuperación del contenido con el GET concluyente. También comprueba cambio a Personal y regreso a Trabajo, recuperación automática con GET 200 al volver y descarte al cerrar sesión incluso si vuelve la misma cuenta.
+- Los negativos de B-1 pasan: un GET con revisión igual al ACK llega primero, el ACK genera cero PUT y un Ctrl+Z genera un solo PUT con el documento previo y la revisión del ACK. El GET con revisión superior se recupera y conserva el documento remoto con cero PUT.
+- `npm ci --no-audit --no-fund`, `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build`, exit 0. Lockfile intacto. Vite conserva el aviso de tamaño del chunk.
+- Desde raíz y Git Bash, `STARTER_E2E_PROJECT=starter-e2e-t067-b2-desktop bash scripts/e2e.sh --grep 'copy previous:' --project desktop` y `STARTER_E2E_PROJECT=starter-e2e-t067-b2-mobile bash scripts/e2e.sh --grep 'copy previous:' --project mobile`, exit 0 en ambos. **2/2 desktop y 2/2 mobile**, cero fallos u omitidos, con backend real, PostgreSQL 18.6 y OIDC ficticio. Reportes `e2e/artifacts/starter-e2e-t067-b2-{desktop,mobile}/sanitized/junit.xml`. El harness y la comprobación posterior por label exacto confirmaron el cleanup de contenedores, redes y volúmenes de ambos proyectos.
+- Fuentes probadas en `d3ba00d59ecf2c69b0e229e7c01e8f7e604b4814` sobre base `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb`. Árboles `client` `b73d8f5dc7361864e873a70b58d1951f769078d5`, `e2e` `3c97c9c687369c1773c411aa701d59311e3ca144` y `server` `371d0c67a8e54a29d948e30dee46aff777c37878`. `node scripts/docs-check.mjs`, `git diff --check`, `git diff --check efd02e5...HEAD` y `node scripts/ci/classify-diff.mjs --base efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb --head HEAD --phase FULL`, exit 0. Clasificación `FULL/APPLICATION`, 18 rutas técnicas de 21. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
 
 ### Corrida de corrección R1
 
@@ -100,6 +113,7 @@ Commit técnico `dd48794e112d2850c1d9a96136974de0e5eb34a9`, worktree `.orchestra
 | Al perder el ACK, un destino aún no confirmado podía quedar editable antes de la relectura. | El coordinador conserva la necesidad de recargar por nota y la UI suspende edición y guardado manual hasta recuperar el destino. Negativos de red/409 en Vitest y recarga tras 409 en ambos proyectos Playwright. |
 | R1 B-1. Un GET con la revisión copiada hidrataba el editor antes de que el ACK pudiera registrar el undo. | El coordinador difiere la hidratación durante el POST y coteja el ACK con la revisión en caché. En `dc4176c`, Vitest confirma cero PUT con el ACK, un PUT tras un solo undo con la revisión del ACK y recuperación si el GET trae una revisión superior. |
 | R1 B-2. El indicador volvía a «Guardado» con el destino incierto. | En `dc4176c`, la barra muestra «Sin confirmar» mientras se mantiene el bloqueo. Los negativos de respuesta perdida y conflicto verifican el bloqueo, un POST por gesto y recuperación. Un GET fallido conserva el aviso; uno concluyente restablece «Guardado». |
+| R2 B-2. El remonte del coordinador borraba la recuperación al volver a la fecha, incluso si el GET fallaba. | En `d3ba00d`, la revisión mínima para recuperar el destino vive en memoria de la sesión de la cuenta, por espacio y fecha. Una lectura nueva concluyente la resuelve al volver o al usar «Recargar nota». El rojo y el verde de Vitest cubren GET 500, bloqueo, recuperación, POST único y aislamiento. |
 
 ## Revisión independiente R1
 
