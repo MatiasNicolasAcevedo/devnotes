@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-067](tasks/T-067-copy-previous-client.md) · Empezar el día desde una nota anterior ([S-110](specs/S-110-previous-day-copy.md)) |
-| Estado | `in_review` |
-| Acción actual | Revisar PR70 en una sesión independiente sobre HEAD y base publicados. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Estado | `changes_requested` |
+| Acción actual | Corregir los dos bloqueantes de la [revisión R1 de T-067](tasks/T-067-copy-previous-client.md#revisión-independiente-r1) en una sesión implementer sobre PR70. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
 | Rama / PR | `codex/t-067-copy-previous-client` · [PR70](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
@@ -118,5 +118,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera en rol reviewer independiente para PR70 de MatiasNicolasAcevedo/devnotes (T-067, S-110), en una sesión nueva. Leé AGENTS.md, docs/AUTONOMY.md, docs/STATUS.md, docs/agents/reviewer.md y docs/tasks/T-067-copy-previous-client.md con sus referencias. Confirmá en GitHub PR abierto y listo para revisión contra main, HEAD y base publicados y verify-required sobre el HEAD vigente. Usá un worktree propio del SHA publicado y preservá el checkout principal, trailer/ y los worktrees ajenos. Revisá el diff, la coordinación de ACK/undo, los negativos de fecha/espacio/sesión y carrera, y la evidencia dirigida de Vitest y copy previous: desktop/mobile con backend real. Registrá el veredicto ligado a HEAD y base según el protocolo. Tras confirmar T-067 MERGED en la sesión correspondiente, hacé el control de avance de I5 y devolvé el siguiente alcance a Frontera/dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Render requiere autorización expresa separada sobre SHA y ventana.
+Actuá como Frontera en rol implementer para T-067 (S-110), en sesión nueva de corrección de PR70 de MatiasNicolasAcevedo/devnotes. Leé AGENTS.md, docs/AUTONOMY.md, docs/STATUS.md, docs/agents/implementer.md, T-067 y el veredicto R1 del PR. Verificá en GitHub PR abierto contra main y los SHA publicados. Partí del HEAD de PR70 en un worktree propio y preservá el checkout principal, trailer/ y los worktrees ajenos. Reproducí primero B-1 (GET antes del ACK debe conservar undo) y B-2 (la respuesta perdida debe dejar el guardado sin confirmar). Corregí ambos, conservá los negativos, ejecutá Vitest dirigido y copy previous: desktop/mobile con backend real y publicá evidencia y corrección en la misma rama para R2 independiente. FULL/STARTER DIFERIDO POR EL DUEÑO. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Render requiere autorización expresa separada sobre SHA y ventana.
 ```

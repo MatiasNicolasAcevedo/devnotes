@@ -1,6 +1,6 @@
 ---
 id: T-067
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 milestone: M5
@@ -65,7 +65,7 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 Frontera en rol implementer, Codex Desktop (GPT-6, variante y esfuerzo sin exponer), PowerShell, Git, `gh`, Node y Git Bash. La entrega habilita sugerencia y copia explícita en la UI diaria con la API, permisos y datos de S-110. El ACK confirma la copia y el historial local permite deshacerla con autosave.
 
-Implementación publicada en [PR70](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70), commit técnico `dd48794e112d2850c1d9a96136974de0e5eb34a9` sobre `main` `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb`. Worktree propio `.orchestrator/t-067`. El commit de traspaso cambia solo Markdown. Siguiente paso: revisión independiente sobre HEAD y base publicados con `verify-required` del HEAD vigente. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
+Implementación publicada en [PR70](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70), commit técnico `dd48794e112d2850c1d9a96136974de0e5eb34a9` sobre `main` `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb`. Worktree del implementer `.orchestrator/t-067`. La [revisión independiente R1](#revisión-independiente-r1) pide corregir la carrera GET/ACK y el indicador de guardado con destino incierto, en una sesión implementer sobre la misma rama y PR. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
 
 ## Evidencia dirigida
 
@@ -81,6 +81,27 @@ Implementación publicada en [PR70](https://github.com/MatiasNicolasAcevedo/devn
 |---|---|
 | jsdom no implementa la geometría de `Range` y el click sintético dentro del editor disparó una excepción de `elementFromPoint`. | Geometría de prueba como en DailyEditor.test y foco DOM para la escritura del test. Playwright valida foco mediante teclado y toque reales del navegador. Selección Vitest final 75/75. |
 | Al perder el ACK, un destino aún no confirmado podía quedar editable antes de la relectura. | El coordinador conserva la necesidad de recargar por nota y la UI suspende edición y guardado manual hasta recuperar el destino. Negativos de red/409 en Vitest y recarga tras 409 en ambos proyectos Playwright. |
+
+## Revisión independiente R1
+
+2026-11-14. Frontera reviewer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git, gh y Node 24. Worktree propio `.orchestrator/t-067-review-codex`. GitHub confirmó [PR70](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70) `OPEN` contra `main`, listo para revisión, HEAD de entrada `bbbdcd952c52bb75a95fcc2e8c92349352f2fa76`, base `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb` y [`verify-required` SUCCESS sobre ese HEAD](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43630295836/job/132555177301). La revisión afecta la coordinación del documento y lo que comunica la UI. La API, el modelo de datos y los permisos de servidor corresponden al contrato ya publicado en T-066.
+
+- En el worktree de revisión, las dos selecciones Vitest publicadas se ejecutaron juntas con `npm test -- --run` y pasaron 160/160 en 9 archivos, incluidos los negativos de fecha, espacio y sesión, escritura local durante GET, doble click y recuperación tras conflicto. `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build` pasaron. Vite mantuvo el aviso de tamaño del chunk.
+- Se cotejaron los árboles `client`, `e2e` y `server` con los registrados por el implementer y los dos reportes JUnit saneados de `copy previous:`. Ambos casos figuran verdes en desktop y en mobile, 2/2 por proyecto, con backend real, PostgreSQL 18.6 y OIDC ficticio según la ejecución del implementer. El reviewer verificó los reportes y las aserciones del recorrido. La simulación de orden de respuestas de B-1 y el fallo de B-2 se comprobaron con Vitest/MSW.
+- En raíz, `node scripts/docs-check.mjs` y `git diff --check efd02e5...HEAD` pasaron. La clasificación contra la base publicada dio `FULL/APPLICATION` con 15 rutas técnicas. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
+- Dos reproducciones temporales en `CopyPreviousNote.reviewer.test.tsx` dieron 0/2, exit 1 con `npm test -- --run src/features/daily/CopyPreviousNote.reviewer.test.tsx` desde `client/`. La reproducción queda como evidencia local ignorada en `e2e/artifacts/t067-review/` del worktree reviewer. Esta transición publica solo T-067 y STATUS. El veredicto canónico se liga al HEAD de transición y a la misma base en PR70.
+
+### B-1 · La relectura puede quitar el undo de una copia confirmada
+
+CP-07. Con el POST comprometido y su respuesta retenida, un refetch del detalle puede devolver la misma revisión antes del ACK. El efecto de `useDailyNote.ts` hidrata ese contenido mientras la copia sigue en curso. `DailyEditor.tsx` lo aplica fuera del historial y, cuando llega el ACK, sale por igualdad de documentos. En la reproducción se ve «Copiada del 13/11/2026», pero Ctrl+Z deja el documento copiado y se registran cero PUT.
+
+Corrección suficiente: coordinar las lecturas durante el POST y registrar una sola operación reversible desde el estado previo cuando llegue el ACK. Conservar la protección frente a una revisión remota superior. Cierre observable: con GET de la revisión copiada antes del ACK, confirmar sin PUT, deshacer con un solo gesto y persistir el documento previo usando la revisión del ACK. Si GET entrega una revisión superior, conservarla y resolver el destino por el flujo de recuperación.
+
+### B-2 · La barra afirma «Guardado» con el destino de copia incierto
+
+CP-07. Tras una pérdida de respuesta, `useDailyNote.ts` marca `copyTargetNeedsReload`, pero deriva `status = 'saved'` al terminar el POST. La prueba encuentra al mismo tiempo «Recargar nota» y «Guardado» dentro de «Estado de guardado».
+
+Corrección suficiente: hacer que el indicador refleje el estado incierto hasta una relectura concluyente. Cierre observable: ni «Guardado» ni confirmación de copia tras perder la respuesta, con edición y guardado manual bloqueados hasta la relectura. Al recuperar el destino, mostrar el estado que corresponda y conservar el límite de un POST por gesto.
 
 ## Cierre y siguiente tarea
 
