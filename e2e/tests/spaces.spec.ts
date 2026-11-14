@@ -260,7 +260,10 @@ test('spaces: SP-03/SP-04/SP-10 reference picker, voice and second actor stay is
     }
     await other.goto(scoped('/history/' + date, 'personal'));
     await expect(other.getByText(/No hay una versión guardada/)).toBeVisible();
-    expect((await json(other, scoped(daily + '/' + date, 'personal'))).revision).toBe(0);
+    const absent = await other.request.get(scoped(daily + '/' + date, 'personal'));
+    expect(absent.status()).toBe(404);
+    expect(await absent.json()).not.toHaveProperty('content');
+    expect((await counts(other, 'personal')).dailyNotes).toBe(0);
     expect((await other.request.post(scoped(daily + '/' + date + '/version', 'personal'), {
       headers: await csrfHeaders(other), data: { expectedRevision: stored.revision + 1 },
     })).status()).toBe(404);
