@@ -38,6 +38,37 @@ class DailyContentTest {
     }
 
     @Test
+    void recognizesOnlyTheUnicodeWhiteSpaceSet() {
+        String whitespace = new String(
+                new int[] {
+                    0x0009, 0x000A, 0x000B, 0x000C, 0x000D, 0x0020, 0x0085, 0x00A0, 0x1680, 0x2000, 0x2001, 0x2002,
+                    0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200A, 0x2028, 0x2029, 0x202F, 0x205F,
+                    0x3000
+                },
+                0,
+                25);
+        var json = new ObjectMapper();
+        var document = json.createObjectNode().put("type", "doc");
+        var blocks = document.putArray("content");
+        blocks.addObject().put("type", "paragraph");
+        var inline = blocks.addObject().put("type", "paragraph").putArray("content");
+        var text = inline.addObject().put("type", "text").put("text", whitespace);
+
+        // This is the emptiness rule alone. The document validator separately rejects CR/LF in text.
+        assertThat(DailyContent.isEmpty(document)).isTrue();
+        for (String meaningful : new String[] {"\uFEFF", "\u200B", "\u001C", "x", "🙂"}) {
+            text.put("text", whitespace + meaningful);
+            assertThat(DailyContent.isEmpty(document))
+                    .as("code point %x", meaningful.codePointAt(0))
+                    .isFalse();
+        }
+        text.put("text", whitespace);
+        assertThat(DailyContent.isEmpty(document)).isTrue();
+        blocks.addObject().put("type", "separator").putObject("attrs").put("width", 25);
+        assertThat(DailyContent.isEmpty(document)).isFalse();
+    }
+
+    @Test
     void acceptsCanonicalEmptyDocument() {
         ObjectNode doc = MAPPER.createObjectNode();
         doc.put("type", "doc");

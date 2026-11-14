@@ -1,6 +1,6 @@
 ---
 id: T-065
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M5
@@ -152,8 +152,8 @@ Pendiente de aceptación. Usar un entorno de prueba con este SHA, dos espacios y
 
 El ensayo de Render requiere una autorización expresa separada sobre SHA y ventana.
 
-## Cierre y siguiente tarea
+## Conciliación
 
-Implementación publicada en [PR68](https://github.com/MatiasNicolasAcevedo/devnotes/pull/68). La revisión independiente R1 deja el veredicto en PR68 y la evidencia en esta tarea. El dueño conserva la aceptación física de Android. El merge y T-066 corresponden a sesiones posteriores.
+GitHub confirmó [PR68](https://github.com/MatiasNicolasAcevedo/devnotes/pull/68) `MERGED` contra `main` el 2026-11-14T15:12:53Z, squash `a0321ec0a5c134b39628ac85609408980a42ec92`, HEAD revisado `f270cd640490442933ca7d010b951757a92e22d4`. Consulta `gh pr view 68 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName`, exit 0. [Evidencia de cierre](https://github.com/MatiasNicolasAcevedo/devnotes/pull/68#issuecomment-6879492761).
 
-No done hasta MERGED comprobado. Tras MERGED confirmado, la siguiente sesión concilia esta tarea y toma T-066 si sus dependencias están done. No modificar protecciones, incorporar otras propuestas ni desplegar por pasar tests locales.
+T-065 queda `done` y habilita [T-066](T-066-copy-previous-api.md). SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño.

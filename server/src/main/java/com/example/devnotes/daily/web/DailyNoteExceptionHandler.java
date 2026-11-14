@@ -1,5 +1,6 @@
 package com.example.devnotes.daily.web;
 
+import com.example.devnotes.daily.application.CopyPreviousDailyNoteException;
 import com.example.devnotes.daily.application.DailyNoteConflictException;
 import com.example.devnotes.daily.application.DailyNoteNotFoundException;
 import com.example.devnotes.daily.domain.DailyContent.DailyContentException;
@@ -31,6 +32,25 @@ public class DailyNoteExceptionHandler extends ApiExceptionHandler {
                 .cacheControl(CacheControl.noStore())
                 .body(ProblemDetail.forStatusAndDetail(
                         HttpStatus.CONFLICT, "La nota fue modificada concurrentemente."));
+    }
+
+    @ExceptionHandler(CopyPreviousDailyNoteException.class)
+    ResponseEntity<ProblemDetail> copyRejected(CopyPreviousDailyNoteException failure) {
+        var status = switch (failure.reason()) {
+            case COPY_SOURCE_NOT_AVAILABLE -> HttpStatus.NOT_FOUND;
+            case COPY_SOURCE_CHANGED, COPY_TARGET_NOT_EMPTY, COPY_TARGET_CHANGED -> HttpStatus.CONFLICT;
+        };
+        var detail = switch (failure.reason()) {
+            case COPY_SOURCE_NOT_AVAILABLE -> "La nota de origen no está disponible.";
+            case COPY_SOURCE_CHANGED -> "La nota de origen cambió. Volvé a revisar la sugerencia.";
+            case COPY_TARGET_NOT_EMPTY -> "La nota de destino ya tiene contenido.";
+            case COPY_TARGET_CHANGED -> "La nota de destino cambió. Volvé a cargarla.";
+        };
+        var problem = ProblemDetail.forStatusAndDetail(status, detail);
+        problem.setProperty("code", failure.reason().name());
+        return ResponseEntity.status(status)
+                .cacheControl(CacheControl.noStore())
+                .body(problem);
     }
 
     @Override

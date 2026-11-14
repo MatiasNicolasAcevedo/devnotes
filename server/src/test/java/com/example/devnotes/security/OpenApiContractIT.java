@@ -51,6 +51,31 @@ class OpenApiContractIT {
     }
 
     @Test
+    void describesCopyPreviousWithStrictBodyAndSessionAndCsrf() {
+        String suggestion = "$.paths['/api/v1/daily-notes/{targetDate}/previous'].get";
+        assertThat(document.<List<Map<String, Object>>>read(suggestion + ".security"))
+                .containsExactly(Map.of("sessionCookie", List.of()));
+        assertThat(document.<Map<String, Object>>read(suggestion + ".responses"))
+                .containsKeys("200", "204", "400", "401");
+        assertThat(document.<Map<String, Object>>read("$.components.schemas.PreviousNote.properties"))
+                .containsOnlyKeys("sourceDate", "sourceRevision", "sourceUpdatedAt");
+
+        String copy = "$.paths['/api/v1/daily-notes/{targetDate}/copy-previous'].post";
+        assertThat(document.<List<Map<String, Object>>>read(copy + ".security"))
+                .containsExactly(Map.of("sessionCookie", List.of(), "csrfHeader", List.of()));
+        assertThat(document.<Map<String, Object>>read(copy + ".responses"))
+                .containsKeys("200", "400", "401", "403", "404", "409");
+        assertThat(document.<String>read(copy + ".requestBody.content['application/json'].schema.$ref"))
+                .isEqualTo("#/components/schemas/CopyPreviousDailyNoteInput");
+        assertThat(document.<Map<String, Object>>read("$.components.schemas.CopyPreviousDailyNoteInput.properties"))
+                .containsOnlyKeys("sourceDate", "sourceRevision", "expectedRevision");
+        assertThat(document.<List<String>>read("$.components.schemas.CopyPreviousDailyNoteInput.required"))
+                .containsExactlyInAnyOrder("sourceDate", "sourceRevision", "expectedRevision");
+        assertThat(document.<Boolean>read("$.components.schemas.CopyPreviousDailyNoteInput.additionalProperties"))
+                .isFalse();
+    }
+
+    @Test
     void describesSessionCookieAndCsrfHeaderSchemes() {
         Map<String, Object> cookie = document.read("$.components.securitySchemes.sessionCookie");
         Map<String, Object> csrf = document.read("$.components.securitySchemes.csrfHeader");
@@ -135,7 +160,7 @@ class OpenApiContractIT {
         }
         assertThat(document.<List<Map<String, Object>>>read("$.paths['/api/v1/reference-items'].get.parameters"))
                 .extracting(parameter -> parameter.get("name"))
-                .containsExactlyInAnyOrder("q", "page", "size");
+                .containsExactlyInAnyOrder("q", "page", "size", "space");
         assertThat(document.<Map<String, Object>>read("$.paths['/api/v1/reference-items'].post.responses"))
                 .containsKey("201");
         assertThat(document.<Map<String, Object>>read("$.paths['/api/v1/reference-items/{id}'].delete.responses"))

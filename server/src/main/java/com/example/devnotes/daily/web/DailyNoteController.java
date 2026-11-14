@@ -1,7 +1,10 @@
 package com.example.devnotes.daily.web;
 
+import com.example.devnotes.daily.application.CopyPreviousDailyNoteService;
+import com.example.devnotes.daily.application.CopyPreviousDailyNoteService.PreviousNote;
 import com.example.devnotes.daily.application.DailyNoteService;
 import com.example.devnotes.daily.application.DailyNoteService.DailyNotePage;
+import com.example.devnotes.daily.application.DailyNoteService.DailyNoteView;
 import com.example.devnotes.security.AuthOpenApi;
 import com.example.devnotes.security.LocalOidcUser;
 import com.example.devnotes.shared.space.PrivateSpaceQuery;
@@ -22,6 +25,7 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.http.CacheControl;
+import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.InsufficientAuthenticationException;
@@ -70,11 +74,13 @@ import org.springframework.web.bind.annotation.*;
 public class DailyNoteController {
 
     private final DailyNoteService service;
+    private final CopyPreviousDailyNoteService copyPrevious;
     private final ObjectMapper mapper = new ObjectMapper();
     private final tools.jackson.databind.ObjectMapper toolsMapper = new tools.jackson.databind.ObjectMapper();
 
-    public DailyNoteController(DailyNoteService service) {
+    public DailyNoteController(DailyNoteService service, CopyPreviousDailyNoteService copyPrevious) {
         this.service = service;
+        this.copyPrevious = copyPrevious;
     }
 
     @GetMapping
@@ -118,10 +124,7 @@ public class DailyNoteController {
             Authentication authentication, HttpServletRequest request, @PathVariable LocalDate date) {
         DailyNoteService.DailyNoteView view =
                 service.open(owner(authentication), PrivateSpaceQuery.from(request), date);
-        return ResponseEntity.ok()
-                .cacheControl(CacheControl.noStore())
-                .body(new DailyNoteResponse(
-                        view.id(), view.date(), toToolsNode(view.content()), view.revision(), view.updatedAt()));
+        return noteResponse(view);
     }
 
     @PutMapping("/{date}")
@@ -155,18 +158,105 @@ public class DailyNoteController {
                 date,
                 input.content(),
                 input.expectedRevision());
+        return noteResponse(saved);
+    }
+
+    @GetMapping(path = "/{targetDate}/previous", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Parameter(
+            name = "space",
+            in = ParameterIn.QUERY,
+            description = "Espacio privado. Por omisión, Trabajo.",
+            schema =
+                    @Schema(
+                            allowableValues = {"work", "personal"},
+                            defaultValue = "work"))
+    @Operation(summary = "Sugiere la última nota anterior con contenido del mismo espacio")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Metadatos de la nota sugerida",
+            content =
+                    @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = PreviousNote.class)))
+    @ApiResponse(responseCode = "204", description = "Sin nota anterior con contenido", content = @Content)
+    public ResponseEntity<PreviousNote> previous(
+            Authentication authentication,
+            HttpServletRequest request,
+            @Parameter(schema = @Schema(type = "string", format = "date")) @PathVariable String targetDate) {
+        var suggestion = copyPrevious.suggest(
+                owner(authentication), PrivateSpaceQuery.from(request), CopyPreviousDailyNoteInput.date(targetDate));
+        return suggestion
+                .map(note ->
+                        ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(note))
+                .orElseGet(() -> ResponseEntity.noContent()
+                        .cacheControl(CacheControl.noStore())
+                        .build());
+    }
+
+    @PostMapping(
+            path = "/{targetDate}/copy-previous",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Parameter(
+            name = "space",
+            in = ParameterIn.QUERY,
+            description = "Espacio privado. Por omisión, Trabajo.",
+            schema =
+                    @Schema(
+                            allowableValues = {"work", "personal"},
+                            defaultValue = "work"))
+    @Operation(
+            summary = "Copia la nota anterior indicada a una fecha vacía",
+            description = "Requiere la revisión del origen y la esperada en destino. Usa 0 si el destino no existe.")
+    @SecurityRequirement(name = AuthOpenApi.CSRF_HEADER)
+    @ApiResponse(
+            responseCode = "200",
+            description = "Documento de trabajo copiado",
+            content =
+                    @Content(
+                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                            schema = @Schema(implementation = DailyNoteResponse.class)))
+    @ApiResponse(
+            responseCode = "404",
+            description = "COPY_SOURCE_NOT_AVAILABLE",
+            content =
+                    @Content(
+                            mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ProblemDetail.class)))
+    @ApiResponse(
+            responseCode = "409",
+            description = "COPY_SOURCE_CHANGED, COPY_TARGET_NOT_EMPTY o COPY_TARGET_CHANGED",
+            content =
+                    @Content(
+                            mediaType = MediaType.APPLICATION_PROBLEM_JSON_VALUE,
+                            schema = @Schema(implementation = ProblemDetail.class)))
+    public ResponseEntity<DailyNoteResponse> copyPrevious(
+            Authentication authentication,
+            HttpServletRequest request,
+            @Parameter(schema = @Schema(type = "string", format = "date")) @PathVariable String targetDate,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                            required = true,
+                            content =
+                                    @Content(
+                                            mediaType = MediaType.APPLICATION_JSON_VALUE,
+                                            schema = @Schema(implementation = CopyPreviousDailyNoteInput.class)))
+                    @RequestBody
+                    String rawBody) {
+        var input = CopyPreviousDailyNoteInput.parse(rawBody);
+        return noteResponse(copyPrevious.copy(
+                owner(authentication),
+                PrivateSpaceQuery.from(request),
+                CopyPreviousDailyNoteInput.date(targetDate),
+                input.sourceDate(),
+                input.sourceRevision(),
+                input.expectedRevision()));
+    }
+
+    private ResponseEntity<DailyNoteResponse> noteResponse(DailyNoteView view) {
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(new DailyNoteResponse(
-                        saved.id(), saved.date(), toToolsNode(saved.content()), saved.revision(), saved.updatedAt()));
-    }
-
-    private String toJsonString(JsonNode node) {
-        try {
-            return mapper.writeValueAsString(node);
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("No se puede serializar el contenido.", e);
-        }
+                        view.id(), view.date(), toToolsNode(view.content()), view.revision(), view.updatedAt()));
     }
 
     private tools.jackson.databind.JsonNode toToolsNode(JsonNode node) {
