@@ -28,7 +28,7 @@ export interface ConfirmedCopy {
 
 // ——— Estado público del hook ———
 
-export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'conflict'
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'unconfirmed' | 'error' | 'conflict'
 
 export interface UseDailyNoteReturn {
   isLoading: boolean
@@ -163,6 +163,8 @@ export function useDailyNote(
   // ——— Sincronizar remoto → confirmado (sin pisar dirty) ———
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
+    // El editor conserva el documento previo hasta poder aplicar la copia como un undo.
+    if (isCopyingPrevious || copyingRef.current) return
     if (query.data) {
       const remote = query.data
       // Si la revisión es menor que la confirmada, es una respuesta vieja y se ignora.
@@ -176,7 +178,7 @@ export function useDailyNote(
         setConfirmedRevision(remote.revision)
       }
     }
-  }, [query.data, confirmedRevision])
+  }, [query.data, confirmedRevision, isCopyingPrevious])
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const confirmWrite = useCallback((response: DailyNoteDetail) => {
@@ -219,8 +221,11 @@ export function useDailyNote(
         setCopyTargetNeedsReload(true)
         return false
       }
-      // Un refetch de fondo podría haber recibido una revisión posterior al POST.
-      if (response.revision < revisionRef.current) {
+      // El GET queda en caché durante la copia. Una revisión superior invalida este ACK.
+      const remote = queryClient.getQueryData<DailyNoteDetail>(
+        dailyNoteKeys(owner, space).detail(date),
+      )
+      if (response.revision < Math.max(revisionRef.current, remote?.revision ?? 0)) {
         throw new Error('La nota de destino cambió después de copiarse')
       }
       confirmWrite(response)
@@ -371,7 +376,7 @@ export function useDailyNote(
   // ——— edit ———
   const edit = useCallback(
     (newContent: unknown) => {
-      if (copyingRef.current || reloadTargetRef.current) return
+      if (copyingRef.current || reloadTargetRef.current || copyTargetNeedsReload) return
       const validation = validateDailyContent(newContent)
       if (!validation.valid) {
         // Conservar texto actual y no enviar.
@@ -391,7 +396,7 @@ export function useDailyNote(
       }
       // Si hay PUT en vuelo, el .then() detectará draftRef.current con generación mayor.
     },
-    [scheduleFlush],
+    [copyTargetNeedsReload, scheduleFlush],
   )
 
   // ——— retry ———
@@ -408,6 +413,9 @@ export function useDailyNote(
       const force = options?.force ?? false
       if (copyingRef.current || reloadTargetRef.current) {
         return Promise.reject(new Error('La copia o la recarga está en curso'))
+      }
+      if (force && copyTargetNeedsReload) {
+        return Promise.reject(new Error('Recargá la nota antes de guardar una versión'))
       }
       return new Promise<void>((resolve, reject) => {
         // La acción manual puede crear un documento vacío, pero cargarlo nunca escribe.
@@ -439,7 +447,7 @@ export function useDailyNote(
         }
       })
     },
-    [flushQueue],
+    [copyTargetNeedsReload, flushQueue],
   )
 
   // ——— discard ———
@@ -469,7 +477,9 @@ export function useDailyNote(
   const isSaving = queueState === 'flushing'
 
   let status: SaveStatus
-  if (error !== null && 'status' in error && (error as ApiError).status === 409) {
+  if (copyTargetNeedsReload) {
+    status = 'unconfirmed'
+  } else if (error !== null && 'status' in error && (error as ApiError).status === 409) {
     status = 'conflict'
   } else if (error !== null) {
     status = 'error'

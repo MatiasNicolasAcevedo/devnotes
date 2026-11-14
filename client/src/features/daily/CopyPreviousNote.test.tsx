@@ -6,6 +6,7 @@ import { buildAuthUser, problemResponse } from '../../test/factories'
 import { installAuthBackend } from '../../test/msw/authBackend'
 import { server } from '../../test/msw/server'
 import { renderWithProviders } from '../../test/render'
+import { dailyNoteKeys } from './api'
 import { emptyDocument, type DailyContent } from './editor/dailyDocument'
 import { setTestDebounce } from './useDailyNote'
 
@@ -47,6 +48,7 @@ function setup() {
 }
 
 const editor = () => screen.getByRole('textbox', { name: 'Editor de nota diaria' })
+const saveStatus = () => within(screen.getByRole('status', { name: 'Estado de guardado' }))
 
 function deferred() {
   let resolve!: () => void
@@ -132,6 +134,61 @@ describe('Copiar nota anterior', () => {
     expect(screen.queryByRole('button', { name: offer })).toBeNull()
   })
 
+  it.each([1, 2])(
+    'coordina el GET de revisión %i recibido antes del ACK de revisión 1',
+    async (remoteRevision) => {
+      const render = setup()
+      const pending = deferred()
+      const copied = note(document('Copia confirmada en servidor'))
+      const remote =
+        remoteRevision === 1 ? copied : note(document('Edición remota posterior'), remoteRevision)
+      let saved: ReturnType<typeof note> | undefined
+      const puts: unknown[] = []
+      server.use(
+        mock.get(detail, () => (saved ? HttpResponse.json(saved) : problemResponse(404))),
+        mock.post(`${detail}/copy-previous`, async () => {
+          saved = remote
+          await pending.promise
+          return HttpResponse.json(copied)
+        }),
+        mock.put(detail, async ({ request }) => {
+          puts.push(await request.json())
+          saved = note(emptyDocument(), 2)
+          return HttpResponse.json(saved)
+        }),
+      )
+
+      const { user, queryClient } = render()
+      await user.click(await screen.findByRole('button', { name: offer }))
+      await waitFor(() => expect(saved).toEqual(remote))
+      const queryKey = dailyNoteKeys(buildAuthUser().id, 'work').detail(date)
+      await act(async () => queryClient.invalidateQueries({ queryKey }))
+      await waitFor(() => expect(queryClient.getQueryData(queryKey)).toEqual(remote))
+      expect(editor()).toHaveAttribute('contenteditable', 'false')
+      await act(async () => pending.resolve())
+
+      if (remoteRevision > 1) {
+        const reload = await screen.findByRole('button', { name: 'Recargar nota' })
+        expect(screen.queryByText(/Copiada del/)).toBeNull()
+        expect(editor()).not.toHaveTextContent('Copia confirmada en servidor')
+        expect(editor()).toHaveAttribute('contenteditable', 'false')
+        await user.click(reload)
+        await waitFor(() => expect(editor()).toHaveTextContent('Edición remota posterior'))
+        expect(editor()).toHaveAttribute('contenteditable', 'true')
+        expect(puts).toEqual([])
+        return
+      }
+
+      expect(await screen.findByText('Copiada del 13/11/2026')).toBeVisible()
+      expect(editor()).toHaveTextContent('Copia confirmada en servidor')
+      expect(puts).toEqual([])
+      act(() => editor().focus())
+      await user.keyboard('{Control>}z{/Control}')
+      await waitFor(() => expect(puts).toEqual([{ content: emptyDocument(), expectedRevision: 1 }]))
+      expect(editor()).toHaveTextContent(/^$/)
+    },
+  )
+
   it('ignora la sugerencia que llega después de escribir localmente', async () => {
     const render = setup()
     const pending = deferred()
@@ -188,9 +245,13 @@ describe('Copiar nota anterior', () => {
     async (failure) => {
       const render = setup()
       let posts = 0
+      let failReload = failure === 'respuesta perdida'
       const remote = note(document('Contenido confirmado'))
       server.use(
-        mock.get(detail, () => (posts ? HttpResponse.json(remote) : problemResponse(404))),
+        mock.get(detail, () => {
+          if (!posts) return problemResponse(404)
+          return failReload ? problemResponse(500) : HttpResponse.json(remote)
+        }),
         mock.post(`${detail}/copy-previous`, () => {
           posts++
           return failure === 'respuesta perdida'
@@ -203,9 +264,28 @@ describe('Copiar nota anterior', () => {
       const reload = await screen.findByRole('button', { name: 'Recargar nota' })
       expect(screen.queryByRole('button', { name: offer })).toBeNull()
       expect(editor()).toHaveAttribute('contenteditable', 'false')
+      expect(screen.getByRole('button', { name: 'Guardar versión' })).toBeDisabled()
+      expect(screen.queryByText(/Copiada del/)).toBeNull()
+      expect(saveStatus().queryByText('Guardado')).toBeNull()
+      expect(saveStatus().getByText('Sin confirmar')).toBeVisible()
+      expect(posts).toBe(1)
+      if (failReload) {
+        await user.click(reload)
+        expect(
+          await screen.findByText('No se pudo cargar la nota de destino. Volvé a intentarlo.'),
+        ).toBeVisible()
+        expect(saveStatus().queryByText('Guardado')).toBeNull()
+        expect(saveStatus().getByText('Sin confirmar')).toBeVisible()
+        expect(editor()).toHaveAttribute('contenteditable', 'false')
+        expect(screen.getByRole('button', { name: 'Guardar versión' })).toBeDisabled()
+        failReload = false
+      }
       await user.click(reload)
       await waitFor(() => expect(editor()).toHaveTextContent('Contenido confirmado'))
       expect(editor()).toHaveAttribute('contenteditable', 'true')
+      expect(screen.getByRole('button', { name: 'Guardar versión' })).toBeEnabled()
+      expect(saveStatus().getByText('Guardado')).toBeVisible()
+      expect(screen.queryByText(/Copiada del/)).toBeNull()
       expect(screen.queryByRole('button', { name: offer })).toBeNull()
       expect(posts).toBe(1)
     },
