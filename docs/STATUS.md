@@ -2,12 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-064](tasks/T-064-space-navigation.md) · Selector de espacio y navegación Windows/Android ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `mergeable` |
-| Acción actual | [R2 favorable de PR67](tasks/T-064-space-navigation.md#revisión-independiente-r2). El merge requiere autorización expresa del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-064-space-navigation` · [PR67](https://github.com/MatiasNicolasAcevedo/devnotes/pull/67) |
+| Tarea y contrato | [T-065](tasks/T-065-spaces-journey.md) · Recorrido dirigido de espacios y respaldo ([S-109](specs/S-109-private-spaces.md)) |
+| Estado | `in_progress` |
+| Acción actual | Implementación y pruebas dirigidas desktop/mobile. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-065-spaces-journey` |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+
+[T-064](tasks/T-064-space-navigation.md#conciliación) conciliada como `done` tras PR67 MERGED.
 
 [T-063](tasks/T-063-space-client-context.md#conciliación) conciliada como `done` tras PR66 MERGED.
 
@@ -112,5 +114,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera en rol reviewer en una sesión nueva e independiente de la implementación y de R1. Revisá R2 de T-064 (S-109) en PR67 de MatiasNicolasAcevedo/devnotes, rama codex/t-064-space-navigation. Confirmá en GitHub el HEAD vigente, descendiente del commit técnico 612e8156c2c6f35edbee9f7af85c3b41cf7cabcb, la base main 1a3e95d6de17d1a4e9b3fcc1118637704f219cb9 y verify-required SUCCESS. Leé docs/agents/reviewer.md y la corrección de R1 en docs/tasks/T-064-space-navigation.md. Contrastá B1–B3 y su evidencia con las fuentes publicadas, ejecutá los dirigidos que requiera la revisión y publicá el veredicto R2 ligado a HEAD/base. FULL/STARTER DIFERIDO POR EL DUEÑO. Preservá el checkout principal, trailer/ y los worktrees ajenos. El merge y el ensayo de Render requieren autorización expresa del dueño. El ensayo de Render requiere SHA y ventana. T-065 espera el cierre de T-064.
+Actuá como Frontera implementer en una sesión independiente. Retomá T-065 de MatiasNicolasAcevedo/devnotes en codex/t-065-spaces-journey. Confirmá en GitHub PR67 MERGED y la base publicada y seguí el checkpoint de docs/tasks/T-065-spaces-journey.md en un worktree propio. Cerrá los dirigidos spaces: desktop/mobile, verificá el cleanup y publicá el único PR para revisión independiente. FULL/STARTER DIFERIDO POR EL DUEÑO. Preservá checkout principal, trailer/ y worktrees ajenos. El ensayo Render requiere autorización expresa sobre SHA y ventana.
 ```

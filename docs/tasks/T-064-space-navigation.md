@@ -1,6 +1,6 @@
 ---
 id: T-064
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M5
@@ -150,6 +150,10 @@ Pruebas independientes sobre `5d7ad5c` y base `1a3e95d`:
 - `node scripts/docs-check.mjs` y `git diff --check` → 0. `node scripts/ci/classify-diff.mjs --base 1a3e95d6de17d1a4e9b3fcc1118637704f219cb9 --head HEAD --phase FULL` → 0, `policy=FULL`, `profile=STARTER`, 36 rutas, 33 técnicas. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
 
 Revisión técnica favorable, sin bloqueantes. Cambios publicados de navegación y UI, incluida la validación de DTO en cliente. El diff no modifica endpoints, permisos, esquema de persistencia ni dependencias. Quedan pendientes la aceptación visual del dueño en Android físico con teclado real y zoom nativo, y la autorización expresa de merge. Render requiere autorización separada sobre SHA y ventana. T-065 espera el cierre de T-064. El veredicto canónico queda en PR67 sobre el HEAD documental y la base vigentes tras `verify-required` SUCCESS.
+
+## Conciliación
+
+La consulta contractual de GitHub confirmó [PR67](https://github.com/MatiasNicolasAcevedo/devnotes/pull/67) MERGED contra main el 2026-11-14T05:13:12Z, con squash `dc18096cc25e53f07212143c3b62558c416fffd2` y HEAD `ff8b1c5b59d068ec8972cbc5d3299d9b8cdbc88f`. El fetch confirmó el squash como punta de `origin/main` y base de T-065. [Comentario de cierre](https://github.com/MatiasNicolasAcevedo/devnotes/pull/67#issuecomment-6872242775).
 
 ## Cierre y siguiente tarea
 

@@ -75,7 +75,7 @@ test('private reference CRUD persists, paginates and rejects a simultaneous seco
     expect((await (await bPage.request.get(path)).json()).totalElements).toBe(1);
     await layout(page);
     // Only this known fictitious SPA screen enters the existing audited screenshot export.
-    expect(page.url()).toBe('http://localhost/reference');
+    await expect(page).toHaveURL('http://localhost/reference?space=work');
     await page.screenshot({ path: testInfo.outputPath('safe-failure.png') });
     await writeFile(testInfo.outputPath('safe-screenshot.json'), JSON.stringify({ safe: true }));
     await logout(page);

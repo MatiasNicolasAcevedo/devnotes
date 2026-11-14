@@ -1,6 +1,6 @@
 ---
 id: T-065
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M5
@@ -8,7 +8,7 @@ spec: S-109
 depends_on: [T-064]
 branch: codex/t-065-spaces-journey
 role: implementer
-executor: junie
+executor: frontier
 pr: null
 ---
 
@@ -63,7 +63,29 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. Al tomar la tarea, registrar SHA/base, comandos, resultados y pendientes. Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
+2026-11-14 · Frontera implementer en Codex Desktop, GPT-6 (variante/esfuerzo no expuestos), PowerShell, Git, gh, Git Bash, Node 24.21.0 y Docker Desktop Linux. Worktree propio `.orchestrator/t-065` sobre main publicado `dc18096cc25e53f07212143c3b62558c416fffd2`. PR67 MERGED y conciliada en T-064. Sin PR abierto al tomar la tarea. El cambio cubre pruebas y documentación; comportamiento, API, permisos, datos y UI de producto se ejercitan con fixtures.
+
+**FULL/STARTER DIFERIDO POR EL DUEÑO.**
+
+Preflight de Playwright. HEAD/base dc18096cc25e53f07212143c3b62558c416fffd2, con spec en el árbol de trabajo (blob ebd8c8cec44f8b49367aa7fd1beb2be394156e08). Ejecutar los comandos desktop y mobile de Aceptación con sus namespaces exactos y fuentes congeladas. Guardar JUnit y capturas de fixtures bajo e2e/artifacts/<namespace>/sanitized/ y verificar container -a, network y volume con label=com.docker.compose.project=<namespace> antes y después. Siguiente acción: comprobar casos ejecutados, revisar fallos saneados y cerrar checks.
+
+Complemento SP-02 y SP-09. En server/ con Git Bash y JDK 21: ./mvnw -o -B -q verify -Dtest=PrivateSpaceTest -Dit.test=PrivateSpaceMigrationIT,PortabilityImportServiceIT -Djacoco.skip=true sobre fuentes de backend de la base. Usar Testcontainers PostgreSQL 18.6 con sesión efímera. Verificar reports y el cleanup de Testcontainers por su label exacto. Siguiente acción: registrar los casos de migración y ambas intercalaciones del respaldo.
+
+## Bitácora de correcciones
+
+- Primer desktop sobre el blob del checkpoint: exit 1, 10 casos, 5 fallos y cleanup 0/0/0 por label exacto. Se corrigieron los selectores de búsqueda y de error de importación, la lectura del detalle de voz y el acceso por Tab en ambos layouts. JUnit saneado en `e2e/artifacts/t065-desktop-first-sanitized/`. Se agregó el caso de respuesta de transcripción real retenida con CDP y micrófono/proveedor sintéticos.
+- Primer arranque Maven: PowerShell separó `.skip=true` y Maven salió 1 antes de crear recursos. Se pasó el comando completo a Git Bash con `-c` y el dirigido quedó verde con 10/10 unitarios y 22/22 IT (migración 1, importación 21). Cleanup de Testcontainers por IDs exactos de los dos PostgreSQL y Ryuk: cero restantes.
+
+## Comprobación del dueño en Android físico
+
+Pendiente de aceptación. Usar un entorno de prueba con este SHA, dos espacios y una cuenta ficticia. Registrar modelo, versión de Android, navegador, teclado, orientación, SHA y resultado por paso. Si se reproduce un problema, anotar la acción y el resultado esperado/observado. Adjuntar solo capturas con datos ficticios y la identidad tapada.
+
+1. En vertical, abrir Notas. Verificar selector con texto e ícono, etiquetas de los cuatro destinos y acceso a Datos desde Cuenta. Cambiar entre Trabajo y Personal y confirmar que la fecha se conserve y que cada espacio muestre su propia nota.
+2. Con el teclado real abierto, escribir varias líneas, mover el cursor al final, agregar un enlace y guardar una versión. Comprobar que el cursor, los avisos y las acciones de confirmación queden alcanzables sin que la cabecera, la barra inferior o el teclado los tapen. Repetir en horizontal y con el teclado cerrado.
+3. En Voz, escribir un borrador y cambiar de espacio. Probar «Seguir aquí» y luego «Guardar y cambiar». Comprobar que el texto quede guardado solo en el espacio de origen.
+4. Con el zoom nativo del navegador al 200 %, repetir el cambio de espacio, la navegación y la edición con el teclado abierto y cerrado. Comprobar etiquetas, foco, acceso a controles y ausencia de desplazamiento horizontal de la página. Registrar el método de zoom y el resultado.
+
+El ensayo de Render requiere una autorización expresa separada sobre SHA y ventana.
 
 ## Cierre y siguiente tarea
 
