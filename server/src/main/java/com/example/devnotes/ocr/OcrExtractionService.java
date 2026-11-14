@@ -12,7 +12,7 @@ import java.util.function.Supplier;
 import org.springframework.stereotype.Service;
 
 @Service
-class OcrExtractionService {
+public class OcrExtractionService {
     private static final int MAX_ACTIVE = 4;
 
     private final OcrProperties properties;

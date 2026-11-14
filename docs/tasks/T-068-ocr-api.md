@@ -57,7 +57,13 @@ Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expue
 
 Dirigidos en Git Bash con el comando de aceptación y `-o`, exit 0. Surefire 18/18 (3 validador, 13 proveedor, 2 configuración). Failsafe 24/24 (4 OCR, 9 voz, 11 importación), con PostgreSQL de Testcontainers, OIDC ficticio y proveedor en loopback. Reportes en `server/target/{surefire,failsafe}-reports`. Validación de Compose con `.env.example` y valores ficticios: variables OCR solo en server. `node scripts/docs-check.mjs` y `git diff --check`, exit 0.
 
-Cierre técnico sobre el commit de implementación que contiene este checkpoint, base `405e7e58b5133220acd2e9c8c425594323469124`. Clasificar con `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`. Si informa STARTER, ejecutar una vez `bash scripts/verify.sh --starter` para OCR, con `.env.example`, `COMPOSE_PROJECT_NAME=starter-verify-t068-ocr-1114` y `STARTER_E2E_PROJECT=starter-e2e-t068-ocr-1114`, confirmando ausencia de recursos antes de empezar. Registrar exit y resumen en `t068-gate.log` (ignorado). Limpiar por namespace propio de Compose, y por su harness para E2E y tooling. Próximo paso: revisar evidencia del cierre y publicar cuando corresponda. FULL/STARTER acumulado de I5 sigue diferido.
+Cierre técnico sobre el commit que contiene este checkpoint, base `405e7e58b5133220acd2e9c8c425594323469124`. El clasificador informó FULL / STARTER por Compose y `.env.example`. Reintentar `bash scripts/verify.sh --starter` después de corregir el fallo de seguridad, con `.env.example`, `COMPOSE_PROJECT_NAME=starter-verify-t068-ocr-1114` y `STARTER_E2E_PROJECT=starter-e2e-t068-ocr-1114`. Namespace Compose limpio tras el primer intento. Registrar exit y resumen en `t068-gate-r2.log` (ignorado). Limpiar por namespace propio de Compose, y por su harness para E2E y tooling. Próximo paso: revisar evidencia del cierre y publicar cuando corresponda. FULL/STARTER acumulado de I5 sigue diferido.
+
+## Correcciones de implementación
+
+| Problema y causa | Corrección y evidencia |
+|---|---|
+| STARTER sobre `d555c17` salió 1 en backend. `SecurityConfigTest` carga todos los controladores en un slice MVC y faltaba el doble de `OcrExtractionService`. | Registrar el doble en el slice y conservar sus aserciones. `./mvnw -o -q -Dtest=SecurityConfigTest test`, 13/13, exit 0. Primer gate en `t068-gate.log`, docs verde y suites posteriores sin ejecutar. |
 
 ## Cierre y siguiente tarea
 

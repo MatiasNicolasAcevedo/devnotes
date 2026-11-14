@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.example.devnotes.daily.application.CopyPreviousDailyNoteService;
 import com.example.devnotes.identity.IdentityService;
+import com.example.devnotes.ocr.OcrExtractionService;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -64,6 +65,9 @@ class SecurityConfigTest {
 
     @MockitoBean
     private IdentityService identityService;
+
+    @MockitoBean
+    private OcrExtractionService ocrExtraction;
 
     @Autowired
     private MockMvc mockMvc;
