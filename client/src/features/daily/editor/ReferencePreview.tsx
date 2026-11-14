@@ -2,7 +2,7 @@ import SvgIcon from '@mui/material/SvgIcon'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Box, Button, CircularProgress, Paper, Popper, Typography } from '@mui/material'
 import { useReferenceItem } from '../../reference/useReferenceItems'
-import { useSession } from '../../auth/sessionContext'
+import { useSpaceScope } from '../../spaces/spaceContext'
 
 /** Icono X para cerrar, usando SvgIcon nativo (sin @mui/icons-material). */
 const CloseSvg = (
@@ -39,10 +39,10 @@ interface ReferencePreviewInnerProps {
  */
 // eslint-disable-next-line react-refresh/only-export-components -- componente interno, no se usa directamente
 function ReferencePreviewInner({ id, anchorRef, onAnchorProps }: ReferencePreviewInnerProps) {
-  const { user } = useSession()
-  const ownerId = user?.id ?? ''
+  // `@` se resuelve solo en el espacio de la nota: un ID de otro espacio queda «no disponible».
+  const { owner: ownerId, space } = useSpaceScope()
 
-  const { data, isLoading, isError, isFetching, refetch } = useReferenceItem(ownerId, id)
+  const { data, isLoading, isError, isFetching, refetch } = useReferenceItem(ownerId, space, id)
 
   const [open, setOpen] = useState(false)
   const [triggerMethod, setTriggerMethod] = useState<'hover' | 'keyboard' | 'touch'>('hover')

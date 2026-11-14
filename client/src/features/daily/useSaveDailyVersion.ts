@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { ApiError } from '../../services/http'
 import { getDailyVersion, saveDailyVersion, dailyVersionKeys } from './versionApi'
 import type { UseDailyNoteReturn } from './useDailyNote'
+import type { Space } from '../spaces/space'
 
 // ——— Tipos ———
 
@@ -40,12 +41,15 @@ export interface UseSaveDailyVersionReturn {
  */
 export function useSaveDailyVersion({
   owner,
+  space,
   date,
   note,
   sessionIsCurrent,
   onLockChange,
 }: {
   owner: string
+  /** Espacio de la nota: la versión se guarda y se consulta solo allí. */
+  space: Space
   date: string
   note: Pick<UseDailyNoteReturn, 'flush' | 'revision' | 'getRevision'>
   sessionIsCurrent?: () => boolean
@@ -78,9 +82,9 @@ export function useSaveDailyVersion({
 
     try {
       await note.flush({ force: true })
-      await saveDailyVersion(owner, date, note.getRevision())
+      await saveDailyVersion(space, date, note.getRevision())
 
-      const keys = dailyVersionKeys(owner)
+      const keys = dailyVersionKeys(owner, space)
       await queryClient.invalidateQueries({ queryKey: keys.detail(date) })
       await queryClient.invalidateQueries({ queryKey: keys.list() })
 
@@ -110,7 +114,7 @@ export function useSaveDailyVersion({
       savingRef.current = false
       onLockChange?.(false)
     }
-  }, [owner, date, note, queryClient, sessionIsCurrent, onLockChange])
+  }, [owner, space, date, note, queryClient, sessionIsCurrent, onLockChange])
 
   // ——— Consultar versión existente ———
   const checkExisting = useCallback(async () => {
@@ -118,7 +122,7 @@ export function useSaveDailyVersion({
     setPhase('checking')
     setError(null)
     try {
-      await getDailyVersion(date, undefined, sessionIsCurrent)
+      await getDailyVersion(space, date, undefined, sessionIsCurrent)
       if (!mountedRef.current) return
       setConfirmDate(date)
       setPhase('confirming')
@@ -136,7 +140,7 @@ export function useSaveDailyVersion({
         setPhase('error')
       }
     }
-  }, [date, sessionIsCurrent, executeSave, onLockChange])
+  }, [space, date, sessionIsCurrent, executeSave, onLockChange])
 
   const handleClick = useCallback(() => {
     if (isLocked) return

@@ -8,20 +8,24 @@ import {
   saveReferenceItem,
   type ReferenceInput,
 } from './api'
+import type { Space } from '../spaces/space'
 
+/** Keys privadas por identidad y espacio: un ID de otro espacio nunca se resuelve desde esta cache. */
 export const referenceKeys = {
-  owner: (owner: string) => ['reference', owner] as const,
-  list: (owner: string, page: number) => ['reference', owner, 'list', page, 20] as const,
-  item: (owner: string, id: string) => ['reference', owner, 'item', id] as const,
+  owner: (owner: string, space: Space) => ['reference', owner, space] as const,
+  list: (owner: string, space: Space, page: number) =>
+    ['reference', owner, space, 'list', page, 20] as const,
+  item: (owner: string, space: Space, id: string) =>
+    ['reference', owner, space, 'item', id] as const,
 }
 
-export function useReferenceItems(owner: string, page: number) {
+export function useReferenceItems(owner: string, space: Space, page: number) {
   const { status, user } = useSession()
   const client = useQueryClient()
   return useQuery({
-    queryKey: referenceKeys.list(owner, page),
+    queryKey: referenceKeys.list(owner, space, page),
     queryFn: ({ signal }) =>
-      fetchReferenceItems(page, 20, {
+      fetchReferenceItems(space, page, 20, {
         signal,
         sessionIsCurrent: () =>
           client.getQueryData<AuthUser | null>(authQueryKeys.session)?.id === owner,
@@ -31,13 +35,13 @@ export function useReferenceItems(owner: string, page: number) {
   })
 }
 
-export function useReferenceItem(owner: string, id: string) {
+export function useReferenceItem(owner: string, space: Space, id: string) {
   const { status, user } = useSession()
   const client = useQueryClient()
   return useQuery({
-    queryKey: referenceKeys.item(owner, id),
+    queryKey: referenceKeys.item(owner, space, id),
     queryFn: ({ signal }) =>
-      fetchReferenceItem(id, {
+      fetchReferenceItem(space, id, {
         signal,
         sessionIsCurrent: () =>
           client.getQueryData<AuthUser | null>(authQueryKeys.session)?.id === owner,
@@ -48,18 +52,21 @@ export function useReferenceItem(owner: string, id: string) {
   })
 }
 
-/** Completion is scoped to the initiating identity. Clearing MutationCache does not cancel this request. */
-export function useReferenceMutations(owner: string) {
+/**
+ * Completion is scoped to the initiating identity and space. Clearing MutationCache does not cancel this request.
+ */
+export function useReferenceMutations(owner: string, space: Space) {
   const client = useQueryClient()
   const isCurrent = () => client.getQueryData<AuthUser | null>(authQueryKeys.session)?.id === owner
   const renewIfCurrent = () => (isCurrent() ? renewCsrf() : Promise.resolve())
   const invalidate = () => {
-    if (isCurrent()) return client.invalidateQueries({ queryKey: referenceKeys.owner(owner) })
+    if (isCurrent())
+      return client.invalidateQueries({ queryKey: referenceKeys.owner(owner, space) })
   }
   const save = useMutation({
     mutationFn: ({ input, id }: { input: ReferenceInput; id?: string }) =>
       withCsrfRenewal(
-        () => saveReferenceItem(input, id, { sessionIsCurrent: isCurrent }),
+        () => saveReferenceItem(space, input, id, { sessionIsCurrent: isCurrent }),
         renewIfCurrent,
       ),
     onSuccess: invalidate,
@@ -68,7 +75,7 @@ export function useReferenceMutations(owner: string) {
   const remove = useMutation({
     mutationFn: (id: string) =>
       withCsrfRenewal(
-        () => deleteReferenceItem(id, { sessionIsCurrent: isCurrent }),
+        () => deleteReferenceItem(space, id, { sessionIsCurrent: isCurrent }),
         renewIfCurrent,
       ),
     onSuccess: invalidate,

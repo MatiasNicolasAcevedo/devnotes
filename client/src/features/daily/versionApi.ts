@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { http } from '../../services/http'
+import { spaceApiPath, type Space } from '../spaces/space'
 import { DailyContentSchema } from './editor/dailyDocument'
 
 // ——— Schemas de respuesta ———
@@ -37,16 +38,15 @@ export type DailyVersionDetail = z.infer<typeof dailyVersionDetailSchema>
 // ——— Query keys privadas ———
 
 /**
- * Las keys incluyen la identidad (owner) para aislar datos entre cuentas.
- * Al cerrar sesión o cambiar identidad, solo se limpia el prefijo `['auth', …]`;
- * estas keys sobreviven, por lo que la identidad en la key evita mezclar datos.
+ * Las keys incluyen identidad y espacio: la versión de un espacio nunca se lee ni reemplaza desde el otro (SP-04).
+ * El logout conserva solo `['auth', …]`.
  */
-export function dailyVersionKeys(owner: string) {
+export function dailyVersionKeys(owner: string, space: Space) {
   return {
-    all: ['daily', owner, 'versions'] as const,
+    all: ['daily', owner, space, 'versions'] as const,
     list: (page?: number) =>
-      ['daily', owner, 'versions', 'list', ...(page !== undefined ? [page] : [])] as const,
-    detail: (date: string) => ['daily', owner, 'versions', 'detail', date] as const,
+      ['daily', owner, space, 'versions', 'list', ...(page !== undefined ? [page] : [])] as const,
+    detail: (date: string) => ['daily', owner, space, 'versions', 'detail', date] as const,
   }
 }
 
@@ -58,12 +58,16 @@ const BASE = '/api/v1/daily-versions'
  * Lista las versiones propias paginadas. `page` debe ser >= 0; size es fijo 20.
  */
 export async function listDailyVersions(
+  space: Space,
   page?: number,
   signal?: AbortSignal,
   sessionIsCurrent?: () => boolean,
 ): Promise<DailyVersionPage> {
   const params = page !== undefined ? `?page=${page}` : ''
-  return http.request(`${BASE}${params}`, dailyVersionPageSchema, { signal, sessionIsCurrent })
+  return http.request(spaceApiPath(`${BASE}${params}`, space), dailyVersionPageSchema, {
+    signal,
+    sessionIsCurrent,
+  })
 }
 
 /**
@@ -71,11 +75,15 @@ export async function listDailyVersions(
  * representa ausencia explícita (no hay versión guardada para esa fecha).
  */
 export async function getDailyVersion(
+  space: Space,
   date: string,
   signal?: AbortSignal,
   sessionIsCurrent?: () => boolean,
 ): Promise<DailyVersionDetail> {
-  return http.request(`${BASE}/${date}`, dailyVersionDetailSchema, { signal, sessionIsCurrent })
+  return http.request(spaceApiPath(`${BASE}/${date}`, space), dailyVersionDetailSchema, {
+    signal,
+    sessionIsCurrent,
+  })
 }
 
 // ——— Schema de solicitud POST ———
@@ -91,10 +99,10 @@ export type SaveDailyVersionRequest = z.infer<typeof saveDailyVersionRequestSche
  * Crea o reemplaza la versión manual de una fecha.
  * POST con CSRF y revisión exacta del trabajo confirmado.
  * 400/401/403/409 se propagan sin éxito ni reenvío automático.
- * `owner` solo identifica las query keys; nunca se envía al backend.
+ * `space` es el de la nota que inició el guardado; el propietario sale de la sesión del servidor.
  */
 export async function saveDailyVersion(
-  _owner: string,
+  space: Space,
   date: string,
   expectedRevision: number,
   signal?: AbortSignal,
@@ -104,9 +112,9 @@ export async function saveDailyVersion(
   if (!parsed.success) {
     throw new Error('Solicitud inválida: ' + parsed.error.issues.map((i) => i.message).join('; '))
   }
-  return http.request(`/api/v1/daily-notes/${date}/version`, dailyVersionDetailSchema, {
-    method: 'POST',
-    body: parsed.data,
-    signal,
-  })
+  return http.request(
+    spaceApiPath(`/api/v1/daily-notes/${date}/version`, space),
+    dailyVersionDetailSchema,
+    { method: 'POST', body: parsed.data, signal },
+  )
 }

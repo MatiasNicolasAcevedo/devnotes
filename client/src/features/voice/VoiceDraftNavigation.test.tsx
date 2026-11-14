@@ -11,8 +11,9 @@ import { clickLogout } from '../../test/session'
 import { authQueryKeys, LOGOUT_PATH } from '../auth/api'
 import { voiceQueryKeys } from './api'
 
-const VOICE = '/voice?origen=prueba#editor'
-const DAILY = '/notes/2026-10-19'
+// Direcciones ya canónicas: la URL sin espacio se completa con el confirmado (cubierto en SpaceNavigation.test).
+const VOICE = '/voice?origen=prueba&space=work#editor'
+const DAILY = '/notes/2026-10-19?space=work'
 const LIST = '/api/v1/voice-notes'
 const TRANSCRIPTION = '/api/v1/voice/transcriptions'
 const id = '01900000-0000-7000-8000-000000000001'
@@ -252,7 +253,11 @@ describe('workspace de voz y navegación', () => {
     await user.click(await screen.findByRole('button', { name: 'Descartar y continuar' }))
     reload.release()
     await waitFor(() =>
-      expect(queryClient.isFetching({ queryKey: voiceQueryKeys.detail(id) })).toBe(0),
+      expect(
+        queryClient.isFetching({
+          queryKey: voiceQueryKeys.detail({ owner: buildAuthUser().id, space: 'work' }, id),
+        }),
+      ).toBe(0),
     )
     await user.click(screen.getByRole('link', { name: 'Voz' }))
     expect(await voiceText()).toHaveValue('')
@@ -489,7 +494,10 @@ describe('workspace de voz y sesión', () => {
     await clickLogout(user)
     await screen.findByRole('link', { name: 'Continuar con Google' })
     await user.click(screen.getByRole('link', { name: 'Voz' }))
-    expect(await voiceText()).toHaveValue('')
+    // Sin sesión no hay espacio ni borrador: Voz invita a ingresar y no conserva el texto privado.
+    expect(await screen.findByText('Ingresá para usar tus notas de voz.')).toBeVisible()
+    expect(screen.queryByRole('textbox', { name: 'Texto de la nota' })).not.toBeInTheDocument()
+    expect(screen.queryByText('Texto privado')).not.toBeInTheDocument()
     expect(unload()).toBe(false)
   })
 
@@ -524,7 +532,9 @@ describe('workspace de voz y sesión', () => {
     await screen.findByText('La sesión terminó. Volvé a ingresar.')
     expect(await screen.findByRole('heading', { level: 1, name: 'Datos' })).toBeVisible()
     await user.click(screen.getByRole('link', { name: 'Voz' }))
-    expect(await voiceText()).toHaveValue('')
+    // Sin sesión no hay espacio ni borrador: Voz invita a ingresar y el texto vencido no vuelve.
+    expect(await screen.findByText('Ingresá para usar tus notas de voz.')).toBeVisible()
+    expect(screen.queryByRole('textbox', { name: 'Texto de la nota' })).not.toBeInTheDocument()
   })
 
   it('un 401 tardío de A no vence la sesión de B ni toca su borrador', async () => {

@@ -36,29 +36,37 @@ function buildDetail(overrides = {}) {
 
 describe('dailyVersionKeys', () => {
   it('incluye la identidad en todas las keys para aislar entre cuentas', () => {
-    const keys = dailyVersionKeys('owner-a')
-    expect(keys.all).toEqual(['daily', 'owner-a', 'versions'])
+    const keys = dailyVersionKeys('owner-a', 'work')
+    expect(keys.all).toEqual(['daily', 'owner-a', 'work', 'versions'])
     expect(keys.detail('2024-01-01')).toEqual([
       'daily',
       'owner-a',
+      'work',
       'versions',
       'detail',
       '2024-01-01',
     ])
-    expect(keys.list()).toEqual(['daily', 'owner-a', 'versions', 'list'])
-    expect(keys.list(2)).toEqual(['daily', 'owner-a', 'versions', 'list', 2])
+    expect(keys.list()).toEqual(['daily', 'owner-a', 'work', 'versions', 'list'])
+    expect(keys.list(2)).toEqual(['daily', 'owner-a', 'work', 'versions', 'list', 2])
   })
 
   it('keys de distintas identidades son independientes', () => {
-    const a = dailyVersionKeys('owner-a')
-    const b = dailyVersionKeys('owner-b')
+    const a = dailyVersionKeys('owner-a', 'work')
+    const b = dailyVersionKeys('owner-b', 'work')
     expect(a.detail('2024-01-01')).not.toEqual(b.detail('2024-01-01'))
     expect(a.list()).not.toEqual(b.list())
   })
 
   it('keys de versiones son distintas a las de notas', () => {
-    const v = dailyVersionKeys('owner-a')
-    expect(v.all).not.toEqual(['daily', 'owner-a'])
+    const v = dailyVersionKeys('owner-a', 'work')
+    expect(v.all).not.toEqual(['daily', 'owner-a', 'work'])
+  })
+
+  it('la versión de Personal nunca comparte key con la de Trabajo (SP-04)', () => {
+    const work = dailyVersionKeys('owner-a', 'work')
+    const personal = dailyVersionKeys('owner-a', 'personal')
+    expect(work.detail('2024-01-01')).not.toEqual(personal.detail('2024-01-01'))
+    expect(work.list()).not.toEqual(personal.list())
   })
 })
 
@@ -67,7 +75,7 @@ describe('listDailyVersions', () => {
     const page = buildPage({ totalElements: 5, totalPages: 1 })
     server.use(mock.get(LIST_PATH, () => HttpResponse.json(page)))
 
-    const result = await listDailyVersions()
+    const result = await listDailyVersions('work')
 
     expect(result).toEqual(page)
     expect(result.content.length).toBe(2)
@@ -77,7 +85,7 @@ describe('listDailyVersions', () => {
     const page = buildPage({ page: 1, content: [] })
     server.use(mock.get(`${LIST_PATH}?page=1`, () => HttpResponse.json(page)))
 
-    const result = await listDailyVersions(1)
+    const result = await listDailyVersions('work', 1)
 
     expect(result.page).toBe(1)
     expect(result.content).toEqual([])
@@ -86,7 +94,7 @@ describe('listDailyVersions', () => {
   it('distingue 404 de otros errores', async () => {
     server.use(mock.get(LIST_PATH, () => problemResponse(404, { title: 'Not Found' })))
 
-    const error = await listDailyVersions().catch((e: unknown) => e)
+    const error = await listDailyVersions('work').catch((e: unknown) => e)
 
     expect(error).toBeInstanceOf(ApiError)
     expect((error as ApiError).status).toBe(404)
@@ -95,7 +103,7 @@ describe('listDailyVersions', () => {
   it('no convierte 403 en vacío', async () => {
     server.use(mock.get(LIST_PATH, () => problemResponse(403, { title: 'Forbidden' })))
 
-    const error = await listDailyVersions().catch((e: unknown) => e)
+    const error = await listDailyVersions('work').catch((e: unknown) => e)
 
     expect(error).toBeInstanceOf(ApiError)
     expect((error as ApiError).status).toBe(403)
@@ -111,13 +119,13 @@ describe('listDailyVersions', () => {
       ),
     )
 
-    await expect(listDailyVersions()).rejects.toBeInstanceOf(UnexpectedResponseError)
+    await expect(listDailyVersions('work')).rejects.toBeInstanceOf(UnexpectedResponseError)
   })
 
   it('propaga NetworkError sin convertir', async () => {
     server.use(mock.get(LIST_PATH, () => HttpResponse.error()))
 
-    await expect(listDailyVersions()).rejects.toBeInstanceOf(NetworkError)
+    await expect(listDailyVersions('work')).rejects.toBeInstanceOf(NetworkError)
   })
 
   it('rechaza sourceRevision no positivo', async () => {
@@ -130,7 +138,7 @@ describe('listDailyVersions', () => {
       ),
     )
 
-    await expect(listDailyVersions()).rejects.toBeInstanceOf(UnexpectedResponseError)
+    await expect(listDailyVersions('work')).rejects.toBeInstanceOf(UnexpectedResponseError)
   })
 })
 
@@ -139,7 +147,7 @@ describe('getDailyVersion', () => {
     const detail = buildDetail({ sourceRevision: 5 })
     server.use(mock.get(DETAIL_PATH, () => HttpResponse.json(detail)))
 
-    const result = await getDailyVersion('2024-01-15')
+    const result = await getDailyVersion('work', '2024-01-15')
 
     expect(result).toEqual(detail)
     expect(result.sourceRevision).toBe(5)
@@ -148,7 +156,7 @@ describe('getDailyVersion', () => {
   it('distingue 404 (sin versión guardada) de otros errores', async () => {
     server.use(mock.get(DETAIL_PATH, () => problemResponse(404, { title: 'Not Found' })))
 
-    const error = await getDailyVersion('2024-01-15').catch((e: unknown) => e)
+    const error = await getDailyVersion('work', '2024-01-15').catch((e: unknown) => e)
 
     expect(error).toBeInstanceOf(ApiError)
     expect((error as ApiError).status).toBe(404)
@@ -157,7 +165,7 @@ describe('getDailyVersion', () => {
   it('no convierte 403 en vacío', async () => {
     server.use(mock.get(DETAIL_PATH, () => problemResponse(403, { title: 'Forbidden' })))
 
-    const error = await getDailyVersion('2024-01-15').catch((e: unknown) => e)
+    const error = await getDailyVersion('work', '2024-01-15').catch((e: unknown) => e)
 
     expect(error).toBeInstanceOf(ApiError)
     expect((error as ApiError).status).toBe(403)
@@ -173,13 +181,15 @@ describe('getDailyVersion', () => {
       ),
     )
 
-    await expect(getDailyVersion('2024-01-15')).rejects.toBeInstanceOf(UnexpectedResponseError)
+    await expect(getDailyVersion('work', '2024-01-15')).rejects.toBeInstanceOf(
+      UnexpectedResponseError,
+    )
   })
 
   it('propaga NetworkError sin convertir', async () => {
     server.use(mock.get(DETAIL_PATH, () => HttpResponse.error()))
 
-    await expect(getDailyVersion('2024-01-15')).rejects.toBeInstanceOf(NetworkError)
+    await expect(getDailyVersion('work', '2024-01-15')).rejects.toBeInstanceOf(NetworkError)
   })
 
   it('valida content contra DailyContentSchema', async () => {
@@ -192,6 +202,8 @@ describe('getDailyVersion', () => {
       ),
     )
 
-    await expect(getDailyVersion('2024-01-15')).rejects.toBeInstanceOf(UnexpectedResponseError)
+    await expect(getDailyVersion('work', '2024-01-15')).rejects.toBeInstanceOf(
+      UnexpectedResponseError,
+    )
   })
 })

@@ -9,6 +9,7 @@ import Pagination from '@mui/material/Pagination'
 import Typography from '@mui/material/Typography'
 import type { VoiceNoteListItem } from './api'
 import { useVoiceNote, useVoiceNotes } from './useVoiceNotes'
+import { useSpaceScope } from '../spaces/spaceContext'
 
 const DEFAULT_PAGE_SIZE = 20
 const EXCERPT_CODE_POINTS = 120
@@ -45,8 +46,9 @@ interface VoiceLibraryProps {
  */
 export function VoiceLibrary({ onSelect, selectedId, disabled = false }: VoiceLibraryProps) {
   const [page, setPage] = useState(0)
+  const scope = useSpaceScope()
 
-  const { data, isLoading, isError, error } = useVoiceNotes({
+  const { data, isLoading, isError, error } = useVoiceNotes(scope, {
     page,
     size: DEFAULT_PAGE_SIZE,
   })
@@ -140,7 +142,8 @@ export function VoiceLibrary({ onSelect, selectedId, disabled = false }: VoiceLi
 function VoiceExcerpt({ item }: { item: VoiceNoteListItem }) {
   // El servidor cuenta puntos de código. En el límite, solo el detalle confirma el texto completo.
   const mayBeTruncated = [...item.excerpt].length >= EXCERPT_CODE_POINTS
-  const { data: detail } = useVoiceNote(mayBeTruncated ? item.id : '', item.revision)
+  const scope = useSpaceScope()
+  const { data: detail } = useVoiceNote(scope, mayBeTruncated ? item.id : '', item.revision)
   const fullText = detail?.revision === item.revision ? detail.text : undefined
 
   return (

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { http, type RequestOptions } from '../../services/http'
+import { spaceApiPath, type Space } from '../spaces/space'
 
 export const REFERENCE_PATH = '/api/v1/reference-items'
 export const referenceInputSchema = z.strictObject({
@@ -37,26 +38,49 @@ export const referencePageSchema = z
   )
 type Scope = Pick<RequestOptions, 'signal' | 'sessionIsCurrent'>
 
-export function fetchReferenceItems(page: number, size = 20, scope: Scope = {}) {
-  return http.request(`${REFERENCE_PATH}?page=${page}&size=${size}`, referencePageSchema, scope)
-}
-
-/** Busca referencias por título (parámetro q). Máximo 120 caracteres tras trim. */
-export function searchReferenceItems(query: string, page: number, size = 20, scope: Scope = {}) {
-  const trimmed = query.trim()
-  const qParam = trimmed ? `&q=${encodeURIComponent(trimmed)}` : ''
+/** Todas las operaciones llevan el espacio capturado al iniciarlas; nunca hay búsqueda ni detalle global. */
+export function fetchReferenceItems(space: Space, page: number, size = 20, scope: Scope = {}) {
   return http.request(
-    `${REFERENCE_PATH}?page=${page}&size=${size}${qParam}`,
+    spaceApiPath(`${REFERENCE_PATH}?page=${page}&size=${size}`, space),
     referencePageSchema,
     scope,
   )
 }
-export function fetchReferenceItem(id: string, scope: Scope = {}) {
-  return http.request(`${REFERENCE_PATH}/${encodeURIComponent(id)}`, referenceItemSchema, scope)
-}
-export function saveReferenceItem(input: ReferenceInput, id?: string, scope: Scope = {}) {
+
+/** Busca referencias por título (parámetro q). Máximo 120 caracteres tras trim. */
+export function searchReferenceItems(
+  space: Space,
+  query: string,
+  page: number,
+  size = 20,
+  scope: Scope = {},
+) {
+  const trimmed = query.trim()
+  const qParam = trimmed ? `&q=${encodeURIComponent(trimmed)}` : ''
   return http.request(
-    id === undefined ? REFERENCE_PATH : `${REFERENCE_PATH}/${encodeURIComponent(id)}`,
+    spaceApiPath(`${REFERENCE_PATH}?page=${page}&size=${size}${qParam}`, space),
+    referencePageSchema,
+    scope,
+  )
+}
+export function fetchReferenceItem(space: Space, id: string, scope: Scope = {}) {
+  return http.request(
+    spaceApiPath(`${REFERENCE_PATH}/${encodeURIComponent(id)}`, space),
+    referenceItemSchema,
+    scope,
+  )
+}
+export function saveReferenceItem(
+  space: Space,
+  input: ReferenceInput,
+  id?: string,
+  scope: Scope = {},
+) {
+  return http.request(
+    spaceApiPath(
+      id === undefined ? REFERENCE_PATH : `${REFERENCE_PATH}/${encodeURIComponent(id)}`,
+      space,
+    ),
     referenceItemSchema,
     {
       ...scope,
@@ -65,8 +89,8 @@ export function saveReferenceItem(input: ReferenceInput, id?: string, scope: Sco
     },
   )
 }
-export function deleteReferenceItem(id: string, scope: Scope = {}) {
-  return http.requestVoid(`${REFERENCE_PATH}/${encodeURIComponent(id)}`, {
+export function deleteReferenceItem(space: Space, id: string, scope: Scope = {}) {
+  return http.requestVoid(spaceApiPath(`${REFERENCE_PATH}/${encodeURIComponent(id)}`, space), {
     ...scope,
     method: 'DELETE',
   })

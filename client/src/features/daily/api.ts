@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { http } from '../../services/http'
+import { spaceApiPath, type Space } from '../spaces/space'
 import { DailyContentSchema } from './editor/dailyDocument'
 
 // ——— Límites de revisión y paginación (S-101 v2) ———
@@ -68,16 +69,15 @@ export type SaveDailyNoteRequest = z.infer<typeof saveDailyNoteRequestSchema>
 // ——— Query keys privadas ———
 
 /**
- * Las keys incluyen la identidad (owner) para aislar datos entre cuentas.
- * Al cerrar sesión o cambiar identidad, solo se limpia el prefijo `['auth', …]`;
- * estas keys sobreviven, por lo que la identidad en la key evita mezclar datos.
+ * Las keys incluyen identidad (owner) y espacio para aislar datos entre cuentas y entre Trabajo/Personal:
+ * la misma fecha en dos espacios son documentos distintos (S-109). El logout conserva solo `['auth', …]`.
  */
-export function dailyNoteKeys(owner: string) {
+export function dailyNoteKeys(owner: string, space: Space) {
   return {
-    all: ['daily', owner] as const,
+    all: ['daily', owner, space] as const,
     list: (page?: number) =>
-      ['daily', owner, 'list', ...(page !== undefined ? [page] : [])] as const,
-    detail: (date: string) => ['daily', owner, 'detail', date] as const,
+      ['daily', owner, space, 'list', ...(page !== undefined ? [page] : [])] as const,
+    detail: (date: string) => ['daily', owner, space, 'detail', date] as const,
   }
 }
 
@@ -90,32 +90,40 @@ const BASE = '/api/v1/daily-notes'
  * representa ausencia explícita (la fecha no tiene nota aún).
  */
 export async function getDailyNote(
+  space: Space,
   date: string,
   signal?: AbortSignal,
   sessionIsCurrent?: () => boolean,
 ): Promise<DailyNoteDetail> {
-  return http.request(`${BASE}/${date}`, dailyNoteDetailSchema, { signal, sessionIsCurrent })
+  return http.request(spaceApiPath(`${BASE}/${date}`, space), dailyNoteDetailSchema, {
+    signal,
+    sessionIsCurrent,
+  })
 }
 
 /**
  * Lista las notas propias paginadas. `page` debe ser >= 0; size es fijo 20.
  */
 export async function listDailyNotes(
+  space: Space,
   page?: number,
   signal?: AbortSignal,
   sessionIsCurrent?: () => boolean,
 ): Promise<DailyNotePage> {
   const params = page !== undefined ? `?page=${page}` : ''
-  return http.request(`${BASE}${params}`, dailyNotePageSchema, { signal, sessionIsCurrent })
+  return http.request(spaceApiPath(`${BASE}${params}`, space), dailyNotePageSchema, {
+    signal,
+    sessionIsCurrent,
+  })
 }
 
 /**
  * Guarda o crea una nota con revisión esperada. PUT con CSRF y revisión exacta.
  * 400/401/403/409 se propagan sin éxito ni reenvío automático.
- * `owner` solo identifica las query keys; nunca se envía al backend.
+ * `space` es el capturado al iniciar la escritura; el propietario sale de la sesión del servidor.
  */
 export async function saveDailyNote(
-  _owner: string,
+  space: Space,
   date: string,
   content: unknown,
   expectedRevision: number,
@@ -127,7 +135,7 @@ export async function saveDailyNote(
   if (!parsed.success) {
     throw new Error('Solicitud inválida: ' + parsed.error.issues.map((i) => i.message).join('; '))
   }
-  return http.request(`${BASE}/${date}`, dailyNoteDetailSchema, {
+  return http.request(spaceApiPath(`${BASE}/${date}`, space), dailyNoteDetailSchema, {
     method: 'PUT',
     body: parsed.data,
     signal,

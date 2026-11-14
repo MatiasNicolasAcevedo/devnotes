@@ -10,6 +10,7 @@ import { NARROW_VIEWPORT, setViewportWidth } from '../../test/viewport'
 import { AuthSessionContext, type AuthSession } from '../auth/sessionContext'
 import type { CaptureResult } from './recorder'
 import { VoiceDraftProvider } from './VoiceDraftProvider'
+import { FixedSpace } from '../../test/space'
 import { VoicePage } from './VoicePage'
 
 /*
@@ -130,7 +131,9 @@ function renderPage({ recordingEnabled = true, excerpt = EXCERPT, fullText = LON
       <AuthSessionContext value={session}>
         <AppProviders queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
-            <VoiceDraftProvider>{children}</VoiceDraftProvider>
+            <FixedSpace space="work">
+              <VoiceDraftProvider>{children}</VoiceDraftProvider>
+            </FixedSpace>
           </QueryClientProvider>
         </AppProviders>
       </AuthSessionContext>

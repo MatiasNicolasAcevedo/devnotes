@@ -72,7 +72,7 @@ describe('Notas · una sola barra de herramientas (UI-05)', () => {
     const date = within(toolbar).getByRole('button', { name: 'Cambiar fecha (15/06)' })
     expect(date).toHaveTextContent('15/06')
     const today = within(toolbar).getByRole('link', { name: 'Hoy' })
-    expect(today).toHaveAttribute('href', '/notes')
+    expect(today).toHaveAttribute('href', '/notes?space=work')
     const link = within(toolbar).getByRole('button', { name: 'Agregar enlace' })
     expect(link).toHaveTextContent('Enlace')
     const status = within(toolbar).getByRole('status', { name: 'Estado de guardado' })
@@ -144,7 +144,7 @@ describe('Notas · una sola barra de herramientas (UI-05)', () => {
     const { toolbar } = await renderNotes()
 
     const today = within(toolbar).getByRole('link', { name: 'Ir a hoy' })
-    expect(today).toHaveAttribute('href', '/notes')
+    expect(today).toHaveAttribute('href', '/notes?space=work')
     expect(today).toHaveTextContent('')
     expect(within(toolbar).queryByRole('link', { name: 'Hoy' })).not.toBeInTheDocument()
     const link = within(toolbar).getByRole('button', { name: 'Agregar enlace' })

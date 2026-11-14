@@ -7,9 +7,12 @@ import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
 import Alert from '@mui/material/Alert'
 import Button from '@mui/material/Button'
+import Link from '@mui/material/Link'
 import Typography from '@mui/material/Typography'
+import { Link as RouterLink } from 'react-router'
 import type { VoiceNoteListItem } from './api'
 import { useVoiceNote } from './useVoiceNotes'
+import { useOptionalActiveSpace, useSpaceScope } from '../spaces/spaceContext'
 import { VoiceComposer, type VoiceComposerHandle } from './VoiceComposer'
 import { VoiceLibrary } from './VoiceLibrary'
 import { useVoiceDraftContext } from './voiceDraftContext'
@@ -29,7 +32,25 @@ type PendingTarget = { kind: 'note'; id: string } | { kind: 'new' }
  */
 export function VoicePage() {
   const { pageEpoch } = useVoiceDraftContext()
+  // Sin espacio confirmado solo puede ser un visitante: no hay notas que pedir ni espacio que suponer.
+  if (!useOptionalActiveSpace()) return <VoiceLoginRequired />
   return <VoicePageContent key={pageEpoch} />
+}
+
+function VoiceLoginRequired() {
+  return (
+    <Box>
+      <Typography component="h1" sx={visuallyHidden}>
+        Notas de voz
+      </Typography>
+      <Alert severity="info">
+        Ingresá para usar tus notas de voz.{' '}
+        <Link component={RouterLink} to="/login">
+          Iniciar sesión
+        </Link>
+      </Alert>
+    </Box>
+  )
 }
 
 function VoicePageContent() {
@@ -44,7 +65,8 @@ function VoicePageContent() {
 
   // Cargar detalle de la nota seleccionada. Mientras carga, el editor queda bloqueado (no se
   // escribe sobre la nota anterior para luego perderlo); si falla, se avisa y se puede reintentar.
-  const detailQuery = useVoiceNote(selectedId ?? '')
+  const scope = useSpaceScope()
+  const detailQuery = useVoiceNote(scope, selectedId ?? '')
   const selectedDetail = detailQuery.data
   const loadingDetail = selectedId != null && selectedDetail == null && detailQuery.isFetching
   // Solo bloquea si la nota nunca llegó: un refetch fallido de la nota ya abierta no la invalida.

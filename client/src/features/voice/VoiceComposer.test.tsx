@@ -7,6 +7,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles'
 import { AuthSessionContext, type AuthSession } from '../auth/sessionContext'
 import { z } from 'zod'
 import { VoiceDraftProvider } from './VoiceDraftProvider'
+import { FixedSpace } from '../../test/space'
 
 const CAPABILITIES_PATH = '/api/v1/voice/capabilities'
 
@@ -40,7 +41,9 @@ function fullWrapper(queryClient: QueryClient) {
     <AuthSessionContext value={defaultSession}>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider theme={theme}>
-          <VoiceDraftProvider>{children}</VoiceDraftProvider>
+          <FixedSpace space="work">
+            <VoiceDraftProvider>{children}</VoiceDraftProvider>
+          </FixedSpace>
         </ThemeProvider>
       </QueryClientProvider>
     </AuthSessionContext>

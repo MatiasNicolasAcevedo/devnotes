@@ -14,6 +14,8 @@ import Typography from '@mui/material/Typography'
 import { useState } from 'react'
 import { Link as RouterLink, useParams } from 'react-router'
 import { useSession } from '../../features/auth/sessionContext'
+import type { Space } from '../spaces/space'
+import { useActiveSpace, useSpaceHref } from '../spaces/spaceContext'
 import { DailyEditor } from '../../features/daily/editor/DailyEditor'
 import { useDailyVersionListQuery, useDailyVersionDetailQuery } from './useDailyVersionQuery'
 import { ApiError } from '../../services/http'
@@ -60,13 +62,16 @@ function HistoryLoginRequired() {
 function HistoryDetailInner({
   date,
   owner,
+  space,
   sessionIsCurrent,
 }: {
   date: string
   owner: string
+  space: Space
   sessionIsCurrent?: () => boolean
 }) {
-  const query = useDailyVersionDetailQuery(owner, date, sessionIsCurrent)
+  const query = useDailyVersionDetailQuery(owner, space, date, sessionIsCurrent)
+  const href = useSpaceHref()
 
   return (
     <Stack spacing={3}>
@@ -78,7 +83,7 @@ function HistoryDetailInner({
         <Typography variant="h5" component="h1">
           Versión del {formatDateLocal(date)}
         </Typography>
-        <Link component={RouterLink} to="/history">
+        <Link component={RouterLink} to={href('/history')}>
           Volver al historial
         </Link>
       </Stack>
@@ -92,7 +97,7 @@ function HistoryDetailInner({
         <Alert severity="info">
           <AlertTitle>Sin versión guardada</AlertTitle>
           No hay una versión guardada para esta fecha.{' '}
-          <Link component={RouterLink} to={`/notes/${date}`}>
+          <Link component={RouterLink} to={href(`/notes/${date}`)}>
             Volver a mi nota
           </Link>
           {' · '}
@@ -126,7 +131,7 @@ function HistoryDetailInner({
             />
           </Paper>
           <Box>
-            <Link component={RouterLink} to={`/notes/${date}`}>
+            <Link component={RouterLink} to={href(`/notes/${date}`)}>
               Volver a mi nota del {formatDateLocal(date)}
             </Link>
           </Box>
@@ -140,14 +145,17 @@ function HistoryDetailInner({
 
 function HistoryListInner({
   owner,
+  space,
   sessionIsCurrent,
 }: {
   owner: string
+  space: Space
   sessionIsCurrent?: () => boolean
 }) {
   const [listPage, setListPage] = useState(0)
 
-  const query = useDailyVersionListQuery(owner, listPage, sessionIsCurrent)
+  const query = useDailyVersionListQuery(owner, space, listPage, sessionIsCurrent)
+  const href = useSpaceHref()
 
   return (
     <Stack spacing={3}>
@@ -177,7 +185,7 @@ function HistoryListInner({
           <List dense>
             {query.data!.content.map((item) => (
               <ListItem key={item.date} disablePadding>
-                <ListItemButton component={RouterLink} to={`/history/${item.date}`}>
+                <ListItemButton component={RouterLink} to={href(`/history/${item.date}`)}>
                   <ListItemText
                     primary={formatDateLocal(item.date)}
                     secondary={`Guardada: ${formatSavedAt(item.savedAt)} · Revisión ${item.sourceRevision}`}
@@ -221,10 +229,18 @@ export function DailyHistoryPage() {
     return <HistoryLoginRequired />
   }
 
+  return <HistoryInSpace owner={user.id} date={paramDate} />
+}
+
+/** Historial del espacio confirmado: las versiones se listan y abren solo dentro de él. */
+function HistoryInSpace({ owner, date }: { owner: string; date?: string }) {
+  const space = useActiveSpace()
   // Si hay fecha en la URL, mostrar detalle; si no, lista
-  if (paramDate) {
-    return <HistoryDetailInner date={paramDate} owner={user.id} sessionIsCurrent={() => true} />
+  if (date) {
+    return (
+      <HistoryDetailInner date={date} owner={owner} space={space} sessionIsCurrent={() => true} />
+    )
   }
 
-  return <HistoryListInner owner={user.id} sessionIsCurrent={() => true} />
+  return <HistoryListInner owner={owner} space={space} sessionIsCurrent={() => true} />
 }

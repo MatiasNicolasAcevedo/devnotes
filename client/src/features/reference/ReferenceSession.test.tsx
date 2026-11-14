@@ -89,7 +89,9 @@ describe.each(['logout', 'expiry', 'switch'] as const)(
         await screen.findByRole('heading', { name: 'Privado de B' })
         const bCalls = backend.calls.list.get(b.id)
         const csrfCalls = auth.calls.csrf
-        expect(queryClient.getQueriesData({ queryKey: referenceKeys.owner(a.id) })).toEqual([])
+        expect(queryClient.getQueriesData({ queryKey: referenceKeys.owner(a.id, 'work') })).toEqual(
+          [],
+        )
         await act(async () => {
           held.resolve()
           await settled.promise
@@ -97,7 +99,9 @@ describe.each(['logout', 'expiry', 'switch'] as const)(
         await waitFor(() =>
           expect(queryClient.getQueryData(authQueryKeys.session)).toMatchObject({ id: b.id }),
         )
-        expect(queryClient.getQueriesData({ queryKey: referenceKeys.owner(a.id) })).toEqual([])
+        expect(queryClient.getQueriesData({ queryKey: referenceKeys.owner(a.id, 'work') })).toEqual(
+          [],
+        )
         expect(backend.calls.list.get(b.id)).toBe(bCalls)
         expect(auth.calls.csrf).toBe(csrfCalls)
         expect(screen.getByRole('heading', { name: 'Privado de B' })).toBeVisible()

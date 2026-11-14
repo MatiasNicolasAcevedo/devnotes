@@ -1,15 +1,27 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 import { authQueryKeys, type AuthUser } from '../auth/api'
 import { useSession } from '../auth/sessionContext'
 import { sessionEvents } from '../../services/sessionEvents'
-import { voiceQueryKeys } from './api'
+import { voiceQueryKeys, type VoiceScope } from './api'
+import { useOptionalActiveSpace } from '../spaces/spaceContext'
 import { useVoiceDraft } from './useVoiceDraft'
 import { useVoiceRecorder } from './useVoiceRecorder'
 import { useVoiceCapabilities } from './useVoiceNotes'
 import { VoiceDraftContext } from './voiceDraftContext'
 
-/** El shell monta una instancia por identidad, por encima de ambas guardias y del outlet. */
+/**
+ * El shell monta una instancia por identidad y espacio confirmado, por encima de ambas guardias y del outlet: al
+ * cambiar de espacio el borrador, la grabación y cualquier respuesta tardía del origen quedan atrás.
+ */
 export function VoiceDraftProvider({
   owner,
   active = true,
@@ -20,7 +32,14 @@ export function VoiceDraftProvider({
   children: ReactNode
 }) {
   const queryClient = useQueryClient()
-  const { logoutPending } = useSession()
+  const { logoutPending, user } = useSession()
+  const space = useOptionalActiveSpace()
+  // Sin espacio confirmado (visitante o URL inválida) no hay CRUD posible; nunca se asume Trabajo.
+  const scopeOwner = owner ?? user?.id ?? ''
+  const scope = useMemo<VoiceScope | null>(
+    () => (space ? { owner: scopeOwner, space } : null),
+    [scopeOwner, space],
+  )
   const mounted = useRef(true)
   const [pageEpoch, setPageEpoch] = useState(0)
   useLayoutEffect(() => {
@@ -35,7 +54,7 @@ export function VoiceDraftProvider({
       (queryClient.getQueryData<AuthUser | null>(authQueryKeys.session)?.id ?? '') === owner,
     [owner, queryClient],
   )
-  const draft = useVoiceDraft(owner === undefined ? undefined : sessionIsCurrent)
+  const draft = useVoiceDraft(scope, owner === undefined ? undefined : sessionIsCurrent)
   const { data: capabilities } = useVoiceCapabilities(active && !logoutPending)
   const recorder = useVoiceRecorder({
     maxDurationSeconds: capabilities?.maxDurationSeconds,

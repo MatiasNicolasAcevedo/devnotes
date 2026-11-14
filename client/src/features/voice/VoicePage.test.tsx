@@ -12,6 +12,7 @@ import { voiceQueryKeys, type VoiceNoteDetail } from './api'
 import { VoicePage } from './VoicePage'
 import type { CaptureResult } from './recorder'
 import { VoiceDraftProvider } from './VoiceDraftProvider'
+import { FixedSpace } from '../../test/space'
 
 /*
  * Integración de la pantalla /voice: VoicePage + VoiceLibrary + VoiceComposer + useVoiceDraft reales,
@@ -223,7 +224,9 @@ function renderPage() {
       <AuthSessionContext value={session}>
         <QueryClientProvider client={queryClient}>
           <ThemeProvider theme={theme}>
-            <VoiceDraftProvider>{children}</VoiceDraftProvider>
+            <FixedSpace space="work">
+              <VoiceDraftProvider>{children}</VoiceDraftProvider>
+            </FixedSpace>
           </ThemeProvider>
         </QueryClientProvider>
       </AuthSessionContext>
@@ -828,7 +831,9 @@ describe('VoicePage', () => {
       // Espera a que la revisión 2 esté en caché (y por tanto llegue al composer).
       await waitFor(() =>
         expect(
-          queryClient.getQueryData<VoiceNoteDetail>(voiceQueryKeys.detail(ID_1))?.revision,
+          queryClient.getQueryData<VoiceNoteDetail>(
+            voiceQueryKeys.detail({ owner: 'test-user', space: 'work' }, ID_1),
+          )?.revision,
         ).toBe(2),
       )
       expect(textbox()).toHaveValue('Texto 1 editado')
@@ -860,7 +865,9 @@ describe('VoicePage', () => {
       // Espera a que la revisión 2 esté en caché (y por tanto llegue al composer).
       await waitFor(() =>
         expect(
-          queryClient.getQueryData<VoiceNoteDetail>(voiceQueryKeys.detail(ID_1))?.revision,
+          queryClient.getQueryData<VoiceNoteDetail>(
+            voiceQueryKeys.detail({ owner: 'test-user', space: 'work' }, ID_1),
+          )?.revision,
         ).toBe(2),
       )
       expect(textbox()).toHaveValue('Texto 1')

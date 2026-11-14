@@ -19,6 +19,7 @@ import {
 
 const CAPABILITIES_PATH = '/api/v1/voice/capabilities'
 const NOTES_PATH = '/api/v1/voice-notes'
+const SCOPE = { owner: 'owner-a', space: 'work' } as const
 
 const theme = createTheme()
 
@@ -87,7 +88,7 @@ describe('useVoiceNotes', () => {
       ),
     )
     const queryClient = buildQueryClient()
-    const { result } = renderHook(() => useVoiceNotes(), { wrapper: wrapper(queryClient) })
+    const { result } = renderHook(() => useVoiceNotes(SCOPE), { wrapper: wrapper(queryClient) })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(result.current.data?.content).toEqual([])
@@ -97,7 +98,7 @@ describe('useVoiceNotes', () => {
 describe('useVoiceNote', () => {
   it('no ejecuta sin id', async () => {
     const queryClient = buildQueryClient()
-    const { result } = renderHook(() => useVoiceNote(''), { wrapper: wrapper(queryClient) })
+    const { result } = renderHook(() => useVoiceNote(SCOPE, ''), { wrapper: wrapper(queryClient) })
     // TanStack Query v5: cuando enabled es false, la consulta está idle (no fetching)
     expect(result.current.isFetching).toBe(false)
     expect(result.current.data).toBeUndefined()
@@ -107,7 +108,9 @@ describe('useVoiceNote', () => {
     const detail = buildNoteDetail()
     server.use(mock.get(`${NOTES_PATH}/:id`, () => HttpResponse.json(detail)))
     const queryClient = buildQueryClient()
-    const { result } = renderHook(() => useVoiceNote(detail.id), { wrapper: wrapper(queryClient) })
+    const { result } = renderHook(() => useVoiceNote(SCOPE, detail.id), {
+      wrapper: wrapper(queryClient),
+    })
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true))
     expect(result.current.data).toEqual(detail)
@@ -124,7 +127,9 @@ describe('useCreateVoiceNote', () => {
       }),
     )
     const queryClient = buildQueryClient()
-    const { result } = renderHook(() => useCreateVoiceNote(), { wrapper: wrapper(queryClient) })
+    const { result } = renderHook(() => useCreateVoiceNote(SCOPE), {
+      wrapper: wrapper(queryClient),
+    })
 
     await act(async () => {
       await result.current.mutateAsync('Nuevo texto')
@@ -137,7 +142,9 @@ describe('useCreateVoiceNote', () => {
   it('propaga 400 como ApiError', async () => {
     server.use(mock.post(NOTES_PATH, () => problemResponse(400, { detail: 'Solicitud inválida.' })))
     const queryClient = buildQueryClient()
-    const { result } = renderHook(() => useCreateVoiceNote(), { wrapper: wrapper(queryClient) })
+    const { result } = renderHook(() => useCreateVoiceNote(SCOPE), {
+      wrapper: wrapper(queryClient),
+    })
 
     await act(async () => {
       await expect(result.current.mutateAsync('')).rejects.toMatchObject({ status: 400 })
@@ -156,7 +163,9 @@ describe('useUpdateVoiceNote', () => {
       }),
     )
     const queryClient = buildQueryClient()
-    const { result } = renderHook(() => useUpdateVoiceNote(), { wrapper: wrapper(queryClient) })
+    const { result } = renderHook(() => useUpdateVoiceNote(SCOPE), {
+      wrapper: wrapper(queryClient),
+    })
 
     await act(async () => {
       await result.current.mutateAsync({ id: 'note-1', text: 'Editado', expectedRevision: 1 })
@@ -174,7 +183,9 @@ describe('useUpdateVoiceNote', () => {
       ),
     )
     const queryClient = buildQueryClient()
-    const { result } = renderHook(() => useUpdateVoiceNote(), { wrapper: wrapper(queryClient) })
+    const { result } = renderHook(() => useUpdateVoiceNote(SCOPE), {
+      wrapper: wrapper(queryClient),
+    })
 
     await act(async () => {
       await expect(
@@ -188,7 +199,9 @@ describe('useDeleteVoiceNote', () => {
   it('elimina con CAS y consume 204', async () => {
     server.use(mock.delete(`${NOTES_PATH}/:id`, () => new HttpResponse(null, { status: 204 })))
     const queryClient = buildQueryClient()
-    const { result } = renderHook(() => useDeleteVoiceNote(), { wrapper: wrapper(queryClient) })
+    const { result } = renderHook(() => useDeleteVoiceNote(SCOPE), {
+      wrapper: wrapper(queryClient),
+    })
 
     await act(async () => {
       await result.current.mutateAsync({ id: 'note-1', expectedRevision: 1 })
@@ -200,7 +213,9 @@ describe('useDeleteVoiceNote', () => {
   it('propaga 404 como ApiError', async () => {
     server.use(mock.delete(`${NOTES_PATH}/:id`, () => problemResponse(404)))
     const queryClient = buildQueryClient()
-    const { result } = renderHook(() => useDeleteVoiceNote(), { wrapper: wrapper(queryClient) })
+    const { result } = renderHook(() => useDeleteVoiceNote(SCOPE), {
+      wrapper: wrapper(queryClient),
+    })
 
     await act(async () => {
       await expect(

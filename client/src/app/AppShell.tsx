@@ -15,6 +15,9 @@ import { SessionAlerts } from '../features/auth/SessionAlerts'
 import { SessionControls } from '../features/auth/SessionControls'
 import { useSession } from '../features/auth/sessionContext'
 import { DailyDraftWorkspace } from '../features/daily/DailyDraftNavigation'
+import { SpaceNavigation } from '../features/spaces/SpaceNavigation'
+import { SpaceProvider } from '../features/spaces/SpaceProvider'
+import { useOptionalActiveSpace, useSpaceHref } from '../features/spaces/spaceContext'
 import { ServerStatus } from '../features/system/ServerStatus'
 import { VoiceDraftNavigation } from '../features/voice/VoiceDraftNavigation'
 import { VoiceDraftProvider } from '../features/voice/VoiceDraftProvider'
@@ -23,54 +26,76 @@ import { useIsNarrow } from '../shared/ui/useIsNarrow'
 import { AMBER } from './theme'
 
 /**
- * Estructura común: barra superior con la sesión y contenido. Las rutas se remontan al cambiar la identidad, así que
- * el estado local de una pantalla nunca pasa de un usuario a otro.
+ * Estructura común: barra superior con la sesión y contenido. Las rutas se remontan al cambiar la identidad o el
+ * espacio confirmado, así que el estado local de una pantalla nunca pasa de un usuario ni de un espacio a otro.
  */
 export function AppShell() {
-  const { user, status } = useSession()
-  const { pathname } = useLocation()
+  const { user } = useSession()
   const owner = user?.id ?? ''
-  const voiceActive = status !== 'loading' && matchPath('/voice', pathname) != null
   const navigationRoot = useRef<HTMLDivElement>(null)
   return (
-    <AppShellContent navigationRoot={navigationRoot}>
-      <VoiceDraftProvider key={owner} owner={owner} active={voiceActive}>
-        <VoiceDraftNavigation>
-          {(outletOverride, bypassDailyLinks) => (
-            <DailyDraftWorkspace
-              owner={owner}
-              outletOverride={outletOverride}
-              bypassLinkFlush={bypassDailyLinks}
-              navigationRoot={navigationRoot}
-            >
-              {(outlet) => outlet}
-            </DailyDraftWorkspace>
-          )}
-        </VoiceDraftNavigation>
-      </VoiceDraftProvider>
-    </AppShellContent>
+    <SpaceProvider owner={owner}>
+      <AppShellContent navigationRoot={navigationRoot}>
+        <SpaceWorkspaces owner={owner} navigationRoot={navigationRoot} />
+      </AppShellContent>
+    </SpaceProvider>
   )
 }
 
+/** Borradores de voz y diario de una identidad en el espacio confirmado, con el coordinador de transición encima del outlet. */
+function SpaceWorkspaces({
+  owner,
+  navigationRoot,
+}: {
+  owner: string
+  navigationRoot: RefObject<HTMLDivElement | null>
+}) {
+  const { status } = useSession()
+  const { pathname } = useLocation()
+  const space = useOptionalActiveSpace()
+  const voiceActive = status !== 'loading' && matchPath('/voice', pathname) != null
+  return (
+    <VoiceDraftProvider key={`${owner}/${space ?? ''}`} owner={owner} active={voiceActive}>
+      <VoiceDraftNavigation>
+        {(outletOverride, bypassDailyLinks) => (
+          <DailyDraftWorkspace
+            owner={owner}
+            space={space}
+            outletOverride={outletOverride}
+            bypassLinkFlush={bypassDailyLinks}
+            navigationRoot={navigationRoot}
+          >
+            {(outlet) => (
+              <SpaceNavigation navigationRoot={navigationRoot}>{outlet}</SpaceNavigation>
+            )}
+          </DailyDraftWorkspace>
+        )}
+      </VoiceDraftNavigation>
+    </VoiceDraftProvider>
+  )
+}
+
+/** `inSpace`: el destino pertenece a un espacio y su enlace lleva el confirmado. Datos es de toda la cuenta. */
 const TABS = [
-  { label: 'Voz', to: '/voice', Icon: MicIcon },
-  { label: 'Notas', to: '/notes', Icon: NoteIcon },
-  { label: 'Referencia', to: '/reference', Icon: BookmarkIcon },
-  { label: 'Historial', to: '/history', Icon: HistoryIcon },
-  { label: 'Datos', to: '/data', Icon: DatabaseIcon },
+  { label: 'Voz', to: '/voice', Icon: MicIcon, inSpace: true },
+  { label: 'Notas', to: '/notes', Icon: NoteIcon, inSpace: true },
+  { label: 'Referencia', to: '/reference', Icon: BookmarkIcon, inSpace: true },
+  { label: 'Historial', to: '/history', Icon: HistoryIcon, inSpace: true },
+  { label: 'Datos', to: '/data', Icon: DatabaseIcon, inSpace: false },
 ] as const
 
 /** Pestaña de la barra: texto en ancho; icono con nombre accesible y tooltip en angosto. Sigue siendo un `Link`. */
-function NavTab({ label, to, Icon }: (typeof TABS)[number]) {
+function NavTab({ label, to, Icon, inSpace }: (typeof TABS)[number]) {
   const { pathname } = useLocation()
   const narrow = useIsNarrow()
+  const href = useSpaceHref()
   // `end: false` cubre las rutas con fecha: /notes/:date y /history/:date.
   const active = matchPath({ path: to, end: false }, pathname) != null
 
   const link = (
     <Link
       component={RouterLink}
-      to={to}
+      to={inSpace ? href(to) : to}
       underline="none"
       color="inherit"
       aria-current={active ? 'page' : undefined}
@@ -106,6 +131,7 @@ function AppShellContent({
 }) {
   const { status } = useSession()
   const narrow = useIsNarrow()
+  const href = useSpaceHref()
 
   return (
     <Box
@@ -128,7 +154,7 @@ function AppShellContent({
           {narrow ? null : (
             <Link
               component={RouterLink}
-              to="/notes"
+              to={href('/notes')}
               color="inherit"
               underline="none"
               variant="h6"

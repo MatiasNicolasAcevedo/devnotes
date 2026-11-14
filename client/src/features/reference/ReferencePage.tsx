@@ -15,6 +15,8 @@ import { ApiError } from '../../services/http'
 import { CopyButton } from '../../shared/ui/CopyButton'
 import { ErrorAlert } from '../../shared/ui/ErrorAlert'
 import { useSession } from '../auth/sessionContext'
+import type { Space } from '../spaces/space'
+import { useActiveSpace } from '../spaces/spaceContext'
 import { ReferenceItemForm } from './ReferenceItemForm'
 import { type ReferenceInput, type ReferenceItem } from './api'
 import { useReferenceItem, useReferenceItems, useReferenceMutations } from './useReferenceItems'
@@ -32,7 +34,7 @@ export function ReferencePage() {
         </Typography>
       </Stack>
       {session.status === 'authenticated' && session.user ? (
-        <PrivateReference owner={session.user.id} />
+        <ReferenceInSpace owner={session.user.id} />
       ) : session.status === 'visitor' ? (
         <Alert severity="info">
           Ingresá para consultar tus elementos.{' '}
@@ -49,20 +51,28 @@ export function ReferencePage() {
   )
 }
 
+/** Referencias del espacio confirmado; al cambiar de espacio se remonta y se limpia consulta/página/selección. */
+function ReferenceInSpace({ owner }: { owner: string }) {
+  const space = useActiveSpace()
+  return <PrivateReference key={`${owner}/${space}`} owner={owner} space={space} />
+}
+
 function EditItem({
   owner,
+  space,
   id,
   submit,
   cancel,
   disabled,
 }: {
   owner: string
+  space: Space
   id: string
   submit: (input: ReferenceInput) => Promise<void>
   cancel: () => void
   disabled: boolean
 }) {
-  const item = useReferenceItem(owner, id)
+  const item = useReferenceItem(owner, space, id)
   if (item.isPending) return <Typography role="status">Cargando elemento…</Typography>
   if (item.error)
     return (
@@ -78,7 +88,7 @@ function EditItem({
   return <ReferenceItemForm item={item.data} submit={submit} cancel={cancel} disabled={disabled} />
 }
 
-function PrivateReference({ owner }: { owner: string }) {
+function PrivateReference({ owner, space }: { owner: string; space: Space }) {
   const session = useSession()
   const [page, setPage] = useState(0)
   const [editing, setEditing] = useState<string | null>(null)
@@ -89,8 +99,8 @@ function PrivateReference({ owner }: { owner: string }) {
   const lastAction = useRef<HTMLButtonElement | null>(null)
   const returnFocus = useRef(false)
   const deleteReturnFocus = useRef(false)
-  const list = useReferenceItems(owner, page)
-  const { save, remove, isCurrent } = useReferenceMutations(owner)
+  const list = useReferenceItems(owner, space, page)
+  const { save, remove, isCurrent } = useReferenceMutations(owner, space)
   const busy = save.isPending || remove.isPending
   const disabled = !session.csrfReady || session.logoutPending || busy
   useEffect(() => {
@@ -172,6 +182,7 @@ function PrivateReference({ owner }: { owner: string }) {
                 <EditItem
                   key={editing}
                   owner={owner}
+                  space={space}
                   id={editing}
                   submit={submit}
                   cancel={close}

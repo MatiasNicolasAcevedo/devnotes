@@ -29,10 +29,12 @@ import { useIsNarrow } from '../../shared/ui/useIsNarrow'
 import { visuallyHidden } from '../../shared/ui/visuallyHidden'
 import { useSaveDailyVersion } from '../../features/daily/useSaveDailyVersion'
 import { isValidIsoDate } from './dateUtils'
+import { useSpaceHref } from '../spaces/spaceContext'
 
 // ——— Fallbacks sin provider ———
 
 function DailyNotesInvalidDate({ date }: { date: string }) {
+  const href = useSpaceHref()
   return (
     <Stack spacing={2}>
       <Typography component="h1" sx={visuallyHidden}>
@@ -44,7 +46,7 @@ function DailyNotesInvalidDate({ date }: { date: string }) {
           <code>{date}</code> no es una fecha válida. Usa el formato AAAA-MM-DD.
         </Typography>
         <Box sx={{ mt: 1 }}>
-          <Link component={RouterLink} to="/notes">
+          <Link component={RouterLink} to={href('/notes')}>
             Volver a hoy
           </Link>
         </Box>
@@ -72,7 +74,8 @@ function DailyNotesInner() {
 
   // Hook del provider — siempre disponible aquí porque solo se monta dentro de DailyDraftProvider
   const ctx = useDailyDraftContext()
-  const { isDirty, status, error, content, retry, navigateToDate, activeDate } = ctx
+  const { isDirty, status, error, content, retry, navigateToDate, activeDate, space } = ctx
+  const href = useSpaceHref()
 
   // Estado de la lista paginada (listLoading inicia true para cargar al montar sin setState en efecto)
   const [notesList, setNotesList] = useState<DailyNoteListItem[]>([])
@@ -91,23 +94,26 @@ function DailyNotesInner() {
   }, [navigateToDate])
 
   // Cargar lista de notas
-  const loadList = useCallback(async (page: number) => {
-    setListError(null)
-    try {
-      const result = await listDailyNotes(page)
-      setNotesList(result.content)
-      setListTotalPages(result.totalPages)
-      setListPage(result.page)
-    } catch (err) {
-      setListError(err instanceof Error ? err : new Error('Error al cargar notas'))
-    } finally {
-      setListLoading(false)
-    }
-  }, [])
+  const loadList = useCallback(
+    async (page: number) => {
+      setListError(null)
+      try {
+        const result = await listDailyNotes(space, page)
+        setNotesList(result.content)
+        setListTotalPages(result.totalPages)
+        setListPage(result.page)
+      } catch (err) {
+        setListError(err instanceof Error ? err : new Error('Error al cargar notas'))
+      } finally {
+        setListLoading(false)
+      }
+    },
+    [space],
+  )
 
   // Cargar lista al montar (llamada directa para evitar setState síncrono en efecto)
   useEffect(() => {
-    listDailyNotes(0)
+    listDailyNotes(space, 0)
       .then((result) => {
         setNotesList(result.content)
         setListTotalPages(result.totalPages)
@@ -120,7 +126,7 @@ function DailyNotesInner() {
       .finally(() => {
         setListLoading(false)
       })
-  }, [])
+  }, [space])
 
   // Navegar a otra fecha, con flush si hay dirty
   const handleNavigateToDate = useCallback(
@@ -129,14 +135,14 @@ function DailyNotesInner() {
       navigatingRef.current = true
       try {
         await navigateToDateRef.current(newDate)
-        await navigate(`/notes/${newDate}`)
+        await navigate(href(`/notes/${newDate}`))
       } catch {
         // Error visible desde el coordinador; conservar fecha y borrador.
       } finally {
         navigatingRef.current = false
       }
     },
-    [activeDate, ctx.navigationLocked, navigate],
+    [activeDate, ctx.navigationLocked, navigate, href],
   )
 
   // Editor onChange → envía al provider
@@ -150,6 +156,7 @@ function DailyNotesInner() {
   // Hook de guardar versión manual — debe estar antes de cualquier early return
   const saveVersion = useSaveDailyVersion({
     owner: sessionUser?.id ?? '',
+    space,
     date: activeDate,
     note: { flush: ctx.flush, revision: ctx.revision, getRevision: ctx.getRevision },
     sessionIsCurrent: () => sessionStatus === 'authenticated',
@@ -224,7 +231,7 @@ function DailyNotesInner() {
         <Tooltip title="Ir a hoy">
           <IconButton
             component={RouterLink}
-            to="/notes"
+            to={href('/notes')}
             size="small"
             color="primary"
             aria-label="Ir a hoy"
@@ -234,7 +241,12 @@ function DailyNotesInner() {
           </IconButton>
         </Tooltip>
       ) : (
-        <Button component={RouterLink} to="/notes" size="small" sx={{ minWidth: 0, flexShrink: 0 }}>
+        <Button
+          component={RouterLink}
+          to={href('/notes')}
+          size="small"
+          sx={{ minWidth: 0, flexShrink: 0 }}
+        >
           Hoy
         </Button>
       )}
