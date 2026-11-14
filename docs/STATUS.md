@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-064](tasks/T-064-space-navigation.md) · Selector de espacio y navegación Windows/Android ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente de PR67 sobre HEAD y base publicados. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Estado | `changes_requested` |
+| Acción actual | Cambios requeridos en PR67. Corregir los [tres bloqueantes de R1](tasks/T-064-space-navigation.md#revisión-independiente-r1) en sesión de implementer. FULL/STARTER DIFERIDO POR EL DUEÑO. |
 | Rama / PR | `codex/t-064-space-navigation` · [PR67](https://github.com/MatiasNicolasAcevedo/devnotes/pull/67) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
@@ -112,5 +112,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera en rol reviewer en una sesión nueva, distinta de la implementación, y revisá PR67 de MatiasNicolasAcevedo/devnotes (T-064, docs/tasks/T-064-space-navigation.md, S-109) en un checkout aislado del HEAD y la base publicados. Confirmá que PR67 esté OPEN, listo para revisión contra main, con base que contiene el squash 1a3e95d6de17d1a4e9b3fcc1118637704f219cb9 de PR66 y verify-required SUCCESS para el HEAD vigente. Revisá el selector Trabajo/Personal mediante el coordinador único de T-063, la navegación a 768 CSS px y Datos de la cuenta con vista previa v1/v2 y countsBySpace. Verificá las pruebas dirigidas y los checks de T-064 según docs/agents/reviewer.md, y registrá el veredicto sobre el HEAD y la base publicados. FULL/STARTER DIFERIDO POR EL DUEÑO. Preservá el checkout principal, trailer/ y los worktrees ajenos. El merge requiere autorización expresa del dueño. No ejecutes T-065 ni despliegues. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+Actuá como Frontera en rol implementer en una sesión nueva. Retomá PR67 de T-064 en su misma rama. Confirmá HEAD y base publicados, leé la revisión R1 de docs/tasks/T-064-space-navigation.md y corregí B1, B2 y B3. Ejecutá los negativos y dirigidos de cierre de R1, los checks de T-064 y confirmá verify-required en el nuevo HEAD. FULL/STARTER DIFERIDO POR EL DUEÑO. Preservá el checkout principal, trailer/ y worktrees ajenos. Publicá el cambio para revisión independiente. El merge y el ensayo de Render requieren autorización expresa del dueño. T-065 espera el cierre de T-064.
 ```

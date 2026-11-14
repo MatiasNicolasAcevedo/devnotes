@@ -1,6 +1,6 @@
 ---
 id: T-064
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 milestone: M5
@@ -84,6 +84,27 @@ Cierre desde la raíz sobre el commit técnico `14110d714a4f37a3aa05158f90dbf159
 | MUI aplicaba un mínimo de 36 px a las filas del menú a partir de 600 px | Mantener 48 px con especificidad de estilo y comprobar foco y Escape en Chromium | R2/R3 exit 1 (36 px); final 2/2, `14110d7` |
 
 Pendiente: revisión independiente de PR67 y aceptación visual en Android físico. Se conserva el checkout principal, `trailer/` y el worktree local de T-063.
+
+## Revisión independiente R1
+
+2026-11-14 · Frontera en rol reviewer, sesión de Codex Desktop (GPT-6, variante y esfuerzo no expuestos), con PowerShell, Git, `gh`, Node 24.21.0/npm 11.19.0, Git Bash y Docker. Checkout aislado `.orchestrator/t-064-review`. [PR67](https://github.com/MatiasNicolasAcevedo/devnotes/pull/67) OPEN, listo para revisión contra `main`; HEAD `7968bae115051523d84ca18d7ada7780a6d3e42f` y base `1a3e95d6de17d1a4e9b3fcc1118637704f219cb9`, squash de PR66 MERGED y ancestro comprobado. [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43555358946/job/132326880751) en la ejecución `pull_request` del HEAD publicado.
+
+Checkpoint previo a Chromium. Desde Git Bash, `STARTER_E2E_PROJECT=starter-e2e-t064-review-1114 bash scripts/e2e.sh --grep 'T-064: selector|T-050: visitor navigation|portability: A exports|T-020: direct URL' --project desktop`. PostgreSQL/OIDC de prueba en el proyecto propio, fixtures ficticias, artefactos saneados por el harness y cleanup con los labels exactos del proyecto. Comprobar ausencia de contenedores/red/volúmenes antes y después. Fuentes técnicas congeladas en el HEAD citado. Sigue la revisión del resultado de importación y de las aserciones de URL canónica. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
+
+Veredicto de código **CAMBIOS REQUERIDOS**. Se verificó el selector sobre el espacio confirmado, el coordinador único de T-063, la fecha de Historial y el reinicio de filtros de Referencias/Voz. A 767 px la navegación va abajo y a 768 px pasa a la cabecera. Datos es de toda la cuenta y acepta v1/v2 con `countsBySpace`, rechaza sumas incompatibles, explica v1 en Trabajo y muestra conteos de ambos espacios. El resultado se pierde en la transición descrita en B2.
+
+1. **B1 · El selector adelanta la ruta y sustituye el editor antes del ACK.** `SpaceSelector.tsx` envía el `Link` al destino directamente. `SpaceNavigation.tsx` conserva el espacio confirmado y las lecturas, pero procesa la transición después de que cambia la URL y presenta el estado de espera/error en lugar del editor. La prueba negativa temporal de revisión extendió el caso de 503 de `SpaceSelector.test.tsx`: esperaba `/notes/2026-11-13?space=work` y recibió `?space=personal`. El borrador vuelve al pulsar «Volver a Trabajo». Integrar la intención explícita del selector al coordinador de T-063 para conservar ruta, selector y editor de origen durante el guardado y ante error, con aviso/reintento. Cierre observable con una respuesta retenida seguida de error y con ACK exitoso: solo el ACK publica el destino y habilita sus lecturas.
+2. **B2 · Un enlace del espacio activo desmonta Datos mientras se importa.** `AppShell.tsx` construye los enlaces de Notas, Voz, Referencias e Historial con el espacio activo y `SpaceNavigation.tsx` los deja pasar aunque esté publicado el bloqueo. Al pulsar Notas con el POST retenido, desaparece «Datos de la cuenta». Su desmontaje aborta la espera del cliente y puede ocultar el resultado aunque el servidor complete la escritura. La limitación estaba registrada en T-063 y el selector de T-064 solo bloquea la otra opción. Hacer que el coordinador retenga las transiciones de SPA que sacarían al usuario de Datos y explique el bloqueo. Cierre observable con POST retenido: pulsar Notas del espacio activo, intentar cambiar de espacio y usar Atrás deja Datos montado, un solo POST y el resultado final visible.
+3. **B3 · La regresión Playwright de fechas heredó URLs anteriores a S-109.** El caso dirigido `T-020: direct URL` falla en Chromium. `e2e/tests/daily-helpers.ts` y `e2e/tests/daily-versions.spec.ts` aún exigen URLs exactas sin `?space=work`, aunque la app las canonicaliza con ese parámetro. La discrepancia ya estaba en la base de T-064. Actualizar las aserciones exactas para comprobar fecha y espacio esperado, conservando las verificaciones de contenido, ausencia de escrituras y separación por cuenta. Cierre observable con el caso T-020 y los recorridos de historial que usan `readVersion` en Playwright dirigido.
+
+Evidencia independiente en `7968bae`/`1a3e95d`:
+
+- `npm.cmd ci --no-audit --no-fund` → 0. El comando contractual de cuatro archivos de esta tarea pasó 98/98. La regresión adicional de seis archivos registrada por el implementer pasó 78/78. `npm.cmd run typecheck`, `lint`, `format:check` y `build` → 0; Vite conservó el aviso de chunks >500 kB.
+- Las dos pruebas negativas temporales para B1 y B2 ejecutaron un caso cada una, ambas con exit 1 por la aserción descrita. La prueba de B2 usó la respuesta de importación retenida y handlers ficticios para las lecturas de diario. Se retiraron ambas copias temporales.
+- El Playwright dirigido del checkpoint salió 1 con 3/4 verdes: T-064 selector, T-050 visitante y exportación/vista previa v2/importación/rechazo de reimportación pasaron con API propia y PostgreSQL reales. T-020 falló. El JUnit saneado confirma 4 casos y 1 fallo; quedaron cero contenedores, red y volúmenes con el label exacto. Los anchos de 360/375/390/767/768/1280 CSS px y el viewport equivalente al 200 % se comprobaron en Chromium. Android físico, teclado real y zoom nativo quedan pendientes.
+- `node scripts/docs-check.mjs` y `git diff --check` → 0. `node scripts/ci/classify-diff.mjs --base 1a3e95d6de17d1a4e9b3fcc1118637704f219cb9 --head HEAD --phase FULL` → 0, `policy=FULL`, `profile=STARTER`, 28 rutas, 25 técnicas en el HEAD recibido. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
+
+Siguiente sesión de implementer en el mismo PR para B1–B3. La revisión se publica en PR67 tras confirmar CI en el nuevo HEAD documental, que conserva las fuentes revisadas. El merge requiere autorización expresa del dueño. T-065 espera el cierre de T-064. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
 
 ## Cierre y siguiente tarea
 
