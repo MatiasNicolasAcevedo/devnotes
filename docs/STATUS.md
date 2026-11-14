@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-064](tasks/T-064-space-navigation.md) · Selector de espacio y navegación Windows/Android ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `in_progress` |
-| Acción actual | Frontera en rol implementer ejecuta el contrato de T-064. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-064-space-navigation` · PR pendiente |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente de PR67 sobre HEAD y base publicados. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-064-space-navigation` · [PR67](https://github.com/MatiasNicolasAcevedo/devnotes/pull/67) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
 
@@ -112,5 +112,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera en rol implementer y retomá T-064 desde su checkpoint en docs/tasks/T-064-space-navigation.md. Comprobá en GitHub la base main que contiene el squash 1a3e95d6de17d1a4e9b3fcc1118637704f219cb9 de PR66 y retomá codex/t-064-space-navigation en su worktree propio. Completá el contrato y sus pruebas dirigidas, y publicá para revisión independiente. Preservá el checkout principal, trailer/ y los worktrees ajenos. FULL/STARTER DIFERIDO POR EL DUEÑO. No ejecutes T-065 ni despliegues.
+Actuá como Frontera en rol reviewer en una sesión nueva, distinta de la implementación, y revisá PR67 de MatiasNicolasAcevedo/devnotes (T-064, docs/tasks/T-064-space-navigation.md, S-109) en un checkout aislado del HEAD y la base publicados. Confirmá que PR67 esté OPEN, listo para revisión contra main, con base que contiene el squash 1a3e95d6de17d1a4e9b3fcc1118637704f219cb9 de PR66 y verify-required SUCCESS para el HEAD vigente. Revisá el selector Trabajo/Personal mediante el coordinador único de T-063, la navegación a 768 CSS px y Datos de la cuenta con vista previa v1/v2 y countsBySpace. Verificá las pruebas dirigidas y los checks de T-064 según docs/agents/reviewer.md, y registrá el veredicto sobre el HEAD y la base publicados. FULL/STARTER DIFERIDO POR EL DUEÑO. Preservá el checkout principal, trailer/ y los worktrees ajenos. El merge requiere autorización expresa del dueño. No ejecutes T-065 ni despliegues. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
 ```

@@ -1,6 +1,6 @@
 ---
 id: T-064
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -9,7 +9,7 @@ depends_on: [T-063]
 branch: codex/t-064-space-navigation
 role: implementer
 executor: frontier
-pr: null
+pr: 67
 ---
 
 # T-064 · Selector de espacio y navegación Windows/Android
@@ -70,9 +70,20 @@ Impacto:
 
 Preparación local: `npm ci` exit 1 (`ENOTFOUND registry.npmjs.org` en sandbox); `npm ci --no-audit --no-fund` con acceso de red, exit 0 (384 paquetes del lockfile en el worktree). Primera prueba dirigida en rojo (mismas rutas de contrato con `--reporter=dot`), exit 1, 17 fallos y 81 casos verdes. Reprodujo rechazo de v2, falta de selector y barra con cinco destinos. Primera corrida verde del comando de contrato, exit 0, 98/98, antes del ajuste de bloqueo visible de importación.
 
-Ensayo de navegador dirigido, desde Git Bash: `STARTER_E2E_PROJECT=starter-e2e-t064-layout-1114 bash scripts/e2e.sh --grep 'T-064: selector' --project desktop`. Base/HEAD `1a3e95d`, fuentes de T-064 en el worktree. Usar solo el namespace indicado y el directorio de artefactos del harness, con fixtures ficticias y cleanup automático por labels exactos. Comprobar ausencia de recursos antes y después. Sin editar fuentes durante la corrida. Primer intento exit 1: pasó los anchos y Tab desde el foco heredado del login entró en el editor. La prueba parte del botón de cuenta y usa Escape y Shift+Tab. Reintentos `starter-e2e-t064-layout-r2` y `starter-e2e-t064-layout-r3` exit 1: la opción enfocada medía 36 px debido a la regla responsiva de MUI. Se ajustó la especificidad para sostener 48 px y se mantuvo un nombre de menú estable y restauración explícita del foco. R3 verificó el caso de visitante. Cleanup verificado para los tres namespaces. Corrida final con `starter-e2e-t064-layout-final`: los dos casos de navegador pasaron, incluidos 360/375/390/767/768/1280 CSS px, el viewport equivalente a 200 %, ausencia de overflow, tamaños, foco y selección por teclado. La aceptación con Android físico y zoom del navegador queda pendiente. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
+Ensayo de navegador dirigido, desde Git Bash: `STARTER_E2E_PROJECT=starter-e2e-t064-layout-1114 bash scripts/e2e.sh --grep 'T-064: selector' --project desktop`. Base/HEAD `1a3e95d`, fuentes de T-064 en el worktree. Usar solo el namespace indicado y el directorio de artefactos del harness, con fixtures ficticias y cleanup automático por labels exactos. Comprobar ausencia de recursos antes y después. Sin editar fuentes durante la corrida. Primer intento exit 1: pasó los anchos y Tab desde el foco heredado del login entró en el editor. La prueba parte del botón de cuenta y usa Escape y Shift+Tab. Reintentos `starter-e2e-t064-layout-r2` y `starter-e2e-t064-layout-r3` exit 1: la opción enfocada medía 36 px debido a la regla responsiva de MUI. Se ajustó la especificidad para sostener 48 px y se mantuvo un nombre de menú estable y restauración explícita del foco. R3 verificó el caso de visitante. Cleanup verificado para los tres namespaces. Corrida final con `starter-e2e-t064-layout-final`: exit 0, los dos casos de navegador pasaron, incluidos 360/375/390/767/768/1280 CSS px, el viewport equivalente a 200 %, ausencia de overflow, tamaños, foco y selección por teclado. Cleanup confirmado por labels exactos, 2 tests y 0 fallos en el JUnit saneado del worktree. La aceptación con Android físico y zoom del navegador queda pendiente. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
 
 Checks locales de client: comando contractual de la sección «Aceptación y pruebas», exit 0, 98/98 en 4 archivos. `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build`, exit 0 en cada uno. Vite conserva el aviso de chunks >500 kB. Regresión adicional de rutas, cuenta, navegación de espacios y voz, referencias y conexión: `npm test -- --run src/app/AppRoutes.test.tsx src/features/auth/SessionControls.test.tsx src/features/spaces/SpaceNavigation.test.tsx src/features/voice/VoiceDraftNavigation.test.tsx src/features/reference/ReferenceSession.test.tsx src/features/system/ServerStatus.test.tsx` → exit 0, 78/78 en 6 archivos. El reintento de navegador también incluye el caso de la barra de visitante (`--grep 'T-064: selector|T-050: visitor navigation' --project desktop`).
+
+Cierre desde la raíz sobre el commit técnico `14110d714a4f37a3aa05158f90dbf15975d3fc2e` y base `1a3e95d6de17d1a4e9b3fcc1118637704f219cb9`: `node scripts/docs-check.mjs` exit 0 (124 Markdown, 68 tareas, HANDOFF 22/22), `git diff --check` y `git diff --check origin/main..HEAD` exit 0. `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` exit 0, `policy=FULL`, `profile=STARTER`, 28 rutas y 25 técnicas. **FULL/STARTER DIFERIDO POR EL DUEÑO**. La clasificación informa el perfil y la CI liviana se verifica en el HEAD final del [PR67](https://github.com/MatiasNicolasAcevedo/devnotes/pull/67).
+
+### Correcciones significativas
+
+| Problema / causa | Arreglo | Prueba / SHA |
+|---|---|---|
+| La vista previa del cliente solo aceptaba v1 y descartaba `countsBySpace` | Esquemas v1/v2 y validación de totales y destino de v1 | Rojo contractual, 98/98 al cierre, `14110d7` |
+| MUI aplicaba un mínimo de 36 px a las filas del menú a partir de 600 px | Mantener 48 px con especificidad de estilo y comprobar foco y Escape en Chromium | R2/R3 exit 1 (36 px); final 2/2, `14110d7` |
+
+Pendiente: revisión independiente de PR67 y aceptación visual en Android físico. Se conserva el checkout principal, `trailer/` y el worktree local de T-063.
 
 ## Cierre y siguiente tarea
 
