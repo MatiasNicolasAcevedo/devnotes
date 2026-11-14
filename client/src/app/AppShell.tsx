@@ -64,9 +64,7 @@ function SpaceWorkspaces({
             bypassLinkFlush={bypassDailyLinks}
             navigationRoot={navigationRoot}
           >
-            {(outlet) => (
-              <SpaceNavigation navigationRoot={navigationRoot}>{outlet}</SpaceNavigation>
-            )}
+            {(outlet) => <SpaceNavigation>{outlet}</SpaceNavigation>}
           </DailyDraftWorkspace>
         )}
       </VoiceDraftNavigation>

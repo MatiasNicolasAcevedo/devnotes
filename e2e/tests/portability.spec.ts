@@ -9,8 +9,8 @@ import { saveVersion } from './daily-helpers';
 /**
  * T-045 · S-107 / XL-06. Recorrido real de ida y vuelta: A crea datos en las cuatro colecciones y exporta su
  * Excel; B, cuenta vacía y simultánea, lo previsualiza, confirma e importa, y ve lo mismo con IDs propios.
- * Reimportar en B se rechaza y A queda intacta. Chromium real con API/DB/OIDC propios reales, sin page.route ni
- * interceptores sobre la API propia. El archivo se descarga con el evento download a un directorio temporal del
+ * Reimportar en B se rechaza y A queda intacta. Chromium usa API/DB/OIDC propios y entrega intacta la respuesta
+ * de importación retenida con CDP. El archivo se descarga con el evento download a un directorio temporal del
  * test, fuera de los artefactos exportados, y se borra al terminar.
  */
 test.describe.configure({ timeout: 180_000 });
@@ -220,12 +220,60 @@ test('portability: A exports, empty B previews and imports the same data, reimpo
     const bounds = await confirmButton.boundingBox();
     expect(bounds !== null && bounds.x >= 0 && bounds.x + bounds.width <= bPage.viewportSize()!.width,
       'Confirm action fits within the viewport').toBe(true);
+    // Retiene la respuesta real en Chromium hasta comprobar las tres transiciones de SPA.
+    const browserSession = await bPage.context().newCDPSession(bPage);
+    let pausedRequest: string | undefined;
+    await browserSession.send('Fetch.enable', {
+      patterns: [{ urlPattern: `${origin}${importsPath}`, requestStage: 'Response' }],
+    });
+    browserSession.on('Fetch.requestPaused', event => { pausedRequest = event.requestId; });
+    const importRequests: Request[] = [];
+    const recordImport = (request: Request) => {
+      if (on(importsPath, 'POST')(request)) importRequests.push(request);
+    };
+    bPage.on('request', recordImport);
     const imported = bPage.waitForResponse(on(importsPath, 'POST'));
-    await confirmButton.click();
+    // Si falla una aserción con la respuesta aún retenida, el cierre de la página también rechaza esta espera.
+    void imported.catch(() => {});
+    try {
+      await confirmButton.click();
+      await expect.poll(() => importRequests.length).toBe(1);
+      await expect.poll(() => pausedRequest).toBeDefined();
+      await expect(bPage.getByText('Importando…', { exact: true })).toBeVisible();
+      const dataHeading = bPage.getByRole('heading', { level: 1, name: 'Datos de la cuenta' });
+      const mountedHeading = await dataHeading.elementHandle();
+      await bPage.getByRole('link', { name: 'Notas', exact: true }).click();
+      await expect(bPage).toHaveURL(`${origin}/data`);
+      await expect(bPage.getByText(/No se puede salir de Datos/)).toBeVisible();
+      const selector = bPage.getByRole('button', { name: 'Espacio: Trabajo' });
+      await selector.click();
+      const menu = bPage.getByRole('menu', { name: 'Cambiar de espacio' });
+      await expect(menu).toHaveAccessibleDescription('Hay una importación en curso.');
+      await expect(menu.getByRole('menuitemradio', { name: 'Personal' })).toBeDisabled();
+      await bPage.keyboard.press('Escape');
+      await expect(selector).toBeVisible();
+      const pops = await bPage.evaluateHandle(() => {
+        const paths: string[] = [];
+        window.addEventListener('popstate', () => paths.push(location.pathname));
+        history.back();
+        return paths;
+      });
+      await expect.poll(() => pops.jsonValue()).toEqual([expect.stringMatching(/^\/notes/), '/data']);
+      await pops.dispose();
+      await expect(bPage).toHaveURL(`${origin}/data`);
+      expect(await mountedHeading.evaluate(element => element.isConnected)).toBe(true);
+      await expect(bPage.getByText('Importando…', { exact: true })).toBeVisible();
+      await expect(bPage.getByText('Importación completa', { exact: true })).toHaveCount(0);
+      await browserSession.send('Fetch.continueResponse', { requestId: pausedRequest! });
+    } finally {
+      await browserSession.detach();
+    }
     const importResponse = await imported;
     expect(importResponse.status()).toBe(201);
     expect(await importResponse.json()).toEqual({ counts, countsBySpace });
     await expect(bPage.getByText('Importación completa', { exact: true })).toBeVisible();
+    expect(importRequests).toHaveLength(1);
+    bPage.off('request', recordImport);
     for (const name of ['Ver en Notas', 'Ver en Historial', 'Ver en Voz', 'Ver en Referencias']) {
       await expect(bPage.getByRole('link', { name: name + ' (Trabajo)', exact: true })).toBeVisible();
     }

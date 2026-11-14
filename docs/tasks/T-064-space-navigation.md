@@ -1,6 +1,6 @@
 ---
 id: T-064
-status: changes_requested
+status: in_progress
 priority: P1
 size: M
 milestone: M5
@@ -105,6 +105,30 @@ Evidencia independiente en `7968bae`/`1a3e95d`:
 - `node scripts/docs-check.mjs` y `git diff --check` → 0. `node scripts/ci/classify-diff.mjs --base 1a3e95d6de17d1a4e9b3fcc1118637704f219cb9 --head HEAD --phase FULL` → 0, `policy=FULL`, `profile=STARTER`, 28 rutas, 25 técnicas en el HEAD recibido. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
 
 Siguiente sesión de implementer en el mismo PR para B1–B3. La revisión se publica en PR67 tras confirmar CI en el nuevo HEAD documental, que conserva las fuentes revisadas. El merge requiere autorización expresa del dueño. T-065 espera el cierre de T-064. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+
+## Corrección de R1
+
+2026-11-14 · Frontera implementer en una sesión nueva de Codex Desktop (GPT-6, variante y esfuerzo no expuestos), con PowerShell, Git, gh, Node 24.21.0, Git Bash y Docker Desktop. PR67 OPEN. HEAD de retoma `6fbb9a10b8368406a987cec3f4234ba53d5b3c91` y base main `1a3e95d6de17d1a4e9b3fcc1118637704f219cb9` confirmados en GitHub. Fast-forward del worktree propio `.orchestrator/t-064`.
+
+Negativos en las fuentes de R1. Desde `client/`, `npm test -- --run src/features/spaces/SpaceSelector.test.tsx -t 'retiene URL' --reporter=dot` → 1 (1 caso), URL de Personal con el PUT aún retenido. Desde Git Bash, `STARTER_E2E_PROJECT=starter-e2e-t064-r1-red2 bash scripts/e2e.sh --grep 'T-020: direct URL|portability: A exports' --project desktop` → 1 (2 casos, 2 fallos). B2: «Notas» navegó a la nota de Trabajo con la respuesta real de importación retenida. B3: T-020 falló al recibir `/notes/2026-10-20?space=work` cuando el helper esperaba `/notes/2026-10-20`. El primer namespace `starter-e2e-t064-r1-red` salió 1 en build por tipos de la prueba B1. Los dos namespaces quedaron sin contenedores, redes ni volúmenes por label exacto. Logs locales `.orchestrator/t064-r1-red*.log`; JUnit saneado en `e2e/artifacts/starter-e2e-t064-r1-red2/sanitized/`.
+
+Chromium verde. HEAD de partida `6fbb9a1`, base `1a3e95d`, fuentes de B1–B3 en el worktree. Desde Git Bash, `STARTER_E2E_PROJECT=starter-e2e-t064-r1-green bash scripts/e2e.sh --grep 'T-064: selector|portability: A exports|T-020: direct URL|CA-04: dates|CA-05: reload and logout|CA-06: two identities on the same date only see their own versions|CA-02: select text|reference preview: insert' --project desktop` → 0 (8/8). Chromium con API real, PostgreSQL 18, OIDC de prueba y fixtures ficticias. En portabilidad, CDP retuvo y liberó la respuesta real del POST sin modificarla. «Notas», selector y Atrás conservaron Datos y su encabezado montado durante la espera. Tras liberar el 201, el resultado quedó visible y se contó un único POST de importación. T-020 y los cinco recorridos que usan `readVersion` pasaron con sus verificaciones de contenido, ausencia de escrituras donde corresponde y separación por cuenta. Namespace antes y después con cero contenedores, redes y volúmenes por label exacto. Log local `.orchestrator/t064-r1-green.log`; JUnit saneado en `e2e/artifacts/starter-e2e-t064-r1-green/sanitized/`. Después del ensayo solo se ajustaron dos aserciones de Vitest.
+
+| Problema / causa | Arreglo | Prueba |
+|---|---|---|
+| B1 · El selector publicaba la URL por un enlace antes de resolver el guardado. | El selector envía una intención al coordinador de T-063. El router retiene la URL mientras el coordinador conserva el editor, muestra el aviso y permite reintentar. | `SpaceSelector.test.tsx`: PUT retenido, 503 y segundo PUT retenido. Solo el ACK habilita el cambio y el GET de Personal. |
+| B2 · La captura de clics evaluaba el espacio del enlace y no cubría Atrás. | El mismo coordinador usa `useBlocker` para impedir la salida de Datos durante el POST, descarta la salida solicitada y explica el motivo. Browser y pruebas usan routers de datos con las rutas existentes. | Chromium desktop, portabilidad real con respuesta retenida. |
+| B3 · Playwright esperaba URLs anteriores a S-109. | Fecha y espacio esperado en las aserciones exactas de diario e historial. | Chromium desktop, T-020 y recorridos de Historial. |
+
+Impacto de R1 en navegación y UI. URLs privadas ya publicadas, API, propiedad de cuenta y datos mantienen su contrato. El ajuste del router permite bloquear transiciones dentro de la SPA, incluido el historial de la pestaña. La prueba de sesión ahora incluye «Datos de la cuenta» en el menú que ya entregaba T-064.
+
+Regresión dirigida desde `client/`, exit 0, 224/224 en 13 archivos. Log local `.orchestrator/t064-r1-client-final.log`.
+
+```bash
+npm test -- --run src/features/spaces/SpaceSelector.test.tsx src/features/spaces/SpaceNavigation.test.tsx src/app/AppShell.test.tsx src/app/AppRoutes.test.tsx src/features/portability/api.test.ts src/features/portability/DataPage.test.tsx src/features/auth/SessionControls.test.tsx src/features/auth/AuthSession.test.tsx src/features/voice/VoiceDraftNavigation.test.tsx src/features/reference/ReferenceSession.test.tsx src/features/system/ServerStatus.test.tsx src/features/daily/DailyNotesPage.test.tsx src/features/daily/DailyHistoryPage.test.tsx --reporter=dot
+```
+
+`npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build` → 0 cada uno. Las pruebas informan avisos de fixtures MSW de capacidades de voz/paginación y Vite conserva el aviso de chunks >500 kB. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
 
 ## Cierre y siguiente tarea
 

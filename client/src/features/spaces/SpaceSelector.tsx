@@ -4,9 +4,9 @@ import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import { alpha } from '@mui/material/styles'
 import { useId, useRef, useState } from 'react'
-import { Link, useLocation } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { BriefcaseIcon, CheckIcon, ChevronDownIcon, PersonIcon } from '../../shared/ui/icons'
-import { isSpaceRoute, spaceHref, SPACE_LABELS, SPACES } from './space'
+import { isSpaceRoute, spaceHref, SPACE_LABELS, SPACE_SELECTOR_INTENT, SPACES } from './space'
 import { useSpaceContext } from './spaceContext'
 
 const APPEARANCE = {
@@ -17,6 +17,7 @@ const APPEARANCE = {
 export function SpaceSelector() {
   const { owner, space, lockReason } = useSpaceContext()
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const [menu, setMenu] = useState<{ anchor: HTMLElement; owner: string } | null>(null)
   const trigger = useRef<HTMLButtonElement>(null)
   const id = useId()
@@ -79,35 +80,30 @@ export function SpaceSelector() {
         {SPACES.map((option) => {
           const selected = space === option
           const { Icon: OptionIcon, color: optionColor } = APPEARANCE[option]
-          const props = {
-            role: 'menuitemradio',
-            'aria-checked': selected,
-            selected,
-            onClick: close,
-            sx: {
-              '&&': { minHeight: 48 },
-              minWidth: 164,
-              gap: 1,
-              '&.Mui-focusVisible': { outline: `2px solid ${optionColor}`, outlineOffset: -2 },
-            },
-            children: (
-              <>
-                <OptionIcon sx={{ color: optionColor }} />
-                {SPACE_LABELS[option]}
-                {selected && <CheckIcon sx={{ color: optionColor, ml: 'auto' }} />}
-              </>
-            ),
-          }
-          // Refleja el bloqueo publicado por el coordinador durante una importación.
-          return selected || lockReason ? (
-            <MenuItem key={option} disabled={!selected} {...props} />
-          ) : (
+          return (
             <MenuItem
               key={option}
-              component={Link}
-              to={spaceHref(destination, option)}
-              {...props}
-            />
+              role="menuitemradio"
+              aria-checked={selected}
+              selected={selected}
+              disabled={!selected && lockReason !== null}
+              onClick={() => {
+                close()
+                if (!selected) {
+                  void navigate(spaceHref(destination, option), { state: SPACE_SELECTOR_INTENT })
+                }
+              }}
+              sx={{
+                '&&': { minHeight: 48 },
+                minWidth: 164,
+                gap: 1,
+                '&.Mui-focusVisible': { outline: `2px solid ${optionColor}`, outlineOffset: -2 },
+              }}
+            >
+              <OptionIcon sx={{ color: optionColor }} />
+              {SPACE_LABELS[option]}
+              {selected && <CheckIcon sx={{ color: optionColor, ml: 'auto' }} />}
+            </MenuItem>
           )
         })}
         {lockReason && (

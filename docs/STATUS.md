@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-064](tasks/T-064-space-navigation.md) · Selector de espacio y navegación Windows/Android ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `changes_requested` |
-| Acción actual | Cambios requeridos en PR67. Corregir los [tres bloqueantes de R1](tasks/T-064-space-navigation.md#revisión-independiente-r1) en sesión de implementer. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Estado | `in_progress` |
+| Acción actual | Frontera implementer corrige los [tres bloqueantes de R1](tasks/T-064-space-navigation.md#revisión-independiente-r1) en PR67. FULL/STARTER DIFERIDO POR EL DUEÑO. |
 | Rama / PR | `codex/t-064-space-navigation` · [PR67](https://github.com/MatiasNicolasAcevedo/devnotes/pull/67) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).

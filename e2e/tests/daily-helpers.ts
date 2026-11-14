@@ -1,9 +1,11 @@
 import type { Page } from '@playwright/test';
 import { expect, savedIndicator } from './fixtures';
 
-export async function chooseDate(page: Page, date: string) {
+type Space = 'work' | 'personal';
+
+export async function chooseDate(page: Page, date: string, space: Space = 'work') {
   await page.getByLabel('Fecha', { exact: true }).fill(date);
-  await expect(page).toHaveURL(`http://localhost/notes/${date}`);
+  await expect(page).toHaveURL(`http://localhost/notes/${date}?space=${space}`);
   await expect(page.getByLabel('Fecha', { exact: true })).toHaveValue(date);
   await expect(page.getByRole('textbox', { name: 'Editor de nota diaria' })).toHaveAttribute('contenteditable', 'true');
 }
@@ -39,12 +41,12 @@ export async function saveVersion(page: Page, date: string, replace = false) {
   return version;
 }
 
-export async function readVersion(page: Page, date: string, text: string) {
+export async function readVersion(page: Page, date: string, text: string, space: Space = 'work') {
   await page.getByRole('link', { name: 'Historial', exact: true }).click();
-  await expect(page).toHaveURL('http://localhost/history');
+  await expect(page).toHaveURL(`http://localhost/history?space=${space}`);
   await expect(page.locator('.daily-editor-content')).toHaveCount(0);
   await page.getByRole('link', { name: new RegExp(date.split('-').reverse().join('/')) }).click();
-  await expect(page).toHaveURL(`http://localhost/history/${date}`);
+  await expect(page).toHaveURL(`http://localhost/history/${date}?space=${space}`);
   const editor = page.getByRole('textbox', { name: 'Versión de solo lectura' });
   await expect(editor).toHaveText(text);
   await expect(editor).toHaveAttribute('contenteditable', 'false');
