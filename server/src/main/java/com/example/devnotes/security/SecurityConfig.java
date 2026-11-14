@@ -69,11 +69,18 @@ public class SecurityConfig {
                             .authenticated()
                             .requestMatchers(HttpMethod.DELETE, "/api/v1/reference-items/{id}")
                             .authenticated()
-                            .requestMatchers(HttpMethod.GET, "/api/v1/daily-notes", "/api/v1/daily-notes/{date}")
+                            .requestMatchers(
+                                    HttpMethod.GET,
+                                    "/api/v1/daily-notes",
+                                    "/api/v1/daily-notes/{date}",
+                                    "/api/v1/daily-notes/{targetDate}/previous")
                             .authenticated()
                             .requestMatchers(HttpMethod.PUT, "/api/v1/daily-notes/{date}")
                             .authenticated()
-                            .requestMatchers(HttpMethod.POST, "/api/v1/daily-notes/{date}/version")
+                            .requestMatchers(
+                                    HttpMethod.POST,
+                                    "/api/v1/daily-notes/{date}/version",
+                                    "/api/v1/daily-notes/{targetDate}/copy-previous")
                             .authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/v1/daily-versions", "/api/v1/daily-versions/{date}")
                             .authenticated()

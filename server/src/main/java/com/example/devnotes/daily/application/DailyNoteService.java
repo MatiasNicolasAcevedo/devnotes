@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class DailyNoteService {
 
-    private static final long MAX_REVISION = 9_007_199_254_740_991L;
+    static final long MAX_REVISION = 9_007_199_254_740_991L;
 
     private final DailyNoteRepository repository;
     private final Clock clock;

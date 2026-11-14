@@ -2,12 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-065](tasks/T-065-spaces-journey.md) · Recorrido dirigido de espacios y respaldo ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `mergeable` |
-| Acción actual | [R1 favorable de PR68](tasks/T-065-spaces-journey.md#revisión-independiente-r1). Merge pendiente en otra sesión y sujeto a autorización expresa del dueño. Android físico pendiente del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-065-spaces-journey` · [PR68](https://github.com/MatiasNicolasAcevedo/devnotes/pull/68) |
+| Tarea y contrato | [T-066](tasks/T-066-copy-previous-api.md) · Copia transaccional de la última nota anterior ([S-110](specs/S-110-previous-day-copy.md)) |
+| Estado | `in_progress` |
+| Acción actual | Implementación y pruebas dirigidas de API. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-066-copy-previous-api` · PR pendiente |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+
+[T-065](tasks/T-065-spaces-journey.md#conciliación) conciliada como `done` tras PR68 MERGED.
 
 [T-064](tasks/T-064-space-navigation.md#conciliación) conciliada como `done` tras PR67 MERGED.
 
@@ -114,5 +116,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera en rol merger para PR68 (T-065, S-109) cuando el dueño autorice expresamente el merge. Leé la revisión R1 de la tarea y docs/agents/merger.md. Confirmá en GitHub que HEAD y base coinciden con el veredicto del PR, verify-required SUCCESS y conversaciones bloqueantes resueltas. FULL/STARTER DIFERIDO POR EL DUEÑO. Android físico con teclado y zoom nativos pendiente del dueño. Preservá checkout principal, trailer/ y worktrees ajenos. Render requiere autorización expresa separada sobre SHA y ventana.
+Actuá como Frontera en rol implementer para T-066 (S-110). Confirmá PR68 MERGED y retomá el checkpoint de la tarea en el worktree propio. Completá la API y las pruebas dirigidas con PostgreSQL, docs-check, diff-check y clasificación contra main. Publicá un único PR contra main, confirmá verify-required del HEAD publicado y prepará la revisión independiente. FULL/STARTER DIFERIDO POR EL DUEÑO. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Preservá checkout principal, trailer/ y worktrees ajenos. Render requiere autorización expresa separada sobre SHA y ventana.
 ```

@@ -1,15 +1,21 @@
 package com.example.devnotes.daily.persistence;
 
 import com.example.devnotes.shared.space.PrivateSpace;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.LockModeType;
+import jakarta.persistence.QueryHint;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
 public interface DailyNoteRepository extends JpaRepository<DailyNote, UUID> {
@@ -29,6 +35,20 @@ public interface DailyNoteRepository extends JpaRepository<DailyNote, UUID> {
     Optional<DailyNote> findByOwnerIdAndSpaceAndNoteDate(UUID ownerId, PrivateSpace space, LocalDate noteDate);
 
     boolean existsByOwnerIdAndSpaceAndNoteDate(UUID ownerId, PrivateSpace space, LocalDate noteDate);
+
+    @QueryHints(@QueryHint(name = HibernateHints.HINT_FETCH_SIZE, value = "32"))
+    Stream<PreviousCandidate> streamByOwnerIdAndSpaceAndNoteDateLessThanOrderByNoteDateDesc(
+            UUID ownerId, PrivateSpace space, LocalDate targetDate);
+
+    interface PreviousCandidate {
+        LocalDate getNoteDate();
+
+        JsonNode getContent();
+
+        long getRevision();
+
+        Instant getUpdatedAt();
+    }
 
     @Modifying(clearAutomatically = true)
     @Query(value = """

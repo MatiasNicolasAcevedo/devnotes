@@ -1,6 +1,6 @@
 ---
 id: T-066
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M5
@@ -8,7 +8,7 @@ spec: S-110
 depends_on: [T-065]
 branch: codex/t-066-copy-previous-api
 role: implementer
-executor: junie
+executor: frontier
 pr: null
 ---
 
@@ -18,7 +18,7 @@ pr: null
 
 Sugerir y copiar la última nota anterior del mismo espacio a una fecha vacía sin sobrescrituras concurrentes.
 
-Draft **solo por dependencias**: T-065 MERGED y conciliada. Contrato completo en S-110; al cumplirse las dependencias no se necesita otra sesión planner. Cada tarea/revisión usa sesión independiente.
+Habilitada con [T-065 MERGED y conciliada](T-065-spaces-journey.md#conciliación). Contrato completo en S-110. Cada tarea y revisión usa sesión independiente.
 
 ## Alcance y decisiones resueltas
 
@@ -58,7 +58,35 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. Al tomar la tarea, registrar SHA/base, comandos, resultados y pendientes. Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
+2026-11-14. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git, gh, Git Bash, JDK 21 y Docker Desktop Linux. Checkout propio `.orchestrator/t-066`, HEAD inicial y base publicada `a0321ec0a5c134b39628ac85609408980a42ec92`. La tarea agrega dos endpoints privados, conserva la sesión y CSRF, y crea o actualiza el documento de trabajo dentro de una transacción. La interfaz de copia corresponde a T-067.
+
+Rojo antes de la implementación: `./mvnw -o -B -q verify -Dtest=DailyContentTest -Dit.test=CopyPreviousDailyNoteApiIT -Djacoco.skip=true` → exit 1, 7/7 IT rojos por rutas ausentes (403 o sin disputa del bloqueo). PostgreSQL 18.6 confirmado; resumen de Failsafe en `server/target/`.
+
+Pruebas de cierre desde `server/` con Git Bash, JDK 21 y el caché local de Maven:
+
+```bash
+./mvnw -o -B -q spotless:apply
+./mvnw -o -B -q verify -Dtest=CopyPreviousDailyNoteTest,DailyContentTest -Dit.test=CopyPreviousDailyNoteApiIT,DailySpaceApiIT,OpenApiContractIT -Djacoco.skip=true
+```
+
+Ambos comandos → exit 0. Surefire 87/87 (`CopyPreviousDailyNoteTest` 3, `DailyContentTest` 84). Failsafe 17/17 (`CopyPreviousDailyNoteApiIT` 7, `DailySpaceApiIT` 4, `OpenApiContractIT` 6), cero fallos, errores u omitidos. PostgreSQL `postgres:18.6` vía Testcontainers y HTTP con OIDC ficticio. En las tres corridas el harness retiró sus diez contenedores (siete PostgreSQL y tres Ryuk); `docker ps -aq --no-trunc --filter label=org.testcontainers=true` intersectado con los IDs exactos del harness → 0 coincidencias. Resúmenes Maven y logs de trabajo bajo `server/target/`.
+
+| Criterio | Evidencia del servidor |
+|---|---|
+| CP-01 | 200 con JSON idéntico para texto, enlace, separador y referencia; UUID v7, revisión inicial 1, timestamps de la copia y origen intacto. |
+| CP-02–03 | Viernes si los días intermedios carecen de contenido; sin ventana artificial. Se excluyen la fecha destino, el futuro, otro espacio y otra cuenta. 200 de solo metadatos y 204 sin cuerpo; ninguna fila creada por GET. |
+| CP-04 | 404 indistinguible para fuentes ausentes o ajenas, 409 por revisiones y contenido, cuerpo exacto y fechas estrictas. Una transacción rival mantiene bloqueadas el alta y la actualización hasta el commit; ambas copias pierden con 409 y conservan el contenido del escritor. |
+| CP-05 | La copia de la fuente explícita sigue siendo válida si aparece una posterior. Conserva la referencia y deja intactas las versiones manuales de origen y destino. |
+| CP-06 | La API exige sesión y CSRF en POST, valida espacio y restringe la operación a propietario, fecha y espacio. Solicitudes después de cerrar sesión reciben 401. |
+| CP-07 | Replay tras el ACK simulado como perdido devuelve 409; GET recupera exactamente una copia. PUT posterior puede guardar el vacío con la revisión confirmada y seguir editando de forma independiente. |
+
+**FULL/STARTER DIFERIDO POR EL DUEÑO.**
+
+## Correcciones
+
+| Problema y causa | Arreglo y prueba |
+|---|---|
+| La primera corrida con la API, sobre la base publicada, dio 87/87 unitarios y 11/11 IT de diario. El IT ampliado de OpenAPI dio 5/6 porque la aserción histórica de Referencias omitía `space`, ya documentado en `origin/main`. | Actualizar la lista exacta esperada de parámetros; conservar la comprobación del resto del contrato. Selección dirigida repetida, 87/87 y 17/17 en verde. |
 
 ## Cierre y siguiente tarea
 

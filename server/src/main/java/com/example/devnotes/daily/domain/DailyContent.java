@@ -6,6 +6,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Immutable validator for structured daily note content.
@@ -23,6 +24,9 @@ public final class DailyContent {
     private static final int MAX_HREF_TOTAL = 100_000;
     private static final int MAX_REFERENCES = 100;
     private static final Set<Integer> VALID_WIDTHS = Set.of(25, 50, 75, 100);
+
+    // S-110 uses the Unicode White_Space property (which excludes U+FEFF).
+    private static final Pattern WHITE_SPACE = Pattern.compile("\\p{IsWhite_Space}*");
 
     private static final ObjectMapper SHARED_MAPPER = new ObjectMapper();
 
@@ -108,6 +112,22 @@ public final class DailyContent {
      */
     public JsonNode getTree() {
         return this.tree;
+    }
+
+    /** Whether a stored daily document contains only whitespace paragraphs. */
+    public static boolean isEmpty(JsonNode document) {
+        for (JsonNode block : document.path("content")) {
+            if (!"paragraph".equals(block.path("type").asText())) {
+                return false;
+            }
+            for (JsonNode inline : block.path("content")) {
+                if (!"text".equals(inline.path("type").asText())
+                        || !WHITE_SPACE.matcher(inline.path("text").asText()).matches()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private static void validateRoot(JsonNode node) {
