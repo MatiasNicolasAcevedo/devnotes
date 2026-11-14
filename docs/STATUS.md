@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-063](tasks/T-063-space-client-context.md) · Contexto privado en rutas, transporte y borradores ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente de PR66 según el [checkpoint de T-063](tasks/T-063-space-client-context.md#checkpoint-vigente). Paso intermedio sin selector visual (T-064): no desplegar. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Estado | `mergeable` |
+| Acción actual | Revisión favorable de PR66 según la [revisión de T-063](tasks/T-063-space-client-context.md#revisión-independiente-r1). El merge requiere autorización expresa del dueño. Paso intermedio sin selector visual (T-064): no desplegar. FULL/STARTER DIFERIDO POR EL DUEÑO. |
 | Rama / PR | `codex/t-063-space-client-context` · [PR66](https://github.com/MatiasNicolasAcevedo/devnotes/pull/66) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).

@@ -1,6 +1,6 @@
 ---
 id: T-063
-status: in_review
+status: mergeable
 priority: P1
 size: L
 milestone: M5
@@ -97,6 +97,27 @@ Pendiente: revisión independiente de PR66 en otra sesión, con `verify-required
 | Problema / causa | Arreglo | Prueba / SHA |
 |---|---|---|
 | Remontar `SpaceProvider` por identidad recreaba la barra superior y dejaba referencias a nodos desprendidos (falla de `AuthSession.test.tsx`) | Reiniciar el estado por identidad en el mismo render, sin `key` | `AuthSession.test.tsx` 19/19, `a66fc49` |
+
+## Revisión independiente R1
+
+2026-11-13 · Frontera en rol reviewer, Claude Code de escritorio (Claude Opus 5.5, esfuerzo expuesto en la sesión: 15), Git Bash, PowerShell, Git, `gh` y Node 24.21.0/npm del proyecto. Sesión distinta de la implementación. Checkout aislado con `git worktree add --detach` fuera del repositorio, HEAD `146b202c2c9b1a2ecf4b8731e36bb1489a1a3c5d`, base publicada `40361d85c6a31b51b8eafb610370c3c5b1975e6e`. Checkout principal y `trailer/` sin tocar.
+
+- PR66 OPEN, no draft, contra `main`, `MERGEABLE`. `gh pr view` y `git fetch` coincidieron en HEAD y base; `git merge-base` de la rama con `main` es la base publicada. [CI de entrada](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43548280358/job/132304589090) con `verify-required` SUCCESS para `146b202`; la otra ejecución del mismo SHA quedó cancelada por concurrencia y no cuenta como verde. Fuentes técnicas de `a66fc49`; `146b202` solo cambia Markdown.
+- URL y preferencia. `readSpaceParam` distingue ausente/válido/inválido con `getAll`, así que repetido, vacío y mayúsculas son inválidos. Sin `space`, `SpaceProvider` canonicaliza con replace usando el espacio confirmado de la pestaña, la preferencia o Trabajo. La preferencia guarda solo el enum bajo `devnotes:last-space:<id>`, se escribe recién cuando URL y espacio confirmado coinciden, tolera almacenamiento denegado (el estado confirmado hace de memoria) y `endSession` la borra en logout y expiración. No hay escucha del evento `storage`.
+- Coordinador único. `SpaceNavigation` decide para enlaces, Atrás/Adelante y URL escrita con el orden de la tabla de S-109: bloqueo de importación → versión guardándose → flush diario hasta ACK (error/409 conserva origen y borrador, con reintento) → captura de voz detenida sin transcribir → diálogo de voz → `commit` en `useLayoutEffect`. Mientras tanto el destino no se monta y el contexto sigue en el origen. La guardia previa de voz entre rutas del mismo espacio no compite: el coordinador solo actúa cuando cambia el espacio y reemplaza su salida.
+- Transporte y keys. Las 18 operaciones persistentes de notas, versiones, referencias y voz pasan por `spaceApiPath`, que rechaza valores fuera del enum antes de la red; capacidad y transcripción siguen globales. Keys `['daily'|'reference'|'voice', owner, space, …]`; invalidaciones y `forgetMissingNote` usan el scope capturado. `rg` sobre `client/src` no encontró rutas de esas APIs ni keys privadas fuera de los módulos con espacio.
+- Respuestas tardías y URL inválida. Los coordinadores diario y de voz y la pantalla de referencias se remontan por `owner+space`; guardados y mutaciones usan el espacio de su instancia. `DailyDraftWorkspace` solo crea borrador con una URL cuyo `space` coincide con el confirmado, y con URL inválida el coordinador muestra «Espacio no válido» sin montar contenido. Sin selector visual: solo enlaces internos con `?space=`.
+- Pruebas desde `client/`, Node 24.21.0: `npm ci` exit 0; `npm test -- --run src/features/spaces src/features/daily/api.test.ts src/features/daily/useDailyNote.test.tsx src/features/voice/VoiceDraftNavigation.test.tsx src/features/reference` → exit 0, 10 archivos, 125/125; `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build` → exit 0 (el build mantiene el aviso previo de tamaño de chunk).
+- Negativos propios por mutación, fuentes restauradas y `git status` limpio: con `readSpaceParam` tratando lo inválido como Trabajo, 5 fallos (`SpaceApiContext` 1, `SpaceNavigation` 4: `all`, vacío, `Work` y repetido); sin `clearSpacePreference` en `endSession`, falla «cerrar sesión borra solo la preferencia de esa identidad».
+- Checks de cierre desde la raíz: `node scripts/docs-check.mjs` OK, `git diff --check origin/main..HEAD` OK y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → `policy=FULL`, `profile=APPLICATION`, 60 rutas, 57 técnicas.
+
+Observaciones no bloqueantes, para que T-064/T-065 las tengan a la vista sin cambiar la cola:
+
+1. Atrás/Adelante y URL escrita cambian la dirección antes de la guardia (la aplicación usa `BrowserRouter`, sin bloqueo de historial). El invariante de datos se cumple: el destino no lee ni escribe hasta el ACK y «Volver a …» restaura el origen. La experiencia queda para la aceptación visual de SP-06/SP-07.
+2. Si otra identidad se autentica desde otra pestaña, `discardPrivateData` limpia el contenido pero la preferencia de la identidad anterior queda; S-109 §5 solo exige el borrado en logout y expiración, y el valor es solo el enum.
+3. Con una importación en vuelo solo se retienen los enlaces a otro espacio; salir de Datos hacia otra ruta del mismo espacio desmonta la pantalla como antes de esta tarea.
+
+**Resultado favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El veredicto canónico se publica en PR66 con el HEAD documental y la base vigentes, después de comprobar la CI de ese par. No se mergea sin autorización expresa del dueño según [AUTONOMY](../AUTONOMY.md#revisión-y-merge). Sin selector visual ni Datos v2 hasta T-064: no desplegar; el ensayo de Render requiere autorización expresa sobre SHA y ventana.
 
 ## Cierre y siguiente tarea
 
