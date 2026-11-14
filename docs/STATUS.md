@@ -2,12 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-059](tasks/T-059-reference-spaces.md) · Referencias y búsqueda dentro del espacio ([S-109](specs/S-109-private-spaces.md)) |
+| Tarea y contrato | [T-060](tasks/T-060-voice-spaces.md) · Biblioteca de voz por espacio ([S-109](specs/S-109-private-spaces.md)) |
 | Estado | `mergeable` |
-| Acción actual | Completar el cierre de PR62 según la [revisión de T-059](tasks/T-059-reference-spaces.md#revisión-independiente-r1). Confirmado MERGED, la siguiente sesión concilia T-059 y toma T-060. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-059-reference-spaces` · [PR62](https://github.com/MatiasNicolasAcevedo/devnotes/pull/62) |
+| Acción actual | Completar el cierre de PR63 según la [revisión de T-060](tasks/T-060-voice-spaces.md#revisión-independiente-r1). Confirmado MERGED, la siguiente sesión concilia T-060 y toma T-061. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-060-voice-spaces` · [PR63](https://github.com/MatiasNicolasAcevedo/devnotes/pull/63) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+
+[T-059](tasks/T-059-reference-spaces.md#conciliación) conciliada como `done` tras PR62 MERGED.
 
 [T-058](tasks/T-058-daily-spaces.md#conciliación) conciliada como `done` tras PR61 MERGED.
 

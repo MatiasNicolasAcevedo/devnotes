@@ -1,6 +1,6 @@
 ---
 id: T-059
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M5
@@ -95,3 +95,7 @@ No done hasta MERGED comprobado. Tras MERGED confirmado, la siguiente sesión co
 - Checks locales. `node scripts/docs-check.mjs` y `git diff --check` OK. `node scripts/ci/classify-diff.mjs --base 1b445e954adac4f84e01688ad2fd281e82131214 --head HEAD --phase FULL` → `FULL / APPLICATION`, ocho rutas técnicas.
 
 **Resultado favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El veredicto canónico se publica en PR62 con el HEAD documental y la base vigentes tras comprobar la CI de ese par. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+
+## Conciliación
+
+GitHub confirmó [PR62](https://github.com/MatiasNicolasAcevedo/devnotes/pull/62) MERGED contra `main` el 2026-11-14T00:43:58Z (2026-11-13 en Buenos Aires). Squash `c6d48310387f1e6d509f83ec14c33f736c23ba39`, [HEAD aprobado](https://github.com/MatiasNicolasAcevedo/devnotes/pull/62#issuecomment-6868702377) `606801e0b1539b96168fb70fac94b9bf3a9ac9ce` y [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43535889742/job/132264664885). `git ls-remote` confirmó el squash como punta de `main` publicado y `git merge-base --is-ancestor` comprobó su inclusión tras el fetch. T-059 queda `done`.

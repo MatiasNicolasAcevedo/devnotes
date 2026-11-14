@@ -1,5 +1,6 @@
 package com.example.devnotes.voice.application;
 
+import static com.example.devnotes.shared.space.PrivateSpace.WORK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -33,7 +34,7 @@ class VoiceNoteServiceTest {
     void createStampsTheClockInstantTruncatedToMicroseconds() {
         when(repository.saveAndFlush(any(VoiceNote.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        var view = service.create(UUID.randomUUID(), "Texto ficticio.");
+        var view = service.create(UUID.randomUUID(), WORK, "Texto ficticio.");
 
         assertThat(view.createdAt()).isEqualTo(NOW_MICROS);
         assertThat(view.updatedAt()).isEqualTo(NOW_MICROS);
@@ -43,16 +44,24 @@ class VoiceNoteServiceTest {
     void updateStampsTheClockInstantTruncatedToMicroseconds() {
         UUID owner = UUID.randomUUID();
         UUID id = UUID.randomUUID();
-        when(repository.updateWithCas(eq(owner), eq(id), anyString(), anyLong(), anyLong(), any(Timestamp.class)))
+        when(repository.updateWithCas(
+                        eq(owner), eq(WORK.value()), eq(id), anyString(), anyLong(), anyLong(), any(Timestamp.class)))
                 .thenReturn(1);
-        when(repository.findByOwnerIdAndId(owner, id))
-                .thenReturn(Optional.of(new VoiceNote(owner, "Texto ficticio.", NOW_MICROS)));
+        when(repository.findByOwnerIdAndSpaceAndId(owner, WORK, id))
+                .thenReturn(Optional.of(new VoiceNote(owner, WORK, "Texto ficticio.", NOW_MICROS)));
 
-        service.update(owner, id, "Texto corregido.", 1);
+        service.update(owner, WORK, id, "Texto corregido.", 1);
 
         ArgumentCaptor<Timestamp> updatedAt = ArgumentCaptor.forClass(Timestamp.class);
         verify(repository)
-                .updateWithCas(eq(owner), eq(id), eq("Texto corregido."), eq(1L), eq(2L), updatedAt.capture());
+                .updateWithCas(
+                        eq(owner),
+                        eq(WORK.value()),
+                        eq(id),
+                        eq("Texto corregido."),
+                        eq(1L),
+                        eq(2L),
+                        updatedAt.capture());
         assertThat(updatedAt.getValue().toInstant()).isEqualTo(NOW_MICROS);
     }
 }

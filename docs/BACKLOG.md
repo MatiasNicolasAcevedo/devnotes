@@ -168,6 +168,8 @@ Prueba faltante no bloqueante de T-035 (8.ª revisión PR40, 2026-11-09, sin pé
 
 Hallazgo de pruebas daily fuera de T-036. En el cliente Linux del gate, MSW registró un PUT sin handler en el caso existente «discard no revive borrador por ACK tardío» de `useDailyNote.test.tsx`. La suite pasó 511/511. El caso depende de una espera de 100 ms y solo instala handlers GET.
 
+Hallazgo de pruebas de voz fuera de T-060 (revisión R1 de PR63, preexistente). `VoiceTranscriptionApiIT#transcriptionRequiresCsrf` acepta 400, 403 o 415 cuando falta CSRF y envía un multipart vacío, así que no prueba que el filtro rechace la petición. Exigir 403 con un multipart válido sin cabecera y con token erróneo, y que el proveedor local no reciba solicitudes.
+
 ## Posterior a M2-RC1
 
 Fuera de esta versión de voz quedan streaming, audio persistido, integración automática con CLI/daily y Safari/iOS. La portabilidad y el despliegue tienen contrato propio (S-107 y S-108). Las demás opciones de ROADMAP conservan su carácter futuro.
