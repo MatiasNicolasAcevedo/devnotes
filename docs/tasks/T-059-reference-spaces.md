@@ -1,6 +1,6 @@
 ---
 id: T-059
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -9,7 +9,7 @@ depends_on: [T-058]
 branch: codex/t-059-reference-spaces
 role: implementer
 executor: frontier
-pr: null
+pr: 62
 ---
 
 # T-059 · Referencias y búsqueda dentro del espacio
@@ -75,6 +75,10 @@ El POST de Personal devuelve una `Location` relativa con `?space=personal` para 
 | Problema o condición | Arreglo | Prueba |
 |---|---|---|
 | El controller ignoraba `space`, la entidad fijaba Trabajo y las consultas de referencias se acotaban solo por dueño | Parser compartido, espacio explícito al crear y ámbito dueño+espacio en el SQL de listados, conteos, detalle, actualización y borrado | Cuatro casos de `ReferenceSpaceApiIT` en rojo sobre `1b445e9` y luego 28 IT verdes, incluidos negativos directos de escritura en el repositorio |
+
+### Entrega para revisión
+
+[PR62](https://github.com/MatiasNicolasAcevedo/devnotes/pull/62) contra `main`. Fuentes probadas en el commit técnico `5b7dcba8bea0bd496bb748c9a6693430e33ebae4` sobre la base publicada `1b445e954adac4f84e01688ad2fd281e82131214`. `node scripts/docs-check.mjs`, `git diff --check` y `git diff --check origin/main...HEAD` → exit 0. `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → exit 0, `policy=FULL`, `profile=APPLICATION`, ocho rutas técnicas. Este traspaso modifica solo Markdown. Próximo paso: revisión independiente sobre HEAD y base publicados con `verify-required` del HEAD vigente.
 
 ## Cierre y siguiente tarea
 

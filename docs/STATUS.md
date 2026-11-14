@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-059](tasks/T-059-reference-spaces.md) · Referencias y búsqueda dentro del espacio ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `in_progress` |
-| Acción actual | Implementar y verificar el ámbito de referencias según el [checkpoint de T-059](tasks/T-059-reference-spaces.md#checkpoint-vigente). FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-059-reference-spaces` · PR pendiente |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente de PR62 sobre HEAD y base publicados según la [entrega de T-059](tasks/T-059-reference-spaces.md#entrega-para-revisión), con `verify-required` del HEAD vigente. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-059-reference-spaces` · [PR62](https://github.com/MatiasNicolasAcevedo/devnotes/pull/62) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
 
@@ -102,5 +102,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá como Frontera en rol implementer para T-059 (docs/tasks/T-059-reference-spaces.md) en codex/t-059-reference-spaces sobre main publicado con PR61 MERGED. Continuá desde el checkpoint y publicá un único PR contra main para revisión independiente. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+Continuá como Frontera en rol reviewer en una sesión independiente para T-059 (docs/tasks/T-059-reference-spaces.md) de MatiasNicolasAcevedo/devnotes. Confirmá en GitHub que PR62 está OPEN, listo para revisión y contra main, y cotejá HEAD y base publicados. Revisá el diff en un checkout aislado según docs/agents/reviewer.md y docs/AUTONOMY.md. Verificá la evidencia dirigida en PostgreSQL 18.6, el aislamiento por propietario y espacio en SQL, la compatibilidad y los negativos HTTP, y exigí verify-required SUCCESS para el HEAD vigente. Publicá el veredicto ligado a los SHA y seguí el protocolo de merger solo si corresponde. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
 ```
