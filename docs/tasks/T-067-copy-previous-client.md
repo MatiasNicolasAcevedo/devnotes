@@ -1,6 +1,6 @@
 ---
 id: T-067
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 milestone: M5
@@ -63,7 +63,7 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-Corrección de los dos bloqueantes de [R1](#revisión-independiente-r1) publicada en [PR70](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70), commit técnico `dc4176cf348d17a2184bca6ea8c955e5ea47844a` sobre base `main` `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb`. Pendiente R2 independiente sobre el HEAD documental publicado y su base, con `verify-required` del HEAD vigente. **FULL/STARTER DIFERIDO POR EL DUEÑO.** SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Render requiere autorización expresa separada sobre SHA y ventana.
+La [revisión independiente R2](#revisión-independiente-r2) cierra B-1 y mantiene B-2 abierto al volver a la fecha tras perder la respuesta del POST. Las dos rondas previstas están agotadas. El dueño decide si autoriza una corrección acotada en la misma rama y una revisión adicional independiente. **FULL/STARTER DIFERIDO POR EL DUEÑO.** SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Render requiere autorización expresa separada sobre SHA y ventana.
 
 ## Evidencia dirigida
 
@@ -121,6 +121,24 @@ Corrección suficiente: coordinar las lecturas durante el POST y registrar una s
 CP-07. Tras una pérdida de respuesta, `useDailyNote.ts` marca `copyTargetNeedsReload`, pero deriva `status = 'saved'` al terminar el POST. La prueba encuentra al mismo tiempo «Recargar nota» y «Guardado» dentro de «Estado de guardado».
 
 Corrección suficiente: hacer que el indicador refleje el estado incierto hasta una relectura concluyente. Cierre observable: ni «Guardado» ni confirmación de copia tras perder la respuesta, con edición y guardado manual bloqueados hasta la relectura. Al recuperar el destino, mostrar el estado que corresponda y conservar el límite de un POST por gesto.
+
+## Revisión independiente R2
+
+2026-11-14. Frontera reviewer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git, gh y Node 24.21.0. Worktree propio `.orchestrator/t-067-review-r2-codex`. GitHub confirmó [PR70](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70) `OPEN` contra `main`, HEAD de entrada `4a26f9069f4a6ae53aefcddd1e43f11d08abcb0a`, base `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb` y [`verify-required` SUCCESS sobre ese HEAD](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43633541666/job/132565272987). La corrección cambia la coordinación del ACK y lo que comunica la UI, sobre la API, los permisos y el esquema de T-066.
+
+- Repetida desde `client/` la selección de diez archivos de la [corrida de corrección](#corrida-de-corrección-r1), exit 0, **181/181**. `npm ci --no-audit --no-fund`, `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build`, exit 0. Vite conservó el aviso de tamaño del chunk.
+- B-1 cerrado. El GET con revisión igual al ACK llega antes que el ACK. La copia confirmada genera cero PUT y un solo Ctrl+Z genera un PUT con el documento previo y la revisión del ACK. Cuando el GET trae una revisión superior, la recuperación conserva el contenido remoto y se registran cero PUT.
+- B-2 pasa mientras se permanece en la fecha. El caso de respuesta perdida y GET fallido conserva «Sin confirmar» y bloquea edición y guardado manual, hasta el GET concluyente. El POST se cuenta una vez. La regresión de abajo verifica el mismo bloqueo al salir y volver a la fecha.
+- Cotejados los dos JUnit saneados del implementer y las aserciones de `copy previous:`, **2/2 desktop y 2/2 mobile**, sin fallos ni omitidos, con backend real, PostgreSQL 18.6 y OIDC ficticio según la corrida de corrección. Los árboles `client`, `e2e` y `server` coinciden con `dc4176c` y la base publicada coincide. R2 verifica esa evidencia de Playwright y ejecuta Vitest en su propio worktree.
+- En raíz, `node scripts/docs-check.mjs`, `git diff --check efd02e5...HEAD` y `node scripts/ci/classify-diff.mjs --base efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb --head HEAD --phase FULL`, exit 0. Perfil `FULL/APPLICATION`, 17 rutas técnicas de 20. El veredicto en PR70 se liga al HEAD de esta transición y a la misma base tras comprobar la CI del nuevo HEAD.
+
+### B-2 · Volver a la fecha descarta el estado sin confirmar
+
+CP-07. Con el POST sin respuesta, la vista muestra «Sin confirmar» y bloquea el editor. Al elegir otra fecha y volver, `DailyDraftProvider.tsx` remonta el coordinador por owner/espacio/fecha. `useDailyNote.ts` inicializa `copyTargetNeedsReload` en `false` y deriva `saved` al terminar el GET aunque haya devuelto HTTP 500. Desaparece «Recargar nota», el editor vuelve a `contenteditable=true` y «Guardar versión» queda habilitado antes de una relectura concluyente. El contador sigue en un POST.
+
+Reproducción independiente de Vitest/MSW con los selectores reales de fecha, un POST con error de red y un GET 500 verificado en la caché al regresar. Desde `client/`, `npm test -- --run src/features/daily/CopyPreviousNote.r2-review.test.tsx -t 'al salir y volver'`, exit 1, 1 caso fallido y 13 omitidos por el filtro. Prueba temporal y salida de Vitest conservadas en el directorio ignorado `e2e/artifacts/t067-review-r2/` del worktree reviewer.
+
+Condición de cierre: al volver a una fecha con copia incierta, conservar la recuperación por cuenta, espacio y fecha hasta obtener una lectura concluyente. La regresión debe verificar «Sin confirmar», recuperación disponible, edición y guardado manual bloqueados tras el GET 500, desbloqueo tras una lectura concluyente y un solo POST por gesto. Conservar los negativos de B-1 y el aislamiento de fecha, espacio y sesión. Con autorización del dueño, Frontera implementer corrige en PR70 y Frontera reviewer verifica en otra sesión con el HEAD/base publicados y CI vigente.
 
 ## Cierre y siguiente tarea
 
