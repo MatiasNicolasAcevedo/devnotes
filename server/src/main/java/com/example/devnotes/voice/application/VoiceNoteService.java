@@ -1,5 +1,6 @@
 package com.example.devnotes.voice.application;
 
+import com.example.devnotes.shared.space.PrivateSpace;
 import com.example.devnotes.voice.domain.VoiceText;
 import com.example.devnotes.voice.persistence.VoiceNote;
 import com.example.devnotes.voice.persistence.VoiceNoteRepository;
@@ -13,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Transactional service for voice notes: create, read, update (CAS), delete (CAS),
- * list with pagination. All queries filtered by owner. Text validated by VoiceText.
+ * list with pagination. Queries are scoped to the owner and space. Text validated by VoiceText.
  */
 @Service
 public class VoiceNoteService {
@@ -31,28 +32,26 @@ public class VoiceNoteService {
 
     /** Create a new voice note. Returns detail with revision 1. */
     @Transactional
-    public VoiceNoteView create(UUID ownerId, String text) {
+    public VoiceNoteView create(UUID ownerId, PrivateSpace space, String text) {
         VoiceText validated = VoiceText.validate(text);
         Instant now = nowMicros();
-        VoiceNote note = new VoiceNote(ownerId, validated.getValue(), now);
+        VoiceNote note = new VoiceNote(ownerId, space, validated.getValue(), now);
         VoiceNote saved = repository.saveAndFlush(note);
         return toView(saved);
     }
 
-    /** Open a single voice note by owner and id. Throws 404 if not found or not owned. */
+    /** Open a single voice note in the owner's selected space. */
     @Transactional(readOnly = true)
-    public VoiceNoteView open(UUID ownerId, UUID id) {
-        VoiceNote note =
-                repository.findByOwnerIdAndId(ownerId, id).orElseThrow(() -> new VoiceNoteNotFoundException(id));
-        return toView(note);
+    public VoiceNoteView open(UUID ownerId, PrivateSpace space, UUID id) {
+        return toView(findNote(ownerId, space, id));
     }
 
     /**
-     * List voice notes for the owner, ordered by createdAt DESC, id DESC.
+     * List voice notes in the owner's selected space, ordered by createdAt DESC, id DESC.
      * Page between 0 and 2147483647, size 1…50 default 20.
      */
     @Transactional(readOnly = true)
-    public VoiceNotePage list(UUID ownerId, int page, int size) {
+    public VoiceNotePage list(UUID ownerId, PrivateSpace space, int page, int size) {
         if (page < 0 || page > Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Page must be between 0 and 2147483647");
         }
@@ -60,9 +59,9 @@ public class VoiceNoteService {
             throw new IllegalArgumentException("Size must be between 1 and 50");
         }
         long offset = (long) page * size;
-        List<VoiceNote> notes = repository.findPageByOwnerId(ownerId, offset, size);
+        List<VoiceNote> notes = repository.findPageByOwnerIdAndSpace(ownerId, space.value(), offset, size);
         List<VoiceNoteListItem> content = notes.stream().map(this::toListItem).toList();
-        long totalElements = repository.countByOwnerId(ownerId);
+        long totalElements = repository.countByOwnerIdAndSpace(ownerId, space);
         int totalPages = (int) Math.ceil((double) totalElements / size);
         return new VoiceNotePage(content, page, size, totalElements, totalPages);
     }
@@ -72,7 +71,7 @@ public class VoiceNoteService {
      * Returns updated detail with revision+1. Throws 409 on conflict.
      */
     @Transactional
-    public VoiceNoteView update(UUID ownerId, UUID id, String text, long expectedRevision) {
+    public VoiceNoteView update(UUID ownerId, PrivateSpace space, UUID id, String text, long expectedRevision) {
         if (expectedRevision < 1 || expectedRevision > MAX_REVISION) {
             throw new IllegalArgumentException("expectedRevision must be between 1 and " + MAX_REVISION);
         }
@@ -81,23 +80,24 @@ public class VoiceNoteService {
 
         long newRevision = expectedRevision + 1;
         if (newRevision > MAX_REVISION) {
+            findNote(ownerId, space, id);
             throw new VoiceNoteConflictException("Revision limit exceeded");
         }
 
         int updated = repository.updateWithCas(
-                ownerId, id, validated.getValue(), expectedRevision, newRevision, java.sql.Timestamp.from(now));
+                ownerId,
+                space.value(),
+                id,
+                validated.getValue(),
+                expectedRevision,
+                newRevision,
+                java.sql.Timestamp.from(now));
 
+        VoiceNote note = findNote(ownerId, space, id);
         if (updated == 0) {
-            // Check if note exists for this owner at all — 404 vs 409
-            boolean exists = repository.findByOwnerIdAndId(ownerId, id).isPresent();
-            if (!exists) {
-                throw new VoiceNoteNotFoundException(id);
-            }
             throw new VoiceNoteConflictException("Concurrent modification detected");
         }
 
-        VoiceNote note =
-                repository.findByOwnerIdAndId(ownerId, id).orElseThrow(() -> new VoiceNoteNotFoundException(id));
         return toView(note);
     }
 
@@ -106,20 +106,23 @@ public class VoiceNoteService {
      * Returns 204 on success. Throws 404 if not found, 409 on conflict.
      */
     @Transactional
-    public void delete(UUID ownerId, UUID id, long expectedRevision) {
+    public void delete(UUID ownerId, PrivateSpace space, UUID id, long expectedRevision) {
         if (expectedRevision < 1 || expectedRevision > MAX_REVISION) {
             throw new IllegalArgumentException("expectedRevision must be between 1 and " + MAX_REVISION);
         }
 
-        int deleted = repository.deleteWithCas(ownerId, id, expectedRevision);
+        int deleted = repository.deleteWithCas(ownerId, space.value(), id, expectedRevision);
 
         if (deleted == 0) {
-            boolean exists = repository.findByOwnerIdAndId(ownerId, id).isPresent();
-            if (!exists) {
-                throw new VoiceNoteNotFoundException(id);
-            }
+            findNote(ownerId, space, id);
             throw new VoiceNoteConflictException("Concurrent modification detected");
         }
+    }
+
+    private VoiceNote findNote(UUID ownerId, PrivateSpace space, UUID id) {
+        return repository
+                .findByOwnerIdAndSpaceAndId(ownerId, space, id)
+                .orElseThrow(() -> new VoiceNoteNotFoundException(id));
     }
 
     private Instant nowMicros() {

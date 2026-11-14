@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.example.devnotes.TestcontainersConfiguration;
 import com.example.devnotes.security.OidcHttpBrowser;
 import com.example.devnotes.security.OidcHttpProvider;
-import com.example.devnotes.voice.config.VoiceProperties;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -59,6 +58,9 @@ class VoiceTranscriptionApiIT {
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
         registry.add("starter.oidc.local-issuer", OIDC_PROVIDER::issuer);
+        registry.add(
+                "devnotes.voice.test-provider-url",
+                () -> "http://127.0.0.1:" + fakeGroqPort + "/openai/v1/audio/transcriptions");
     }
 
     @BeforeAll
@@ -69,8 +71,7 @@ class VoiceTranscriptionApiIT {
         fakeGroqServer.start();
 
         // Default handler: return success
-        fakeGroqServer.createContext("/", exchange -> handleTranscription(exchange));
-        fakeGroqServer.createContext("/openai/v1/audio/transcriptions", exchange -> handleTranscription(exchange));
+        fakeGroqServer.createContext("/openai/v1/audio/transcriptions", VoiceTranscriptionApiIT::handleTranscription);
     }
 
     private static void handleTranscription(com.sun.net.httpserver.HttpExchange exchange) throws IOException {
@@ -100,9 +101,6 @@ class VoiceTranscriptionApiIT {
     @Autowired
     private JdbcTemplate jdbc;
 
-    @Autowired
-    private VoiceProperties voiceProperties;
-
     @AfterEach
     void cleanupOwnHttpWrites() {
         jdbc.update(
@@ -119,7 +117,7 @@ class VoiceTranscriptionApiIT {
         return browser;
     }
 
-    private HttpResponse<String> multipartPost(OidcHttpBrowser browser, byte[] audioBytes, String boundary)
+    private HttpResponse<String> multipartPost(OidcHttpBrowser browser, String path, byte[] audioBytes, String boundary)
             throws Exception {
         // Build multipart body
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
@@ -130,23 +128,14 @@ class VoiceTranscriptionApiIT {
         baos.write(audioBytes);
         String epilogue = ("\r\n--" + boundary + "--\r\n");
         baos.write(epilogue.getBytes("US-ASCII"));
-        byte[] body = baos.toByteArray();
-
-        // We need to send raw bytes, but OidcHttpBrowser.request takes String body.
-        // We'll use a workaround: encode to base64 and decode, or use the browser's
-        // underlying client directly.
-        // For simplicity, we'll use the browser's request method with a String body
-        // and set the correct content-type.
-        String bodyStr = new String(body, StandardCharsets.ISO_8859_1);
-        return browser.request(
-                PATH,
-                "POST",
+        return browser.upload(
+                path,
                 Map.of(
                         "Content-Type",
                         "multipart/form-data; boundary=" + boundary,
                         "X-XSRF-TOKEN",
                         browser.cookie("XSRF-TOKEN")),
-                bodyStr);
+                baos.toByteArray());
     }
 
     // Minimal valid WebM header: EBML header with DocType "webm", as Chromium MediaRecorder writes it (T-037).
@@ -214,18 +203,35 @@ class VoiceTranscriptionApiIT {
     }
 
     @Test
-    void successReturnsTranscribedText() throws Exception {
-        // Override the GroqTranscriptionClient to use our fake server
-        // We need to inject the test provider URL
-        // Since we can't easily do that in IT, we'll use the test-provider flag
-        // But for the test profile, we need to set up the fake server URL
-        // The simplest approach: override the client bean to point to our fake server
-
-        // For now, we test that the endpoint requires CSRF
+    void transcriptionRequiresCsrf() throws Exception {
         var a = login();
         // POST without CSRF should get 403
         var noCsrf = a.request(PATH, "POST", Map.of("Content-Type", "multipart/form-data; boundary=test"), "");
         assertThat(noCsrf.statusCode()).isIn(400, 403, 415);
+    }
+
+    @Test
+    void successReturnsTextWithoutPersistingInEitherSpace() throws Exception {
+        var a = login();
+        int requestsBefore = requestCount.get();
+        var caps = a.get("/api/v1/voice/capabilities");
+        assertThat(caps.statusCode()).isEqualTo(200);
+        assertThat(JSON.readTree(caps.body()).get("recordingEnabled").asBoolean())
+                .isTrue();
+        assertThat(requestCount.get()).isEqualTo(requestsBefore);
+
+        var response = multipartPost(a, PATH, validWebmHeader(), "voice-space-fixture");
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().firstValue("Cache-Control")).hasValue("no-store");
+        assertThat(JSON.readTree(response.body())).isEqualTo(JSON.readTree("""
+                {"text":"hola transcrito","language":"es"}
+                """));
+        assertThat(requestCount.get()).isEqualTo(requestsBefore + 1);
+        assertThat(jdbc.queryForObject(
+                        "SELECT count(*) FROM voice_note WHERE owner_id IN (SELECT id FROM app_user WHERE issuer=?)",
+                        Long.class,
+                        OIDC_PROVIDER.issuer()))
+                .isZero();
     }
 
     @Test

@@ -1,6 +1,6 @@
 ---
 id: T-060
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M5
@@ -8,7 +8,7 @@ spec: S-109
 depends_on: [T-059]
 branch: codex/t-060-voice-spaces
 role: implementer
-executor: junie
+executor: frontier
 pr: null
 ---
 
@@ -18,7 +18,7 @@ pr: null
 
 Guardar, editar y borrar transcripciones solo dentro del espacio elegido para la captura.
 
-Draft **solo por dependencias**: T-059 MERGED y conciliada. Contrato completo en S-109; al cumplirse las dependencias no se necesita otra sesión planner. Cada tarea/revisión usa sesión independiente.
+Dependencia satisfecha: [T-059 MERGED y conciliada](T-059-reference-spaces.md#conciliación). Contrato completo en S-109. Cada tarea/revisión usa sesión independiente.
 
 ## Alcance y decisiones resueltas
 
@@ -58,7 +58,24 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. Al tomar la tarea, registrar SHA/base, comandos, resultados y pendientes. Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
+**2026-11-13 · Frontera en rol implementer**, Codex de escritorio (GPT-6, variante y esfuerzo sin verificar), PowerShell, Git Bash, Git, `gh`, Node 24.21.0, Java 21 y Docker Linux. Impacto en API, permisos y datos: alta y acceso a texto de voz con propietario autenticado y espacio, persistencia en la columna de V7 y compatibilidad de Trabajo por omisión. Alcance de backend.
+
+HEAD/base `c6d48310387f1e6d509f83ec14c33f736c23ba39` en `.orchestrator/t-060/`. `gh pr view 62` y `git ls-remote` confirmaron la [conciliación de T-059](T-059-reference-spaces.md#conciliación). Sin otros PR abiertos contra `main` ni rama de T-060 publicada al inicio.
+
+Rojo sobre las fuentes de `c6d4831` con `VoiceSpaceApiIT` agregado. Desde `server/` en Git Bash, `./mvnw -o -B -q verify -Dtest=PrivateSpaceTest -Dit.test=VoiceSpaceApiIT -Djacoco.skip=true` → exit 1. Surefire 10/10 y cinco fallos esperados de Failsafe sobre PostgreSQL 18.6: acceso cruzado, dos conteos mezclados, espacio inválido y `Location` sin contexto. Retiro de PostgreSQL y Ryuk confirmado por ID. Log local `.orchestrator/t-060-logs/backend-red.log`.
+
+Verde sobre las fuentes de T-060, base publicada `c6d48310387f1e6d509f83ec14c33f736c23ba39`. Desde `server/` en Git Bash, `./mvnw -o -B -q spotless:apply` y `./mvnw -o -B -q verify -Dtest=PrivateSpaceTest,VoiceNoteServiceTest -Dit.test=VoiceSpaceApiIT,VoiceNoteApiIT,VoiceCapabilitiesApiIT,VoiceNoteServiceIT,VoiceTranscriptionApiIT -Djacoco.skip=true` → exit 0, Spotless OK. Surefire 12/12 (10 enum y 2 servicio), Failsafe 58/58 (5 API espacios, 12 API voz, 5 capabilities, 27 servicio/repositorio y 9 transcripción), sin omitidos. Flyway identificó PostgreSQL 18.6 en los cinco contextos. Log local `.orchestrator/t-060-logs/backend-directed.log` y reportes Maven en `server/target/`.
+
+Dos cuentas ficticias con OIDC local, espacios independientes, listados y conteos filtrados antes de paginar, y 404 equivalentes para ID ajeno, fuera del espacio o inexistente. Negativos de espacio inválido/repetido en los cinco métodos, 401 sin sesión y 403 de CSRF. El CAS cubre revisión vigente, obsoleta y tope fuera de ámbito, escritura cruzada directa en el repositorio y carreras actualización/actualización y actualización/borrado con un ganador en cada espacio. El POST en Personal devuelve una `Location` relativa con `?space=personal` y Trabajo conserva la ruta anterior. La regresión de transcripción usa WebM ficticio y un proveedor HTTP local, verifica texto sin persistencia en `voice_note` y que capabilities no consulta al proveedor. Se comprobó el retiro por ID de los PostgreSQL y Ryuk de ambas corridas. El filtro exacto `com.docker.compose.project=starter-e2e-t-060` no devolvió contenedores, redes ni volúmenes.
+
+**FULL/STARTER DIFERIDO POR EL DUEÑO.** El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+
+### Correcciones significativas
+
+| Problema o condición | Arreglo | Prueba |
+|---|---|---|
+| El CRUD ignoraba `space`, la entidad fijaba Trabajo y las consultas se acotaban solo por propietario | Parser compartido, persistencia explícita y filtro por propietario y espacio en listado, conteo, detalle y CAS | Cinco casos de `VoiceSpaceApiIT` en rojo sobre `c6d4831` y 58 IT verdes |
+| El PUT con la revisión tope devolvía 409 antes de verificar el ámbito del ID | Comprobación acotada al mismo propietario y espacio antes de resolver el conflicto por revisión tope | Negativos de CAS con revisión tope y regresión 409 para nota propia |
 
 ## Cierre y siguiente tarea
 

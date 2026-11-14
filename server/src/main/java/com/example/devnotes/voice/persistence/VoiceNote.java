@@ -40,9 +40,9 @@ public class VoiceNote {
 
     protected VoiceNote() {}
 
-    public VoiceNote(UUID ownerId, String text, Instant now) {
+    public VoiceNote(UUID ownerId, PrivateSpace space, String text, Instant now) {
         this.ownerId = ownerId;
-        this.space = PrivateSpace.WORK;
+        this.space = space;
         this.text = text;
         this.revision = 1;
         this.createdAt = now;
