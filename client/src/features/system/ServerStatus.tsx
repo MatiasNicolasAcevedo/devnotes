@@ -15,9 +15,10 @@ const STATES = {
  * con el documento visible), nunca del bundle ni del guardado de notas. Un fallo retira el «Online» anterior aunque
  * quede una respuesta previa en cache.
  */
-export function ServerStatus() {
-  const readiness = useReadiness()
+export function ServerStatus({ compact }: { compact?: boolean }) {
   const narrow = useIsNarrow()
+  const iconOnly = compact ?? narrow
+  const readiness = useReadiness()
   const state = readiness.isError ? 'offline' : readiness.isPending ? 'connecting' : 'online'
   const { label, name, color } = STATES[state]
 
@@ -31,7 +32,7 @@ export function ServerStatus() {
         aria-hidden
         sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: color, flexShrink: 0 }}
       />
-      {narrow ? null : (
+      {iconOnly ? null : (
         <Typography variant="caption" color="text.secondary" noWrap>
           {label}
         </Typography>
@@ -39,5 +40,5 @@ export function ServerStatus() {
     </Box>
   )
 
-  return narrow ? <Tooltip title={name}>{indicator}</Tooltip> : indicator
+  return iconOnly ? <Tooltip title={name}>{indicator}</Tooltip> : indicator
 }

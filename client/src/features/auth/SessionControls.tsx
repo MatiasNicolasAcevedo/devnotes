@@ -4,23 +4,31 @@ import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import { useState } from 'react'
 import { Link as RouterLink, useLocation } from 'react-router'
-import { PersonIcon } from '../../shared/ui/icons'
+import { DatabaseIcon, PersonIcon } from '../../shared/ui/icons'
 import { ServiceActivityDialog } from '../serviceActivity/ServiceActivityDialog'
 import {
   useDailyVisit,
   useServiceActivityCapabilities,
 } from '../serviceActivity/useServiceActivity'
+import { texts as dataTexts } from '../portability/messages'
 import { sessionLabel, useSession } from './sessionContext'
 
 /** Estado de sesión en la barra superior: menú de usuario con «Cerrar sesión» o acceso al ingreso. */
-export function SessionControls() {
+export function SessionControls({ menuContainer }: { menuContainer?: () => HTMLElement | null }) {
   const { status, user } = useSession()
   const { pathname } = useLocation()
 
   // Se monta solo con sesión y por identidad: al terminar o cambiar de cuenta, el menú y el detalle abiertos se
   // descartan y no reaparecen con otra identidad.
   if (status === 'authenticated' && user) {
-    return <AccountMenu key={user.id} owner={user.id} label={sessionLabel(user)} />
+    return (
+      <AccountMenu
+        key={user.id}
+        owner={user.id}
+        label={sessionLabel(user)}
+        menuContainer={menuContainer}
+      />
+    )
   }
 
   if (status === 'visitor' && pathname !== '/login') {
@@ -34,9 +42,21 @@ export function SessionControls() {
   return null
 }
 
-function AccountMenu({ owner, label }: { owner: string; label: string }) {
+function AccountMenu({
+  owner,
+  label,
+  menuContainer,
+}: {
+  owner: string
+  label: string
+  menuContainer?: () => HTMLElement | null
+}) {
   const { logout, logoutPending, csrfReady } = useSession()
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null)
+  const location = useLocation()
+  const [menu, setMenu] = useState<{ anchor: HTMLElement; location: string } | null>(null)
+  if (menu && menu.location !== location.key) setMenu(null)
+  const anchor = menu?.location === location.key ? menu.anchor : null
+  const closeMenu = () => setMenu(null)
   const [activityOpen, setActivityOpen] = useState(false)
   const open = anchor !== null
   // Solo la cuenta habilitada recibe `available: true`; para las demás no hay activación ni detalle.
@@ -53,15 +73,23 @@ function AccountMenu({ owner, label }: { owner: string; label: string }) {
         aria-label={`Cuenta de ${label}`}
         aria-haspopup="menu"
         aria-expanded={open ? 'true' : undefined}
-        onClick={(event) => setAnchor(event.currentTarget)}
-        sx={{ flexShrink: 0, border: 1, borderColor: 'divider' }}
+        onClick={(event) => setMenu({ anchor: event.currentTarget, location: location.key })}
+        sx={{
+          flexShrink: 0,
+          width: 44,
+          height: 44,
+          border: 1,
+          borderColor: 'divider',
+          '&.Mui-focusVisible': { outline: '2px solid currentColor', outlineOffset: 2 },
+        }}
       >
         <PersonIcon />
       </IconButton>
       <Menu
+        container={menuContainer}
         anchorEl={anchor}
         open={open}
-        onClose={() => setAnchor(null)}
+        onClose={closeMenu}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
@@ -73,10 +101,20 @@ function AccountMenu({ owner, label }: { owner: string; label: string }) {
         >
           {label}
         </MenuItem>
+        <MenuItem
+          component={RouterLink}
+          to="/data"
+          onClick={closeMenu}
+          aria-current={location.pathname === '/data' ? 'page' : undefined}
+          sx={{ '&&': { minHeight: 48 }, gap: 1 }}
+        >
+          <DatabaseIcon />
+          {dataTexts.title}
+        </MenuItem>
         {available ? (
           <MenuItem
             onClick={() => {
-              setAnchor(null)
+              closeMenu()
               setActivityOpen(true)
             }}
           >
@@ -86,7 +124,7 @@ function AccountMenu({ owner, label }: { owner: string; label: string }) {
         <MenuItem
           disabled={logoutPending || !csrfReady}
           onClick={() => {
-            setAnchor(null)
+            closeMenu()
             logout()
           }}
         >

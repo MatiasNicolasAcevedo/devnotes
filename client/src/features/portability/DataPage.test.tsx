@@ -18,6 +18,10 @@ import { EXPORT_PATH, IMPORT_PREVIEW_PATH, IMPORTS_PATH, XLSX_MEDIA_TYPE } from 
 const a = buildAuthUser({ id: '01900000-0000-7000-8000-00000000000a', displayName: 'Persona A' })
 const b = buildAuthUser({ id: '01900000-0000-7000-8000-00000000000b', displayName: 'Persona B' })
 const counts = { references: 2, dailyNotes: 3, dailyVersions: 1, voiceNotes: 4 }
+const countsBySpace = {
+  work: counts,
+  personal: { references: 0, dailyNotes: 0, dailyVersions: 0, voiceNotes: 0 },
+}
 const FILE_LABEL = 'Archivo de respaldo (.xlsx)'
 
 function xlsxFile(name = 'devnotes-2026-11-10.xlsx') {
@@ -87,6 +91,7 @@ function installBackend(overrides: Partial<Backend> = {}): Backend {
           version: 1,
           exportedAt: '2026-11-10T12:30:00.123456Z',
           counts,
+          countsBySpace,
           accountEmpty: backend.accountEmpty,
         })
       )
@@ -95,7 +100,9 @@ function installBackend(overrides: Partial<Backend> = {}): Backend {
       backend.imports += 1
       backend.csrfHeaders.push(request.headers.get(CSRF_HEADER_NAME))
       if (backend.holdImport) await backend.holdImport
-      return backend.importResponse?.() ?? HttpResponse.json({ counts }, { status: 201 })
+      return (
+        backend.importResponse?.() ?? HttpResponse.json({ counts, countsBySpace }, { status: 201 })
+      )
     }),
   )
   return backend
@@ -134,7 +141,7 @@ async function renderData(backendOverrides: Partial<Backend> = {}) {
   const auth = installAuthBackend({ user: a })
   const backend = installBackend(backendOverrides)
   const view = renderWithProviders(<AppRoutes />, { route: '/data' })
-  await screen.findByRole('heading', { name: 'Datos', level: 1 })
+  await screen.findByRole('heading', { name: 'Datos de la cuenta', level: 1 })
   const input = await screen.findByLabelText(FILE_LABEL)
   await waitFor(() => expect(input).toBeEnabled())
   return { auth, backend, input, ...view }
@@ -262,11 +269,51 @@ describe('DataPage · vista previa', () => {
     const preview = await screen.findByRole('region', { name: 'Contenido del archivo' })
     expect(within(preview).getByText(/Exportado el 10 de noviembre de 2026/)).toBeVisible()
     expect(within(preview).getByText(/12:30.*UTC/)).toBeVisible()
-    expectCounts(within(preview).getByRole('list'))
+    expect(
+      within(preview).getByText('Los respaldos de versión 1 se importan en Trabajo.'),
+    ).toBeVisible()
+    expectCounts(within(preview).getByRole('list', { name: 'Trabajo' }))
+    expect(within(preview).getByRole('list', { name: 'Personal' })).toHaveTextContent(
+      'Notas diarias: 0',
+    )
+    expectCounts(within(preview).getByRole('list', { name: 'Total de la cuenta' }))
     expect(screen.getByRole('button', { name: 'Importar' })).toBeEnabled()
     expect(backend.previews).toBe(1)
     expect(backend.imports).toBe(0)
     expect(backend.csrfHeaders).toEqual(['csrf-ficticio-1'])
+  })
+
+  it('muestra la versión 2 y los conteos de ambos espacios antes de confirmar', async () => {
+    const { user, backend, input } = await renderData({
+      previewResponse: () =>
+        HttpResponse.json({
+          format: 'devnotes-xlsx',
+          version: 2,
+          exportedAt: '2026-11-10T12:30:00Z',
+          counts,
+          countsBySpace: {
+            work: { references: 2, dailyNotes: 1, dailyVersions: 1, voiceNotes: 0 },
+            personal: { references: 0, dailyNotes: 2, dailyVersions: 0, voiceNotes: 4 },
+          },
+          accountEmpty: true,
+        }),
+    })
+
+    await user.upload(input, xlsxFile())
+    const preview = await screen.findByRole('region', { name: 'Contenido del archivo' })
+    expect(within(preview).getByText(/Versión 2/)).toBeVisible()
+    expect(within(preview).getByRole('list', { name: 'Trabajo' })).toHaveTextContent(
+      'Notas diarias: 1',
+    )
+    expect(within(preview).getByRole('list', { name: 'Personal' })).toHaveTextContent(
+      'Notas diarias: 2',
+    )
+    await user.click(within(preview).getByRole('button', { name: 'Importar' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('list', { name: 'Personal' })).toHaveTextContent(
+      'Notas de voz: 4',
+    )
+    expect(backend.imports).toBe(0)
   })
 
   it('con accountEmpty: false explica el motivo y no ofrece importar ni confirmar', async () => {
@@ -275,7 +322,7 @@ describe('DataPage · vista previa', () => {
     await user.upload(input, xlsxFile())
 
     const preview = await screen.findByRole('region', { name: 'Contenido del archivo' })
-    expectCounts(within(preview).getByRole('list'))
+    expectCounts(within(preview).getByRole('list', { name: 'Total de la cuenta' }))
     expect(within(preview).getByRole('status')).toHaveTextContent(
       'Solo se puede importar en una cuenta sin datos.',
     )
@@ -333,7 +380,7 @@ describe('DataPage · importar', () => {
     await user.click(await screen.findByRole('button', { name: 'Importar' }))
 
     const dialog = await screen.findByRole('dialog', { name: '¿Importar este archivo?' })
-    expectCounts(within(dialog).getByRole('list'))
+    expectCounts(within(dialog).getByRole('list', { name: 'Total de la cuenta' }))
     expect(backend.imports).toBe(0)
     await user.click(within(dialog).getByRole('button', { name: 'Confirmar importación' }))
 
@@ -341,6 +388,14 @@ describe('DataPage · importar', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(screen.queryByRole('button', { name: 'Importar' })).not.toBeInTheDocument()
     expect(input).toBeDisabled()
+    const selector = screen.getByRole('button', { name: 'Espacio: Trabajo' })
+    await user.click(selector)
+    const spaceMenu = screen.getByRole('menu', { name: 'Cambiar de espacio' })
+    expect(spaceMenu).toHaveAccessibleDescription('Hay una importación en curso.')
+    const personal = within(spaceMenu).getByRole('menuitemradio', { name: 'Personal' })
+    expect(personal).toHaveAttribute('aria-disabled', 'true')
+    expect(personal).not.toHaveAttribute('href')
+    await user.keyboard('{Escape}')
     expect(screen.queryByText('Importación completa')).not.toBeInTheDocument()
     expect(invalidate).not.toHaveBeenCalled()
     held.resolve()
@@ -348,17 +403,20 @@ describe('DataPage · importar', () => {
     const title = await screen.findByText('Importación completa')
     const success = title.closest('[role="status"]')
     expect(success).not.toBeNull()
-    const list = within(success as HTMLElement).getByRole('list')
+    const list = within(success as HTMLElement).getByRole('list', { name: 'Total de la cuenta' })
     expectCounts(list)
-    expect(within(list).getByRole('link', { name: 'Ver en Notas' })).toHaveAttribute(
+    const work = within(success as HTMLElement).getByRole('list', { name: 'Trabajo' })
+    expect(within(work).getByRole('link', { name: 'Ver en Notas (Trabajo)' })).toHaveAttribute(
       'href',
-      '/notes',
+      '/notes?space=work',
     )
-    expect(within(list).getByRole('link', { name: 'Ver en Voz' })).toHaveAttribute('href', '/voice')
-    expect(within(list).getByRole('link', { name: 'Ver en Referencias' })).toHaveAttribute(
+    expect(within(work).getByRole('link', { name: 'Ver en Voz (Trabajo)' })).toHaveAttribute(
       'href',
-      '/reference',
+      '/voice?space=work',
     )
+    expect(
+      within(work).getByRole('link', { name: 'Ver en Referencias (Trabajo)' }),
+    ).toHaveAttribute('href', '/reference?space=work')
     expect(title).toHaveFocus()
 
     expect(backend.previews).toBe(1)
@@ -436,7 +494,7 @@ describe('DataPage · errores por código', () => {
       'IMPORT_UNSUPPORTED_FORMAT',
       400,
       { code: 'IMPORT_UNSUPPORTED_FORMAT', sheet: 'devnotes', row: 2 },
-      'El archivo no tiene el formato devnotes-xlsx versión 1. Hoja «devnotes», fila 2.',
+      'El archivo no tiene el formato devnotes-xlsx versión 1 o 2. Hoja «devnotes», fila 2.',
     ],
     [
       'IMPORT_INVALID_RECORD',
@@ -718,7 +776,7 @@ describe('DataPage · teclado, foco y 375 px', () => {
     const importButton = await screen.findByRole('button', { name: 'Importar' })
 
     // jsdom no calcula layout: se comprueban las reglas que impiden el overflow horizontal.
-    const page = screen.getByRole('heading', { name: 'Datos', level: 1 }).parentElement
+    const page = screen.getByRole('heading', { name: 'Datos de la cuenta', level: 1 }).parentElement
       ?.parentElement as HTMLElement
     expect(getComputedStyle(page).minWidth).toBe('0px')
     expect(getComputedStyle(page).overflowWrap).toBe('anywhere')

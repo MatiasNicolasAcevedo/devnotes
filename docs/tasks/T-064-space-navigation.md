@@ -1,6 +1,6 @@
 ---
 id: T-064
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M5
@@ -8,7 +8,7 @@ spec: S-109
 depends_on: [T-063]
 branch: codex/t-064-space-navigation
 role: implementer
-executor: junie
+executor: frontier
 pr: null
 ---
 
@@ -60,7 +60,19 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. Al tomar la tarea, registrar SHA/base, comandos, resultados y pendientes. Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
+2026-11-14 · Frontera en rol implementer en sesión nueva de Codex Desktop, modelo GPT-6 (variante y esfuerzo no expuestos), con PowerShell, Git, `gh` y Node 24.21.0/npm 11.19.0. Worktree propio `.orchestrator/t-064`, rama `codex/t-064-space-navigation`, HEAD/base inicial `1a3e95d6de17d1a4e9b3fcc1118637704f219cb9`. `gh pr view 66` y `git fetch` exit 0. [T-063 conciliada](T-063-space-client-context.md#conciliación) en el primer avance de la rama. Se leyeron las tres observaciones de R1 de T-063.
+
+Impacto:
+
+- **Comportamiento y UI:** Trabajo/Personal con texto, ícono, acento y teclado. El selector lee el espacio confirmado y envía la URL de destino a `SpaceNavigation`; conserva la fecha en Notas/Historial, reinicia selección y filtros de Referencias/Voz, y muestra el bloqueo publicado por T-063 en una importación. Desde Datos, un cambio explícito abre Notas del destino. Una entrada directa a Datos inicializa el selector desde la preferencia de esa cuenta. Barra superior de 56 px, cuatro destinos abajo por debajo de 768 CSS px y Datos en el menú de cuenta. Marca de la aplicación instalada conservada.
+- **API y datos:** el cliente acepta preview v1/v2 y valida la suma de `countsBySpace` frente al total. La vista previa, confirmación y resultado muestran ambos espacios. v1 informa que restaura en Trabajo. El respaldo cubre la cuenta completa.
+- **Permisos:** se mantienen los permisos, la sesión y las guardias de T-063. Sin cambios en endpoints, base de datos ni dependencias.
+
+Preparación local: `npm ci` exit 1 (`ENOTFOUND registry.npmjs.org` en sandbox); `npm ci --no-audit --no-fund` con acceso de red, exit 0 (384 paquetes del lockfile en el worktree). Primera prueba dirigida en rojo (mismas rutas de contrato con `--reporter=dot`), exit 1, 17 fallos y 81 casos verdes. Reprodujo rechazo de v2, falta de selector y barra con cinco destinos. Primera corrida verde del comando de contrato, exit 0, 98/98, antes del ajuste de bloqueo visible de importación.
+
+Ensayo de navegador dirigido, desde Git Bash: `STARTER_E2E_PROJECT=starter-e2e-t064-layout-1114 bash scripts/e2e.sh --grep 'T-064: selector' --project desktop`. Base/HEAD `1a3e95d`, fuentes de T-064 en el worktree. Usar solo el namespace indicado y el directorio de artefactos del harness, con fixtures ficticias y cleanup automático por labels exactos. Comprobar ausencia de recursos antes y después. Sin editar fuentes durante la corrida. Primer intento exit 1: pasó los anchos y Tab desde el foco heredado del login entró en el editor. La prueba parte del botón de cuenta y usa Escape y Shift+Tab. Reintentos `starter-e2e-t064-layout-r2` y `starter-e2e-t064-layout-r3` exit 1: la opción enfocada medía 36 px debido a la regla responsiva de MUI. Se ajustó la especificidad para sostener 48 px y se mantuvo un nombre de menú estable y restauración explícita del foco. R3 verificó el caso de visitante. Cleanup verificado para los tres namespaces. Corrida final con `starter-e2e-t064-layout-final`: los dos casos de navegador pasaron, incluidos 360/375/390/767/768/1280 CSS px, el viewport equivalente a 200 %, ausencia de overflow, tamaños, foco y selección por teclado. La aceptación con Android físico y zoom del navegador queda pendiente. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
+
+Checks locales de client: comando contractual de la sección «Aceptación y pruebas», exit 0, 98/98 en 4 archivos. `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build`, exit 0 en cada uno. Vite conserva el aviso de chunks >500 kB. Regresión adicional de rutas, cuenta, navegación de espacios y voz, referencias y conexión: `npm test -- --run src/app/AppRoutes.test.tsx src/features/auth/SessionControls.test.tsx src/features/spaces/SpaceNavigation.test.tsx src/features/voice/VoiceDraftNavigation.test.tsx src/features/reference/ReferenceSession.test.tsx src/features/system/ServerStatus.test.tsx` → exit 0, 78/78 en 6 archivos. El reintento de navegador también incluye el caso de la barra de visitante (`--grep 'T-064: selector|T-050: visitor navigation' --project desktop`).
 
 ## Cierre y siguiente tarea
 

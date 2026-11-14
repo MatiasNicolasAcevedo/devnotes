@@ -75,7 +75,7 @@
 .daily-editor-wrapper--fill > .daily-editor-viewport {
   flex: 1 1 0;
   height: auto;
-  min-height: 240px;
+  min-height: 0;
   resize: none;
 }
 

@@ -14,17 +14,21 @@ import {
   exportFilename,
   importFile,
   importPreviewSchema,
+  importResultSchema,
   previewImport,
   saveBlob,
 } from './api'
 import { portabilityErrorMessage } from './messages'
 
 const counts = { references: 2, dailyNotes: 3, dailyVersions: 1, voiceNotes: 4 }
+const emptyCounts = { references: 0, dailyNotes: 0, dailyVersions: 0, voiceNotes: 0 }
+const legacyCounts = { work: counts, personal: emptyCounts }
 const preview = {
   format: 'devnotes-xlsx',
   version: 1,
   exportedAt: '2026-11-10T12:00:00.123456Z',
   counts,
+  countsBySpace: legacyCounts,
   accountEmpty: true,
 }
 
@@ -132,7 +136,13 @@ describe.each([
     status: 200,
     body: preview,
   },
-  { name: 'importFile', path: IMPORTS_PATH, call: importFile, status: 201, body: { counts } },
+  {
+    name: 'importFile',
+    path: IMPORTS_PATH,
+    call: importFile,
+    status: 201,
+    body: { counts, countsBySpace: legacyCounts },
+  },
 ])('$name', ({ path, call, status, body }) => {
   afterEach(() => vi.restoreAllMocks())
 
@@ -216,14 +226,53 @@ describe.each([
   })
 })
 
+const countsBySpace = {
+  work: { references: 2, dailyNotes: 1, dailyVersions: 0, voiceNotes: 3 },
+  personal: { references: 0, dailyNotes: 2, dailyVersions: 1, voiceNotes: 1 },
+}
+
+describe('conteos por espacio', () => {
+  it('acepta un respaldo v2 con datos en ambos espacios', () => {
+    expect(importPreviewSchema.parse({ ...preview, version: 2, countsBySpace })).toMatchObject({
+      version: 2,
+      countsBySpace,
+    })
+    expect(importResultSchema.parse({ counts, countsBySpace })).toEqual({ counts, countsBySpace })
+  })
+
+  it('acepta un respaldo v1 del servidor con todos los datos en Trabajo', () => {
+    const summary = { work: counts, personal: emptyCounts }
+    expect(importPreviewSchema.parse({ ...preview, countsBySpace: summary })).toMatchObject({
+      version: 1,
+      countsBySpace: summary,
+    })
+  })
+
+  it('rechaza una vista previa v1 que asigna registros a Personal', () => {
+    expect(importPreviewSchema.safeParse({ ...preview, countsBySpace }).success).toBe(false)
+  })
+
+  it.each([
+    { work: counts },
+    { work: counts, personal: counts },
+    { work: { ...counts, dailyNotes: -1 }, personal: emptyCounts },
+  ])('rechaza conteos incompletos o incompatibles con el total', (breakdown) => {
+    expect(
+      importPreviewSchema.safeParse({ ...preview, version: 2, countsBySpace: breakdown }).success,
+    ).toBe(false)
+    expect(importResultSchema.safeParse({ counts, countsBySpace: breakdown }).success).toBe(false)
+  })
+})
+
 describe('importPreviewSchema', () => {
-  it('acepta el cuerpo exacto de S-107', () => {
+  it('acepta una vista previa v1 según S-109', () => {
     expect(importPreviewSchema.safeParse(preview).success).toBe(true)
   })
 
   it.each([
     { ...preview, format: 'otro' },
-    { ...preview, version: 2 },
+    { ...preview, version: 2, countsBySpace: undefined },
+    { ...preview, version: 3 },
     { ...preview, exportedAt: 'ayer' },
     { ...preview, accountEmpty: 'no' },
     { ...preview, counts: { references: 1 } },
@@ -283,7 +332,11 @@ describe('portabilityErrorMessage', () => {
       'Tu cuenta supera los límites de cantidad o tamaño de un respaldo restaurable. No se generó ningún archivo.',
     ],
     ['IMPORT_INVALID_FILE', 400, 'El archivo no es un Excel exportado desde DevNotes.'],
-    ['IMPORT_UNSUPPORTED_FORMAT', 400, 'El archivo no tiene el formato devnotes-xlsx versión 1.'],
+    [
+      'IMPORT_UNSUPPORTED_FORMAT',
+      400,
+      'El archivo no tiene el formato devnotes-xlsx versión 1 o 2.',
+    ],
     ['IMPORT_INVALID_RECORD', 400, 'El archivo tiene datos inválidos y no se puede importar.'],
     ['IMPORT_TOO_LARGE', 413, 'El archivo supera el máximo de 10 MB.'],
     ['IMPORT_ACCOUNT_NOT_EMPTY', 409, 'Solo se puede importar en una cuenta sin datos.'],

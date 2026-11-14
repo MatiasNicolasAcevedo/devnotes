@@ -9,7 +9,7 @@ test('private reference CRUD persists, paginates and rejects a simultaneous seco
   await control('reference-login');
   await readiness(page);
   const a = await interactiveLogin(page, identity);
-  await page.getByRole('link', { name: 'Referencia', exact: true }).click();
+  await page.getByRole('link', { name: 'Referencias', exact: true }).click();
   await expect(page.getByText('No tenés elementos en esta página.')).toBeVisible();
   const create = page.getByRole('button', { name: 'Crear elemento', exact: true });
   await create.click();
@@ -45,7 +45,7 @@ test('private reference CRUD persists, paginates and rejects a simultaneous seco
     const b = await interactiveLogin(bPage, randomUUID());
     expect(b).not.toBe(a);
     expect((await (await page.request.get('/api/v1/auth/me')).json()).id).toBe(a);
-    await bPage.getByRole('link', { name: 'Referencia', exact: true }).click();
+    await bPage.getByRole('link', { name: 'Referencias', exact: true }).click();
     await expect(bPage.getByText('No tenés elementos en esta página.')).toBeVisible();
     const csrf = await headers(bPage);
     const missing = await (await bPage.request.get(`${path}/${randomUUID()}`)).json();
