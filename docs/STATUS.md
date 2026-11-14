@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-062](tasks/T-062-xlsx-spaces-api.md) · Respaldo integral y restauración de ambos espacios ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `in_progress` |
-| Acción actual | Frontera implementa T-062 tras la [decisión del dueño](tasks/T-062-xlsx-spaces-api.md#decisión-del-dueño-del-2026-11-13) sobre átomos de otro espacio (opción c). No desplegar. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-062-xlsx-spaces-api` · PR pendiente |
+| Estado | `in_review` |
+| Acción actual | Implementación publicada según la [decisión del dueño](tasks/T-062-xlsx-spaces-api.md#decisión-del-dueño-del-2026-11-13) (opción c); falta la revisión independiente de PR65 en otra sesión. Paso intermedio: Datos acepta la vista previa v2 recién en T-064, así que no desplegar. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-062-xlsx-spaces-api` · [PR65](https://github.com/MatiasNicolasAcevedo/devnotes/pull/65) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
 
@@ -108,5 +108,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera en rol implementer y retomá T-062 de MatiasNicolasAcevedo/devnotes (docs/tasks/T-062-xlsx-spaces-api.md) en la rama codex/t-062-xlsx-spaces-api, worktree .orchestrator/t-062. Precondición: T-061 conciliada done tras PR64 MERGED y decisión del dueño (opción c) registrada en S-109 y en la tarea. Seguí el checkpoint vigente, implementá según el contrato con pruebas en rojo primero y publicá el PR con Refs: T-062 para revisión independiente. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. No despliegues; el ensayo de Render requiere autorización expresa sobre SHA y ventana.
+Actuá como Frontera en rol reviewer en una sesión nueva, distinta de la implementación, y revisá PR65 de MatiasNicolasAcevedo/devnotes (T-062, docs/tasks/T-062-xlsx-spaces-api.md) sobre el HEAD y la base publicados, en un checkout aislado. Comprobá verify-required del HEAD vigente, la decisión del dueño (opción c) en S-109 y en la tarea, la proyección y escritura de space, la asociación de versiones por espacio+fecha, la reescritura de átomos solo dentro de su espacio con el átomo cruzado intacto, la cuenta vacía global, la version real y countsBySpace, con el comando dirigido de la tarea y PostgreSQL real. Registrá el veredicto en la tarea y en PR65; no mergees sin autorización según docs/AUTONOMY.md. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. No despliegues; el ensayo de Render requiere autorización expresa sobre SHA y ventana.
 ```

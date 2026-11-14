@@ -1,6 +1,6 @@
 ---
 id: T-062
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -9,7 +9,7 @@ depends_on: [T-061]
 branch: codex/t-062-xlsx-spaces-api
 role: implementer
 executor: frontier
-pr: null
+pr: 65
 ---
 
 # T-062 · Respaldo integral y restauración de ambos espacios
@@ -73,11 +73,43 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 2026-11-13 · Frontera en rol implementer, Claude Code de escritorio (Claude Opus 5.5, esfuerzo sin verificar), Git Bash, PowerShell, Git, `gh`, Node, Java 21 y Docker Linux. Worktree propio `.orchestrator/t-062` desde `main` `df2891c`; checkout principal y `trailer/` sin tocar. Precondición: `gh pr view 64` → MERGED, squash `df2891c`, mergedAt 2026-11-14T01:38:06Z, HEAD `b6f1251`.
 
-Impacto previsto: comportamiento (la exportación lleva el espacio real y la importación lo restaura), API (`version` real y `countsBySpace` en vista previa e importación, campos aditivos), datos (escrituras con `space` explícito; ningún cambio de esquema), permisos sin cambios y UI sin cambios en esta tarea.
+Impacto:
 
-Primer avance: conciliación de T-061, decisión del dueño en S-109 y en este contrato y retiro de la entrada de BACKLOG. Siguiente paso: pruebas en rojo e implementación.
+- **Comportamiento:** la exportación lleva el espacio real de cada fila y la importación lo restaura; el átomo cruzado queda sin resolver, como antes de exportar.
+- **API:** la vista previa devuelve la `version` real, y vista previa e importación 201 agregan `countsBySpace` como campo aditivo.
+- **Datos:** las escrituras llevan `space` explícito, sin cambio de esquema ni migración.
+- **Permisos:** sin cambios; el propietario sigue saliendo de la sesión.
+- **UI:** sin cambios en esta tarea. El cliente valida `version: z.literal(1)`, así que Datos rechazará la vista previa de un libro v2 hasta [T-064](T-064-space-navigation.md), que ya lo tiene contratado. Es un paso intermedio: no desplegar.
 
-Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
+Hecho: primer avance `5c008e7` (conciliación de T-061, decisión del dueño, retiro de BACKLOG) e implementación `390d8da`. El checkpoint documental de este cierre no cambia fuentes.
+
+- `PortabilityReadRepository` proyecta `space` en las cuatro colecciones (las versiones toman el de su nota) y ordena diarias y versiones por fecha y luego Trabajo antes que Personal.
+- `PortabilityWriteRepository` inserta `space` explícito, y `accountEmpty` sigue siendo global.
+- `PortabilityImportService` asocia notas y versiones por espacio+fecha y reescribe los átomos solo dentro de su espacio. Devuelve `ImportResult` y `ImportPreview` con `version` y `SpaceCounts`.
+- `PortabilityController` expone `version` real y `countsBySpace`.
+- `XlsxWorkbookReader` deja de rechazar el átomo cruzado.
+
+Pruebas, desde `server/` en Git Bash, con JDK 21.0.9 y Docker Linux 28.5.1. Logs locales fuera del repositorio.
+
+- **Rojo,** con la forma nueva de la API pero el comportamiento previo: el comando del contrato con `-o -B` → exit 1. `XlsxSpacesRoundTripTest` tuvo 3 errores `IMPORT_INVALID_RECORD`. Repetido con `-Dmaven.test.failure.ignore=true` solo para registrar las IT: `PortabilityImportApiIT` 1 fallo, `PortabilityImportServiceIT` 4 fallos y 5 errores, y `PortabilitySpacesApiIT` 1 error. Este último es el caso de BACKLOG: el importador rechazaba la exportación de la propia cuenta.
+- **Verde:** `./mvnw -o -B verify -Dtest=XlsxSpacesRoundTripTest -Dit.test=PortabilitySpacesApiIT,PortabilityExportApiIT,PortabilityImportApiIT,PortabilityImportServiceIT -Djacoco.skip=true` → exit 0. Spotless OK, Surefire 50/50 y Failsafe 43/43 (Export 8, Import 11, ImportService 21, Spaces 3), sin omitidos; Flyway identificó PostgreSQL 18.6.
+- **Regresión:** `./mvnw -o -B verify '-Dtest=Xlsx*Test,PortabilityExportServiceTest' -Dit.test=OpenApiContractIT,ApiDocsEnabledIT -Djacoco.skip=true` → Surefire 242/242 y `ApiDocsEnabledIT` 7/7. `OpenApiContractIT` tuvo 1 fallo previo: se reprodujo igual en `main` `df2891c` dentro de un worktree temporal ya retirado, y quedó en BACKLOG.
+- **Recursos:** solo contenedores efímeros de Testcontainers. No se tocaron otros contenedores ni el stack del dueño.
+
+Casos cubiertos: dos cuentas; v2 con ambos espacios en la misma fecha; IDs y átomos por espacio; export→import con átomo cruzado (201, UUID original conservado, la referencia recreada tiene otro UUID y el GET del espacio equivocado da 404); v1 a Trabajo con Personal en cero; una cuenta con datos solo en Personal se rechaza sin escrituras; carrera de una nota en cada espacio antes y durante el bloqueo; dos imports simultáneos; rollback total; sumas por espacio iguales al total; sin filtro `space` en la exportación.
+
+Cierre: `node scripts/docs-check.mjs` OK, `git diff --check` OK y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → `policy=FULL`, `profile=APPLICATION`, 9 rutas técnicas. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
+
+Control de avance de I5 tras T-062: T-057…T-061 están `done` con su PR MERGED. La evidencia de cada tarea es dirigida, y el integrado FULL/E2E sigue diferido por el dueño. Ruta vigente sin cambios: T-063 y T-064 completan cliente y Datos. Hallazgos: la decisión del átomo cruzado (resuelta) y `OpenApiContractIT` (BACKLOG). No hace falta volver a frontera.
+
+Pendiente: revisión independiente de [PR65](https://github.com/MatiasNicolasAcevedo/devnotes/pull/65) en otra sesión, con `verify-required` del HEAD vigente.
+
+### Correcciones significativas
+
+| Problema / causa | Arreglo | Prueba / SHA |
+|---|---|---|
+| El respaldo de una cuenta con un átomo de otro espacio lo rechazaba su propio importador (lector de T-061) | Decisión del dueño (c): el lector acepta el átomo y el importador lo reescribe solo dentro de su espacio | `PortabilitySpacesApiIT` rojo → verde, `390d8da` |
+| La comparación de contenido por texto fallaba porque `jsonb` reordena las claves | Comparar árboles JSON, no cadenas | `PortabilitySpacesApiIT`, `390d8da` |
 
 ## Cierre y siguiente tarea
 
