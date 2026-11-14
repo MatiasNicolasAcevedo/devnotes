@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-063](tasks/T-063-space-client-context.md) · Contexto privado en rutas, transporte y borradores ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `in_progress` |
-| Acción actual | Implementación de T-063 en el cliente: espacio en URL/preferencia, coordinador de transición, `space` en cada request persistente y en las keys privadas. Paso intermedio sin selector visual (T-064): no desplegar. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-063-space-client-context` · PR pendiente |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente de PR66 según el [checkpoint de T-063](tasks/T-063-space-client-context.md#checkpoint-vigente). Paso intermedio sin selector visual (T-064): no desplegar. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-063-space-client-context` · [PR66](https://github.com/MatiasNicolasAcevedo/devnotes/pull/66) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
 
@@ -110,5 +110,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Junie en rol implementer en una sesión nueva y retomá T-063 de MatiasNicolasAcevedo/devnotes (docs/tasks/T-063-space-client-context.md, S-109) en la rama codex/t-063-space-client-context, desde su checkpoint vigente. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. No ejecutes T-064 ni despliegues; el ensayo de Render requiere autorización expresa sobre SHA y ventana.
+Actuá como Frontera en rol reviewer en una sesión nueva, distinta de la implementación, y revisá PR66 de MatiasNicolasAcevedo/devnotes (T-063, docs/tasks/T-063-space-client-context.md, S-109) sobre el HEAD y la base publicados, en un checkout aislado. Comprobá verify-required del HEAD vigente y que el diff cumpla solo el contrato: espacio fijo en URL y preferencia (enum, memoria si el almacenamiento falla, borrado al cerrar sesión, sin evento storage), coordinador único de transición con las guardias de S-109, space en cada request persistente y en las keys owner+space de diario, versiones, referencias y voz, contexto capturado ante respuestas tardías, URL inválida que nunca lee ni escribe, y sin selector visual. Ejecutá desde client/ el npm test dirigido de la tarea, typecheck, lint, format:check y build, y desde la raíz docs-check, git diff --check y classify-diff. Registrá el veredicto en la tarea y en PR66; no mergees sin autorización según docs/AUTONOMY.md. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. No ejecutes T-064 ni despliegues; el ensayo de Render requiere autorización expresa sobre SHA y ventana.
 ```

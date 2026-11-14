@@ -1,6 +1,6 @@
 ---
 id: T-063
-status: in_progress
+status: in_review
 priority: P1
 size: L
 milestone: M5
@@ -9,7 +9,7 @@ depends_on: [T-062]
 branch: codex/t-063-space-client-context
 role: implementer
 executor: junie
-pr: null
+pr: 66
 ---
 
 # T-063 · Contexto privado en rutas, transporte y borradores
@@ -60,9 +60,43 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-2026-11-13 · Rol Junie implementer ejecutado por Claude Opus 5.5 en Claude Code de escritorio (esfuerzo de razonamiento expuesto en la sesión: 15), con Git Bash, PowerShell, Git, `gh` y Node 24.21.0. Sesión nueva. Worktree propio `.orchestrator/t-063` desde `main` `40361d8`; checkout principal y `trailer/` sin tocar. Precondición: `gh pr view 65` → MERGED contra `main`, squash `40361d8`, mergedAt 2026-11-14T02:07:09Z, HEAD `22cb1c3`. T-062 conciliada como `done`.
+2026-11-13 · Rol Junie implementer ejecutado por Claude Opus 5.5 en Claude Code de escritorio (esfuerzo de razonamiento expuesto en la sesión: 15), con Git Bash, PowerShell, Git, `gh` y Node 24.21.0/npm del proyecto. Sesión nueva. Worktree propio `.orchestrator/t-063` desde `main` `40361d8`; checkout principal y `trailer/` sin tocar. Precondición: `gh pr view 65` → MERGED contra `main`, squash `40361d8`, mergedAt 2026-11-14T02:07:09Z, HEAD `22cb1c3`. T-062 conciliada como `done` en el primer avance `4b35c81`.
 
-En curso: implementación del contrato en `client/`.
+Impacto:
+
+- **Comportamiento:** cada pantalla de contenido lee y escribe solo en el espacio confirmado. La URL sin `space` se completa con replace (preferencia del dispositivo o Trabajo); una URL inválida muestra «Espacio no válido» y no carga ni escribe. El cambio de espacio pasa por un único coordinador con las guardias de S-109.
+- **API:** el cliente envía `space` en todas las operaciones de notas, versiones, referencias y voz (CRUD incluido). Capacidad y transcripción de voz siguen globales. Sin cambios en el servidor.
+- **Datos:** keys privadas por `owner+space`. En `localStorage` solo `devnotes:last-space:<id>` con `work|personal`, guardada al completar la transición y borrada al cerrar sesión o expirar.
+- **Permisos:** sin cambios; el propietario sigue saliendo de la sesión.
+- **UI:** sin selector visual (T-064). Enlaces internos con `?space=`. Pantallas nuevas: «Espacio no válido», avisos de espera/guardado/fallo del coordinador y diálogo de voz «Guardar y cambiar / Descartar y cambiar / Seguir aquí». Un visitante en Voz ve la invitación a ingresar en lugar del compositor vacío.
+
+Hecho: implementación `a66fc49`, [PR66](https://github.com/MatiasNicolasAcevedo/devnotes/pull/66).
+
+- `features/spaces/space.ts`: enum estricto, lectura del parámetro (ausente/válido/inválido, incluidos vacío, mayúsculas y repetido), enlaces canónicos, ruta de API que rechaza valores fuera del enum y rutas de contenido.
+- `spacePreference.ts`: preferencia por cuenta, solo enum, tolerante a almacenamiento denegado.
+- `SpaceProvider.tsx` y `spaceContext.ts`: espacio confirmado por identidad (se reinicia en el mismo render al cambiar de cuenta, sin remontar la barra), canonicalización, preferencia tras la transición, origen para «Volver», bloqueos registrables.
+- `SpaceNavigation.tsx`: coordinador único. Orden: bloqueo (importación) → versión guardándose → flush del diario hasta ACK (error/409 conserva origen y borrador, con reintento) → captura de voz detenida sin transcribir → diálogo de voz → confirmación en `useLayoutEffect`. Con importación en vuelo, un enlace a otro espacio se retiene con explicación.
+- APIs/hooks de diario, versiones, referencias y voz con `space` explícito y keys `owner+space`; `DailyDraftProvider`, `DailyDraftWorkspace` y `VoiceDraftProvider` se remontan por `owner+space`, y el borrador diario solo se crea con una URL cuyo `space` coincide con el confirmado. `@`, vista previa y búsqueda de referencias usan el espacio de la nota. `AuthSessionProvider` borra la preferencia de la identidad al terminar la sesión. `DataPage` registra el bloqueo durante la importación.
+
+Pruebas, desde `client/` en Git Bash con Node 24.21.0:
+
+- **Contrato:** `npm test -- --run src/features/spaces src/features/daily/api.test.ts src/features/daily/useDailyNote.test.tsx src/features/voice/VoiceDraftNavigation.test.tsx src/features/reference` → exit 0, 10 archivos, 125/125.
+- **Suites afectadas:** `npx vitest run` → 54 archivos, 757/757 (iteración local, no FULL ni `test:ci`).
+- **Estáticos:** `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build` → exit 0. El build mantiene el aviso previo de tamaño de chunk.
+- **Negativos por mutación** (fuentes restauradas y verificadas con `git diff`): sin la guardia de flush, `SpaceNavigation.test.tsx` 3 fallos; con el borrador diario ignorando el `space` de la URL, `DailyDraftNavigation.test.tsx` 1 fallo; con el transporte sin `space`, 22 fallos en spaces/daily api/reference.
+- Casos nuevos: canonicalización con preferencia/Trabajo; `space` desconocido, vacío, mayúsculas y repetido sin lecturas ni escrituras; visitante sin leer preferencias; preferencia inválida y almacenamiento denegado; evento `storage` de otra pestaña ignorado; logout borra solo la clave de esa identidad; misma fecha en dos espacios; flush hasta ACK antes del destino; 409/503 conserva origen sin escribir en el destino; versión en vuelo bloquea con explicación; voz seguir aquí/409/descartar y guardar y cambiar; transcripción en vuelo cancelada y respuesta tardía descartada; referencias sin mezcla y respuesta tardía del origen descartada; importación retiene enlaces a otro espacio; ACK diario tardío tras remontar en el destino; las 18 operaciones persistentes con `space` en ambos espacios y rechazo previo a la red de valores inválidos.
+
+Cierre desde la raíz: `node scripts/docs-check.mjs` OK, `git diff --check` OK y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → `policy=FULL`, `profile=APPLICATION`, 57 rutas técnicas. **FULL/STARTER DIFERIDO POR EL DUEÑO**: no se ejecutaron FULL, STARTER, tooling completo ni E2E. Sin stacks ni contenedores.
+
+Limitaciones: Atrás/Adelante y URL escrita cambian la dirección antes de la guardia; el coordinador muestra la espera o el fallo en lugar del destino y «Volver a …» restaura el origen con replace. Con una importación en vuelo, salir de Datos hacia otra ruta del mismo espacio sigue desmontando la pantalla como antes; solo se retienen los enlaces a otro espacio. Paso intermedio: sin selector visual ni Datos v2 hasta T-064, no desplegar.
+
+Pendiente: revisión independiente de PR66 en otra sesión, con `verify-required` del HEAD vigente.
+
+### Correcciones significativas
+
+| Problema / causa | Arreglo | Prueba / SHA |
+|---|---|---|
+| Remontar `SpaceProvider` por identidad recreaba la barra superior y dejaba referencias a nodos desprendidos (falla de `AuthSession.test.tsx`) | Reiniciar el estado por identidad en el mismo render, sin `key` | `AuthSession.test.tsx` 19/19, `a66fc49` |
 
 ## Cierre y siguiente tarea
 
