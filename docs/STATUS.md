@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-058](tasks/T-058-daily-spaces.md) · Diario y versiones aislados por espacio ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente de la [entrega de T-058](tasks/T-058-daily-spaces.md#entrega-para-revisión). FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Estado | `mergeable` |
+| Acción actual | Completar el cierre de PR61 según la [revisión de T-058](tasks/T-058-daily-spaces.md#revisión-independiente-r1). Confirmado MERGED, la siguiente sesión concilia T-058 y toma T-059. FULL/STARTER DIFERIDO POR EL DUEÑO. |
 | Rama / PR | `codex/t-058-daily-spaces` · [PR61](https://github.com/MatiasNicolasAcevedo/devnotes/pull/61) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
@@ -100,5 +100,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Continuá como Frontera en rol reviewer en una sesión independiente para T-058 (docs/tasks/T-058-daily-spaces.md), PR61 de MatiasNicolasAcevedo/devnotes. Confirmá PR OPEN y listo para revisión contra main, HEAD/base publicados y verify-required del HEAD vigente. Revisá el diff de un checkout aislado según AGENTS.md, docs/agents/reviewer.md y docs/AUTONOMY.md, con foco en owner+space en SQL, CAS, versiones y los negativos HTTP. Contrastá la evidencia de PostgreSQL y ejecutá las pruebas dirigidas que correspondan. Publicá el veredicto ligado a ambos SHA y, si es elegible, completá el merge según AUTONOMY y confirmá MERGED antes de habilitar la siguiente tarea. Preservá el checkout principal y trailer/. FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+Verificá PR61 según la comprobación MERGED de docs/agents/implementer.md y docs/agents/merger.md. Si sigue abierto, retomá el cierre de T-058 según AUTONOMY y terminá la sesión al cerrar ese PR. Confirmado MERGED, actuá como Frontera en rol implementer en una sesión nueva, conciliá T-058 y tomá T-059 (docs/tasks/T-059-reference-spaces.md) en codex/t-059-reference-spaces, sobre main publicado. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
 ```

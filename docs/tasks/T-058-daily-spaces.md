@@ -1,6 +1,6 @@
 ---
 id: T-058
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M5
@@ -78,6 +78,18 @@ Verde sobre las fuentes de implementación de `codex/t-058-daily-spaces`, base `
 ### Entrega para revisión
 
 [PR61](https://github.com/MatiasNicolasAcevedo/devnotes/pull/61) contra `main`. Fuentes probadas en el commit técnico `a083c359714aba83f9cca8cc41c3ae4ccc8296e0` sobre la base publicada `e7d6bf66ff502e17d1d1ff04b0118c2594450f2b`. `node scripts/docs-check.mjs`, `git diff --check` y `git diff --check origin/main...HEAD` → exit 0. `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → exit 0, `policy=FULL`, `profile=APPLICATION`, 14 rutas técnicas. Este traspaso modifica solo Markdown. Próximo paso: revisión independiente con HEAD/base publicados y `verify-required` del HEAD vigente.
+
+## Revisión independiente R1
+
+**2026-11-13 · Frontera como reviewer en sesión independiente**, Codex de escritorio (GPT-6, variante y esfuerzo sin verificar), PowerShell, Git Bash, Git, `gh`, Node 24.21.0, Java 21 y Docker Linux. Checkout aislado `.orchestrator/t-058-review/`. Impacto revisado en API, permisos y datos de diario y versiones. Se conservan DTO y clientes sin `space`.
+
+- **PR y fuentes.** PR61 OPEN, listo para revisión y contra `main`. HEAD de entrada `bac839296bfae33b6c5cd4b384c1b2c606e9036c` y base publicada `e7d6bf66ff502e17d1d1ff04b0118c2594450f2b`, cotejados con las refs remotas. [CI de entrada](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43532378860) `verify-required` SUCCESS sobre ese par. El diff técnico coincide con `a083c359714aba83f9cca8cc41c3ae4ccc8296e0`.
+- **SQL y concurrencia.** Lecturas, listados y conteos se acotan por dueño y espacio en persistencia antes de paginar. CAS incluye fecha y revisión esperada, y vuelve a leer en el mismo ámbito. La unicidad de creación usa la clave de V7. La versión manual bloquea primero la nota de ese ámbito, compara la revisión y reemplaza por su ID de nota. El join de versiones usa dueño y espacio de la nota.
+- **HTTP.** Dos identidades y dos espacios en la misma fecha, con notas, revisiones y versiones independientes. Se comprobó omisión compatible, 400 sin mutación en los seis endpoints para espacios inválidos o repetidos, 401 sin sesión, 403 de CSRF y método denegado, 404 de lecturas fuera de ámbito y 409 de CAS o revisión obsoleta. Las respuestas verificadas conservan `no-store`.
+- **PostgreSQL.** Los reportes del implementer confirman las tres regresiones en rojo sobre la base y 110 Surefire más 83 IT en verde. Desde `server/`, `./mvnw -o -B -q verify -Dtest=PrivateSpaceTest,DailyContentTest,DailyNoteServiceTest,DailyVersionServiceTest,SecurityConfigTest -Dit.test=DailySpaceApiIT,DailyNoteApiIT,DailyVersionApiIT,DailyNoteServiceIT,DailyVersionServiceIT,DailyNoteRepositoryIT -Djacoco.skip=true` → exit 0 en el checkout del reviewer. Surefire 110/110 y Failsafe 83/83 sobre PostgreSQL 18.6, sin omitidos. Las carreras de creación y CAS tienen un ganador en cada espacio. Retiro comprobado por ID y etiqueta de los cinco PostgreSQL y Ryuk. Log local `.orchestrator/t-058-review-logs/backend-directed.log` y reportes Maven del worktree de revisión.
+- **Checks locales.** `node scripts/docs-check.mjs` y `git diff --check` OK. `node scripts/ci/classify-diff.mjs --base e7d6bf66ff502e17d1d1ff04b0118c2594450f2b --head HEAD --phase FULL` → `FULL / APPLICATION`, 14 rutas técnicas. El checkout principal y `trailer/` se preservaron.
+
+**Resultado favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El veredicto canónico se publica en PR61 con el HEAD documental y la base vigentes tras comprobar la CI de ese par. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
 
 ## Cierre y siguiente tarea
 
