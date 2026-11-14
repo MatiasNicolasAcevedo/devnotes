@@ -1,6 +1,6 @@
 ---
 id: T-057
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M5
@@ -94,6 +94,10 @@ Control I5 al llegar a T-057: T-053…T-056 están conciliadas. T-057 tiene evid
 - **Evidencia de la entrega.** Se cotejaron los logs saneados del rojo por V7 ausente y los 43 IT adicionales verdes de compatibilidad, con PostgreSQL 18.6 y migración histórica V1→V7. El traspaso desde `b76fef38e7190bb6c9e9d9ff0c4e836a52175d1e` mantiene las mismas fuentes técnicas. `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` pasaron. El clasificador informó `FULL` / `APPLICATION`, nueve rutas técnicas.
 
 **Resultado favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El veredicto canónico queda en PR60 con el SHA documental de esta transición y la base publicada, después de verificar la CI de ese HEAD. El ensayo de Render sigue pendiente de autorización expresa sobre SHA y ventana.
+
+## Conciliación
+
+GitHub confirmó [PR60](https://github.com/MatiasNicolasAcevedo/devnotes/pull/60) MERGED contra `main` el 2026-11-13T23:52:40Z. Squash `e7d6bf66ff502e17d1d1ff04b0118c2594450f2b`, HEAD aprobado `9456c67c09df846dd773131c3a53652f365f9d74`, `verify-required` SUCCESS. `git ls-remote` confirmó el squash como punta publicada de `main`. T-057 queda `done`.
 
 ## Cierre y siguiente tarea
 

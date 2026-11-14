@@ -3,6 +3,7 @@ package com.example.devnotes.daily.application;
 import com.example.devnotes.daily.domain.DailyContent;
 import com.example.devnotes.daily.persistence.DailyNote;
 import com.example.devnotes.daily.persistence.DailyNoteRepository;
+import com.example.devnotes.shared.space.PrivateSpace;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Clock;
 import java.time.Instant;
@@ -33,29 +34,29 @@ public class DailyNoteService {
     }
 
     /**
-     * Abre la nota del propietario para la fecha dada, si existe.
+     * Abre la nota del propietario en el espacio y la fecha dados, si existe.
      */
     @Transactional(readOnly = true)
-    public DailyNoteView open(UUID ownerId, LocalDate noteDate) {
+    public DailyNoteView open(UUID ownerId, PrivateSpace space, LocalDate noteDate) {
         DailyNote note = repository
-                .findByOwnerIdAndNoteDate(ownerId, noteDate)
+                .findByOwnerIdAndSpaceAndNoteDate(ownerId, space, noteDate)
                 .orElseThrow(() -> new DailyNoteNotFoundException(ownerId, noteDate));
         return toView(note);
     }
 
     /**
-     * Lista las fechas con nota del propietario, ordenadas por fecha descendente.
+     * Lista las fechas con nota del propietario en el espacio, ordenadas por fecha descendente.
      * Page entre 0 y 2147483647, size fijo 20.
      */
     @Transactional(readOnly = true)
-    public DailyNotePage list(UUID ownerId, int page) {
+    public DailyNotePage list(UUID ownerId, PrivateSpace space, int page) {
         if (page < 0 || page > Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Page must be between 0 and 2147483647");
         }
         long offset = (long) page * 20L;
-        List<DailyNote> notes = repository.findPageByOwnerId(ownerId, offset, 20);
+        List<DailyNote> notes = repository.findPageByOwnerIdAndSpace(ownerId, space.value(), offset, 20);
         List<DailyNoteListItem> content = notes.stream().map(this::toListItem).toList();
-        long totalElements = repository.countByOwnerId(ownerId);
+        long totalElements = repository.countByOwnerIdAndSpace(ownerId, space);
         int totalPages = (int) Math.ceil((double) totalElements / 20);
         return new DailyNotePage(content, page, 20, totalElements, totalPages);
     }
@@ -68,7 +69,8 @@ public class DailyNoteService {
      * Valida el documento antes de mutar. Si el CAS no escribe, devuelve 409.
      */
     @Transactional
-    public DailyNoteView save(UUID ownerId, LocalDate noteDate, JsonNode content, long expectedRevision) {
+    public DailyNoteView save(
+            UUID ownerId, PrivateSpace space, LocalDate noteDate, JsonNode content, long expectedRevision) {
         if (expectedRevision < 0) {
             throw new IllegalArgumentException("expectedRevision must be >= 0");
         }
@@ -78,15 +80,15 @@ public class DailyNoteService {
         Instant now = nowMicros();
 
         if (expectedRevision == 0) {
-            return createNew(ownerId, noteDate, tree, now);
+            return createNew(ownerId, space, noteDate, tree, now);
         }
 
-        return updateWithCas(ownerId, noteDate, tree, expectedRevision, now);
+        return updateWithCas(ownerId, space, noteDate, tree, expectedRevision, now);
     }
 
-    private DailyNoteView createNew(UUID ownerId, LocalDate noteDate, JsonNode tree, Instant now) {
+    private DailyNoteView createNew(UUID ownerId, PrivateSpace space, LocalDate noteDate, JsonNode tree, Instant now) {
         try {
-            DailyNote note = new DailyNote(ownerId, noteDate, tree, now);
+            DailyNote note = new DailyNote(ownerId, space, noteDate, tree, now);
             DailyNote saved = repository.saveAndFlush(note);
             return toView(saved);
         } catch (DataIntegrityViolationException ex) {
@@ -95,21 +97,27 @@ public class DailyNoteService {
     }
 
     private DailyNoteView updateWithCas(
-            UUID ownerId, LocalDate noteDate, JsonNode tree, long expectedRevision, Instant now) {
+            UUID ownerId, PrivateSpace space, LocalDate noteDate, JsonNode tree, long expectedRevision, Instant now) {
         long newRevision = expectedRevision + 1;
         if (newRevision > MAX_REVISION) {
             throw new DailyNoteConflictException("Revision limit exceeded");
         }
 
         int updated = repository.updateWithCas(
-                ownerId, noteDate, tree.toString(), expectedRevision, newRevision, java.sql.Timestamp.from(now));
+                ownerId,
+                space.value(),
+                noteDate,
+                tree.toString(),
+                expectedRevision,
+                newRevision,
+                java.sql.Timestamp.from(now));
 
         if (updated == 0) {
             throw new DailyNoteConflictException("Concurrent modification detected");
         }
 
         DailyNote note = repository
-                .findByOwnerIdAndNoteDate(ownerId, noteDate)
+                .findByOwnerIdAndSpaceAndNoteDate(ownerId, space, noteDate)
                 .orElseThrow(() -> new DailyNoteNotFoundException(ownerId, noteDate));
         return toView(note);
     }

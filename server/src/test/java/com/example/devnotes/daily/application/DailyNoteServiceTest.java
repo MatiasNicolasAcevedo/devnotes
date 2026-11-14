@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import com.example.devnotes.daily.persistence.DailyNote;
 import com.example.devnotes.daily.persistence.DailyNoteRepository;
+import com.example.devnotes.shared.space.PrivateSpace;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +39,7 @@ class DailyNoteServiceTest {
     void createStampsTheClockInstantTruncatedToMicroseconds() throws JsonProcessingException {
         when(repository.saveAndFlush(any(DailyNote.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        var view = service.save(UUID.randomUUID(), DATE, emptyDocument(), 0);
+        var view = service.save(UUID.randomUUID(), PrivateSpace.WORK, DATE, emptyDocument(), 0);
 
         ArgumentCaptor<DailyNote> saved = ArgumentCaptor.forClass(DailyNote.class);
         verify(repository).saveAndFlush(saved.capture());
@@ -50,15 +51,30 @@ class DailyNoteServiceTest {
     @Test
     void updateStampsTheClockInstantTruncatedToMicroseconds() throws JsonProcessingException {
         UUID owner = UUID.randomUUID();
-        when(repository.updateWithCas(eq(owner), eq(DATE), anyString(), anyLong(), anyLong(), any(Timestamp.class)))
+        when(repository.updateWithCas(
+                        eq(owner),
+                        eq(PrivateSpace.WORK.value()),
+                        eq(DATE),
+                        anyString(),
+                        anyLong(),
+                        anyLong(),
+                        any(Timestamp.class)))
                 .thenReturn(1);
-        when(repository.findByOwnerIdAndNoteDate(owner, DATE))
-                .thenReturn(Optional.of(new DailyNote(owner, DATE, emptyDocument(), NOW_MICROS)));
+        when(repository.findByOwnerIdAndSpaceAndNoteDate(owner, PrivateSpace.WORK, DATE))
+                .thenReturn(Optional.of(new DailyNote(owner, PrivateSpace.WORK, DATE, emptyDocument(), NOW_MICROS)));
 
-        service.save(owner, DATE, emptyDocument(), 1);
+        service.save(owner, PrivateSpace.WORK, DATE, emptyDocument(), 1);
 
         ArgumentCaptor<Timestamp> updatedAt = ArgumentCaptor.forClass(Timestamp.class);
-        verify(repository).updateWithCas(eq(owner), eq(DATE), anyString(), eq(1L), eq(2L), updatedAt.capture());
+        verify(repository)
+                .updateWithCas(
+                        eq(owner),
+                        eq(PrivateSpace.WORK.value()),
+                        eq(DATE),
+                        anyString(),
+                        eq(1L),
+                        eq(2L),
+                        updatedAt.capture());
         assertThat(updatedAt.getValue().toInstant()).isEqualTo(NOW_MICROS);
     }
 

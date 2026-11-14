@@ -5,16 +5,19 @@ import com.example.devnotes.daily.application.DailyVersionService.DailyVersionPa
 import com.example.devnotes.daily.application.DailyVersionService.DailyVersionView;
 import com.example.devnotes.security.AuthOpenApi;
 import com.example.devnotes.security.LocalOidcUser;
+import com.example.devnotes.shared.space.PrivateSpaceQuery;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Min;
 import java.time.LocalDate;
 import java.util.Set;
@@ -28,7 +31,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1")
-@Tag(name = "Versiones diarias", description = "Copias manuales independientes por fecha, respuestas no-store")
+@Tag(
+        name = "Versiones diarias",
+        description = "Copias manuales independientes por espacio y fecha, respuestas no-store")
 @SecurityRequirement(name = AuthOpenApi.SESSION_COOKIE)
 @ApiResponse(
         responseCode = "400",
@@ -76,6 +81,14 @@ public class DailyVersionController {
     }
 
     @PostMapping("/daily-notes/{date}/version")
+    @Parameter(
+            name = "space",
+            in = ParameterIn.QUERY,
+            description = "Espacio privado. Por omisión, Trabajo.",
+            schema =
+                    @Schema(
+                            allowableValues = {"work", "personal"},
+                            defaultValue = "work"))
     @Operation(
             summary = "Crear o reemplazar la versión manual de una fecha",
             description = "Copia el contenido de la nota propia con lock y validación de revisión. "
@@ -83,7 +96,10 @@ public class DailyVersionController {
                     + "409 si no coincide. Sin content/owner en el body.")
     @SecurityRequirement(name = AuthOpenApi.CSRF_HEADER)
     public ResponseEntity<DailyVersionResponse> saveVersion(
-            Authentication authentication, @PathVariable LocalDate date, @RequestBody String rawBody) {
+            Authentication authentication,
+            HttpServletRequest request,
+            @PathVariable LocalDate date,
+            @RequestBody String rawBody) {
         JsonNode body;
         try {
             body = mapper.readTree(rawBody);
@@ -91,7 +107,8 @@ public class DailyVersionController {
             throw new IllegalArgumentException("Solicitud inválida.");
         }
         DailyVersionInput input = DailyVersionInput.fromJson(body);
-        DailyVersionView view = service.saveVersion(owner(authentication), date, input.expectedRevision());
+        DailyVersionView view = service.saveVersion(
+                owner(authentication), PrivateSpaceQuery.from(request), date, input.expectedRevision());
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(new DailyVersionResponse(
@@ -99,11 +116,20 @@ public class DailyVersionController {
     }
 
     @GetMapping("/daily-versions")
+    @Parameter(
+            name = "space",
+            in = ParameterIn.QUERY,
+            description = "Espacio privado. Por omisión, Trabajo.",
+            schema =
+                    @Schema(
+                            allowableValues = {"work", "personal"},
+                            defaultValue = "work"))
     @Operation(
             summary = "Lista paginada de versiones propias",
             description = "Solo propias, orden date DESC, page desde cero, size fijo 20.")
     public ResponseEntity<DailyVersionPageResponse> list(
             Authentication authentication,
+            HttpServletRequest request,
             @Parameter(description = "Página desde cero", schema = @Schema(defaultValue = "0", minimum = "0"))
                     @RequestParam(defaultValue = "0")
                     @Min(0) int page,
@@ -111,7 +137,8 @@ public class DailyVersionController {
         if (size != null && size != 20) {
             throw new IllegalArgumentException("size debe ser 20");
         }
-        DailyVersionPage pageResult = service.listVersions(owner(authentication), page);
+        DailyVersionPage pageResult =
+                service.listVersions(owner(authentication), PrivateSpaceQuery.from(request), page);
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(new DailyVersionPageResponse(
@@ -126,11 +153,20 @@ public class DailyVersionController {
     }
 
     @GetMapping("/daily-versions/{date}")
+    @Parameter(
+            name = "space",
+            in = ParameterIn.QUERY,
+            description = "Espacio privado. Por omisión, Trabajo.",
+            schema =
+                    @Schema(
+                            allowableValues = {"work", "personal"},
+                            defaultValue = "work"))
     @Operation(
             summary = "Consulta la versión propia de una fecha",
             description = "404 si no hay versión guardada para esa fecha.")
-    public ResponseEntity<DailyVersionResponse> get(Authentication authentication, @PathVariable LocalDate date) {
-        DailyVersionView view = service.getVersion(owner(authentication), date);
+    public ResponseEntity<DailyVersionResponse> get(
+            Authentication authentication, HttpServletRequest request, @PathVariable LocalDate date) {
+        DailyVersionView view = service.getVersion(owner(authentication), PrivateSpaceQuery.from(request), date);
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(new DailyVersionResponse(

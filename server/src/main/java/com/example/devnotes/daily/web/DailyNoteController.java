@@ -4,16 +4,19 @@ import com.example.devnotes.daily.application.DailyNoteService;
 import com.example.devnotes.daily.application.DailyNoteService.DailyNotePage;
 import com.example.devnotes.security.AuthOpenApi;
 import com.example.devnotes.security.LocalOidcUser;
+import com.example.devnotes.shared.space.PrivateSpaceQuery;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Min;
 import java.time.LocalDate;
 import java.util.Set;
@@ -27,7 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/daily-notes")
-@Tag(name = "Notas diarias", description = "Notas privadas por propietario/fecha, respuestas no-store")
+@Tag(name = "Notas diarias", description = "Notas privadas por propietario, espacio y fecha, respuestas no-store")
 @SecurityRequirement(name = AuthOpenApi.SESSION_COOKIE)
 @ApiResponse(
         responseCode = "400",
@@ -75,11 +78,20 @@ public class DailyNoteController {
     }
 
     @GetMapping
+    @Parameter(
+            name = "space",
+            in = ParameterIn.QUERY,
+            description = "Espacio privado. Por omisión, Trabajo.",
+            schema =
+                    @Schema(
+                            allowableValues = {"work", "personal"},
+                            defaultValue = "work"))
     @Operation(
             summary = "Lista paginada de fechas con nota",
             description = "Solo propias, orden date DESC, page desde cero, size fijo 20.")
     public ResponseEntity<DailyNotePage> list(
             Authentication authentication,
+            HttpServletRequest request,
             @Parameter(description = "Página desde cero", schema = @Schema(defaultValue = "0", minimum = "0"))
                     @RequestParam(defaultValue = "0")
                     @Min(0) int page,
@@ -87,13 +99,25 @@ public class DailyNoteController {
         if (size != null && size != 20) {
             throw new IllegalArgumentException("size debe ser 20");
         }
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.list(owner(authentication), page));
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(service.list(owner(authentication), PrivateSpaceQuery.from(request), page));
     }
 
     @GetMapping("/{date}")
+    @Parameter(
+            name = "space",
+            in = ParameterIn.QUERY,
+            description = "Espacio privado. Por omisión, Trabajo.",
+            schema =
+                    @Schema(
+                            allowableValues = {"work", "personal"},
+                            defaultValue = "work"))
     @Operation(summary = "Consulta la nota propia de una fecha", description = "404 si no existe.")
-    public ResponseEntity<DailyNoteResponse> get(Authentication authentication, @PathVariable LocalDate date) {
-        DailyNoteService.DailyNoteView view = service.open(owner(authentication), date);
+    public ResponseEntity<DailyNoteResponse> get(
+            Authentication authentication, HttpServletRequest request, @PathVariable LocalDate date) {
+        DailyNoteService.DailyNoteView view =
+                service.open(owner(authentication), PrivateSpaceQuery.from(request), date);
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(new DailyNoteResponse(
@@ -101,12 +125,23 @@ public class DailyNoteController {
     }
 
     @PutMapping("/{date}")
+    @Parameter(
+            name = "space",
+            in = ParameterIn.QUERY,
+            description = "Espacio privado. Por omisión, Trabajo.",
+            schema =
+                    @Schema(
+                            allowableValues = {"work", "personal"},
+                            defaultValue = "work"))
     @Operation(
             summary = "Crea o actualiza la nota propia de una fecha",
             description = "expectedRevision=0 crea; >0 actualiza con CAS. 409 si la revisión no coincide.")
     @SecurityRequirement(name = AuthOpenApi.CSRF_HEADER)
     public ResponseEntity<DailyNoteResponse> put(
-            Authentication authentication, @PathVariable LocalDate date, @RequestBody String rawBody) {
+            Authentication authentication,
+            HttpServletRequest request,
+            @PathVariable LocalDate date,
+            @RequestBody String rawBody) {
         JsonNode body;
         try {
             body = mapper.readTree(rawBody);
@@ -114,8 +149,12 @@ public class DailyNoteController {
             throw new IllegalArgumentException("Solicitud inválida.");
         }
         DailyNoteInput input = DailyNoteInput.fromJson(body);
-        DailyNoteService.DailyNoteView saved =
-                service.save(owner(authentication), date, input.content(), input.expectedRevision());
+        DailyNoteService.DailyNoteView saved = service.save(
+                owner(authentication),
+                PrivateSpaceQuery.from(request),
+                date,
+                input.content(),
+                input.expectedRevision());
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
                 .body(new DailyNoteResponse(
