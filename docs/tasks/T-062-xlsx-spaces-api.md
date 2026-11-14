@@ -1,6 +1,6 @@
 ---
 id: T-062
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M5
@@ -110,6 +110,22 @@ Pendiente: revisión independiente de [PR65](https://github.com/MatiasNicolasAce
 |---|---|---|
 | El respaldo de una cuenta con un átomo de otro espacio lo rechazaba su propio importador (lector de T-061) | Decisión del dueño (c): el lector acepta el átomo y el importador lo reescribe solo dentro de su espacio | `PortabilitySpacesApiIT` rojo → verde, `390d8da` |
 | La comparación de contenido por texto fallaba porque `jsonb` reordena las claves | Comparar árboles JSON, no cadenas | `PortabilitySpacesApiIT`, `390d8da` |
+
+## Revisión independiente R1
+
+2026-11-13 · Frontera en rol reviewer, Claude Code de escritorio (Claude Opus 5.5, esfuerzo sin verificar), Git Bash, PowerShell, Git, `gh`, Node, Java 21.0.9 y Docker Linux 28.5.1. Sesión distinta de la implementación. Checkout aislado con `git worktree add --detach` en el directorio temporal de la sesión, HEAD `b795e61bcd4027c5f44d0a2725276a4e7ae635e0`, base publicada `df2891c2e0d132c531c4e33a9fb60009f05ba989`. Checkout principal y `trailer/` sin tocar.
+
+- PR65 OPEN, no draft, contra `main`, `MERGEABLE`. `gh pr view` y `git fetch` coincidieron en HEAD y base; `git merge-base` de la rama con `main` es la base publicada. [CI de entrada](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43543944588/job/132290649397) con `verify-required` SUCCESS para `b795e61`; la otra ejecución del mismo SHA quedó cancelada por concurrencia y no cuenta como verde. Fuentes técnicas de `390d8da`; `b795e61` solo cambia Markdown.
+- Decisión del dueño (opción c). S-109 y la tarea la registran con el mismo alcance: el lector acepta el átomo cruzado, el importador lo reescribe solo si la referencia está incluida y es del mismo espacio, y ni el exportador ni el guardado cambian. El diff no toca `DailyContent` ni los servicios de guardado. El lector solo pierde `requireReferencesInSpace`; los demás negativos de T-061 siguen igual, y las dos pruebas de rechazo pasan a probar que el documento llega intacto, también anidado y en versiones.
+- Proyección y escritura. Las cuatro consultas de exportación leen `space` de su fila, las versiones toman el de su nota y ninguna filtra por espacio; diarias y versiones se ordenan por fecha y luego Trabajo antes que Personal (`uq_daily_version_note` deja una versión por nota, así que el orden es determinista). Las tres inserciones con espacio lo escriben explícito; la versión no tiene columna propia y cuelga de la nota correcta.
+- Asociación y átomos. `noteIds` usa espacio+fecha como clave, así que dos notas de igual fecha no se pisan, y cada versión toma la nota de su espacio. Los IDs nuevos se agrupan por espacio y `rewritten` recibe solo el mapa del espacio de la nota o versión: un átomo a una referencia del otro espacio conserva su UUID. `PortabilitySpacesApiIT` lo prueba de punta a punta, con una nota y una versión de Personal que apuntan a la referencia de Trabajo: 201, UUID original conservado, referencia de Trabajo recreada con otro UUID, 404 del UUID original y 404 de la referencia nueva desde el espacio equivocado.
+- Cuenta vacía global. `accountEmpty` sigue sin filtrar por espacio y se evalúa bajo `SELECT … FOR UPDATE` del propietario. Una cuenta con datos solo en Personal da `accountEmpty=false` y 409 sin escrituras (API y servicio). Las escrituras normales de diario, referencias y voz insertan con FK al propietario y esperan ese bloqueo; las carreras parametrizadas por espacio y los dos imports simultáneos lo comprueban.
+- `version` y `countsBySpace`. La constante `IMPORT_VERSION` desaparece y la vista previa devuelve la versión del libro leído (2 para la exportación nueva, 1 para el fixture inmutable). Vista previa e importación 201 agregan `countsBySpace` sin quitar campos; el v1 da Personal en cero y entra solo en Trabajo, y las sumas por espacio igualan al total. `OpenApiContractIT` no cubre portabilidad, así que su fallo previo de BACKLOG no oculta nada de este diff.
+- Pruebas dirigidas, desde `server/` en Git Bash: `./mvnw -o -B verify -Dtest=XlsxSpacesRoundTripTest -Dit.test=PortabilitySpacesApiIT,PortabilityExportApiIT,PortabilityImportApiIT,PortabilityImportServiceIT -Djacoco.skip=true` → exit 0. Spotless OK, Surefire 50/50 y Failsafe 43/43 (Export 8, Import 11, ImportService 21, Spaces 3), sin omitidos; Flyway identificó PostgreSQL 18.6 en los cuatro contextos. Solo contenedores efímeros de Testcontainers; no se tocó ningún otro contenedor ni el stack del dueño. Log local fuera del repositorio.
+- Checks locales: `node scripts/docs-check.mjs` OK, `git diff --check origin/main...HEAD` OK y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → `policy=FULL`, `profile=APPLICATION`, 14 rutas, 9 técnicas.
+- Paso intermedio confirmado: el cliente sigue con `version: z.literal(1)` y Datos rechazará la vista previa v2 hasta T-064. No desplegar.
+
+**Resultado favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El veredicto canónico se publica en PR65 con el HEAD documental y la base vigentes, después de comprobar la CI de ese par. No se mergea sin autorización expresa del dueño según [AUTONOMY](../AUTONOMY.md#revisión-y-merge). El ensayo de Render requiere autorización expresa sobre SHA y ventana.
 
 ## Cierre y siguiente tarea
 

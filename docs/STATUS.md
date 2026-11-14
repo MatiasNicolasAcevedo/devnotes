@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-062](tasks/T-062-xlsx-spaces-api.md) · Respaldo integral y restauración de ambos espacios ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `in_review` |
-| Acción actual | Implementación publicada según la [decisión del dueño](tasks/T-062-xlsx-spaces-api.md#decisión-del-dueño-del-2026-11-13) (opción c); falta la revisión independiente de PR65 en otra sesión. Paso intermedio: Datos acepta la vista previa v2 recién en T-064, así que no desplegar. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Estado | `mergeable` |
+| Acción actual | Revisión favorable de PR65 según la [revisión de T-062](tasks/T-062-xlsx-spaces-api.md#revisión-independiente-r1). El merge requiere autorización expresa del dueño. Paso intermedio: Datos acepta la vista previa v2 recién en T-064, así que no desplegar. FULL/STARTER DIFERIDO POR EL DUEÑO. |
 | Rama / PR | `codex/t-062-xlsx-spaces-api` · [PR65](https://github.com/MatiasNicolasAcevedo/devnotes/pull/65) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
