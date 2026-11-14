@@ -1,6 +1,6 @@
 ---
 id: T-068
-status: in_progress
+status: blocked
 priority: P1
 size: M
 milestone: M6
@@ -53,11 +53,15 @@ Los nombres `Ocr*` son clases a crear. Guardar recuentos Surefire y Failsafe. De
 
 El 2026-11-14 el dueño eligió **Trabajo y Personal**, con aviso visible antes de cada envío. GitHub reconfirmó PR70 MERGED contra main, squash y punta de main `405e7e58b5133220acd2e9c8c425594323469124`, y cero PR abiertos. Plan incorporado desde `.orchestrator/plan-post-i5` al worktree propio `.orchestrator/t-068-ocr-api`.
 
-Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Docker Desktop Linux, Git Bash y Node 24.21.0. Impacto: API privada, autorización de OCR por espacio y configuración exclusiva del servidor. La UI corresponde a T-069. La clave real se carga en T-071. Próximo paso: implementar y verificar con el doble.
+Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Docker Desktop Linux, Git Bash y Node 24.21.0. La implementación agrega una API privada, autorización de OCR por espacio y configuración exclusiva del servidor. La UI corresponde a T-069 y la clave real a T-071.
 
 Dirigidos en Git Bash con el comando de aceptación y `-o`, exit 0. Surefire 18/18 (3 validador, 13 proveedor, 2 configuración). Failsafe 24/24 (4 OCR, 9 voz, 11 importación), con PostgreSQL de Testcontainers, OIDC ficticio y proveedor en loopback. Reportes en `server/target/{surefire,failsafe}-reports`. Validación de Compose con `.env.example` y valores ficticios: variables OCR solo en server. `node scripts/docs-check.mjs` y `git diff --check`, exit 0.
 
-Cierre técnico sobre el commit que contiene este checkpoint, base `405e7e58b5133220acd2e9c8c425594323469124`. El clasificador informó FULL / STARTER por Compose y `.env.example`. Reintentar `bash scripts/verify.sh --starter` después de corregir el fallo de seguridad, con `.env.example`, `COMPOSE_PROJECT_NAME=starter-verify-t068-ocr-1114` y `STARTER_E2E_PROJECT=starter-e2e-t068-ocr-1114`. Namespace Compose limpio tras el primer intento. Registrar exit y resumen en `t068-gate-r2.log` (ignorado). Limpiar por namespace propio de Compose, y por su harness para E2E y tooling. Próximo paso: revisar evidencia del cierre y publicar cuando corresponda. FULL/STARTER acumulado de I5 sigue diferido.
+Cierre técnico sobre `6679b531e0adb85ee3a258ab19a9eb38360d9699`, base `405e7e58b5133220acd2e9c8c425594323469124`. El clasificador informó FULL / STARTER por Compose y `.env.example`. `bash scripts/verify.sh --starter` con `.env.example`, `COMPOSE_PROJECT_NAME=starter-verify-t068-ocr-1114` y `STARTER_E2E_PROJECT=starter-e2e-t068-ocr-1114` salió 1 (`t068-gate-r2.log`). Docs pasó. Backend pasó con Surefire 622/622, Failsafe 308/308, Spotless y JaCoCo. Cliente pasó con 802/802, typecheck, lint, formato, cobertura y build. En tooling pasaron la verificación de copia y los controles locales previos. `scripts/test-dev-stack.sh nginx` falló en `database-outage`, entre los marcadores `outage-ready` y `outage-down`. El gate se detuvo ahí y Playwright E2E quedó pendiente.
+
+Diagnóstico aislado con `bash scripts/test-dev-stack.sh nginx` sobre el SHA base, exit 1 en login (`t068-baseline-nginx.log`). Con marcadores de etapa saneados y las mismas aserciones y tiempos, tanto la base como el candidato fallaron en `login-account-menu`, exit 1 (`t068-baseline-diag-nginx.log` y `t068-candidate-diag-nginx.log`). El fallo de login se observa en la base. La comparación no alcanzó `database-outage`, por lo que falta determinar la causa de ese fallo del gate. Contenedores, redes y volúmenes propios verificados ausentes, imágenes propias retiradas por etiqueta y worktree temporal retirado. Los logs de diagnóstico quedan locales e ignorados.
+
+Bloqueo de cierre: STARTER de T-068 incompleto y sin PR. Frontera debe decidir el alcance de la corrección del ensayo nginx y comprobar la transición a offline después de detener PostgreSQL con evidencia saneada. Retomar el gate de T-068 al resolverlo y entregar a una sesión revisora independiente. FULL/STARTER acumulado de I5 sigue diferido.
 
 ## Correcciones de implementación
 

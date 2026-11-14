@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-068](tasks/T-068-ocr-api.md) · Extracción OCR autenticada con proveedor simulado ([S-112](specs/S-112-screenshot-ocr.md)) |
-| Estado | `in_progress` |
-| Acción actual | Frontera implementa y verifica el contrato OCR con proveedor simulado. El dueño autorizó Trabajo y Personal con aviso antes de cada envío. |
-| Rama / PR | `codex/t-068-ocr-api` · sin PR |
+| Estado | `blocked` |
+| Acción actual | Frontera define cómo destrabar el ensayo nginx de STARTER. El contrato y los dirigidos de OCR ya están en la rama local. |
+| Rama / PR | `codex/t-068-ocr-api` local · sin PR |
 
 [T-067](tasks/T-067-copy-previous-client.md#conciliación) conciliada como `done`. [Control de I5](tasks/T-067-copy-previous-client.md#control-de-avance-de-i5--t-063-a-t-067) completo. **FULL/STARTER de I5 diferidos por el dueño.** SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño.
 
@@ -128,5 +128,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera implementer de T-068 para MatiasNicolasAcevedo/devnotes. Retomá codex/t-068-ocr-api en .orchestrator/t-068-ocr-api. El dueño autorizó Trabajo y Personal con aviso visible antes de cada envío. Verificá main remoto, PR70 MERGED y WIP1. Consultá el checkpoint de T-068 para el gate y seguí AUTONOMY y TESTING. El integrado FULL/STARTER de I5 sigue diferido. Publicá para revisión independiente al cumplir el gate vigente. Preservá el checkout principal, trailer/ y los worktrees ajenos. La clave real queda para T-071 y Render requiere autorización separada sobre SHA y ventana.
+Actuá como Frontera para destrabar T-068 en MatiasNicolasAcevedo/devnotes. Retomá codex/t-068-ocr-api en .orchestrator/t-068-ocr-api. Leé AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/TESTING.md y el checkpoint de T-068. Reconfirmá PR70 MERGED, el SHA de main remoto y que no haya otro PR en vuelo. Usá la evidencia del fallo nginx en database-outage y del fallo en login-account-menu sobre main y el candidato para definir el alcance de la corrección. Validá la causa con un ensayo aislado y datos ficticios. Con el bloqueo resuelto, completá STARTER de T-068 y publicá el PR para revisión independiente. El dueño autorizó Trabajo y Personal con aviso visible antes de cada envío. FULL/STARTER integrado de I5 sigue diferido. La clave OCR real queda para T-071 y Render requiere autorización separada sobre SHA y ventana. Preservá el checkout principal, trailer/ y los worktrees ajenos.
 ```
