@@ -1,6 +1,6 @@
 ---
 id: T-058
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -9,7 +9,7 @@ depends_on: [T-057]
 branch: codex/t-058-daily-spaces
 role: implementer
 executor: frontier
-pr: null
+pr: 61
 ---
 
 # T-058 · Diario y versiones aislados por espacio
@@ -74,6 +74,10 @@ Verde sobre las fuentes de implementación de `codex/t-058-daily-spaces`, base `
 |---|---|---|
 | Los handlers ignoraban `space` y las consultas mezclaban las filas de la misma cuenta | Parser compartido de query, ámbito obligatorio en repositorios y servicios, y versiones ancladas a su nota | Rojo de `DailySpaceApiIT` y selección verde con 83 IT |
 | La primera corrida de implementación paró en `testCompile` por dos invocaciones con firma anterior en `DailyVersionServiceTest` | Pasar Trabajo explícito en las dos regresiones del reloj | Exit 1 en `.orchestrator/t-058-logs/backend-directed-compile.log`; ambas regresiones pasaron al repetir la selección |
+
+### Entrega para revisión
+
+[PR61](https://github.com/MatiasNicolasAcevedo/devnotes/pull/61) contra `main`. Fuentes probadas en el commit técnico `a083c359714aba83f9cca8cc41c3ae4ccc8296e0` sobre la base publicada `e7d6bf66ff502e17d1d1ff04b0118c2594450f2b`. `node scripts/docs-check.mjs`, `git diff --check` y `git diff --check origin/main...HEAD` → exit 0. `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → exit 0, `policy=FULL`, `profile=APPLICATION`, 14 rutas técnicas. Este traspaso modifica solo Markdown. Próximo paso: revisión independiente con HEAD/base publicados y `verify-required` del HEAD vigente.
 
 ## Cierre y siguiente tarea
 
