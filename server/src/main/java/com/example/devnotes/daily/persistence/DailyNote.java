@@ -48,9 +48,9 @@ public class DailyNote {
 
     protected DailyNote() {}
 
-    public DailyNote(UUID ownerId, LocalDate noteDate, JsonNode content, Instant now) {
+    public DailyNote(UUID ownerId, PrivateSpace space, LocalDate noteDate, JsonNode content, Instant now) {
         this.ownerId = ownerId;
-        this.space = PrivateSpace.WORK;
+        this.space = space;
         this.noteDate = noteDate;
         this.content = content;
         this.revision = 1;

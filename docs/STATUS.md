@@ -2,12 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-057](tasks/T-057-space-storage.md) · Migración a Trabajo y enum de espacio ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `mergeable` |
-| Acción actual | Completar el cierre de PR60 según la [revisión de T-057](tasks/T-057-space-storage.md#revisión-independiente-r1). Confirmado MERGED, la siguiente sesión concilia T-057 y toma T-058. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-057-space-storage` · [PR60](https://github.com/MatiasNicolasAcevedo/devnotes/pull/60) |
+| Tarea y contrato | [T-058](tasks/T-058-daily-spaces.md) · Diario y versiones aislados por espacio ([S-109](specs/S-109-private-spaces.md)) |
+| Estado | `in_progress` |
+| Acción actual | Implementar y verificar los [negativos de T-058](tasks/T-058-daily-spaces.md#aceptación-y-pruebas) en el worktree aislado. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-058-daily-spaces` · pendiente |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+
+[T-057](tasks/T-057-space-storage.md#conciliación) conciliada como `done` tras PR60 MERGED.
 
 [T-056](tasks/T-056-service-activity-journey.md#conciliación) conciliada como `done` tras PR59 MERGED.
 
@@ -98,5 +100,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Verificá PR60 según la comprobación MERGED de docs/agents/implementer.md y docs/agents/merger.md. Si sigue abierto, retomá el cierre de T-057 según AUTONOMY y terminá esa sesión sin iniciar T-058. Si está MERGED, actuá como Frontera en rol implementer en una sesión nueva, conciliá T-057 y tomá T-058 (docs/tasks/T-058-daily-spaces.md) en codex/t-058-daily-spaces, sobre main publicado. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+Continuá como Frontera en rol implementer con T-058 (docs/tasks/T-058-daily-spaces.md), en codex/t-058-daily-spaces sobre main publicado. Verificá que PR60 siga MERGED y comprobá HEAD/base y el estado de publicación de T-058. Retomá el checkpoint, completá las pruebas dirigidas y publicá un único PR listo para revisión independiente. Preservá el checkout principal y trailer/. FULL/STARTER DIFERIDO POR EL DUEÑO. Render requiere autorización expresa sobre SHA y ventana.
 ```

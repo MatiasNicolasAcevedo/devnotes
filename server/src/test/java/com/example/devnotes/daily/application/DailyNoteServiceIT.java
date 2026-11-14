@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import com.example.devnotes.TestcontainersConfiguration;
 import com.example.devnotes.daily.domain.DailyContent;
+import com.example.devnotes.shared.space.PrivateSpace;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -20,6 +21,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -77,7 +80,7 @@ class DailyNoteServiceIT {
     @Test
     void createsNewNoteWithRevisionZero() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        DailyNoteService.DailyNoteView view = service.save(owner, date, EMPTY_DOC, 0);
+        DailyNoteService.DailyNoteView view = service.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
 
         assertThat(view.revision()).isEqualTo(1);
         assertThat(view.date()).isEqualTo(date);
@@ -88,9 +91,9 @@ class DailyNoteServiceIT {
     @Test
     void opensCreatedNote() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        service.save(owner, date, EMPTY_DOC, 0);
+        service.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
 
-        DailyNoteService.DailyNoteView view = service.open(owner, date);
+        DailyNoteService.DailyNoteView view = service.open(owner, PrivateSpace.WORK, date);
         assertThat(view.revision()).isEqualTo(1);
         assertThat(view.date()).isEqualTo(date);
     }
@@ -98,7 +101,8 @@ class DailyNoteServiceIT {
     @Test
     void openThrowsWhenNoteMissing() {
         LocalDate date = LocalDate.of(2026, 1, 1);
-        assertThatThrownBy(() -> service.open(owner, date)).isInstanceOf(DailyNoteNotFoundException.class);
+        assertThatThrownBy(() -> service.open(owner, PrivateSpace.WORK, date))
+                .isInstanceOf(DailyNoteNotFoundException.class);
     }
 
     // ── Update with CAS ──
@@ -106,9 +110,10 @@ class DailyNoteServiceIT {
     @Test
     void updatesWithValidRevision() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        DailyNoteService.DailyNoteView created = service.save(owner, date, EMPTY_DOC, 0);
+        DailyNoteService.DailyNoteView created = service.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
 
-        DailyNoteService.DailyNoteView updated = service.save(owner, date, EMPTY_DOC, created.revision());
+        DailyNoteService.DailyNoteView updated =
+                service.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, created.revision());
         assertThat(updated.revision()).isEqualTo(2);
         assertThat(updated.updatedAt()).isEqualTo(FIXED_NOW);
     }
@@ -116,9 +121,9 @@ class DailyNoteServiceIT {
     @Test
     void updateWithWrongRevisionThrows409() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        service.save(owner, date, EMPTY_DOC, 0);
+        service.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
 
-        assertThatThrownBy(() -> service.save(owner, date, EMPTY_DOC, 0))
+        assertThatThrownBy(() -> service.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0))
                 .isInstanceOf(DailyNoteConflictException.class);
     }
 
@@ -128,10 +133,10 @@ class DailyNoteServiceIT {
     void listsNotesOrderedByDateDesc() {
         LocalDate d1 = LocalDate.of(2026, 10, 18);
         LocalDate d2 = LocalDate.of(2026, 10, 20);
-        service.save(owner, d1, EMPTY_DOC, 0);
-        service.save(owner, d2, EMPTY_DOC, 0);
+        service.save(owner, PrivateSpace.WORK, d1, EMPTY_DOC, 0);
+        service.save(owner, PrivateSpace.WORK, d2, EMPTY_DOC, 0);
 
-        DailyNoteService.DailyNotePage page = service.list(owner, 0);
+        DailyNoteService.DailyNotePage page = service.list(owner, PrivateSpace.WORK, 0);
         assertThat(page.content()).hasSize(2);
         assertThat(page.content().get(0).date()).isEqualTo(d2);
         assertThat(page.content().get(1).date()).isEqualTo(d1);
@@ -141,15 +146,16 @@ class DailyNoteServiceIT {
 
     @Test
     void listsEmptyPageWhenNoNotes() {
-        DailyNoteService.DailyNotePage page = service.list(owner, 0);
+        DailyNoteService.DailyNotePage page = service.list(owner, PrivateSpace.WORK, 0);
         assertThat(page.content()).isEmpty();
         assertThat(page.totalElements()).isZero();
     }
 
     // ── Concurrency: creation race ──
 
-    @Test
-    void creationRaceOnlyOneWins() throws Exception {
+    @ParameterizedTest
+    @EnumSource(PrivateSpace.class)
+    void creationRaceOnlyOneWins(PrivateSpace space) throws Exception {
         LocalDate date = LocalDate.of(2026, 10, 25);
         int threads = 4;
 
@@ -162,9 +168,10 @@ class DailyNoteServiceIT {
                 futures[i] = executor.submit(() -> {
                     try {
                         startLatch.await();
-                        service.save(owner, date, EMPTY_DOC, 0);
+                        service.save(owner, space, date, EMPTY_DOC, 0);
+                        return true;
                     } catch (DailyNoteConflictException expected) {
-                        // loser
+                        return false;
                     } catch (Exception ex) {
                         throw new RuntimeException(ex);
                     } finally {
@@ -176,21 +183,20 @@ class DailyNoteServiceIT {
             startLatch.countDown();
             doneLatch.await(10, TimeUnit.SECONDS);
 
-            for (Future<?> f : futures) {
-                f.get(5, TimeUnit.SECONDS);
-            }
+            assertOneWinner(futures);
         }
 
-        DailyNoteService.DailyNoteView view = service.open(owner, date);
+        DailyNoteService.DailyNoteView view = service.open(owner, space, date);
         assertThat(view.revision()).isEqualTo(1);
     }
 
     // ── Concurrency: update race ──
 
-    @Test
-    void updateRaceOnlyOneWins() throws Exception {
+    @ParameterizedTest
+    @EnumSource(PrivateSpace.class)
+    void updateRaceOnlyOneWins(PrivateSpace space) throws Exception {
         LocalDate date = LocalDate.of(2026, 10, 25);
-        DailyNoteService.DailyNoteView created = service.save(owner, date, EMPTY_DOC, 0);
+        DailyNoteService.DailyNoteView created = service.save(owner, space, date, EMPTY_DOC, 0);
         long baseRevision = created.revision();
 
         int threads = 4;
@@ -203,9 +209,10 @@ class DailyNoteServiceIT {
                 futures[i] = executor.submit(() -> {
                     try {
                         startLatch.await();
-                        service.save(owner, date, EMPTY_DOC, baseRevision);
+                        service.save(owner, space, date, EMPTY_DOC, baseRevision);
+                        return true;
                     } catch (DailyNoteConflictException expected) {
-                        // loser
+                        return false;
                     } catch (Exception ex) {
                         throw new RuntimeException(ex);
                     } finally {
@@ -217,13 +224,21 @@ class DailyNoteServiceIT {
             startLatch.countDown();
             doneLatch.await(10, TimeUnit.SECONDS);
 
-            for (Future<?> f : futures) {
-                f.get(5, TimeUnit.SECONDS);
-            }
+            assertOneWinner(futures);
         }
 
-        DailyNoteService.DailyNoteView view = service.open(owner, date);
+        DailyNoteService.DailyNoteView view = service.open(owner, space, date);
         assertThat(view.revision()).isEqualTo(baseRevision + 1);
+    }
+
+    private void assertOneWinner(Future<?>[] futures) throws Exception {
+        int winners = 0;
+        for (Future<?> result : futures) {
+            if (Boolean.TRUE.equals(result.get(5, TimeUnit.SECONDS))) {
+                winners++;
+            }
+        }
+        assertThat(winners).isOne();
     }
 
     // ── Cross-owner isolation ──
@@ -231,7 +246,7 @@ class DailyNoteServiceIT {
     @Test
     void otherOwnerCannotAlterNote() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        DailyNoteService.DailyNoteView created = service.save(owner, date, EMPTY_DOC, 0);
+        DailyNoteService.DailyNoteView created = service.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
 
         UUID other = UUID.randomUUID();
         jdbc.update(
@@ -243,11 +258,11 @@ class DailyNoteServiceIT {
                 java.sql.Timestamp.from(FIXED_NOW));
 
         // Other owner tries to update A's note with A's revision — CAS fails because owner doesn't match
-        assertThatThrownBy(() -> service.save(other, date, EMPTY_DOC, created.revision()))
+        assertThatThrownBy(() -> service.save(other, PrivateSpace.WORK, date, EMPTY_DOC, created.revision()))
                 .isInstanceOf(DailyNoteConflictException.class);
 
         // A's note is unchanged
-        DailyNoteService.DailyNoteView view = service.open(owner, date);
+        DailyNoteService.DailyNoteView view = service.open(owner, PrivateSpace.WORK, date);
         assertThat(view.revision()).isEqualTo(1);
     }
 
@@ -256,7 +271,8 @@ class DailyNoteServiceIT {
     @Test
     void saveRejectsNegativeExpectedRevision() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        assertThatThrownBy(() -> service.save(owner, date, EMPTY_DOC, -1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> service.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, -1))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     // ── Timestamp coherence ──
@@ -264,10 +280,11 @@ class DailyNoteServiceIT {
     @Test
     void timestampsAreCoherent() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        DailyNoteService.DailyNoteView created = service.save(owner, date, EMPTY_DOC, 0);
+        DailyNoteService.DailyNoteView created = service.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
         assertThat(created.updatedAt()).isEqualTo(FIXED_NOW);
 
-        DailyNoteService.DailyNoteView updated = service.save(owner, date, EMPTY_DOC, created.revision());
+        DailyNoteService.DailyNoteView updated =
+                service.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, created.revision());
         assertThat(updated.updatedAt()).isEqualTo(FIXED_NOW);
     }
 
@@ -276,15 +293,15 @@ class DailyNoteServiceIT {
     @Test
     void invalidContentDoesNotMutateDatabase() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        service.save(owner, date, EMPTY_DOC, 0);
+        service.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
 
         ObjectNode invalid = MAPPER.createObjectNode();
         invalid.put("type", "unknown");
 
-        assertThatThrownBy(() -> service.save(owner, date, invalid, 1))
+        assertThatThrownBy(() -> service.save(owner, PrivateSpace.WORK, date, invalid, 1))
                 .isInstanceOf(DailyContent.DailyContentException.class);
 
-        DailyNoteService.DailyNoteView view = service.open(owner, date);
+        DailyNoteService.DailyNoteView view = service.open(owner, PrivateSpace.WORK, date);
         assertThat(view.revision()).isEqualTo(1);
     }
 }

@@ -4,6 +4,7 @@ import com.example.devnotes.daily.persistence.DailyNote;
 import com.example.devnotes.daily.persistence.DailyNoteRepository;
 import com.example.devnotes.daily.persistence.DailyVersion;
 import com.example.devnotes.daily.persistence.DailyVersionRepository;
+import com.example.devnotes.shared.space.PrivateSpace;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.time.Clock;
 import java.time.Instant;
@@ -45,19 +46,20 @@ public class DailyVersionService {
      * 4. Upsert una sola fila: inserta si no existe, actualiza content/revision/timestamp si existe.
      *
      * @param ownerId identidad del propietario (de sesión)
+     * @param space espacio de la nota
      * @param noteDate fecha de la nota
      * @param expectedRevision revisión esperada de la nota; debe coincidir con la actual
      * @return vista de la versión creada o reemplazada
      */
     @Transactional
-    public DailyVersionView saveVersion(UUID ownerId, LocalDate noteDate, long expectedRevision) {
+    public DailyVersionView saveVersion(UUID ownerId, PrivateSpace space, LocalDate noteDate, long expectedRevision) {
         if (expectedRevision < 1) {
             throw new IllegalArgumentException("expectedRevision must be >= 1");
         }
 
         // 1. Lock pesimista en la nota propia
         DailyNote note = noteRepository
-                .findByOwnerIdAndNoteDateForUpdate(ownerId, noteDate)
+                .findByOwnerIdAndSpaceAndNoteDateForUpdate(ownerId, space, noteDate)
                 .orElseThrow(() -> new DailyNoteNotFoundException(ownerId, noteDate));
 
         // 2. Validar revisión esperada
@@ -88,33 +90,31 @@ public class DailyVersionService {
     }
 
     /**
-     * Abre la copia manual de la nota del propietario para la fecha dada, si existe.
+     * Abre la copia manual del propietario en el espacio y la fecha dados, si existe.
      */
     @Transactional(readOnly = true)
-    public DailyVersionView getVersion(UUID ownerId, LocalDate noteDate) {
-        DailyNote note = noteRepository
-                .findByOwnerIdAndNoteDate(ownerId, noteDate)
-                .orElseThrow(() -> new DailyNoteNotFoundException(ownerId, noteDate));
-
+    public DailyVersionView getVersion(UUID ownerId, PrivateSpace space, LocalDate noteDate) {
         DailyVersion version = versionRepository
-                .findByNoteId(note.getId())
-                .orElseThrow(() -> new DailyVersionNotFoundException(ownerId, noteDate));
+                .findByOwnerIdAndSpaceAndNoteDate(ownerId, space, noteDate)
+                .orElseThrow(() -> noteRepository.existsByOwnerIdAndSpaceAndNoteDate(ownerId, space, noteDate)
+                        ? new DailyVersionNotFoundException(ownerId, noteDate)
+                        : new DailyNoteNotFoundException(ownerId, noteDate));
 
-        return toView(version, note);
+        return toView(version, version.getNote());
     }
 
     /**
-     * Lista las copias manuales del propietario, ordenadas por fecha descendente.
+     * Lista las copias manuales del propietario en el espacio, ordenadas por fecha descendente.
      * Page entre 0 y 2147483647, size fijo 20.
      */
     @Transactional(readOnly = true)
-    public DailyVersionPage listVersions(UUID ownerId, int page) {
+    public DailyVersionPage listVersions(UUID ownerId, PrivateSpace space, int page) {
         if (page < 0 || page > Integer.MAX_VALUE) {
             throw new IllegalArgumentException("Page must be between 0 and 2147483647");
         }
         long offset = (long) page * 20L;
 
-        List<Object[]> rows = versionRepository.findPageByOwnerIdRaw(ownerId, offset, 20);
+        List<Object[]> rows = versionRepository.findPageByOwnerIdAndSpaceRaw(ownerId, space.value(), offset, 20);
         List<DailyVersionListItem> items = rows.stream()
                 .map(row -> {
                     Object dateObj = row[0];
@@ -124,7 +124,7 @@ public class DailyVersionService {
                     return new DailyVersionListItem(date, (Instant) row[1], ((Number) row[2]).longValue());
                 })
                 .toList();
-        long totalElements = versionRepository.countByOwnerId(ownerId);
+        long totalElements = versionRepository.countByOwnerIdAndSpace(ownerId, space.value());
         int totalPages = (int) Math.ceil((double) totalElements / 20);
         return new DailyVersionPage(items, page, 20, totalElements, totalPages);
     }

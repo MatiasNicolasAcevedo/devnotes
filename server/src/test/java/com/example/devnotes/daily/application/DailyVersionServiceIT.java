@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import com.example.devnotes.TestcontainersConfiguration;
+import com.example.devnotes.shared.space.PrivateSpace;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Clock;
@@ -90,9 +91,10 @@ class DailyVersionServiceIT {
     @Test
     void createsVersionWithCorrectSourceRevision() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        DailyNoteService.DailyNoteView note = noteService.save(owner, date, EMPTY_DOC, 0);
+        DailyNoteService.DailyNoteView note = noteService.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
 
-        DailyVersionService.DailyVersionView version = versionService.saveVersion(owner, date, note.revision());
+        DailyVersionService.DailyVersionView version =
+                versionService.saveVersion(owner, PrivateSpace.WORK, date, note.revision());
 
         assertThat(version.sourceRevision()).isEqualTo(1);
         assertThat(version.date()).isEqualTo(date);
@@ -105,10 +107,10 @@ class DailyVersionServiceIT {
     @Test
     void opensCreatedVersion() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        noteService.save(owner, date, EMPTY_DOC, 0);
-        versionService.saveVersion(owner, date, 1);
+        noteService.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
+        versionService.saveVersion(owner, PrivateSpace.WORK, date, 1);
 
-        DailyVersionService.DailyVersionView version = versionService.getVersion(owner, date);
+        DailyVersionService.DailyVersionView version = versionService.getVersion(owner, PrivateSpace.WORK, date);
         assertThat(version.sourceRevision()).isEqualTo(1);
         assertThat(version.date()).isEqualTo(date);
     }
@@ -116,16 +118,17 @@ class DailyVersionServiceIT {
     @Test
     void getVersionThrowsWhenNoVersionExists() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        noteService.save(owner, date, EMPTY_DOC, 0);
+        noteService.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
 
-        assertThatThrownBy(() -> versionService.getVersion(owner, date))
+        assertThatThrownBy(() -> versionService.getVersion(owner, PrivateSpace.WORK, date))
                 .isInstanceOf(DailyVersionNotFoundException.class);
     }
 
     @Test
     void getVersionThrowsWhenNoteMissing() {
         LocalDate date = LocalDate.of(2026, 1, 1);
-        assertThatThrownBy(() -> versionService.getVersion(owner, date)).isInstanceOf(DailyNoteNotFoundException.class);
+        assertThatThrownBy(() -> versionService.getVersion(owner, PrivateSpace.WORK, date))
+                .isInstanceOf(DailyNoteNotFoundException.class);
     }
 
     // ── Replace: preserves UUID, updates content ──
@@ -133,12 +136,12 @@ class DailyVersionServiceIT {
     @Test
     void replacePreservesUuidAndUpdatesContent() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        noteService.save(owner, date, EMPTY_DOC, 0);
-        DailyVersionService.DailyVersionView first = versionService.saveVersion(owner, date, 1);
+        noteService.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
+        DailyVersionService.DailyVersionView first = versionService.saveVersion(owner, PrivateSpace.WORK, date, 1);
 
         // Edit note to revision 2, then save version again
-        noteService.save(owner, date, EMPTY_DOC, 1);
-        DailyVersionService.DailyVersionView second = versionService.saveVersion(owner, date, 2);
+        noteService.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 1);
+        DailyVersionService.DailyVersionView second = versionService.saveVersion(owner, PrivateSpace.WORK, date, 2);
 
         assertThat(second.id()).isEqualTo(first.id());
         assertThat(second.sourceRevision()).isEqualTo(2);
@@ -146,7 +149,7 @@ class DailyVersionServiceIT {
         Long count = jdbc.queryForObject(
                 "SELECT COUNT(*) FROM daily_version WHERE note_id = ?",
                 Long.class,
-                noteService.open(owner, date).id());
+                noteService.open(owner, PrivateSpace.WORK, date).id());
         assertThat(count).isEqualTo(1);
     }
 
@@ -155,13 +158,13 @@ class DailyVersionServiceIT {
     @Test
     void editingNoteAfterVersionDoesNotAlterCopy() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        noteService.save(owner, date, EMPTY_DOC, 0);
-        DailyVersionService.DailyVersionView version = versionService.saveVersion(owner, date, 1);
+        noteService.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
+        DailyVersionService.DailyVersionView version = versionService.saveVersion(owner, PrivateSpace.WORK, date, 1);
 
         // Edit the note to revision 2 — version copy must remain at revision 1
-        noteService.save(owner, date, EMPTY_DOC, 1);
+        noteService.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 1);
 
-        DailyVersionService.DailyVersionView after = versionService.getVersion(owner, date);
+        DailyVersionService.DailyVersionView after = versionService.getVersion(owner, PrivateSpace.WORK, date);
         assertThat(after.content()).isEqualTo(version.content());
         assertThat(after.sourceRevision()).isEqualTo(1);
     }
@@ -171,10 +174,10 @@ class DailyVersionServiceIT {
     @Test
     void saveVersionWithWrongRevisionThrows409() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        noteService.save(owner, date, EMPTY_DOC, 0);
+        noteService.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
 
         // Note is at revision 1, but we pass 2
-        assertThatThrownBy(() -> versionService.saveVersion(owner, date, 2))
+        assertThatThrownBy(() -> versionService.saveVersion(owner, PrivateSpace.WORK, date, 2))
                 .isInstanceOf(DailyVersionConflictException.class);
 
         // No version row created
@@ -185,9 +188,9 @@ class DailyVersionServiceIT {
     @Test
     void saveVersionRejectsRevisionZero() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        noteService.save(owner, date, EMPTY_DOC, 0);
+        noteService.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
 
-        assertThatThrownBy(() -> versionService.saveVersion(owner, date, 0))
+        assertThatThrownBy(() -> versionService.saveVersion(owner, PrivateSpace.WORK, date, 0))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -196,7 +199,7 @@ class DailyVersionServiceIT {
     @Test
     void otherOwnerCannotSaveVersion() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        noteService.save(owner, date, EMPTY_DOC, 0);
+        noteService.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
 
         UUID other = UUID.randomUUID();
         jdbc.update(
@@ -208,15 +211,15 @@ class DailyVersionServiceIT {
                 java.sql.Timestamp.from(FIXED_NOW));
 
         // Other owner tries to save version for A's note date — note not found for other
-        assertThatThrownBy(() -> versionService.saveVersion(other, date, 1))
+        assertThatThrownBy(() -> versionService.saveVersion(other, PrivateSpace.WORK, date, 1))
                 .isInstanceOf(DailyNoteNotFoundException.class);
     }
 
     @Test
     void otherOwnerCannotReadVersion() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        noteService.save(owner, date, EMPTY_DOC, 0);
-        versionService.saveVersion(owner, date, 1);
+        noteService.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
+        versionService.saveVersion(owner, PrivateSpace.WORK, date, 1);
 
         UUID other = UUID.randomUUID();
         jdbc.update(
@@ -228,7 +231,8 @@ class DailyVersionServiceIT {
                 java.sql.Timestamp.from(FIXED_NOW));
 
         // Other owner has no note on that date
-        assertThatThrownBy(() -> versionService.getVersion(other, date)).isInstanceOf(DailyNoteNotFoundException.class);
+        assertThatThrownBy(() -> versionService.getVersion(other, PrivateSpace.WORK, date))
+                .isInstanceOf(DailyNoteNotFoundException.class);
     }
 
     // ── Concurrency: two concurrent saves do not duplicate or mix content ──
@@ -236,7 +240,7 @@ class DailyVersionServiceIT {
     @Test
     void concurrentSavesDoNotDuplicateOrMixContent() throws Exception {
         LocalDate date = LocalDate.of(2026, 10, 25);
-        DailyNoteService.DailyNoteView note = noteService.save(owner, date, EMPTY_DOC, 0);
+        DailyNoteService.DailyNoteView note = noteService.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
         long revision = note.revision();
 
         int threads = 4;
@@ -252,7 +256,7 @@ class DailyVersionServiceIT {
                 futures[i] = executor.submit(() -> {
                     try {
                         startLatch.await();
-                        versionService.saveVersion(owner, date, revision);
+                        versionService.saveVersion(owner, PrivateSpace.WORK, date, revision);
                         successes.incrementAndGet();
                     } catch (DailyVersionConflictException expected) {
                         conflicts.incrementAndGet();
@@ -280,7 +284,7 @@ class DailyVersionServiceIT {
         Long count = jdbc.queryForObject(
                 "SELECT COUNT(*) FROM daily_version WHERE note_id = ?",
                 Long.class,
-                noteService.open(owner, date).id());
+                noteService.open(owner, PrivateSpace.WORK, date).id());
         assertThat(count).isEqualTo(1);
     }
 
@@ -289,8 +293,8 @@ class DailyVersionServiceIT {
     @Test
     void savedAtHasMicrosecondPrecision() {
         LocalDate date = LocalDate.of(2026, 10, 20);
-        noteService.save(owner, date, EMPTY_DOC, 0);
-        DailyVersionService.DailyVersionView version = versionService.saveVersion(owner, date, 1);
+        noteService.save(owner, PrivateSpace.WORK, date, EMPTY_DOC, 0);
+        DailyVersionService.DailyVersionView version = versionService.saveVersion(owner, PrivateSpace.WORK, date, 1);
 
         // FIXED_NOW has no nanos, so savedAt should equal it
         assertThat(version.savedAt()).isEqualTo(FIXED_NOW);
@@ -303,12 +307,12 @@ class DailyVersionServiceIT {
         LocalDate d1 = LocalDate.of(2026, 10, 18);
         LocalDate d2 = LocalDate.of(2026, 10, 20);
 
-        noteService.save(owner, d1, EMPTY_DOC, 0);
-        noteService.save(owner, d2, EMPTY_DOC, 0);
-        versionService.saveVersion(owner, d1, 1);
-        versionService.saveVersion(owner, d2, 1);
+        noteService.save(owner, PrivateSpace.WORK, d1, EMPTY_DOC, 0);
+        noteService.save(owner, PrivateSpace.WORK, d2, EMPTY_DOC, 0);
+        versionService.saveVersion(owner, PrivateSpace.WORK, d1, 1);
+        versionService.saveVersion(owner, PrivateSpace.WORK, d2, 1);
 
-        DailyVersionService.DailyVersionPage page = versionService.listVersions(owner, 0);
+        DailyVersionService.DailyVersionPage page = versionService.listVersions(owner, PrivateSpace.WORK, 0);
         assertThat(page.content()).hasSize(2);
         assertThat(page.content().get(0).date()).isEqualTo(d2);
         assertThat(page.content().get(1).date()).isEqualTo(d1);
@@ -318,13 +322,14 @@ class DailyVersionServiceIT {
 
     @Test
     void listsEmptyPageWhenNoVersions() {
-        DailyVersionService.DailyVersionPage page = versionService.listVersions(owner, 0);
+        DailyVersionService.DailyVersionPage page = versionService.listVersions(owner, PrivateSpace.WORK, 0);
         assertThat(page.content()).isEmpty();
         assertThat(page.totalElements()).isZero();
     }
 
     @Test
     void listVersionsRejectsNegativePage() {
-        assertThatThrownBy(() -> versionService.listVersions(owner, -1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> versionService.listVersions(owner, PrivateSpace.WORK, -1))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }

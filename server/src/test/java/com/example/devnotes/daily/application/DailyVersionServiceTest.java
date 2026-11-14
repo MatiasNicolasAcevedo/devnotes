@@ -10,6 +10,7 @@ import com.example.devnotes.daily.persistence.DailyNote;
 import com.example.devnotes.daily.persistence.DailyNoteRepository;
 import com.example.devnotes.daily.persistence.DailyVersion;
 import com.example.devnotes.daily.persistence.DailyVersionRepository;
+import com.example.devnotes.shared.space.PrivateSpace;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,13 +39,14 @@ class DailyVersionServiceTest {
     @Test
     void firstSaveStampsTheClockInstantTruncatedToMicroseconds() throws JsonProcessingException {
         UUID owner = UUID.randomUUID();
-        DailyNote note = new DailyNote(owner, DATE, emptyDocument(), EARLIER);
-        when(noteRepository.findByOwnerIdAndNoteDateForUpdate(owner, DATE)).thenReturn(Optional.of(note));
+        DailyNote note = new DailyNote(owner, PrivateSpace.WORK, DATE, emptyDocument(), EARLIER);
+        when(noteRepository.findByOwnerIdAndSpaceAndNoteDateForUpdate(owner, PrivateSpace.WORK, DATE))
+                .thenReturn(Optional.of(note));
         when(versionRepository.findByNoteIdForUpdate(note.getId())).thenReturn(Optional.empty());
         when(versionRepository.saveAndFlush(any(DailyVersion.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        var view = service.saveVersion(owner, DATE, note.getRevision());
+        var view = service.saveVersion(owner, PrivateSpace.WORK, DATE, note.getRevision());
 
         ArgumentCaptor<DailyVersion> saved = ArgumentCaptor.forClass(DailyVersion.class);
         verify(versionRepository).saveAndFlush(saved.capture());
@@ -55,12 +57,13 @@ class DailyVersionServiceTest {
     @Test
     void replacementStampsTheClockInstantTruncatedToMicroseconds() throws JsonProcessingException {
         UUID owner = UUID.randomUUID();
-        DailyNote note = new DailyNote(owner, DATE, emptyDocument(), EARLIER);
+        DailyNote note = new DailyNote(owner, PrivateSpace.WORK, DATE, emptyDocument(), EARLIER);
         DailyVersion existing = new DailyVersion(note, emptyDocument(), note.getRevision(), EARLIER);
-        when(noteRepository.findByOwnerIdAndNoteDateForUpdate(owner, DATE)).thenReturn(Optional.of(note));
+        when(noteRepository.findByOwnerIdAndSpaceAndNoteDateForUpdate(owner, PrivateSpace.WORK, DATE))
+                .thenReturn(Optional.of(note));
         when(versionRepository.findByNoteIdForUpdate(note.getId())).thenReturn(Optional.of(existing));
 
-        var view = service.saveVersion(owner, DATE, note.getRevision());
+        var view = service.saveVersion(owner, PrivateSpace.WORK, DATE, note.getRevision());
 
         assertThat(existing.getSavedAt()).isEqualTo(NOW_MICROS);
         assertThat(view.savedAt()).isEqualTo(NOW_MICROS);
