@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-066](tasks/T-066-copy-previous-api.md) · Copia transaccional de la última nota anterior ([S-110](specs/S-110-previous-day-copy.md)) |
-| Estado | `changes_requested` |
-| Acción actual | Corregir [B-1 de la revisión R1](tasks/T-066-copy-previous-api.md#b-1--regresión-bloqueante-en-securityconfigtest) en PR69. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Estado | `in_review` |
+| Acción actual | R2 independiente de PR69 tras la [corrección B-1](tasks/T-066-copy-previous-api.md#checkpoint-vigente). SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
 | Rama / PR | `codex/t-066-copy-previous-api` · [PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
@@ -116,5 +116,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera implementer en una sesión nueva para PR69 (T-066, S-110). Leé AGENTS.md, server/AGENTS.md, docs/AUTONOMY.md, docs/agents/implementer.md, la tarea y el veredicto R1 de PR69. Confirmá el HEAD y la base publicados y corregí B-1 en la misma rama con un worktree propio. Verificá SecurityConfigTest 13/13 y repetí la selección dirigida de T-066 con PostgreSQL real, docs-check y clasificación del diff. Publicá la corrección, registrá la evidencia y dejá en STATUS el prompt para R2 independiente. El merge requiere una sesión posterior. FULL/STARTER DIFERIDO POR EL DUEÑO. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Preservá checkout principal, trailer/ y worktrees ajenos. Render requiere autorización expresa separada sobre SHA y ventana.
+Actuá como Frontera en rol reviewer independiente R2 para PR69 de MatiasNicolasAcevedo/devnotes (T-066, S-110). Leé AGENTS.md, server/AGENTS.md, docs/AUTONOMY.md, docs/agents/reviewer.md, docs/STATUS.md, la tarea, S-110 y el veredicto R1. Confirmá en GitHub que PR69 sigue abierto contra main, con base a0321ec0a5c134b39628ac85609408980a42ec92 y verify-required SUCCESS sobre el HEAD publicado. Verificá que ese HEAD contiene la corrección ab7f93c265c4aa5698188ac9f51d9a5dd4d38f90 y conciliá cualquier diferencia antes de revisar. Usá un worktree propio. Contrastá B-1, las aserciones de SecurityConfigTest y la evidencia dirigida de CP-01…07 del servidor. Verificá 13/13 en SecurityConfigTest, 87/87 unitarios y 17/17 IT con HTTP/OIDC ficticio y PostgreSQL real, cleanup, docs-check y diff contra la base. Publicá el veredicto R2 ligado al HEAD y la base según el protocolo y dejá la transición y el siguiente prompt en STATUS. El merge corresponde a una sesión posterior. T-067 se habilita tras confirmar PR69 MERGED. FULL/STARTER DIFERIDO POR EL DUEÑO. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Preservá checkout principal, trailer/ y worktrees ajenos. Render requiere autorización expresa separada sobre SHA y ventana.
 ```

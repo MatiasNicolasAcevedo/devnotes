@@ -1,6 +1,6 @@
 ---
 id: T-066
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -72,7 +72,10 @@ Desde `server/` con Git Bash, JDK 21 y Maven offline:
 - `verify` dirigido: exit 0, Surefire 87/87 (3 copia, 84 contenido), Failsafe 17/17 (7 copia, 4 aislamiento de diario, 6 OpenAPI). Cero fallos, errores u omitidos en las pruebas corregidas. HTTP con OIDC ficticio y PostgreSQL real `postgres:18.6`.
 - Cleanup confirmado tras la salida de Ryuk: la consulta `docker ps -aq --no-trunc --filter label=org.testcontainers=true` devolvió cero coincidencias con los cuatro IDs de esta corrida (tres PostgreSQL y un Ryuk). Logs locales `server/target/t066-b1-*.log` y reportes de Maven en `server/target/`.
 
-**FULL/STARTER DIFERIDO POR EL DUEÑO.** Siguiente paso: publicar B-1 y pasar a R2.
+Pruebas ligadas al commit publicado `ab7f93c265c4aa5698188ac9f51d9a5dd4d38f90`, árbol `server` `371d0c67a8e54a29d948e30dee46aff777c37878`, sobre la base `a0321ec0a5c134b39628ac85609408980a42ec92`. El traspaso a R2 solo modifica Markdown.
+
+- Desde la raíz, `node scripts/docs-check.mjs` (124 Markdown, 68 tareas, HANDOFF 22/22), `git diff --check` y `git diff --check a0321ec0a5c134b39628ac85609408980a42ec92...HEAD` pasaron. `node scripts/ci/classify-diff.mjs --base a0321ec0a5c134b39628ac85609408980a42ec92 --head HEAD --phase FULL` clasificó `FULL/APPLICATION`, 18 rutas, 15 técnicas.
+- **FULL/STARTER DIFERIDO POR EL DUEÑO.** Retoma en R2 independiente con el [HEAD publicado y su check](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69/checks).
 
 ### Evidencia de la implementación inicial
 
@@ -107,6 +110,7 @@ Checks desde raíz en el worktree de T-066. `node scripts/docs-check.mjs` → ex
 | Problema y causa | Arreglo y prueba |
 |---|---|
 | La primera corrida con la API, sobre la base publicada, dio 87/87 unitarios y 11/11 IT de diario. El IT ampliado de OpenAPI dio 5/6 porque la aserción histórica de Referencias omitía `space`, ya documentado en `origin/main`. | Actualizar la lista exacta esperada de parámetros; conservar la comprobación del resto del contrato. Selección dirigida repetida, 87/87 y 17/17 en verde. |
+| B-1 de R1: el `@WebMvcTest` cargaba `DailyNoteController` sin el bean requerido `CopyPreviousDailyNoteService`; 13 errores de contexto sobre `2dce1a67f4b58c59159b868a648c5fd90f4861fa`. | Registrar `CopyPreviousDailyNoteService` como `@MockitoBean` en `SecurityConfigTest`. Se conservan las aserciones y los IT. 13/13, 87/87 y 17/17 en `ab7f93c265c4aa5698188ac9f51d9a5dd4d38f90` sobre `a0321ec0a5c134b39628ac85609408980a42ec92`. |
 
 ## Revisión independiente R1
 
@@ -141,4 +145,4 @@ Corrección suficiente: registrar `CopyPreviousDailyNoteService` como `@MockitoB
 
 ## Cierre y siguiente tarea
 
-Retoma en sesión Frontera implementer para corregir B-1 en la misma rama y [PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69). SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño. El merge corresponde a una sesión posterior con veredicto favorable vigente; T-067 queda tras MERGED confirmado. Render requiere autorización expresa separada sobre SHA y ventana.
+B-1 publicado en [PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69), pendiente de R2 independiente. SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño. El merge corresponde a una sesión posterior con veredicto favorable vigente. T-067 se habilita tras confirmar PR69 MERGED. Render requiere autorización expresa separada sobre SHA y ventana.
