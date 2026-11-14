@@ -7,7 +7,9 @@ import {
   dailyNoteDetailSchema,
   dailyNotePageSchema,
   dailyNoteKeys,
+  copyPreviousDailyNote,
   getDailyNote,
+  getPreviousDailyNote,
   listDailyNotes,
   saveDailyNote,
   saveDailyNoteRequestSchema,
@@ -39,6 +41,68 @@ function buildPage(overrides = {}) {
     ...overrides,
   }
 }
+
+describe('transporte de copia anterior', () => {
+  const date = '2024-01-15'
+  const source = {
+    sourceDate: '2024-01-12',
+    sourceRevision: 4,
+    sourceUpdatedAt: '2024-01-12T10:00:00.123456Z',
+  }
+  const read = () =>
+    getPreviousDailyNote('personal', date, new AbortController().signal, () => true)
+
+  it('distingue sugerencia, 204 y errores', async () => {
+    server.use(
+      mock.get(`${DETAIL_PATH}/previous`, ({ request }) => {
+        expect(new URL(request.url).searchParams.getAll('space')).toEqual(['personal'])
+        return HttpResponse.json(source)
+      }),
+    )
+    await expect(read()).resolves.toEqual(source)
+    server.use(mock.get(`${DETAIL_PATH}/previous`, () => new HttpResponse(null, { status: 204 })))
+    await expect(read()).resolves.toBeNull()
+    server.use(mock.get(`${DETAIL_PATH}/previous`, () => problemResponse(503)))
+    await expect(read()).rejects.toMatchObject({ status: 503 })
+  })
+
+  it.each([
+    { sourceDate: date },
+    { sourceDate: '2024-02-31' },
+    { sourceRevision: 0 },
+    { sourceRevision: Number.MAX_SAFE_INTEGER + 1 },
+    { sourceUpdatedAt: '2024-01-12' },
+    { content: emptyDocument() },
+  ])('rechaza una sugerencia fuera de contrato (%j)', async (override) => {
+    server.use(
+      mock.get(`${DETAIL_PATH}/previous`, () => HttpResponse.json({ ...source, ...override })),
+    )
+    await expect(read()).rejects.toBeInstanceOf(UnexpectedResponseError)
+  })
+
+  it('envía solo la selección y la revisión esperada sin reintentar el POST', async () => {
+    let posts = 0
+    server.use(
+      mock.post(`${DETAIL_PATH}/copy-previous`, async ({ request }) => {
+        posts++
+        expect(new URL(request.url).searchParams.getAll('space')).toEqual(['personal'])
+        expect(await request.json()).toEqual({
+          sourceDate: '2024-01-12',
+          sourceRevision: 4,
+          expectedRevision: 2,
+        })
+        return HttpResponse.json({ code: 'COPY_TARGET_NOT_EMPTY' }, { status: 409 })
+      }),
+    )
+    await expect(
+      copyPreviousDailyNote('personal', date, source, 2, () => true),
+    ).rejects.toMatchObject({
+      status: 409,
+      problem: { code: 'COPY_TARGET_NOT_EMPTY' },
+    })
+    expect(posts).toBe(1)
+  })
+})
 
 describe('dailyNoteKeys', () => {
   it('incluye identidad y espacio en todas las keys para aislar cuentas y espacios', () => {

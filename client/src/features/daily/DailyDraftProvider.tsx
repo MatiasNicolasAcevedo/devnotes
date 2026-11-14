@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
-import type { ReactNode } from 'react'
-import { useDailyNote, type UseDailyNoteReturn } from './useDailyNote'
+import type { Dispatch, ReactNode, SetStateAction } from 'react'
+import { useDailyNote, type CopyTargetRecovery, type UseDailyNoteReturn } from './useDailyNote'
 import type { Space } from '../spaces/space'
 
 // ——— Contexto ———
@@ -18,6 +18,27 @@ interface DailyDraftContextValue extends UseDailyNoteReturn {
 }
 
 const DailyDraftContext = createContext<DailyDraftContextValue | null>(null)
+
+type CopyRecoveries = ReadonlyMap<string, CopyTargetRecovery>
+const DailyCopyRecoveryContext = createContext<
+  [CopyRecoveries, Dispatch<SetStateAction<CopyRecoveries>>] | null
+>(null)
+
+/** Vive durante la sesión de la cuenta, por encima de los espacios. */
+export function DailyCopyRecoveryProvider({ children }: { children: ReactNode }) {
+  const recoveries = useState<CopyRecoveries>(() => new Map())
+  return (
+    <DailyCopyRecoveryContext.Provider value={recoveries}>
+      {children}
+    </DailyCopyRecoveryContext.Provider>
+  )
+}
+
+function useCopyRecoveries() {
+  const recoveries = useContext(DailyCopyRecoveryContext)
+  if (!recoveries) throw new Error('Falta DailyCopyRecoveryProvider')
+  return recoveries
+}
 
 /**
  * Provider de borrador diario por identidad y espacio.
@@ -39,7 +60,8 @@ export function DailyDraftProvider({
   sessionIsCurrent?: () => boolean
 }) {
   const [activeDate, setActiveDate] = useState(initialDate)
-  return (
+  const recoveries = useContext(DailyCopyRecoveryContext)
+  const document = (
     <DailyDraftDocument
       key={`${owner}/${space}/${activeDate}`}
       owner={owner}
@@ -50,6 +72,11 @@ export function DailyDraftProvider({
     >
       {children}
     </DailyDraftDocument>
+  )
+  return recoveries ? (
+    document
+  ) : (
+    <DailyCopyRecoveryProvider key={owner}>{document}</DailyCopyRecoveryProvider>
   )
 }
 
@@ -69,7 +96,29 @@ function DailyDraftDocument({
   children: ReactNode
 }) {
   const [navigationLocked, setNavigationLocked] = useState(false)
-  const note = useDailyNote(owner, space, activeDate, sessionIsCurrent)
+  const [byNote, setRecoveries] = useCopyRecoveries()
+  const recoveryKey = `${space}/${activeDate}`
+  const setRecovery = useCallback(
+    (recovery: CopyTargetRecovery | undefined) => {
+      setRecoveries((current) => {
+        if (recovery === undefined && !current.has(recoveryKey)) return current
+        const next = new Map(current)
+        if (recovery) next.set(recoveryKey, recovery)
+        else next.delete(recoveryKey)
+        return next
+      })
+    },
+    [recoveryKey, setRecoveries],
+  )
+  const note = useDailyNote(
+    owner,
+    space,
+    activeDate,
+    byNote.get(recoveryKey),
+    setRecovery,
+    sessionIsCurrent,
+  )
+  const locked = navigationLocked || note.isCopyingPrevious
 
   const navigateToDate = useCallback(
     async (newDate: string) => {
@@ -88,10 +137,10 @@ function DailyDraftDocument({
       owner,
       space,
       navigateToDate,
-      navigationLocked,
+      navigationLocked: locked,
       setNavigationLocked,
     }),
-    [note, activeDate, owner, space, navigateToDate, navigationLocked],
+    [note, activeDate, owner, space, navigateToDate, locked],
   )
 
   return <DailyDraftContext.Provider value={value}>{children}</DailyDraftContext.Provider>

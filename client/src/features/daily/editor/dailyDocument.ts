@@ -78,6 +78,19 @@ export function emptyDocument(): DailyContent {
   return { type: 'doc', content: [{ type: 'paragraph' }] }
 }
 
+// White_Space de Unicode coincide con S-110: incluye U+0085 y excluye U+FEFF.
+const NON_WHITESPACE = /\P{White_Space}/u
+
+export function isEmptyDailyDocument(document: DailyContent): boolean {
+  return document.content.every(
+    (block) =>
+      block.type === 'paragraph' &&
+      (block.content ?? []).every(
+        (node) => node.type === 'text' && !NON_WHITESPACE.test(node.text),
+      ),
+  )
+}
+
 // ——— Validación con conteo agregado ———
 
 export interface ValidationResult {

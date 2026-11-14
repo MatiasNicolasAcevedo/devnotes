@@ -18,7 +18,8 @@ export function SaveStatusIndicator({ status, isDirty }: { status: SaveStatus; i
   else if (status === 'saved') {
     text = 'Guardado'
     color = 'success.main'
-  } else if (status === 'idle' && isDirty) text = 'Sin guardar'
+  } else if (status === 'unconfirmed') text = 'Sin confirmar'
+  else if (status === 'idle' && isDirty) text = 'Sin guardar'
 
   const label = narrow && text ? { role: 'img', 'aria-label': text, 'aria-hidden': false } : {}
   let icon = null

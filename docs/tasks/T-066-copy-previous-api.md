@@ -1,6 +1,6 @@
 ---
 id: T-066
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M5
@@ -169,6 +169,10 @@ Desde `server/` con Git Bash y Maven offline:
 
 `node scripts/docs-check.mjs`, `git diff --check` y `git diff --check a0321ec0a5c134b39628ac85609408980a42ec92...HEAD` pasan. El clasificador contra la base publicada informa `FULL/APPLICATION`, 18 rutas, 15 técnicas. **FULL/STARTER DIFERIDO POR EL DUEÑO.** El paso a `mergeable` modifica solo esta tarea y STATUS. El [veredicto canónico en PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69) se publica después de comprobar `verify-required` SUCCESS del HEAD de esta transición contra la misma base.
 
+## Conciliación
+
+GitHub confirmó [PR69 MERGED contra main](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69), squash `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb`, `mergedAt` `2026-11-14T16:59:58Z`. El [cierre publicado](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69#issuecomment-6881143380) registra R2 sobre `44c32ec788e3d0ac39d7cd7a3d6864c27897b90e`, `verify-required` SUCCESS y pruebas dirigidas con PostgreSQL real. T-066 queda `done` en el primer avance de T-067.
+
 ## Cierre y siguiente tarea
 
-R2 cerró B-1 y dejó [PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69) para merge en sesión independiente, condicionado al veredicto vigente y a las comprobaciones de AUTONOMY. SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño. T-067 se habilita tras confirmar PR69 MERGED. Render requiere autorización expresa separada sobre SHA y ventana.
+La [conciliación](#conciliación) habilita [T-067](T-067-copy-previous-client.md). SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño. Render requiere autorización expresa separada sobre SHA y ventana.

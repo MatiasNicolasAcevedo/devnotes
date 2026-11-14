@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useDailyNoteQuery, invalidateDailyNote } from './useDailyNoteQuery'
-import { saveDailyNote } from './api'
-import { emptyDocument, validateDailyContent } from './editor/dailyDocument'
+import { copyPreviousDailyNote, dailyNoteKeys, isCopySourceConflict, saveDailyNote } from './api'
+import type { DailyNoteDetail, PreviousDailyNote } from './api'
+import { emptyDocument, isEmptyDailyDocument, validateDailyContent } from './editor/dailyDocument'
 import type { DailyContent } from './editor/dailyDocument'
-import type { ApiError } from '../../services/http'
+import { ApiError } from '../../services/http'
 import type { Space } from '../spaces/space'
 
 // ——— Tipos internos ———
@@ -20,9 +21,18 @@ interface DraftEntry {
   generation: Generation
 }
 
+export interface ConfirmedCopy {
+  sourceDate: string
+  note: DailyNoteDetail
+}
+
+export interface CopyTargetRecovery {
+  minimumRevision: number
+}
+
 // ——— Estado público del hook ———
 
-export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error' | 'conflict'
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'unconfirmed' | 'error' | 'conflict'
 
 export interface UseDailyNoteReturn {
   isLoading: boolean
@@ -40,6 +50,17 @@ export interface UseDailyNoteReturn {
   isDirty: boolean
   /** true mientras hay PUT en vuelo. */
   isSaving: boolean
+  canCopyPrevious: boolean
+  isCopyingPrevious: boolean
+  isReloadingCopyTarget: boolean
+  copyTargetNeedsReload: boolean
+  confirmedCopy: ConfirmedCopy | null
+  copyPrevious: (
+    source: PreviousDailyNote,
+    expectedRevision: number,
+    isCurrent: () => boolean,
+  ) => Promise<boolean>
+  reloadCopyTarget: (isCurrent: () => boolean) => Promise<boolean>
   /**
    * Edita el contenido. Si es válido, actualiza borrador y programa debounce.
    * Si es inválido, conserva el texto y no envía.
@@ -93,6 +114,8 @@ export function useDailyNote(
   owner: string,
   space: Space,
   date: string,
+  copyRecovery: CopyTargetRecovery | undefined,
+  setCopyRecovery: (recovery: CopyTargetRecovery | undefined) => void,
   sessionIsCurrent?: () => boolean,
 ): UseDailyNoteReturn {
   const queryClient = useQueryClient()
@@ -105,6 +128,11 @@ export function useDailyNote(
   const [confirmedContent, setConfirmedContent] = useState<DailyContent>(emptyDocument())
   const [queueState, setQueueState] = useState<QueueState>('idle')
   const [error, setError] = useState<ApiError | null>(null)
+  const [isCopyingPrevious, setCopyingPrevious] = useState(false)
+  const [isReloadingCopyTarget, setReloadingCopyTarget] = useState(false)
+  const [recoveryOnMount] = useState(copyRecovery)
+  const copyTargetNeedsReload = copyRecovery !== undefined
+  const [confirmedCopy, setConfirmedCopy] = useState<ConfirmedCopy | null>(null)
 
   // Referencias mutables para evitar closures stale en el debounce y la cola.
   const draftRef = useRef<DraftEntry | null>(null)
@@ -114,6 +142,8 @@ export function useDailyNote(
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const flushersRef = useRef<Array<{ resolve: () => void; reject: (e: unknown) => void }>>([])
   const forceRef = useRef<boolean>(false)
+  const copyingRef = useRef(false)
+  const reloadTargetRef = useRef(false)
 
   // Sincronizar refs con estado.
   useEffect(() => {
@@ -138,32 +168,156 @@ export function useDailyNote(
   }, [])
 
   // ——— Sincronizar remoto → confirmado (sin pisar dirty) ———
+  const { data: remote, error: readError, isFetchedAfterMount, isFetching, isSuccess } = query
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (query.data) {
-      const remote = query.data
-      // Si la revisión es menor que la confirmada, es una respuesta vieja y se ignora.
-      if (remote.revision < confirmedRevision) {
-        return // ACK viejo, ignorar
-      }
-      // Solo actualizar si la revisión efectivamente avanzó.
-      if (remote.revision > confirmedRevision) {
+    // El editor conserva el documento previo hasta poder aplicar la copia como un undo.
+    if (isCopyingPrevious || copyingRef.current) return
+    if (copyRecovery) {
+      // Al volver, solo una lectura terminada de esta visita puede resolver la copia.
+      if (
+        copyRecovery !== recoveryOnMount ||
+        !isFetchedAfterMount ||
+        isFetching ||
+        reloadTargetRef.current
+      )
+        return
+      if (isSuccess && remote.revision >= copyRecovery.minimumRevision) {
         revisionRef.current = remote.revision
         setConfirmedContent(remote.content)
         setConfirmedRevision(remote.revision)
+        setCopyRecovery(undefined)
+      } else if (
+        readError instanceof ApiError &&
+        readError.status === 404 &&
+        copyRecovery.minimumRevision === 0
+      ) {
+        setCopyRecovery(undefined)
       }
+      return
     }
-  }, [query.data, confirmedRevision])
+    if (remote && remote.revision > confirmedRevision) {
+      revisionRef.current = remote.revision
+      setConfirmedContent(remote.content)
+      setConfirmedRevision(remote.revision)
+    }
+  }, [
+    remote,
+    readError,
+    isFetchedAfterMount,
+    isFetching,
+    isSuccess,
+    confirmedRevision,
+    isCopyingPrevious,
+    copyRecovery,
+    recoveryOnMount,
+    setCopyRecovery,
+  ])
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  // ——— Manejar error de query (404 → vacío) ———
-  useEffect(() => {
-    if (query.error && query.error instanceof Error) {
-      // 404 no es error de UI; significa "sin nota".
-      // El hook de query ya lo maneja como error; aquí solo evitamos
-      // que un 404 inicial marque el estado como error.
+  const confirmWrite = useCallback((response: DailyNoteDetail) => {
+    revisionRef.current = response.revision
+    setConfirmedRevision(response.revision)
+    setConfirmedContent(response.content)
+    setError(null)
+  }, [])
+
+  const canCopyPrevious =
+    !copyTargetNeedsReload &&
+    !query.isFetching &&
+    (query.isSuccess || (query.error instanceof ApiError && query.error.status === 404)) &&
+    (query.data?.revision ?? 0) <= confirmedRevision &&
+    draft === null &&
+    queueState === 'idle' &&
+    error === null &&
+    isEmptyDailyDocument(confirmedContent)
+
+  async function copyPrevious(
+    source: PreviousDailyNote,
+    expectedRevision: number,
+    isCurrent: () => boolean,
+  ) {
+    if (
+      !isCurrent() ||
+      !canCopyPrevious ||
+      copyingRef.current ||
+      draftRef.current ||
+      queueRef.current !== 'idle' ||
+      revisionRef.current !== expectedRevision
+    )
+      return false
+
+    copyingRef.current = true
+    setCopyingPrevious(true)
+    const minimumRevision = () =>
+      Math.max(
+        revisionRef.current,
+        queryClient.getQueryData<DailyNoteDetail>(dailyNoteKeys(owner, space).detail(date))
+          ?.revision ?? 0,
+      )
+    try {
+      const response = await copyPreviousDailyNote(space, date, source, expectedRevision, isCurrent)
+      if (!isCurrent()) {
+        setCopyRecovery({ minimumRevision: minimumRevision() })
+        return false
+      }
+      // El GET queda en caché durante la copia. Una revisión superior invalida este ACK.
+      if (response.revision < minimumRevision()) {
+        throw new Error('La nota de destino cambió después de copiarse')
+      }
+      confirmWrite(response)
+      setConfirmedCopy({ sourceDate: source.sourceDate, note: response })
+      void invalidateDailyNote(queryClient, owner, space, date)
+      void invalidateDailyNote(queryClient, owner, space)
+      return true
+    } catch (error) {
+      if (!isCurrent() || !isCopySourceConflict(error)) {
+        setCopyRecovery({ minimumRevision: minimumRevision() })
+      }
+      throw error
+    } finally {
+      copyingRef.current = false
+      setCopyingPrevious(false)
     }
-  }, [query.error])
+  }
+
+  async function reloadCopyTarget(isCurrent: () => boolean) {
+    if (
+      !copyRecovery ||
+      !isCurrent() ||
+      reloadTargetRef.current ||
+      copyingRef.current ||
+      draftRef.current
+    ) {
+      return false
+    }
+    reloadTargetRef.current = true
+    setReloadingCopyTarget(true)
+    try {
+      await queryClient.cancelQueries({ queryKey: dailyNoteKeys(owner, space).detail(date) })
+      if (!isCurrent()) return false
+      const result = await query.refetch()
+      if (!isCurrent()) return false
+      const minimumRevision = Math.max(revisionRef.current, copyRecovery.minimumRevision)
+      if (result.isSuccess && result.data.revision >= minimumRevision) {
+        confirmWrite(result.data)
+        setCopyRecovery(undefined)
+        return true
+      }
+      if (
+        result.error instanceof ApiError &&
+        result.error.status === 404 &&
+        minimumRevision === 0
+      ) {
+        setCopyRecovery(undefined)
+        return true
+      }
+      return false
+    } finally {
+      reloadTargetRef.current = false
+      setReloadingCopyTarget(false)
+    }
+  }
 
   // ——— Cola de escritura ———
   // flushQueue se refiere a sí misma dentro del .then() para encadenar
@@ -198,10 +352,7 @@ export function useDailyNote(
       saveDailyNote(space, date, entry.content, rev)
         .then((response) => {
           // ACK: actualizar revisión confirmada.
-          revisionRef.current = response.revision
-          setConfirmedRevision(response.revision)
-          setConfirmedContent(response.content)
-          setError(null)
+          confirmWrite(response)
 
           // Invalidar query para refetch.
           invalidateDailyNote(queryClient, owner, space, date)
@@ -251,7 +402,7 @@ export function useDailyNote(
           }
         })
     },
-    [owner, space, date, queryClient],
+    [owner, space, date, queryClient, confirmWrite],
   )
 
   // Mantener flushQueueRef sincronizado para la llamada recursiva en .then().
@@ -271,6 +422,7 @@ export function useDailyNote(
   // ——— edit ———
   const edit = useCallback(
     (newContent: unknown) => {
+      if (copyingRef.current || reloadTargetRef.current || copyTargetNeedsReload) return
       const validation = validateDailyContent(newContent)
       if (!validation.valid) {
         // Conservar texto actual y no enviar.
@@ -290,7 +442,7 @@ export function useDailyNote(
       }
       // Si hay PUT en vuelo, el .then() detectará draftRef.current con generación mayor.
     },
-    [scheduleFlush],
+    [copyTargetNeedsReload, scheduleFlush],
   )
 
   // ——— retry ———
@@ -305,6 +457,12 @@ export function useDailyNote(
   const flush = useCallback(
     (options?: { force?: boolean }) => {
       const force = options?.force ?? false
+      if (copyingRef.current || reloadTargetRef.current) {
+        return Promise.reject(new Error('La copia o la recarga está en curso'))
+      }
+      if (force && copyTargetNeedsReload) {
+        return Promise.reject(new Error('Recargá la nota antes de guardar una versión'))
+      }
       return new Promise<void>((resolve, reject) => {
         // La acción manual puede crear un documento vacío, pero cargarlo nunca escribe.
         if (force && !draftRef.current && revisionRef.current === 0) {
@@ -335,7 +493,7 @@ export function useDailyNote(
         }
       })
     },
-    [flushQueue],
+    [copyTargetNeedsReload, flushQueue],
   )
 
   // ——— discard ———
@@ -365,11 +523,13 @@ export function useDailyNote(
   const isSaving = queueState === 'flushing'
 
   let status: SaveStatus
-  if (error !== null && 'status' in error && (error as ApiError).status === 409) {
+  if (copyTargetNeedsReload) {
+    status = 'unconfirmed'
+  } else if (error !== null && 'status' in error && (error as ApiError).status === 409) {
     status = 'conflict'
   } else if (error !== null) {
     status = 'error'
-  } else if (isSaving) {
+  } else if (isSaving || isCopyingPrevious) {
     status = 'saving'
   } else if (isDirty) {
     status = 'idle'
@@ -391,6 +551,13 @@ export function useDailyNote(
     error,
     isDirty,
     isSaving,
+    canCopyPrevious,
+    isCopyingPrevious,
+    isReloadingCopyTarget,
+    copyTargetNeedsReload,
+    confirmedCopy,
+    copyPrevious,
+    reloadCopyTarget,
     edit,
     retry,
     flush,

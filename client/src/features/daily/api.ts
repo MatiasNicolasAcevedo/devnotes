@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { http } from '../../services/http'
+import { ApiError, http, UnexpectedResponseError } from '../../services/http'
+import { isValidIsoDate } from './dateUtils'
 import { spaceApiPath, type Space } from '../spaces/space'
 import { DailyContentSchema } from './editor/dailyDocument'
 
@@ -9,20 +10,21 @@ import { DailyContentSchema } from './editor/dailyDocument'
 const SafeRevision = z.number().int().min(0).max(Number.MAX_SAFE_INTEGER)
 
 /** Fecha ISO estricta (YYYY-MM-DD) sin timezone. */
-const IsoDate = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha inválida (usar YYYY-MM-DD)')
-  .refine((val) => {
-    const parts = val.split('-')
-    const year = Number(parts[0])
-    const month = Number(parts[1])
-    const day = Number(parts[2])
-    if (month < 1 || month > 12) return false
-    if (day < 1 || day > 31) return false
-    // Validación básica: el Date constructor acepta la fecha
-    const d = new Date(Date.UTC(year, month - 1, day))
-    return d.getUTCFullYear() === year && d.getUTCMonth() === month - 1 && d.getUTCDate() === day
-  }, 'Fecha inválida')
+const IsoDate = z.string().refine(isValidIsoDate, 'Fecha inválida (usar YYYY-MM-DD)')
+
+const previousDailyNoteSchema = z.strictObject({
+  sourceDate: IsoDate,
+  sourceRevision: SafeRevision.min(1),
+  sourceUpdatedAt: z.iso.datetime(),
+})
+
+export type PreviousDailyNote = z.infer<typeof previousDailyNoteSchema>
+
+const copyPreviousRequestSchema = z.strictObject({
+  sourceDate: IsoDate,
+  sourceRevision: SafeRevision.min(1),
+  expectedRevision: SafeRevision,
+})
 
 // ——— Schemas de respuesta ———
 
@@ -78,12 +80,60 @@ export function dailyNoteKeys(owner: string, space: Space) {
     list: (page?: number) =>
       ['daily', owner, space, 'list', ...(page !== undefined ? [page] : [])] as const,
     detail: (date: string) => ['daily', owner, space, 'detail', date] as const,
+    previous: (date: string) => ['daily', owner, space, 'previous', date] as const,
   }
 }
 
 // ——— Transporte ———
 
 const BASE = '/api/v1/daily-notes'
+
+export async function getPreviousDailyNote(
+  space: Space,
+  date: string,
+  signal: AbortSignal,
+  sessionIsCurrent: () => boolean,
+): Promise<PreviousDailyNote | null> {
+  const result = await http.requestOptional(
+    spaceApiPath(`${BASE}/${date}/previous`, space),
+    previousDailyNoteSchema,
+    { signal, sessionIsCurrent },
+  )
+  if (result && result.sourceDate >= date) {
+    throw new UnexpectedResponseError('La sugerencia debe tener una fecha anterior a la nota')
+  }
+  return result
+}
+
+export async function copyPreviousDailyNote(
+  space: Space,
+  date: string,
+  source: PreviousDailyNote,
+  expectedRevision: number,
+  sessionIsCurrent: () => boolean,
+): Promise<DailyNoteDetail> {
+  const body = copyPreviousRequestSchema.parse({
+    sourceDate: source.sourceDate,
+    sourceRevision: source.sourceRevision,
+    expectedRevision,
+  })
+  const result = await http.request(
+    spaceApiPath(`${BASE}/${date}/copy-previous`, space),
+    dailyNoteDetailSchema,
+    { method: 'POST', body, sessionIsCurrent },
+  )
+  if (result.date !== date || result.revision <= expectedRevision) {
+    throw new UnexpectedResponseError(
+      'El servidor devolvió una copia fuera de la revisión esperada',
+    )
+  }
+  return result
+}
+
+export function isCopySourceConflict(error: unknown): boolean {
+  const code = error instanceof ApiError ? error.problem?.code : undefined
+  return code === 'COPY_SOURCE_NOT_AVAILABLE' || code === 'COPY_SOURCE_CHANGED'
+}
 
 /**
  * Obtiene el detalle de una nota por fecha. 404 se distingue de otros errores:

@@ -203,6 +203,7 @@ describe('Estado de guardado (UI-05)', () => {
   it.each([
     ['saving', false, 'Guardando…'],
     ['saved', false, 'Guardado'],
+    ['unconfirmed', false, 'Sin confirmar'],
     ['idle', true, 'Sin guardar'],
   ] as const)('en ancho %s muestra icono y texto', (status, isDirty, text) => {
     renderWithProviders(<SaveStatusIndicator status={status} isDirty={isDirty} />)
@@ -216,6 +217,7 @@ describe('Estado de guardado (UI-05)', () => {
   it.each([
     ['saving', false, 'Guardando…'],
     ['saved', false, 'Guardado'],
+    ['unconfirmed', false, 'Sin confirmar'],
     ['idle', true, 'Sin guardar'],
   ] as const)(
     'en angosto %s muestra solo el icono, con nombre accesible',

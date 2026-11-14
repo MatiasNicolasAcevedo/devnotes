@@ -75,6 +75,36 @@ function renderHarness(opts?: {
 }
 
 describe('useDailyNote', () => {
+  it.each([
+    [makeContent('\t\u0085\u00a0\u2007\u202f\u3000'), true],
+    [makeContent('\ufeff'), false],
+    [{ type: 'doc', content: [{ type: 'separator', attrs: { width: 25 } }] }, false],
+    [
+      {
+        type: 'doc',
+        content: [{ type: 'paragraph', content: [{ type: 'reference', attrs: { id: OWNER } }] }],
+      },
+      false,
+    ],
+  ] satisfies [DailyContent, boolean][])(
+    'aplica la regla de vacío S-110 a %j',
+    async (content, canCopy) => {
+      server.use(mock.get(DETAIL_PATH, () => HttpResponse.json(buildDetail(DATE_A, 4, content))))
+      const { hooksRef } = renderHarness()
+      await waitFor(() => expect(hooksRef.current.ctx.revision).toBe(4))
+      expect(hooksRef.current.ctx.canCopyPrevious).toBe(canCopy)
+    },
+  )
+
+  it('una edición pendiente impide copiar incluso si el contenido editado es blanco', async () => {
+    server.use(mock.get(DETAIL_PATH, () => problemResponse(404)))
+    setTestDebounce(10_000)
+    const { hooksRef } = renderHarness()
+    await waitFor(() => expect(hooksRef.current.ctx.canCopyPrevious).toBe(true))
+    act(() => hooksRef.current.ctx.edit(makeContent(' ')))
+    expect(hooksRef.current.ctx.canCopyPrevious).toBe(false)
+  })
+
   it('cargar una fecha vacía no escribe y flush force crea solo el vacío explícito con revisión confirmada', async () => {
     installAuthBackend({ user: buildAuthUser() })
     let writes = 0
