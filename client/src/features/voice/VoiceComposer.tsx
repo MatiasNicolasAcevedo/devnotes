@@ -25,6 +25,7 @@ import { ApiError } from '../../services/http'
 import { MicIcon, StopIcon } from '../../shared/ui/icons'
 import { fetchVoiceNote, voiceQueryKeys, type VoiceNoteDetail } from './api'
 import { useSession } from '../auth/sessionContext'
+import { useSpaceScope } from '../spaces/spaceContext'
 import { MaxDurationExceededError } from './recorder'
 import { type SaveOutcome, voiceNoteTextSchema } from './useVoiceDraft'
 import { useVoiceDraftContext } from './voiceDraftContext'
@@ -92,6 +93,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
     const captureState = recorder.state === 'idle' ? draft.state.captureState : recorder.state
     const captureError = recorder.error ?? draft.state.captureError
     const queryClient = useQueryClient()
+    const scope = useSpaceScope()
 
     // Diálogo de confirmación de borrado
     const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -261,8 +263,8 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
       setReloadError(null)
       try {
         const fresh = await queryClient.fetchQuery({
-          queryKey: voiceQueryKeys.detail(id),
-          queryFn: ({ signal }) => fetchVoiceNote(id, signal),
+          queryKey: voiceQueryKeys.detail(scope, id),
+          queryFn: ({ signal }) => fetchVoiceNote(scope.space, id, signal),
           staleTime: 0,
         })
         if (!isCurrent()) return
@@ -284,7 +286,7 @@ export const VoiceComposer = React.forwardRef<VoiceComposerHandle, VoiceComposer
           setReloading(false)
         }
       }
-    }, [draft, queryClient, closeConflict])
+    }, [draft, queryClient, closeConflict, scope])
 
     const handleConflictNewNote = useCallback(() => {
       draft.detachAsNewNote()

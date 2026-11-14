@@ -98,7 +98,10 @@ describe('DailyNotesPage', () => {
     expect(await screen.findByRole('heading', { name: 'Notas diarias' })).toBeVisible()
     // El enlace Notas en el nav lleva a /notes
     const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
-    expect(within(nav).getByRole('link', { name: 'Notas' })).toHaveAttribute('href', '/notes')
+    expect(within(nav).getByRole('link', { name: 'Notas' })).toHaveAttribute(
+      'href',
+      '/notes?space=work',
+    )
   })
 
   it('la ruta /notes/:date muestra la página con la fecha seleccionada', async () => {
@@ -167,7 +170,7 @@ describe('DailyNotesPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Notas diarias' })).toBeVisible()
     const hoyLink = screen.getByRole('link', { name: 'Hoy' })
-    expect(hoyLink).toHaveAttribute('href', '/notes')
+    expect(hoyLink).toHaveAttribute('href', '/notes?space=work')
   })
 
   it('muestra el editor de notas', async () => {

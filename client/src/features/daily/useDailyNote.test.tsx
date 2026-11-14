@@ -11,6 +11,7 @@ import type { DailyContent } from './editor/dailyDocument'
 import { DailyDraftProvider, useDailyDraftContext } from './DailyDraftProvider'
 import type { UseDailyNoteReturn } from './useDailyNote'
 import { setTestDebounce } from './useDailyNote'
+import type { Space } from '../spaces/space'
 
 const DETAIL_PATH = '/api/v1/daily-notes/2024-01-15'
 const OWNER = '01900000-0000-7000-8000-000000000001'
@@ -54,11 +55,16 @@ function TestConsumer({ hooksRef }: { hooksRef: MutableRefObject<TestHooks> }) {
   )
 }
 
-function renderHarness(opts?: { initialDate?: string; sessionIsCurrent?: () => boolean }) {
+function renderHarness(opts?: {
+  initialDate?: string
+  sessionIsCurrent?: () => boolean
+  space?: Space
+}) {
   const hooksRef: MutableRefObject<TestHooks> = { current: {} as TestHooks }
   const result = renderWithProviders(
     <DailyDraftProvider
       owner={OWNER}
+      space={opts?.space ?? 'work'}
       initialDate={opts?.initialDate ?? DATE_A}
       sessionIsCurrent={opts?.sessionIsCurrent}
     >
@@ -114,7 +120,7 @@ describe('useDailyNote', () => {
     act(() => hooksRef.current.ctx.edit(makeContent('edición local')))
     remoteRevision = 2
     await act(async () =>
-      queryClient.invalidateQueries({ queryKey: ['daily', OWNER, 'detail', DATE_A] }),
+      queryClient.invalidateQueries({ queryKey: ['daily', OWNER, 'work', 'detail', DATE_A] }),
     )
     await waitFor(() => expect(hooksRef.current.ctx.revision).toBe(2))
     expect(hooksRef.current.ctx.content).toEqual(makeContent('edición local'))
@@ -476,7 +482,7 @@ describe('useDailyNote', () => {
     )
 
     const { rerender } = renderWithProviders(
-      <DailyDraftProvider owner={OWNER} initialDate={DATE_A}>
+      <DailyDraftProvider owner={OWNER} space="work" initialDate={DATE_A}>
         <TestConsumer hooksRef={{ current: {} as TestHooks }} />
       </DailyDraftProvider>,
     )
@@ -592,7 +598,7 @@ describe('useDailyNote', () => {
 
     const hooksRef: MutableRefObject<TestHooks> = { current: {} as TestHooks }
     const { rerender } = renderWithProviders(
-      <DailyDraftProvider owner={OWNER} initialDate={DATE_A}>
+      <DailyDraftProvider owner={OWNER} space="work" initialDate={DATE_A}>
         <TestConsumer hooksRef={hooksRef} />
       </DailyDraftProvider>,
     )
@@ -614,7 +620,7 @@ describe('useDailyNote', () => {
     // Esta prueba verifica que, si el provider NO se desmonta (solo el hijo),
     // el dirty se retiene.
     rerender(
-      <DailyDraftProvider owner={OWNER} initialDate={DATE_A}>
+      <DailyDraftProvider owner={OWNER} space="work" initialDate={DATE_A}>
         <TestConsumer hooksRef={hooksRef} />
       </DailyDraftProvider>,
     )
@@ -625,5 +631,81 @@ describe('useDailyNote', () => {
     // Esto es el comportamiento esperado: el provider es la fuente de verdad.
     expect(screen.getByTestId('dirty')).toHaveTextContent('false')
     expect(putCalled).toBe(false)
+  })
+})
+
+describe('useDailyNote por espacio', () => {
+  it('misma fecha en Trabajo y Personal: lecturas y PUT separados por space, sin mezclar texto', async () => {
+    installAuthBackend({ user: buildAuthUser() })
+    setTestDebounce(10_000)
+    const stored: Record<string, DailyContent> = { work: makeContent('texto de trabajo') }
+    const writes: string[] = []
+    server.use(
+      mock.get(DETAIL_PATH, ({ request }) => {
+        const space = new URL(request.url).searchParams.get('space') ?? 'sin-space'
+        const content = stored[space]
+        return content ? HttpResponse.json(buildDetail(DATE_A, 1, content)) : problemResponse(404)
+      }),
+      mock.put(DETAIL_PATH, async ({ request }) => {
+        const space = new URL(request.url).searchParams.get('space') ?? 'sin-space'
+        const body = (await request.json()) as { content: DailyContent }
+        writes.push(space)
+        stored[space] = body.content
+        return HttpResponse.json(buildDetail(DATE_A, 1, body.content))
+      }),
+    )
+    const work = renderHarness({ space: 'work' })
+    await waitFor(() =>
+      expect(work.hooksRef.current.ctx.content).toEqual(makeContent('texto de trabajo')),
+    )
+    const personal = renderHarness({ space: 'personal' })
+    await waitFor(() => expect(personal.hooksRef.current.ctx.isLoading).toBe(false))
+    expect(personal.hooksRef.current.ctx.content).toEqual(emptyDocument())
+    expect(personal.hooksRef.current.ctx.revision).toBe(0)
+    act(() => personal.hooksRef.current.ctx.edit(makeContent('texto personal')))
+    await act(async () => personal.hooksRef.current.ctx.flush())
+    expect(writes).toEqual(['personal'])
+    expect(stored.work).toEqual(makeContent('texto de trabajo'))
+    expect(stored.personal).toEqual(makeContent('texto personal'))
+  })
+
+  it('un ACK tardío del origen no aparece en el borrador remontado en el destino', async () => {
+    installAuthBackend({ user: buildAuthUser() })
+    setTestDebounce(10_000)
+    let release: () => void = () => {}
+    const held = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    server.use(
+      mock.get(DETAIL_PATH, () => problemResponse(404)),
+      mock.put(DETAIL_PATH, async ({ request }) => {
+        const body = (await request.json()) as { content: DailyContent }
+        await held
+        return HttpResponse.json(buildDetail(DATE_A, 1, body.content))
+      }),
+    )
+    const hooksRef: MutableRefObject<TestHooks> = { current: {} as TestHooks }
+    const view = renderWithProviders(
+      <DailyDraftProvider key="work" owner={OWNER} space="work" initialDate={DATE_A}>
+        <TestConsumer hooksRef={hooksRef} />
+      </DailyDraftProvider>,
+    )
+    await waitFor(() => expect(hooksRef.current.ctx.isLoading).toBe(false))
+    act(() => hooksRef.current.ctx.edit(makeContent('solo en trabajo')))
+    void hooksRef.current.ctx.flush().catch(() => {})
+    await waitFor(() => expect(hooksRef.current.ctx.isSaving).toBe(true))
+    view.rerender(
+      <DailyDraftProvider key="personal" owner={OWNER} space="personal" initialDate={DATE_A}>
+        <TestConsumer hooksRef={hooksRef} />
+      </DailyDraftProvider>,
+    )
+    await waitFor(() => expect(hooksRef.current.ctx.isLoading).toBe(false))
+    await act(async () => release())
+    await act(async () => {})
+    expect(hooksRef.current.ctx.content).toEqual(emptyDocument())
+    expect(hooksRef.current.ctx.revision).toBe(0)
+    expect(
+      view.queryClient.getQueryData(['daily', OWNER, 'personal', 'detail', DATE_A]),
+    ).toBeUndefined()
   })
 })

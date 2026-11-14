@@ -115,24 +115,33 @@ describe('voice schemas', () => {
   })
 })
 
+const SCOPE = { owner: 'owner-a', space: 'work' } as const
+
 describe('voiceQueryKeys', () => {
   it('all no incluye prefijo auth', () => {
     expect(voiceQueryKeys.all[0]).not.toBe('auth')
   })
 
-  it('detail incluye el id en la key', () => {
-    const key = voiceQueryKeys.detail('note-1')
-    expect(key).toEqual(['voice', 'detail', 'note-1'])
+  it('detail incluye identidad, espacio e id en la key', () => {
+    const key = voiceQueryKeys.detail(SCOPE, 'note-1')
+    expect(key).toEqual(['voice', 'owner-a', 'work', 'detail', 'note-1'])
   })
 
   it('list con params incluye los parámetros', () => {
-    const key = voiceQueryKeys.list({ page: 1, size: 10 })
-    expect(key[2]).toEqual({ page: 1, size: 10 })
+    const key = voiceQueryKeys.list(SCOPE, { page: 1, size: 10 })
+    expect(key[4]).toEqual({ page: 1, size: 10 })
   })
 
   it('list sin params usa null', () => {
-    const key = voiceQueryKeys.list()
-    expect(key[2]).toBeNull()
+    const key = voiceQueryKeys.list(SCOPE)
+    expect(key[4]).toBeNull()
+  })
+
+  it('el contenido de Trabajo y Personal no comparte keys; la capacidad sigue siendo global', () => {
+    const personal = { owner: 'owner-a', space: 'personal' } as const
+    expect(voiceQueryKeys.detail(SCOPE, 'n')).not.toEqual(voiceQueryKeys.detail(personal, 'n'))
+    expect(voiceQueryKeys.lists(personal).slice(0, 3)).not.toEqual(voiceQueryKeys.scope(SCOPE))
+    expect(voiceQueryKeys.capabilities).toEqual(['voice', 'capabilities'])
   })
 })
 
@@ -247,7 +256,7 @@ describe('fetchVoiceNotes', () => {
         }),
       ),
     )
-    const page = await fetchVoiceNotes()
+    const page = await fetchVoiceNotes('work')
     expect(page).toEqual({
       content: [],
       page: 0,
@@ -271,9 +280,10 @@ describe('fetchVoiceNotes', () => {
         })
       }),
     )
-    await fetchVoiceNotes({ page: 1, size: 10 })
+    await fetchVoiceNotes('work', { page: 1, size: 10 })
     expect(seenPath).toContain('page=1')
     expect(seenPath).toContain('size=10')
+    expect(new URL(seenPath).searchParams.getAll('space')).toEqual(['work'])
   })
 })
 
@@ -287,14 +297,14 @@ describe('createVoiceNote', () => {
       }),
     )
 
-    const result = await createVoiceNote('Nuevo texto')
+    const result = await createVoiceNote('work', 'Nuevo texto')
     expect(result.text).toBe('Nuevo texto')
     expect(result.revision).toBe(1)
   })
 
   it('rechaza 400 de validación como ApiError', async () => {
     server.use(mock.post(NOTES_PATH, () => problemResponse(400, { detail: 'Solicitud inválida.' })))
-    const error = await createVoiceNote('').catch((e: unknown) => e)
+    const error = await createVoiceNote('work', '').catch((e: unknown) => e)
     expect(error).toBeInstanceOf(ApiError)
     expect(error).toMatchObject({ status: 400 })
   })
@@ -304,13 +314,13 @@ describe('fetchVoiceNote', () => {
   it('devuelve detalle por id', async () => {
     const detail = buildNoteDetail()
     server.use(mock.get(`${NOTES_PATH}/:id`, () => HttpResponse.json(detail)))
-    const result = await fetchVoiceNote(detail.id)
+    const result = await fetchVoiceNote('work', detail.id)
     expect(result).toEqual(detail)
   })
 
   it('convierte 404 en ApiError', async () => {
     server.use(mock.get(`${NOTES_PATH}/:id`, () => problemResponse(404)))
-    const error = await fetchVoiceNote('no-exists').catch((e: unknown) => e)
+    const error = await fetchVoiceNote('work', 'no-exists').catch((e: unknown) => e)
     expect(error).toBeInstanceOf(ApiError)
     expect(error).toMatchObject({ status: 404 })
   })
@@ -326,7 +336,7 @@ describe('updateVoiceNote', () => {
         })
       }),
     )
-    const result = await updateVoiceNote('note-1', 'Editado', 1)
+    const result = await updateVoiceNote('work', 'note-1', 'Editado', 1)
     expect(result.text).toBe('Editado')
     expect(result.revision).toBe(2)
   })
@@ -337,7 +347,7 @@ describe('updateVoiceNote', () => {
         problemResponse(409, { detail: 'Conflicto de revisión.' }),
       ),
     )
-    const error = await updateVoiceNote('note-1', 'Editado', 1).catch((e: unknown) => e)
+    const error = await updateVoiceNote('work', 'note-1', 'Editado', 1).catch((e: unknown) => e)
     expect(error).toBeInstanceOf(ApiError)
     expect(error).toMatchObject({ status: 409 })
   })
@@ -346,12 +356,12 @@ describe('updateVoiceNote', () => {
 describe('deleteVoiceNote', () => {
   it('elimina con CAS y espera 204', async () => {
     server.use(mock.delete(`${NOTES_PATH}/:id`, () => new HttpResponse(null, { status: 204 })))
-    await expect(deleteVoiceNote('note-1', 1)).resolves.toBeUndefined()
+    await expect(deleteVoiceNote('work', 'note-1', 1)).resolves.toBeUndefined()
   })
 
   it('convierte 404 en ApiError', async () => {
     server.use(mock.delete(`${NOTES_PATH}/:id`, () => problemResponse(404)))
-    const error = await deleteVoiceNote('note-1', 1).catch((e: unknown) => e)
+    const error = await deleteVoiceNote('work', 'note-1', 1).catch((e: unknown) => e)
     expect(error).toBeInstanceOf(ApiError)
     expect(error).toMatchObject({ status: 404 })
   })

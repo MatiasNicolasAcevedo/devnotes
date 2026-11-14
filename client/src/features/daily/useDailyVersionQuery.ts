@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { getDailyVersion, listDailyVersions, dailyVersionKeys } from './versionApi'
+import type { Space } from '../spaces/space'
 
 /**
  * Hook de lectura del historial paginado de versiones por identidad.
@@ -12,14 +13,15 @@ import { getDailyVersion, listDailyVersions, dailyVersionKeys } from './versionA
  */
 export function useDailyVersionListQuery(
   owner: string,
+  space: Space,
   page?: number,
   sessionIsCurrent?: () => boolean,
 ) {
-  const keys = dailyVersionKeys(owner)
+  const keys = dailyVersionKeys(owner, space)
 
   return useQuery({
     queryKey: keys.list(page),
-    queryFn: ({ signal }) => listDailyVersions(page, signal, sessionIsCurrent),
+    queryFn: ({ signal }) => listDailyVersions(space, page, signal, sessionIsCurrent),
     enabled: sessionIsCurrent === undefined || sessionIsCurrent(),
     retry: false,
     staleTime: 0,
@@ -37,14 +39,15 @@ export function useDailyVersionListQuery(
  */
 export function useDailyVersionDetailQuery(
   owner: string,
+  space: Space,
   date: string,
   sessionIsCurrent?: () => boolean,
 ) {
-  const keys = dailyVersionKeys(owner)
+  const keys = dailyVersionKeys(owner, space)
 
   return useQuery({
     queryKey: keys.detail(date),
-    queryFn: ({ signal }) => getDailyVersion(date, signal, sessionIsCurrent),
+    queryFn: ({ signal }) => getDailyVersion(space, date, signal, sessionIsCurrent),
     enabled: sessionIsCurrent === undefined || sessionIsCurrent(),
     retry: false,
     staleTime: 0,
@@ -60,9 +63,10 @@ export function invalidateDailyVersion(
     invalidateQueries: (opts: { queryKey: readonly unknown[] }) => Promise<void>
   },
   owner: string,
+  space: Space,
   date?: string,
 ) {
-  const keys = dailyVersionKeys(owner)
+  const keys = dailyVersionKeys(owner, space)
   if (date) {
     return queryClient.invalidateQueries({ queryKey: keys.detail(date) })
   }

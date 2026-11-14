@@ -7,7 +7,7 @@ import { server } from '../../test/msw/server'
 import { installAuthBackend } from '../../test/msw/authBackend'
 import { buildAuthUser, problemResponse } from '../../test/factories'
 import { DailyDraftWorkspace } from './DailyDraftNavigation'
-import { useDailyDraftContext } from './DailyDraftProvider'
+import { useDailyDraftContext, useOptionalDailyDraftContext } from './DailyDraftProvider'
 import { setTestDebounce } from './useDailyNote'
 
 const date = '2026-10-19'
@@ -36,12 +36,12 @@ function Shell() {
   const location = useLocation()
   const navigate = useNavigate()
   return (
-    <DailyDraftWorkspace owner="test-owner">
+    <DailyDraftWorkspace owner="test-owner" space="work">
       {(outlet) => (
         <>
           <output data-testid="route">{location.pathname}</output>
-          <Link to={`/notes/${date}`}>Nota</Link>
-          <Link to="/history">Historial</Link>
+          <Link to={`/notes/${date}?space=work`}>Nota</Link>
+          <Link to="/history?space=work">Historial</Link>
           <button onClick={() => navigate(-1)}>Atrás del navegador</button>
           {outlet}
         </>
@@ -50,7 +50,7 @@ function Shell() {
   )
 }
 
-function renderWorkspace(route = `/notes/${date}`) {
+function renderWorkspace(route = `/notes/${date}?space=work`) {
   installAuthBackend({ user: buildAuthUser() })
   setTestDebounce(10_000)
   server.use(mock.get(detailPath, () => problemResponse(404)))
@@ -66,6 +66,35 @@ function renderWorkspace(route = `/notes/${date}`) {
 }
 
 afterEach(() => setTestDebounce(undefined))
+
+describe('borrador diario y espacio', () => {
+  it('una URL de notas de otro espacio o inválida no crea el borrador ni lee la nota', async () => {
+    let reads = 0
+    installAuthBackend({ user: buildAuthUser() })
+    server.use(
+      mock.get(detailPath, () => {
+        reads++
+        return problemResponse(404)
+      }),
+    )
+    function Probe() {
+      return <p>{useOptionalDailyDraftContext() ? 'con borrador' : 'sin borrador'}</p>
+    }
+    for (const route of [`/notes/${date}?space=personal`, `/notes/${date}?space=xyz`]) {
+      const view = renderWithProviders(
+        <Routes>
+          <Route element={<Shell />}>
+            <Route path="notes/:date" element={<Probe />} />
+          </Route>
+        </Routes>,
+        { route },
+      )
+      expect(await screen.findByText('sin borrador')).toBeVisible()
+      view.unmount()
+    }
+    expect(reads).toBe(0)
+  })
+})
 
 describe('navegación del borrador', () => {
   it('un fallo de flush conserva ruta y texto al pulsar un enlace del shell', async () => {
@@ -119,7 +148,7 @@ describe('navegación del borrador', () => {
         return problemResponse(503)
       }),
     )
-    const { user } = renderWorkspace('/history')
+    const { user } = renderWorkspace('/history?space=work')
     await user.click(screen.getByRole('link', { name: 'Nota' }))
     fireEvent.change(await screen.findByLabelText('Borrador'), {
       target: { value: 'conservar tras atrás' },

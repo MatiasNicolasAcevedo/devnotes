@@ -13,6 +13,7 @@ import {
   saveDailyNoteRequestSchema,
 } from './api'
 import { emptyDocument } from './editor/dailyDocument'
+import type { Space } from '../spaces/space'
 
 const DETAIL_PATH = '/api/v1/daily-notes/2024-01-15'
 const LIST_PATH = '/api/v1/daily-notes'
@@ -40,19 +41,68 @@ function buildPage(overrides = {}) {
 }
 
 describe('dailyNoteKeys', () => {
-  it('incluye la identidad en todas las keys para aislar entre cuentas', () => {
-    const keys = dailyNoteKeys('owner-a')
-    expect(keys.all).toEqual(['daily', 'owner-a'])
-    expect(keys.detail('2024-01-01')).toEqual(['daily', 'owner-a', 'detail', '2024-01-01'])
-    expect(keys.list()).toEqual(['daily', 'owner-a', 'list'])
-    expect(keys.list(2)).toEqual(['daily', 'owner-a', 'list', 2])
+  it('incluye identidad y espacio en todas las keys para aislar cuentas y espacios', () => {
+    const keys = dailyNoteKeys('owner-a', 'work')
+    expect(keys.all).toEqual(['daily', 'owner-a', 'work'])
+    expect(keys.detail('2024-01-01')).toEqual(['daily', 'owner-a', 'work', 'detail', '2024-01-01'])
+    expect(keys.list()).toEqual(['daily', 'owner-a', 'work', 'list'])
+    expect(keys.list(2)).toEqual(['daily', 'owner-a', 'work', 'list', 2])
   })
 
   it('keys de distintas identidades son independientes', () => {
-    const a = dailyNoteKeys('owner-a')
-    const b = dailyNoteKeys('owner-b')
+    const a = dailyNoteKeys('owner-a', 'work')
+    const b = dailyNoteKeys('owner-b', 'work')
     expect(a.detail('2024-01-01')).not.toEqual(b.detail('2024-01-01'))
     expect(a.list()).not.toEqual(b.list())
+  })
+
+  it('la misma fecha en Trabajo y Personal son keys distintas y ninguna es prefijo de la otra', () => {
+    const work = dailyNoteKeys('owner-a', 'work')
+    const personal = dailyNoteKeys('owner-a', 'personal')
+    expect(work.detail('2024-01-01')).not.toEqual(personal.detail('2024-01-01'))
+    expect(personal.detail('2024-01-01').slice(0, work.all.length)).not.toEqual(work.all)
+  })
+})
+
+describe('espacio en el transporte diario', () => {
+  function captureUrls() {
+    const urls: URL[] = []
+    server.use(
+      mock.get(DETAIL_PATH, ({ request }) => {
+        urls.push(new URL(request.url))
+        return HttpResponse.json(buildDetail())
+      }),
+      mock.get(LIST_PATH, ({ request }) => {
+        urls.push(new URL(request.url))
+        return HttpResponse.json(buildPage())
+      }),
+      mock.put(DETAIL_PATH, ({ request }) => {
+        urls.push(new URL(request.url))
+        return HttpResponse.json(buildDetail({ revision: 2 }))
+      }),
+    )
+    return urls
+  }
+
+  it('GET, lista y PUT envían exactamente un space con el espacio capturado', async () => {
+    const urls = captureUrls()
+    await getDailyNote('personal', '2024-01-15')
+    await listDailyNotes('personal', 1)
+    await saveDailyNote('personal', '2024-01-15', emptyDocument(), 1)
+    expect(urls).toHaveLength(3)
+    for (const url of urls) expect(url.searchParams.getAll('space')).toEqual(['personal'])
+    expect(urls[1].searchParams.get('page')).toBe('1')
+  })
+
+  it('un espacio fuera del enum se rechaza antes de llegar a la red', async () => {
+    const urls = captureUrls()
+    // Valor sin tipo, como llegaría de una URL o de almacenamiento no confiable.
+    const bogus: Space = JSON.parse('"all"')
+    await expect(getDailyNote(bogus, '2024-01-15')).rejects.toThrow('Espacio no válido')
+    await expect(saveDailyNote(bogus, '2024-01-15', emptyDocument(), 1)).rejects.toThrow(
+      'Espacio no válido',
+    )
+    expect(urls).toHaveLength(0)
   })
 })
 
@@ -61,7 +111,7 @@ describe('getDailyNote', () => {
     const detail = buildDetail({ revision: 3 })
     server.use(mock.get(DETAIL_PATH, () => HttpResponse.json(detail)))
 
-    const result = await getDailyNote('2024-01-15')
+    const result = await getDailyNote('work', '2024-01-15')
 
     expect(result).toEqual(detail)
     expect(result.revision).toBe(3)
@@ -70,7 +120,7 @@ describe('getDailyNote', () => {
   it('distingue 404 (ausencia explícita) de otros errores', async () => {
     server.use(mock.get(DETAIL_PATH, () => problemResponse(404, { title: 'Not Found' })))
 
-    const error = await getDailyNote('2024-01-15').catch((e: unknown) => e)
+    const error = await getDailyNote('work', '2024-01-15').catch((e: unknown) => e)
 
     expect(error).toBeInstanceOf(ApiError)
     expect((error as ApiError).status).toBe(404)
@@ -79,7 +129,7 @@ describe('getDailyNote', () => {
   it('no convierte 403 en vacío', async () => {
     server.use(mock.get(DETAIL_PATH, () => problemResponse(403, { title: 'Forbidden' })))
 
-    const error = await getDailyNote('2024-01-15').catch((e: unknown) => e)
+    const error = await getDailyNote('work', '2024-01-15').catch((e: unknown) => e)
 
     expect(error).toBeInstanceOf(ApiError)
     expect((error as ApiError).status).toBe(403)
@@ -95,19 +145,19 @@ describe('getDailyNote', () => {
       ),
     )
 
-    await expect(getDailyNote('2024-01-15')).rejects.toBeInstanceOf(UnexpectedResponseError)
+    await expect(getDailyNote('work', '2024-01-15')).rejects.toBeInstanceOf(UnexpectedResponseError)
   })
 
   it('rechaza fecha inválida en la ruta', async () => {
     server.use(mock.get('/api/v1/daily-notes/2024-13-01', () => problemResponse(400)))
 
-    await expect(getDailyNote('2024-13-01')).rejects.toBeInstanceOf(ApiError)
+    await expect(getDailyNote('work', '2024-13-01')).rejects.toBeInstanceOf(ApiError)
   })
 
   it('propaga NetworkError sin convertir', async () => {
     server.use(mock.get(DETAIL_PATH, () => HttpResponse.error()))
 
-    await expect(getDailyNote('2024-01-15')).rejects.toBeInstanceOf(NetworkError)
+    await expect(getDailyNote('work', '2024-01-15')).rejects.toBeInstanceOf(NetworkError)
   })
 
   it('propaga sessionIsCurrent al cliente HTTP (guarda de 401)', async () => {
@@ -116,7 +166,7 @@ describe('getDailyNote', () => {
     // Aquí verificamos que el parámetro llega al http.request sin errores
     server.use(mock.get(DETAIL_PATH, () => HttpResponse.json(buildDetail())))
 
-    const result = await getDailyNote('2024-01-15', undefined, () => false)
+    const result = await getDailyNote('work', '2024-01-15', undefined, () => false)
     expect(result.date).toBe('2024-01-15')
   })
 
@@ -124,7 +174,9 @@ describe('getDailyNote', () => {
     const controller = new AbortController()
     controller.abort()
 
-    const error = await getDailyNote('2024-01-15', controller.signal).catch((e: unknown) => e)
+    const error = await getDailyNote('work', '2024-01-15', controller.signal).catch(
+      (e: unknown) => e,
+    )
     expect(error).toBeInstanceOf(Error)
     expect((error as DOMException).name).toBe('AbortError')
   })
@@ -135,7 +187,7 @@ describe('listDailyNotes', () => {
     const page = buildPage()
     server.use(mock.get(LIST_PATH, () => HttpResponse.json(page)))
 
-    const result = await listDailyNotes()
+    const result = await listDailyNotes('work')
 
     expect(result).toEqual(page)
     expect(result.content).toHaveLength(1)
@@ -150,7 +202,7 @@ describe('listDailyNotes', () => {
       }),
     )
 
-    await listDailyNotes(1)
+    await listDailyNotes('work', 1)
 
     expect(capturedPath).toBe('1')
   })
@@ -165,7 +217,7 @@ describe('listDailyNotes', () => {
       ),
     )
 
-    await expect(listDailyNotes()).rejects.toBeInstanceOf(UnexpectedResponseError)
+    await expect(listDailyNotes('work')).rejects.toBeInstanceOf(UnexpectedResponseError)
   })
 })
 
@@ -182,7 +234,7 @@ describe('saveDailyNote', () => {
       }),
     )
 
-    const result = await saveDailyNote('owner-a', '2024-01-15', emptyDocument(), 1)
+    const result = await saveDailyNote('work', '2024-01-15', emptyDocument(), 1)
 
     expect(result.revision).toBe(2)
     expect(capturedBody).toEqual({
@@ -197,14 +249,14 @@ describe('saveDailyNote', () => {
     document.cookie = 'XSRF-TOKEN=csrf-test-token'
 
     await expect(
-      saveDailyNote('owner-a', '2024-01-15', { ...emptyDocument(), extra: 'bad' }, 1),
+      saveDailyNote('work', '2024-01-15', { ...emptyDocument(), extra: 'bad' }, 1),
     ).rejects.toThrow('Solicitud inválida')
   })
 
   it('rechaza revisión no segura (fracción)', async () => {
     document.cookie = 'XSRF-TOKEN=csrf-test-token'
 
-    await expect(saveDailyNote('owner-a', '2024-01-15', emptyDocument(), 1.5)).rejects.toThrow(
+    await expect(saveDailyNote('work', '2024-01-15', emptyDocument(), 1.5)).rejects.toThrow(
       'Solicitud inválida',
     )
   })
@@ -212,7 +264,7 @@ describe('saveDailyNote', () => {
   it('rechaza revisión negativa', async () => {
     document.cookie = 'XSRF-TOKEN=csrf-test-token'
 
-    await expect(saveDailyNote('owner-a', '2024-01-15', emptyDocument(), -1)).rejects.toThrow(
+    await expect(saveDailyNote('work', '2024-01-15', emptyDocument(), -1)).rejects.toThrow(
       'Solicitud inválida',
     )
   })
@@ -227,7 +279,7 @@ describe('saveDailyNote', () => {
       }),
     )
 
-    const error = await saveDailyNote('owner-a', '2024-01-15', emptyDocument(), 1).catch(
+    const error = await saveDailyNote('work', '2024-01-15', emptyDocument(), 1).catch(
       (e: unknown) => e,
     )
 
@@ -240,7 +292,7 @@ describe('saveDailyNote', () => {
     document.cookie = 'XSRF-TOKEN=csrf-test-token'
     server.use(mock.put(DETAIL_PATH, () => problemResponse(400, { title: 'Bad Request' })))
 
-    const error = await saveDailyNote('owner-a', '2024-01-15', emptyDocument(), 1).catch(
+    const error = await saveDailyNote('work', '2024-01-15', emptyDocument(), 1).catch(
       (e: unknown) => e,
     )
 
@@ -252,7 +304,7 @@ describe('saveDailyNote', () => {
     document.cookie = 'XSRF-TOKEN=csrf-test-token'
     server.use(mock.put(DETAIL_PATH, () => problemResponse(401, { title: 'Unauthorized' })))
 
-    const error = await saveDailyNote('owner-a', '2024-01-15', emptyDocument(), 1).catch(
+    const error = await saveDailyNote('work', '2024-01-15', emptyDocument(), 1).catch(
       (e: unknown) => e,
     )
 
@@ -270,7 +322,7 @@ describe('saveDailyNote', () => {
       }),
     )
 
-    const error = await saveDailyNote('owner-a', '2024-01-15', emptyDocument(), 1).catch(
+    const error = await saveDailyNote('work', '2024-01-15', emptyDocument(), 1).catch(
       (e: unknown) => e,
     )
 
@@ -285,7 +337,7 @@ describe('saveDailyNote', () => {
       mock.put(DETAIL_PATH, () => problemResponse(500, { title: 'Internal Server Error' })),
     )
 
-    const error = await saveDailyNote('owner-a', '2024-01-15', emptyDocument(), 1).catch(
+    const error = await saveDailyNote('work', '2024-01-15', emptyDocument(), 1).catch(
       (e: unknown) => e,
     )
 

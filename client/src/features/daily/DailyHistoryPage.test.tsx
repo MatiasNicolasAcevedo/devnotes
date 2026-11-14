@@ -20,7 +20,7 @@ it('una versión propia ausente muestra Sin versión guardada y permite volver s
   expect(await screen.findByText('Sin versión guardada')).toBeVisible()
   expect(screen.getByRole('link', { name: /Volver a mi nota/ })).toHaveAttribute(
     'href',
-    '/notes/2024-01-15',
+    '/notes/2024-01-15?space=work',
   )
   expect(screen.queryByLabelText('Versión de solo lectura')).not.toBeInTheDocument()
 })
@@ -281,6 +281,9 @@ describe('DailyHistoryPage — navegación', () => {
 
     await screen.findByText('15/01/2024')
     const nav = screen.getByRole('navigation', { name: 'Navegación principal' })
-    expect(within(nav).getByRole('link', { name: 'Historial' })).toHaveAttribute('href', '/history')
+    expect(within(nav).getByRole('link', { name: 'Historial' })).toHaveAttribute(
+      'href',
+      '/history?space=work',
+    )
   })
 })

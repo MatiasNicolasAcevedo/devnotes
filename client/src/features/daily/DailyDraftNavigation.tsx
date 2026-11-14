@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack'
 import { Outlet, useLocation, useNavigate } from 'react-router'
 import { DailyDraftProvider, useDailyDraftContext } from './DailyDraftProvider'
 import { isValidIsoDate, todayLocal } from './dateUtils'
+import { readSpaceParam, spaceHref, type Space } from '../spaces/space'
 
 function routeDate(pathname: string) {
   if (pathname === '/notes') return todayLocal()
@@ -12,30 +13,39 @@ function routeDate(pathname: string) {
   return date && isValidIsoDate(date) ? date : null
 }
 
-/** Se crea al visitar notas y permanece sobre el shell hasta terminar la sesión. */
+/**
+ * Se crea al visitar notas y permanece sobre el shell hasta terminar la sesión o cambiar el espacio confirmado.
+ * Solo una URL de notas cuyo `space` coincide con el confirmado crea el borrador: una URL inválida o de otro espacio
+ * nunca lee ni escribe aquí.
+ */
 export function DailyDraftWorkspace({
   owner,
+  space,
   outletOverride,
   bypassLinkFlush = false,
   navigationRoot,
   children,
 }: {
   owner: string
+  space: Space | null
   outletOverride?: ReactNode
   bypassLinkFlush?: boolean
   navigationRoot?: RefObject<HTMLDivElement | null>
   children: (outlet: ReactNode) => ReactNode
 }) {
-  const { pathname } = useLocation()
-  const requestedDate = outletOverride === undefined ? routeDate(pathname) : null
-  const [workspace, setWorkspace] = useState({ owner, initialDate: requestedDate })
-  const initialDate = workspace.owner === owner ? workspace.initialDate : requestedDate
-  if (workspace.owner !== owner || (!initialDate && requestedDate)) {
-    setWorkspace({ owner, initialDate: requestedDate })
+  const { pathname, search } = useLocation()
+  const routeSpace = readSpaceParam(search)
+  const inSpace = space !== null && routeSpace.kind === 'valid' && routeSpace.space === space
+  const requestedDate = outletOverride === undefined && inSpace ? routeDate(pathname) : null
+  const scope = `${owner}/${space ?? ''}`
+  const [workspace, setWorkspace] = useState({ scope, initialDate: requestedDate })
+  const initialDate = workspace.scope === scope ? workspace.initialDate : requestedDate
+  if (workspace.scope !== scope || (!initialDate && requestedDate)) {
+    setWorkspace({ scope, initialDate: requestedDate })
   }
-  if (!owner || !initialDate) return children(outletOverride ?? <Outlet />)
+  if (!owner || !space || !initialDate) return children(outletOverride ?? <Outlet />)
   return (
-    <DailyDraftProvider key={owner} owner={owner} initialDate={initialDate}>
+    <DailyDraftProvider key={scope} owner={owner} space={space} initialDate={initialDate}>
       <DailyDraftNavigation bypassLinkFlush={bypassLinkFlush} navigationRoot={navigationRoot}>
         {children(
           <DailyDraftOutlet outletOverride={outletOverride} bypassGuard={bypassLinkFlush} />,
@@ -133,6 +143,7 @@ function DailyDraftOutlet({
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const date = routeDate(pathname)
+  const noteHref = spaceHref(`/notes/${ctx.activeDate}`, ctx.space)
   const onActiveNote = date === ctx.activeDate
   const pending =
     !bypassGuard && (ctx.isDirty || ctx.isSaving || ctx.navigationLocked) && !onActiveNote
@@ -144,9 +155,9 @@ function DailyDraftOutlet({
       void ctx.navigateToDate(date).catch(() => {})
     }
     if (pathname === '/notes' && onActiveNote) {
-      void navigate(`/notes/${ctx.activeDate}`, { replace: true })
+      void navigate(noteHref, { replace: true })
     }
-  }, [ctx, date, pending, pathname, onActiveNote, navigate, outletOverride])
+  }, [ctx, date, pending, pathname, onActiveNote, navigate, outletOverride, noteHref])
 
   if (outletOverride !== undefined) return outletOverride
   if (pending)
@@ -155,7 +166,7 @@ function DailyDraftOutlet({
         Hay cambios pendientes en la nota del {ctx.activeDate}. Se conserva el texto antes de
         continuar.
         <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-          <Button onClick={() => navigate(`/notes/${ctx.activeDate}`)}>Volver a la nota</Button>
+          <Button onClick={() => navigate(noteHref)}>Volver a la nota</Button>
           <Button
             disabled={ctx.navigationLocked}
             onClick={() => {

@@ -10,7 +10,9 @@ import {
   fetchReferenceItems,
   referenceInputSchema,
   saveReferenceItem,
+  searchReferenceItems,
 } from './api'
+import type { Space } from '../spaces/space'
 
 describe('reference API', () => {
   it('validates shared trim and exact limits, permits duplicates and requires description string', () => {
@@ -34,6 +36,10 @@ describe('reference API', () => {
   it('uses five exact operations and schemas without retaining unknown owner attributes', async () => {
     const seen: Array<{ method: string; body: unknown }> = []
     const item = referenceItem()
+    const spaces: string[] = []
+    const track = (request: Request) =>
+      spaces.push(...new URL(request.url).searchParams.getAll('space'))
+    server.events.on('request:start', ({ request }) => track(request))
     server.use(
       mock.get(REFERENCE_PATH, () =>
         HttpResponse.json({ content: [item], page: 1, size: 20, totalElements: 21, totalPages: 2 }),
@@ -54,16 +60,47 @@ describe('reference API', () => {
         return new HttpResponse(null, { status: 204 })
       }),
     )
-    expect((await fetchReferenceItems(1)).totalElements).toBe(21)
-    expect(await fetchReferenceItem(item.id)).toEqual(item)
-    await saveReferenceItem({ title: ' título ', description: ' ' })
-    await saveReferenceItem({ title: ' título ', description: '' }, item.id)
-    await deleteReferenceItem(item.id)
+    expect((await fetchReferenceItems('work', 1)).totalElements).toBe(21)
+    expect(await fetchReferenceItem('work', item.id)).toEqual(item)
+    await saveReferenceItem('work', { title: ' título ', description: ' ' })
+    await saveReferenceItem('work', { title: ' título ', description: '' }, item.id)
+    await deleteReferenceItem('work', item.id)
     expect(seen).toEqual([
       { method: 'POST', body: { title: 'título', description: '' } },
       { method: 'PUT', body: { title: 'título', description: '' } },
       { method: 'DELETE', body: null },
     ])
+    // Cada operación lleva exactamente un space: listado, detalle, alta, edición y borrado.
+    expect(spaces).toEqual(['work', 'work', 'work', 'work', 'work'])
+    server.events.removeAllListeners('request:start')
+  })
+  it('search and every operation carry the captured space; an unknown space never reaches the network', async () => {
+    const urls: URL[] = []
+    const item = referenceItem()
+    const page = { content: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }
+    server.use(
+      mock.get(REFERENCE_PATH, ({ request }) => {
+        urls.push(new URL(request.url))
+        return HttpResponse.json(page)
+      }),
+      mock.delete(`${REFERENCE_PATH}/${item.id}`, ({ request }) => {
+        urls.push(new URL(request.url))
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+    await searchReferenceItems('personal', ' ruta ', 0, 20)
+    await deleteReferenceItem('personal', item.id)
+    expect(urls.map((url) => url.searchParams.getAll('space'))).toEqual([
+      ['personal'],
+      ['personal'],
+    ])
+    expect(urls[0].searchParams.get('q')).toBe('ruta')
+    const bogus: Space = JSON.parse('"Work"')
+    expect(() => searchReferenceItems(bogus, 'x', 0)).toThrow('Espacio no válido')
+    expect(() => saveReferenceItem(bogus, { title: 'x', description: '' })).toThrow(
+      'Espacio no válido',
+    )
+    expect(urls).toHaveLength(2)
   })
   it('rejects invalid response identifiers, dates, pagination and bounds', async () => {
     const item = referenceItem()
@@ -74,7 +111,9 @@ describe('reference API', () => {
       { ...item, createdAt: 'today' },
     ]) {
       server.use(mock.get(`${REFERENCE_PATH}/${item.id}`, () => HttpResponse.json(invalid)))
-      await expect(fetchReferenceItem(item.id)).rejects.toBeInstanceOf(UnexpectedResponseError)
+      await expect(fetchReferenceItem('work', item.id)).rejects.toBeInstanceOf(
+        UnexpectedResponseError,
+      )
     }
     for (const invalid of [
       { content: [], page: -1, size: 20, totalElements: 0, totalPages: 0 },
@@ -83,7 +122,7 @@ describe('reference API', () => {
       { content: [item, item], page: 0, size: 1, totalElements: 2, totalPages: 2 },
     ]) {
       server.use(mock.get(REFERENCE_PATH, () => HttpResponse.json(invalid)))
-      await expect(fetchReferenceItems(0)).rejects.toBeInstanceOf(UnexpectedResponseError)
+      await expect(fetchReferenceItems('work', 0)).rejects.toBeInstanceOf(UnexpectedResponseError)
     }
   })
 })

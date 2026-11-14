@@ -11,8 +11,8 @@ import { referenceKeys, useReferenceItem, useReferenceItems } from './useReferen
 
 function Probe({ owner }: { owner: string }) {
   const session = useSession()
-  const list = useReferenceItems(owner, 0)
-  useReferenceItem(owner, '01900000-0000-7000-8000-000000000101')
+  const list = useReferenceItems(owner, 'work', 0)
+  useReferenceItem(owner, 'work', '01900000-0000-7000-8000-000000000101')
   return (
     <p>
       {session.status}:{list.fetchStatus}
@@ -34,8 +34,12 @@ describe('reference queries', () => {
       expect(await screen.findByText(`${user ? 'authenticated' : 'visitor'}:idle`)).toBeVisible()
       expect(backend.calls.get).toBe(0)
       expect(backend.calls.list.size).toBe(0)
-      expect(referenceKeys.list('a', 0)).not.toEqual(referenceKeys.list('b', 0))
-      expect(referenceKeys.list('a', 0)).not.toEqual(referenceKeys.list('a', 1))
+      expect(referenceKeys.list('a', 'work', 0)).not.toEqual(referenceKeys.list('b', 'work', 0))
+      expect(referenceKeys.list('a', 'work', 0)).not.toEqual(referenceKeys.list('a', 'work', 1))
+      expect(referenceKeys.item('a', 'work', 'x')).not.toEqual(
+        referenceKeys.item('a', 'personal', 'x'),
+      )
+      expect(referenceKeys.owner('a', 'personal')).not.toEqual(referenceKeys.owner('a', 'work'))
     },
   )
 })

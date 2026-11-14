@@ -25,7 +25,7 @@ function buildDetail(date: string, revision: number) {
 
 function wrapHook(owner: string, date: string, sessionIsCurrent?: () => boolean) {
   return function TestHook() {
-    return useDailyNoteQuery(owner, date, sessionIsCurrent)
+    return useDailyNoteQuery(owner, 'work', date, sessionIsCurrent)
   }
 }
 
@@ -208,7 +208,7 @@ describe('invalidateDailyNote', () => {
       defaultOptions: { queries: { retry: false } },
     })
 
-    const keys = dailyNoteKeys('owner-a')
+    const keys = dailyNoteKeys('owner-a', 'work')
     const detail = buildDetail('2024-01-15', 1)
 
     // Poblar cache
@@ -216,7 +216,7 @@ describe('invalidateDailyNote', () => {
     expect(queryClient.getQueryData(keys.detail('2024-01-15'))).toEqual(detail)
 
     // Invalidar
-    await invalidateDailyNote(queryClient, 'owner-a', '2024-01-15')
+    await invalidateDailyNote(queryClient, 'owner-a', 'work', '2024-01-15')
 
     // La query está marcada como stale
     const state = queryClient.getQueryState(keys.detail('2024-01-15'))
@@ -228,7 +228,7 @@ describe('invalidateDailyNote', () => {
       defaultOptions: { queries: { retry: false } },
     })
 
-    const keys = dailyNoteKeys('owner-a')
+    const keys = dailyNoteKeys('owner-a', 'work')
     const listData = {
       content: [],
       page: 0,
@@ -238,7 +238,7 @@ describe('invalidateDailyNote', () => {
     }
 
     queryClient.setQueryData(keys.list(), listData)
-    await invalidateDailyNote(queryClient, 'owner-a')
+    await invalidateDailyNote(queryClient, 'owner-a', 'work')
 
     const state = queryClient.getQueryState(keys.list())
     expect(state?.isInvalidated).toBe(true)
@@ -267,7 +267,7 @@ function QueryResultConsumer({ hook: Hook }: { hook: () => ReturnType<typeof use
         <span> revision: {result.data.revision}</span>
         <button
           onClick={() => {
-            invalidateDailyNote(client, 'owner-a', result.data.date)
+            invalidateDailyNote(client, 'owner-a', 'work', result.data.date)
           }}
         >
           Invalidar

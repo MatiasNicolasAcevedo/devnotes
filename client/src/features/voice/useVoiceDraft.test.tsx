@@ -36,7 +36,7 @@ function renderDraft() {
   function Wrapper({ children }: { children: ReactNode }) {
     return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   }
-  return renderHook(() => useVoiceDraft(), { wrapper: Wrapper })
+  return renderHook(() => useVoiceDraft({ owner: 'owner-a', space: 'work' }), { wrapper: Wrapper })
 }
 
 /*

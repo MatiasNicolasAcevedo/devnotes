@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import { ApiError } from '../../services/http'
 import { sessionEvents } from '../../services/sessionEvents'
+import { clearSpacePreference } from '../spaces/spacePreference'
 import { authQueryKeys, type AuthUser } from './api'
 import { AuthSessionContext, type AuthSession } from './sessionContext'
 import { useAuthSession, useCsrfToken, useLogout } from './useAuthSession'
@@ -50,6 +51,8 @@ export function AuthSessionProvider({ children }: { children: ReactNode }) {
       await queryClient.cancelQueries({ predicate: notCsrfQuery })
       if (!isCurrent()) return false
       discardPrivateData()
+      // La preferencia de espacio de esta identidad tampoco sobrevive al cierre o a la expiración (S-109 §5).
+      clearSpacePreference(owner)
       queryClient.setQueryData<AuthUser | null>(authQueryKeys.session, null)
       setSessionEnded(reason === 'expired')
       return true

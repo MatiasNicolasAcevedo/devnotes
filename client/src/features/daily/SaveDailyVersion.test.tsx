@@ -96,6 +96,7 @@ function TestConsumer({
 }) {
   const save = useSaveDailyVersion({
     owner: OWNER,
+    space: 'work',
     date: DATE,
     note: { flush, revision, getRevision: () => revision },
     sessionIsCurrent,
@@ -188,7 +189,7 @@ describe('SaveDailyVersion', () => {
     )
     function DraftVersion() {
       const note = useDailyDraftContext()
-      const save = useSaveDailyVersion({ owner: OWNER, date: DATE, note })
+      const save = useSaveDailyVersion({ owner: OWNER, space: note.space, date: DATE, note })
       return (
         <>
           <span data-testid="rev">{note.revision}</span>
@@ -199,7 +200,7 @@ describe('SaveDailyVersion', () => {
       )
     }
     const { user } = renderWithProviders(
-      <DailyDraftProvider owner={OWNER} initialDate={DATE}>
+      <DailyDraftProvider owner={OWNER} space="work" initialDate={DATE}>
         <DraftVersion />
       </DailyDraftProvider>,
     )

@@ -9,6 +9,7 @@ import {
   Typography,
 } from '@mui/material'
 import { searchReferenceItems, type ReferenceItem } from '../../reference/api'
+import { useActiveSpace } from '../../spaces/spaceContext'
 import { ApiError } from '../../../services/http'
 
 interface ReferencePickerProps {
@@ -32,6 +33,8 @@ const PAGE_SIZE = 20
  * Soporta teclado (flechas, Enter, Escape) y mouse/táctil.
  */
 export function ReferencePicker({ query, onSelect, onClose }: ReferencePickerProps) {
+  // Las sugerencias de `@` salen solo del espacio de la nota.
+  const space = useActiveSpace()
   const [items, setItems] = useState<ReferenceItem[]>([])
   const [hasMore, setHasMore] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -52,56 +55,59 @@ export function ReferencePicker({ query, onSelect, onClose }: ReferencePickerPro
     }
   }, [])
 
-  const executeSearch = useCallback(async (searchQuery: string, searchPage: number) => {
-    if (!mountedRef.current) return
-    const trimmed = searchQuery.trim()
+  const executeSearch = useCallback(
+    async (searchQuery: string, searchPage: number) => {
+      if (!mountedRef.current) return
+      const trimmed = searchQuery.trim()
 
-    // Cancelar búsqueda anterior
-    if (abortRef.current) abortRef.current.abort()
-    const controller = new AbortController()
-    abortRef.current = controller
+      // Cancelar búsqueda anterior
+      if (abortRef.current) abortRef.current.abort()
+      const controller = new AbortController()
+      abortRef.current = controller
 
-    if (!trimmed) {
-      setItems([])
-      setHasMore(false)
+      if (!trimmed) {
+        setItems([])
+        setHasMore(false)
+        setError(null)
+        return
+      }
+
+      if (trimmed.length > MAX_QUERY_LENGTH) {
+        setError('La consulta es demasiado larga (máximo 120 caracteres).')
+        setItems([])
+        setHasMore(false)
+        return
+      }
+
+      setIsLoading(true)
       setError(null)
-      return
-    }
 
-    if (trimmed.length > MAX_QUERY_LENGTH) {
-      setError('La consulta es demasiado larga (máximo 120 caracteres).')
-      setItems([])
-      setHasMore(false)
-      return
-    }
-
-    setIsLoading(true)
-    setError(null)
-
-    try {
-      const result = await searchReferenceItems(trimmed, searchPage, PAGE_SIZE, {
-        signal: controller.signal,
-        sessionIsCurrent: () => true,
-      })
-      if (!mountedRef.current || controller.signal.aborted) return
-      // Solo actualizar si la consulta no cambió
-      if (queryRef.current === searchQuery) {
-        setItems(searchPage === 0 ? result.content : (prev) => [...prev, ...result.content])
-        setHasMore(result.page < result.totalPages - 1)
+      try {
+        const result = await searchReferenceItems(space, trimmed, searchPage, PAGE_SIZE, {
+          signal: controller.signal,
+          sessionIsCurrent: () => true,
+        })
+        if (!mountedRef.current || controller.signal.aborted) return
+        // Solo actualizar si la consulta no cambió
+        if (queryRef.current === searchQuery) {
+          setItems(searchPage === 0 ? result.content : (prev) => [...prev, ...result.content])
+          setHasMore(result.page < result.totalPages - 1)
+        }
+      } catch (err: unknown) {
+        if (!mountedRef.current || controller.signal.aborted) return
+        if (err instanceof ApiError && err.status === 400) {
+          setError('Consulta inválida.')
+        } else {
+          setError('No se pudo buscar. Volvé a intentarlo.')
+        }
+        setItems([])
+        setHasMore(false)
+      } finally {
+        if (mountedRef.current) setIsLoading(false)
       }
-    } catch (err: unknown) {
-      if (!mountedRef.current || controller.signal.aborted) return
-      if (err instanceof ApiError && err.status === 400) {
-        setError('Consulta inválida.')
-      } else {
-        setError('No se pudo buscar. Volvé a intentarlo.')
-      }
-      setItems([])
-      setHasMore(false)
-    } finally {
-      if (mountedRef.current) setIsLoading(false)
-    }
-  }, [])
+    },
+    [space],
+  )
 
   useEffect(() => {
     queryRef.current = query

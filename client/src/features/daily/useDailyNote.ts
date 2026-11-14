@@ -5,6 +5,7 @@ import { saveDailyNote } from './api'
 import { emptyDocument, validateDailyContent } from './editor/dailyDocument'
 import type { DailyContent } from './editor/dailyDocument'
 import type { ApiError } from '../../services/http'
+import type { Space } from '../spaces/space'
 
 // ——— Tipos internos ———
 
@@ -77,7 +78,7 @@ function getDebounceMs(): number {
 // ——— Hook ———
 
 /**
- * Coordinador de borrador y cola de guardado por identidad/fecha.
+ * Coordinador de borrador y cola de guardado por identidad/espacio/fecha.
  *
  * - Debounce 700 ms tras última edición válida.
  * - Cola serial: una escritura en vuelo por documento.
@@ -90,12 +91,13 @@ function getDebounceMs(): number {
  */
 export function useDailyNote(
   owner: string,
+  space: Space,
   date: string,
   sessionIsCurrent?: () => boolean,
 ): UseDailyNoteReturn {
   const queryClient = useQueryClient()
   // ——— Query de lectura ———
-  const query = useDailyNoteQuery(owner, date, sessionIsCurrent)
+  const query = useDailyNoteQuery(owner, space, date, sessionIsCurrent)
 
   // ——— Estado local ———
   const [draft, setDraft] = useState<DraftEntry | null>(null)
@@ -192,7 +194,8 @@ export function useDailyNote(
       queueRef.current = 'flushing'
       setQueueState('flushing')
 
-      saveDailyNote(owner, date, entry.content, rev)
+      // Espacio y fecha capturados por esta instancia: el coordinador se remonta por owner+space+fecha.
+      saveDailyNote(space, date, entry.content, rev)
         .then((response) => {
           // ACK: actualizar revisión confirmada.
           revisionRef.current = response.revision
@@ -201,7 +204,7 @@ export function useDailyNote(
           setError(null)
 
           // Invalidar query para refetch.
-          invalidateDailyNote(queryClient, owner, date)
+          invalidateDailyNote(queryClient, owner, space, date)
 
           // Verificar si hay nueva generación pendiente ANTES de limpiar.
           const nextDraft = draftRef.current
@@ -248,7 +251,7 @@ export function useDailyNote(
           }
         })
     },
-    [owner, date, queryClient],
+    [owner, space, date, queryClient],
   )
 
   // Mantener flushQueueRef sincronizado para la llamada recursiva en .then().
@@ -354,8 +357,8 @@ export function useDailyNote(
     setError(null)
     setQueueState('idle')
     // Recargar estado remoto.
-    invalidateDailyNote(queryClient, owner, date)
-  }, [queryClient, owner, date])
+    invalidateDailyNote(queryClient, owner, space, date)
+  }, [queryClient, owner, space, date])
 
   // ——— Derivar estado público ———
   const isDirty = draft !== null

@@ -16,6 +16,7 @@ import { AMBER } from '../../app/theme'
 import { SaveIcon } from '../../shared/ui/icons'
 import { formatDateLocal } from './dateUtils'
 import type { UseSaveDailyVersionReturn } from './useSaveDailyVersion'
+import { useSpaceHref } from '../spaces/spaceContext'
 
 /**
  * Botón de icono (disquete) para guardar una versión manual, con su diálogo de confirmación. Va en la barra del
@@ -79,6 +80,7 @@ export function SaveDailyVersion({
 /** Avisos de «Guardar versión»: éxito, conflicto, error y resultado desconocido. No entran en la barra. */
 export function SaveDailyVersionNotices({ save }: { save: UseSaveDailyVersionReturn }) {
   const { phase, error, handleRetry } = save
+  const href = useSpaceHref()
 
   if (phase === 'success') {
     return (
@@ -113,7 +115,7 @@ export function SaveDailyVersionNotices({ save }: { save: UseSaveDailyVersionRet
       <Alert severity="warning" role="alert">
         <AlertTitle>Resultado desconocido</AlertTitle>
         No se pudo confirmar si la versión se guardó. Consulta el{' '}
-        <Link component={RouterLink} to="/history">
+        <Link component={RouterLink} to={href('/history')}>
           historial de versiones
         </Link>{' '}
         antes de repetir la acción.

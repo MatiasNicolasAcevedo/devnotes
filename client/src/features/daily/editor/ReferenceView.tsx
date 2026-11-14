@@ -2,7 +2,7 @@ import { NodeViewContent, NodeViewWrapper, type ReactNodeViewProps } from '@tipt
 import { Box, CircularProgress, Typography } from '@mui/material'
 import { useRef } from 'react'
 import { useReferenceItem } from '../../reference/useReferenceItems'
-import { useSession } from '../../auth/sessionContext'
+import { useSpaceScope } from '../../spaces/spaceContext'
 import { useReferencePreview } from './ReferencePreview'
 
 /**
@@ -13,10 +13,10 @@ import { useReferencePreview } from './ReferencePreview'
  */
 export function ReferenceView({ node }: ReactNodeViewProps<HTMLElement>) {
   const id = (node.attrs as { id: string }).id
-  const { user } = useSession()
-  const ownerId = user?.id ?? ''
+  // `@` se resuelve solo en el espacio de la nota: un ID de otro espacio queda «no disponible».
+  const { owner: ownerId, space } = useSpaceScope()
 
-  const { data, isLoading, isError, isFetching } = useReferenceItem(ownerId, id)
+  const { data, isLoading, isError, isFetching } = useReferenceItem(ownerId, space, id)
 
   const anchorRef = useRef<HTMLSpanElement | null>(null)
   const { anchorProps, preview } = useReferencePreview(id, anchorRef)

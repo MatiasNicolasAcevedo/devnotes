@@ -2,7 +2,7 @@ import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { z } from 'zod'
 import { ApiError } from '../../services/http'
 import { type CaptureResult, type CaptureState } from './recorder'
-import type { VoiceNoteDetail } from './api'
+import type { VoiceNoteDetail, VoiceScope } from './api'
 import {
   useCreateVoiceNote,
   useDeleteVoiceNote,
@@ -96,7 +96,7 @@ export interface VoiceDraftState {
  * - Dirty check: si el texto difiere del ACK, pide resolver antes de cambiar de nota.
  * - Conflicto 409: conserva borrador, ofrece copiar/recargar/nueva nota.
  */
-export function useVoiceDraft(sessionIsCurrent?: () => boolean) {
+export function useVoiceDraft(scope: VoiceScope | null, sessionIsCurrent?: () => boolean) {
   const [state, setState] = useState<VoiceDraftState>({
     text: '',
     documentState: 'new',
@@ -123,9 +123,10 @@ export function useVoiceDraft(sessionIsCurrent?: () => boolean) {
   )
 
   const transcribeMutation = useTranscribeAudio(sessionIsCurrent)
-  const createMutation = useCreateVoiceNote(sessionIsCurrent)
-  const updateMutation = useUpdateVoiceNote(sessionIsCurrent)
-  const deleteMutation = useDeleteVoiceNote(sessionIsCurrent)
+  // El borrador vive en un workspace por identidad+espacio: su scope no cambia durante su vida.
+  const createMutation = useCreateVoiceNote(scope, sessionIsCurrent)
+  const updateMutation = useUpdateVoiceNote(scope, sessionIsCurrent)
+  const deleteMutation = useDeleteVoiceNote(scope, sessionIsCurrent)
   const transcription = useRef<AbortController | null>(null)
   const { reset: resetTranscription } = transcribeMutation
   const { reset: resetCreate } = createMutation

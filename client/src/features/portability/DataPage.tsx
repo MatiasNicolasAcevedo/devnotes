@@ -18,6 +18,7 @@ import { Link as RouterLink } from 'react-router'
 import { ErrorAlert } from '../../shared/ui/ErrorAlert'
 import { authQueryKeys, renewCsrf, withCsrfRenewal, type AuthUser } from '../auth/api'
 import { useSession } from '../auth/sessionContext'
+import { useSpaceTransitionLock } from '../spaces/spaceContext'
 import {
   downloadExport,
   importFile,
@@ -87,6 +88,8 @@ function PrivateData({ owner }: { owner: string }) {
   const importAlert = useRef<HTMLDivElement>(null)
   const fileInputId = useId()
   const fileHelpId = useId()
+  // Una importación en vuelo impide cambiar de espacio hasta su resultado (S-109, cambio seguro).
+  useSpaceTransitionLock(importState.kind === 'importing' ? 'Hay una importación en curso.' : null)
 
   useEffect(() => {
     const controller = new AbortController()
