@@ -1,6 +1,6 @@
 ---
 id: T-060
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M5
@@ -80,6 +80,21 @@ Dos cuentas ficticias con OIDC local, espacios independientes, listados y conteo
 ### Entrega para revisión
 
 [PR63](https://github.com/MatiasNicolasAcevedo/devnotes/pull/63) contra `main`. Fuentes probadas en `c12564e95c27e0c07a7315ecdda00b1d25f060b3` sobre la base publicada `c6d48310387f1e6d509f83ec14c33f736c23ba39`. `node scripts/docs-check.mjs`, `git diff --check` y `git diff --check origin/main...HEAD` → exit 0. `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → exit 0, `policy=FULL`, `profile=APPLICATION`, ocho rutas técnicas. Este traspaso solo cambia Markdown. Próximo paso: revisión independiente del HEAD y la base publicados, con `verify-required` para el HEAD vigente.
+
+## Revisión independiente R1
+
+2026-11-13 · Frontera en rol reviewer, Claude Code de escritorio (Claude Opus 5.5, esfuerzo sin verificar), Git Bash, PowerShell, Git, `gh`, Node, Java 21.0.9 y Docker Linux 28.5.1. Sesión distinta de la implementación. Checkout aislado con `git worktree add --detach` en el directorio temporal de la sesión, HEAD `1b67249fc8c892977716f4fd48d38592bacbb8cd`, base publicada `c6d48310387f1e6d509f83ec14c33f736c23ba39`. Checkout principal y `trailer/` sin tocar.
+
+- PR63 OPEN, no draft, contra `main`, `MERGEABLE`/`CLEAN`. `gh pr view` y `git fetch` coincidieron en HEAD y base; `git merge-base` de la rama con `main` es la base publicada. [CI de entrada](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43537900987/job/132271240975) con `verify-required` SUCCESS para `1b67249`. El run anterior del mismo SHA se canceló. Fuentes técnicas de `c12564e`; `1b67249` solo cambia Markdown.
+- API, permisos y datos. Propietario solo desde la sesión; `PrivateSpaceQuery` compartido con T-058/T-059 resuelve el espacio antes de llamar al servicio en los cinco métodos, así que un `space` inválido no muta. La entidad persiste el espacio recibido. Listado y conteo filtran por propietario y espacio en SQL antes de paginar (índice `ix_voice_note_owner_space_created_id` de V7). Detalle, UPDATE y DELETE CAS incluyen ID, propietario y espacio; si el CAS no afecta filas, la relectura acotada distingue 404 de 409 sin lookup global. La revisión tope ahora comprueba el ámbito antes del 409, cerrando la distinción previa para IDs ajenos. Sin cambios en capabilities, transcripción ni almacenamiento de audio.
+- Compatibilidad y negativos HTTP. `VoiceSpaceApiIT` cubre dos cuentas y dos espacios: páginas y `totalElements`/`totalPages` aislados, omisión equivalente a `?space=work`, 404 con cuerpo idéntico salvo `instance` para ID inexistente, de otra cuenta y de otro espacio en GET/PUT/DELETE con revisión 1, 2 y tope; 400 sin eco ni mutación para `space` sin valor, vacío, desconocido, mayúsculas, espacio inicial, coma y repetido; 401 sin sesión y 403 sin CSRF o con token erróneo; `no-store` en todas las respuestas. `Location` de Personal lleva `?space=personal` y Trabajo conserva la ruta previa, igual que referencias. `VoiceNoteApiIT` y `VoiceCapabilitiesApiIT` siguen sin cambios y verdes.
+- CAS y carreras. `VoiceNoteServiceIT` prueba que UPDATE/DELETE directos con la revisión vigente desde otro espacio afectan cero filas, y carreras actualización/actualización y actualización/borrado con exactamente un ganador en cada espacio.
+- Transcripción. `successReturnsTextWithoutPersistingInEitherSpace` usa WebM ficticio y proveedor HTTP local: capabilities no consulta al proveedor, la transcripción hace exactamente una solicitud local y no crea filas en `voice_note`. Sin requests a Groq real.
+- PostgreSQL. Corrida independiente desde `server/` en Git Bash: `./mvnw -o -B -q verify -Dtest=PrivateSpaceTest,VoiceNoteServiceTest -Dit.test=VoiceSpaceApiIT,VoiceNoteApiIT,VoiceCapabilitiesApiIT,VoiceNoteServiceIT,VoiceTranscriptionApiIT -Djacoco.skip=true` → exit 0. Surefire 12/12 (`PrivateSpaceTest` 10, `VoiceNoteServiceTest` 2) y Failsafe 58/58 (`VoiceSpaceApiIT` 5, `VoiceNoteApiIT` 12, `VoiceCapabilitiesApiIT` 5, `VoiceNoteServiceIT` 27, `VoiceTranscriptionApiIT` 9), cero fallos, errores u omitidos. Flyway identificó PostgreSQL 18.6 en los cinco contextos. Tras la corrida, ningún contenedor con `org.testcontainers=true` quedó activo; los contenedores ajenos preexistentes no se tocaron. Log local fuera del repositorio.
+- Checks locales. `node scripts/docs-check.mjs` OK, `git diff --check c6d4831...HEAD` OK, `node scripts/ci/classify-diff.mjs --base c6d48310387f1e6d509f83ec14c33f736c23ba39 --head HEAD --phase FULL` → `FULL / APPLICATION`, ocho rutas técnicas.
+- Observación no bloqueante y preexistente: `VoiceTranscriptionApiIT#transcriptionRequiresCsrf` acepta 400/403/415 ante la falta de CSRF. Registrada en BACKLOG; no afecta el alcance de T-060.
+
+**Resultado favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El veredicto canónico se publica en PR63 con el HEAD documental y la base vigentes tras comprobar la CI de ese par. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
 
 ## Cierre y siguiente tarea
 

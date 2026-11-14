@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-060](tasks/T-060-voice-spaces.md) · Biblioteca de voz por espacio ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `in_review` |
-| Acción actual | Continuá como Frontera en rol reviewer en una sesión nueva para T-060 de MatiasNicolasAcevedo/devnotes. Confirmá en GitHub que [PR63](https://github.com/MatiasNicolasAcevedo/devnotes/pull/63) esté abierto y listo contra `main`, con el HEAD publicado de `codex/t-060-voice-spaces`, base `c6d48310387f1e6d509f83ec14c33f736c23ba39` y `verify-required` verde para el HEAD vigente. Revisá en un checkout aislado el aislamiento de la biblioteca de voz por propietario y espacio, incluidos conteos, CAS, 404 equivalentes, compatibilidad sin `space` y regresiones de capabilities y transcripción. Registrá el veredicto independiente sobre el HEAD y la base verificados. Preservá el checkout principal y `trailer/`. FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana. |
+| Estado | `mergeable` |
+| Acción actual | Completar el cierre de PR63 según la [revisión de T-060](tasks/T-060-voice-spaces.md#revisión-independiente-r1). Confirmado MERGED, la siguiente sesión concilia T-060 y toma T-061. FULL/STARTER DIFERIDO POR EL DUEÑO. |
 | Rama / PR | `codex/t-060-voice-spaces` · [PR63](https://github.com/MatiasNicolasAcevedo/devnotes/pull/63) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
