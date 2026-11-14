@@ -14,6 +14,7 @@ import { SessionAlerts } from '../features/auth/SessionAlerts'
 import { SessionControls } from '../features/auth/SessionControls'
 import { useSession } from '../features/auth/sessionContext'
 import { DailyDraftWorkspace } from '../features/daily/DailyDraftNavigation'
+import { DailyCopyRecoveryProvider } from '../features/daily/DailyDraftProvider'
 import { SpaceNavigation } from '../features/spaces/SpaceNavigation'
 import { SpaceProvider } from '../features/spaces/SpaceProvider'
 import { SpaceSelector } from '../features/spaces/SpaceSelector'
@@ -35,7 +36,9 @@ export function AppShell() {
   return (
     <SpaceProvider owner={owner}>
       <AppShellContent navigationRoot={navigationRoot}>
-        <SpaceWorkspaces owner={owner} navigationRoot={navigationRoot} />
+        <DailyCopyRecoveryProvider key={owner}>
+          <SpaceWorkspaces owner={owner} navigationRoot={navigationRoot} />
+        </DailyCopyRecoveryProvider>
       </AppShellContent>
     </SpaceProvider>
   )

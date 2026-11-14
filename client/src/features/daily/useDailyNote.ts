@@ -26,6 +26,10 @@ export interface ConfirmedCopy {
   note: DailyNoteDetail
 }
 
+export interface CopyTargetRecovery {
+  minimumRevision: number
+}
+
 // ——— Estado público del hook ———
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'unconfirmed' | 'error' | 'conflict'
@@ -110,6 +114,8 @@ export function useDailyNote(
   owner: string,
   space: Space,
   date: string,
+  copyRecovery: CopyTargetRecovery | undefined,
+  setCopyRecovery: (recovery: CopyTargetRecovery | undefined) => void,
   sessionIsCurrent?: () => boolean,
 ): UseDailyNoteReturn {
   const queryClient = useQueryClient()
@@ -124,7 +130,8 @@ export function useDailyNote(
   const [error, setError] = useState<ApiError | null>(null)
   const [isCopyingPrevious, setCopyingPrevious] = useState(false)
   const [isReloadingCopyTarget, setReloadingCopyTarget] = useState(false)
-  const [copyTargetNeedsReload, setCopyTargetNeedsReload] = useState(false)
+  const [recoveryOnMount] = useState(copyRecovery)
+  const copyTargetNeedsReload = copyRecovery !== undefined
   const [confirmedCopy, setConfirmedCopy] = useState<ConfirmedCopy | null>(null)
 
   // Referencias mutables para evitar closures stale en el debounce y la cola.
@@ -161,24 +168,51 @@ export function useDailyNote(
   }, [])
 
   // ——— Sincronizar remoto → confirmado (sin pisar dirty) ———
+  const { data: remote, error: readError, isFetchedAfterMount, isFetching, isSuccess } = query
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     // El editor conserva el documento previo hasta poder aplicar la copia como un undo.
     if (isCopyingPrevious || copyingRef.current) return
-    if (query.data) {
-      const remote = query.data
-      // Si la revisión es menor que la confirmada, es una respuesta vieja y se ignora.
-      if (remote.revision < confirmedRevision) {
-        return // ACK viejo, ignorar
-      }
-      // Solo actualizar si la revisión efectivamente avanzó.
-      if (remote.revision > confirmedRevision) {
+    if (copyRecovery) {
+      // Al volver, solo una lectura terminada de esta visita puede resolver la copia.
+      if (
+        copyRecovery !== recoveryOnMount ||
+        !isFetchedAfterMount ||
+        isFetching ||
+        reloadTargetRef.current
+      )
+        return
+      if (isSuccess && remote.revision >= copyRecovery.minimumRevision) {
         revisionRef.current = remote.revision
         setConfirmedContent(remote.content)
         setConfirmedRevision(remote.revision)
+        setCopyRecovery(undefined)
+      } else if (
+        readError instanceof ApiError &&
+        readError.status === 404 &&
+        copyRecovery.minimumRevision === 0
+      ) {
+        setCopyRecovery(undefined)
       }
+      return
     }
-  }, [query.data, confirmedRevision, isCopyingPrevious])
+    if (remote && remote.revision > confirmedRevision) {
+      revisionRef.current = remote.revision
+      setConfirmedContent(remote.content)
+      setConfirmedRevision(remote.revision)
+    }
+  }, [
+    remote,
+    readError,
+    isFetchedAfterMount,
+    isFetching,
+    isSuccess,
+    confirmedRevision,
+    isCopyingPrevious,
+    copyRecovery,
+    recoveryOnMount,
+    setCopyRecovery,
+  ])
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const confirmWrite = useCallback((response: DailyNoteDetail) => {
@@ -215,17 +249,20 @@ export function useDailyNote(
 
     copyingRef.current = true
     setCopyingPrevious(true)
+    const minimumRevision = () =>
+      Math.max(
+        revisionRef.current,
+        queryClient.getQueryData<DailyNoteDetail>(dailyNoteKeys(owner, space).detail(date))
+          ?.revision ?? 0,
+      )
     try {
       const response = await copyPreviousDailyNote(space, date, source, expectedRevision, isCurrent)
       if (!isCurrent()) {
-        setCopyTargetNeedsReload(true)
+        setCopyRecovery({ minimumRevision: minimumRevision() })
         return false
       }
       // El GET queda en caché durante la copia. Una revisión superior invalida este ACK.
-      const remote = queryClient.getQueryData<DailyNoteDetail>(
-        dailyNoteKeys(owner, space).detail(date),
-      )
-      if (response.revision < Math.max(revisionRef.current, remote?.revision ?? 0)) {
+      if (response.revision < minimumRevision()) {
         throw new Error('La nota de destino cambió después de copiarse')
       }
       confirmWrite(response)
@@ -234,7 +271,9 @@ export function useDailyNote(
       void invalidateDailyNote(queryClient, owner, space)
       return true
     } catch (error) {
-      if (!isCurrent() || !isCopySourceConflict(error)) setCopyTargetNeedsReload(true)
+      if (!isCurrent() || !isCopySourceConflict(error)) {
+        setCopyRecovery({ minimumRevision: minimumRevision() })
+      }
       throw error
     } finally {
       copyingRef.current = false
@@ -243,7 +282,13 @@ export function useDailyNote(
   }
 
   async function reloadCopyTarget(isCurrent: () => boolean) {
-    if (!isCurrent() || reloadTargetRef.current || copyingRef.current || draftRef.current) {
+    if (
+      !copyRecovery ||
+      !isCurrent() ||
+      reloadTargetRef.current ||
+      copyingRef.current ||
+      draftRef.current
+    ) {
       return false
     }
     reloadTargetRef.current = true
@@ -253,17 +298,18 @@ export function useDailyNote(
       if (!isCurrent()) return false
       const result = await query.refetch()
       if (!isCurrent()) return false
-      if (result.isSuccess && result.data.revision >= revisionRef.current) {
+      const minimumRevision = Math.max(revisionRef.current, copyRecovery.minimumRevision)
+      if (result.isSuccess && result.data.revision >= minimumRevision) {
         confirmWrite(result.data)
-        setCopyTargetNeedsReload(false)
+        setCopyRecovery(undefined)
         return true
       }
       if (
         result.error instanceof ApiError &&
         result.error.status === 404 &&
-        revisionRef.current === 0
+        minimumRevision === 0
       ) {
-        setCopyTargetNeedsReload(false)
+        setCopyRecovery(undefined)
         return true
       }
       return false

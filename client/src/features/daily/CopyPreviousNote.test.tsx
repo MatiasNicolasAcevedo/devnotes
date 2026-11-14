@@ -1,11 +1,13 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { http as mock, HttpResponse } from 'msw'
+import { Link } from 'react-router'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import { AppRoutes } from '../../app/AppRoutes'
 import { buildAuthUser, problemResponse } from '../../test/factories'
 import { installAuthBackend } from '../../test/msw/authBackend'
 import { server } from '../../test/msw/server'
 import { renderWithProviders } from '../../test/render'
+import { authQueryKeys } from '../auth/api'
 import { dailyNoteKeys } from './api'
 import { emptyDocument, type DailyContent } from './editor/dailyDocument'
 import { setTestDebounce } from './useDailyNote'
@@ -290,6 +292,150 @@ describe('Copiar nota anterior', () => {
       expect(posts).toBe(1)
     },
   )
+
+  it('conserva la copia sin confirmar al salir y volver a la fecha', async () => {
+    const render = setup()
+    const nextDate = '2026-11-17'
+    const remote = note(document('Copia guardada sin respuesta'))
+    let posts = 0
+    let failReload = true
+    server.use(
+      mock.get(detail, () => {
+        if (!posts) return problemResponse(404)
+        return failReload ? problemResponse(500) : HttpResponse.json(remote)
+      }),
+      mock.get(`${notes}/${nextDate}`, () => problemResponse(404)),
+      mock.get(`${notes}/${nextDate}/previous`, () => new HttpResponse(null, { status: 204 })),
+      mock.post(`${detail}/copy-previous`, () => {
+        posts++
+        return HttpResponse.error()
+      }),
+    )
+
+    const { user, queryClient } = render()
+    await user.click(await screen.findByRole('button', { name: offer }))
+    expect(await saveStatus().findByText('Sin confirmar')).toBeVisible()
+    expect(editor()).toHaveAttribute('contenteditable', 'false')
+
+    fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: nextDate } })
+    await screen.findByText('Todavía no hay una nota anterior en Trabajo')
+    expect(editor()).toHaveAttribute('contenteditable', 'true')
+    expect(screen.queryByRole('button', { name: 'Recargar nota' })).toBeNull()
+
+    fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: date } })
+    const queryKey = dailyNoteKeys(buildAuthUser().id, 'work').detail(date)
+    await waitFor(() =>
+      expect(queryClient.getQueryState(queryKey)).toMatchObject({
+        fetchStatus: 'idle',
+        error: { status: 500 },
+      }),
+    )
+    await waitFor(() => expect(saveStatus().getByText('Sin confirmar')).toBeVisible())
+    const reload = screen.getByRole('button', { name: 'Recargar nota' })
+    expect(reload).toBeEnabled()
+    expect(editor()).toHaveAttribute('contenteditable', 'false')
+    expect(await screen.findByRole('button', { name: 'Guardar versión' })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: offer })).toBeNull()
+    expect(posts).toBe(1)
+
+    failReload = false
+    await user.click(reload)
+    await waitFor(() => expect(editor()).toHaveTextContent('Copia guardada sin respuesta'))
+    expect(saveStatus().getByText('Guardado')).toBeVisible()
+    expect(editor()).toHaveAttribute('contenteditable', 'true')
+    expect(screen.getByRole('button', { name: 'Guardar versión' })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: 'Recargar nota' })).toBeNull()
+    expect(screen.queryByText(/Copiada del/)).toBeNull()
+    expect(posts).toBe(1)
+  })
+
+  it('aísla la recuperación por espacio y acepta un GET concluyente al volver', async () => {
+    const render = setup()
+    let posts = 0
+    let remoteAvailable = false
+    server.use(
+      mock.get(detail, ({ request }) => {
+        if (!posts || new URL(request.url).searchParams.get('space') === 'personal') {
+          return problemResponse(404)
+        }
+        return remoteAvailable
+          ? HttpResponse.json(note(document('Copia recuperada en Trabajo')))
+          : problemResponse(500)
+      }),
+      mock.get(`${detail}/previous`, ({ request }) =>
+        new URL(request.url).searchParams.get('space') === 'personal'
+          ? new HttpResponse(null, { status: 204 })
+          : HttpResponse.json(suggestion),
+      ),
+      mock.post(`${detail}/copy-previous`, () => {
+        posts++
+        return HttpResponse.error()
+      }),
+    )
+
+    const { user } = render()
+    await user.click(await screen.findByRole('button', { name: offer }))
+    expect(await saveStatus().findByText('Sin confirmar')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: 'Espacio: Trabajo' }))
+    await user.click(screen.getByRole('menuitemradio', { name: 'Personal' }))
+    await screen.findByText('Todavía no hay una nota anterior en Personal')
+    expect(editor()).toHaveAttribute('contenteditable', 'true')
+    expect(screen.queryByRole('button', { name: 'Recargar nota' })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: 'Espacio: Personal' }))
+    await user.click(screen.getByRole('menuitemradio', { name: 'Trabajo' }))
+    expect(await screen.findByRole('button', { name: 'Recargar nota' })).toBeVisible()
+    expect(editor()).toHaveAttribute('contenteditable', 'false')
+
+    // Volver con GET 200 recupera automáticamente el documento del espacio correcto.
+    await user.click(screen.getByRole('button', { name: 'Espacio: Trabajo' }))
+    await user.click(screen.getByRole('menuitemradio', { name: 'Personal' }))
+    await screen.findByText('Todavía no hay una nota anterior en Personal')
+    remoteAvailable = true
+    await user.click(screen.getByRole('button', { name: 'Espacio: Personal' }))
+    await user.click(screen.getByRole('menuitemradio', { name: 'Trabajo' }))
+    await waitFor(() => expect(editor()).toHaveTextContent('Copia recuperada en Trabajo'))
+    expect(editor()).toHaveAttribute('contenteditable', 'true')
+    expect(screen.queryByRole('button', { name: 'Recargar nota' })).toBeNull()
+    expect(posts).toBe(1)
+  })
+
+  it('descarta la recuperación al cerrar sesión, incluso al volver con la misma cuenta', async () => {
+    setup()
+    const account = buildAuthUser()
+    const backend = installAuthBackend({ user: account })
+    const route = `/notes/${date}?space=work`
+    let posts = 0
+    server.use(
+      mock.get(detail, () => problemResponse(posts ? 500 : 404)),
+      mock.post(`${detail}/copy-previous`, () => {
+        posts++
+        return HttpResponse.error()
+      }),
+    )
+    const { user, queryClient } = renderWithProviders(
+      <>
+        <Link to={route}>Abrir fecha de prueba</Link>
+        <AppRoutes />
+      </>,
+      { route },
+    )
+    await user.click(await screen.findByRole('button', { name: offer }))
+    expect(await saveStatus().findByText('Sin confirmar')).toBeVisible()
+    await user.click(screen.getByRole('button', { name: /Cuenta/ }))
+    await user.click(screen.getByRole('menuitem', { name: 'Cerrar sesión' }))
+    expect(await screen.findByRole('link', { name: 'Continuar con Google' })).toBeVisible()
+
+    backend.login(account)
+    await act(async () => queryClient.refetchQueries({ queryKey: authQueryKeys.session }))
+    await screen.findByRole('heading', { name: 'Ya iniciaste sesión' })
+    await user.click(screen.getByRole('link', { name: 'Abrir fecha de prueba' }))
+    expect(await screen.findByRole('button', { name: 'Guardar versión' })).toBeEnabled()
+    expect(editor()).toHaveAttribute('contenteditable', 'true')
+    expect(screen.queryByRole('button', { name: 'Recargar nota' })).toBeNull()
+    expect(saveStatus().queryByText('Sin confirmar')).toBeNull()
+    expect(posts).toBe(1)
+  })
 
   it('ignora el GET del espacio que se dejó atrás', async () => {
     const render = setup()
