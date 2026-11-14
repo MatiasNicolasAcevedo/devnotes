@@ -1,6 +1,6 @@
 ---
 id: T-064
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -83,7 +83,7 @@ Cierre desde la raíz sobre el commit técnico `14110d714a4f37a3aa05158f90dbf159
 | La vista previa del cliente solo aceptaba v1 y descartaba `countsBySpace` | Esquemas v1/v2 y validación de totales y destino de v1 | Rojo contractual, 98/98 al cierre, `14110d7` |
 | MUI aplicaba un mínimo de 36 px a las filas del menú a partir de 600 px | Mantener 48 px con especificidad de estilo y comprobar foco y Escape en Chromium | R2/R3 exit 1 (36 px); final 2/2, `14110d7` |
 
-Pendiente: revisión independiente de PR67 y aceptación visual en Android físico. Se conserva el checkout principal, `trailer/` y el worktree local de T-063.
+Pendiente al cierre de la implementación inicial: revisión independiente de PR67 y aceptación visual en Android físico. Se conserva el checkout principal, `trailer/` y el worktree local de T-063. La retoma vigente está en [Corrección de R1](#corrección-de-r1).
 
 ## Revisión independiente R1
 
@@ -129,6 +129,8 @@ npm test -- --run src/features/spaces/SpaceSelector.test.tsx src/features/spaces
 ```
 
 `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build` → 0 cada uno. Las pruebas informan avisos de fixtures MSW de capacidades de voz/paginación y Vite conserva el aviso de chunks >500 kB. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
+
+Checkpoint para R2. Fuentes y pruebas publicadas en `612e8156c2c6f35edbee9f7af85c3b41cf7cabcb` contra `1a3e95d6de17d1a4e9b3fcc1118637704f219cb9`. Checks de cierre en raíz: `node scripts/docs-check.mjs` → 0 (124 Markdown, 68 tareas, HANDOFF 22/22), `git diff --check` → 0 y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → 0 (`policy=FULL`, `profile=STARTER`, 36 rutas, 33 técnicas). Antes de R2, comprobar `verify-required` SUCCESS en el HEAD documental vigente de PR67. Pendientes de dueño: aceptación visual en Android físico y zoom nativo, autorización expresa de merge y, por separado, autorización de ensayo Render sobre SHA y ventana. Checkout principal, `trailer/` y worktrees ajenos preservados.
 
 ## Cierre y siguiente tarea
 
