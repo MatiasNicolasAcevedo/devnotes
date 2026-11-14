@@ -30,6 +30,7 @@ import { visuallyHidden } from '../../shared/ui/visuallyHidden'
 import { useSaveDailyVersion } from '../../features/daily/useSaveDailyVersion'
 import { isValidIsoDate } from './dateUtils'
 import { useSpaceHref } from '../spaces/spaceContext'
+import { CopyPreviousNote } from './CopyPreviousNote'
 
 // ——— Fallbacks sin provider ———
 
@@ -205,7 +206,7 @@ function DailyNotesInner() {
           color="inherit"
           startIcon={<CalendarIcon />}
           aria-label={`Cambiar fecha (${shortDate})`}
-          disabled={saveVersion.isLocked}
+          disabled={ctx.navigationLocked}
           onClick={openDatePicker}
           sx={{ minWidth: 0 }}
         >
@@ -218,7 +219,7 @@ function DailyNotesInner() {
           type="date"
           aria-label="Fecha"
           value={targetDate}
-          disabled={saveVersion.isLocked}
+          disabled={ctx.navigationLocked}
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             if (isValidIsoDate(event.target.value)) {
               void handleNavigateToDate(event.target.value)
@@ -257,7 +258,13 @@ function DailyNotesInner() {
     <>
       <SaveStatusIndicator status={status} isDirty={isDirty} />
       <CopyButton aria-label="Copiar nota" text={notePlainText} iconOnly />
-      {!ctx.isLoading && <SaveDailyVersion save={saveVersion} date={targetDate} />}
+      {!ctx.isLoading && (
+        <SaveDailyVersion
+          save={saveVersion}
+          date={targetDate}
+          disabled={ctx.isCopyingPrevious || ctx.copyTargetNeedsReload}
+        />
+      )}
       {/* Los avisos largos no entran en la fila de controles: van en una fila propia justo debajo. */}
       <Box
         className="daily-editor-toolbar-notices"
@@ -314,9 +321,11 @@ function DailyNotesInner() {
           <DailyEditor
             initialContent={content ?? emptyDocument()}
             onChange={handleEditorChange}
-            readOnly={saveVersion.isLocked || ctx.isLoading}
+            readOnly={ctx.navigationLocked || ctx.isLoading || ctx.copyTargetNeedsReload}
             toolbarStart={toolbarStart}
             toolbarEnd={toolbarEnd}
+            beforeContent={<CopyPreviousNote onCopied={() => void loadList(listPage)} />}
+            confirmedCopyContent={ctx.confirmedCopy?.note.content}
             fillHeight
           />
         </Paper>
@@ -345,6 +354,7 @@ function DailyNotesInner() {
                 <ListItem key={item.date} disablePadding>
                   <ListItemButton
                     component="button"
+                    disabled={ctx.navigationLocked}
                     onClick={() => handleNavigateToDate(item.date)}
                     selected={item.date === targetDate}
                   >

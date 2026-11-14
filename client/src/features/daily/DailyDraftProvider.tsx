@@ -70,6 +70,7 @@ function DailyDraftDocument({
 }) {
   const [navigationLocked, setNavigationLocked] = useState(false)
   const note = useDailyNote(owner, space, activeDate, sessionIsCurrent)
+  const locked = navigationLocked || note.isCopyingPrevious
 
   const navigateToDate = useCallback(
     async (newDate: string) => {
@@ -88,10 +89,10 @@ function DailyDraftDocument({
       owner,
       space,
       navigateToDate,
-      navigationLocked,
+      navigationLocked: locked,
       setNavigationLocked,
     }),
-    [note, activeDate, owner, space, navigateToDate, navigationLocked],
+    [note, activeDate, owner, space, navigateToDate, locked],
   )
 
   return <DailyDraftContext.Provider value={value}>{children}</DailyDraftContext.Provider>

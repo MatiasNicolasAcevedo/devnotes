@@ -199,8 +199,10 @@ export function SpaceNavigation({ children }: { children: ReactNode }) {
     case 'version':
       return showGuard(
         <Alert severity="info" role="status">
-          Se está guardando una versión de la nota del {formatDateLocal(daily!.activeDate)} en{' '}
-          {from}. El cambio a {to} espera su resultado.
+          {daily?.isCopyingPrevious
+            ? `Se está copiando la nota anterior al ${formatDateLocal(daily.activeDate)} en ${from}.`
+            : `Se está guardando una versión de la nota del ${formatDateLocal(daily!.activeDate)} en ${from}.`}{' '}
+          El cambio a {to} espera su resultado.
           <Actions>{back}</Actions>
         </Alert>,
       )

@@ -96,6 +96,12 @@ export interface HttpClient {
     schema: S,
     options?: RequestOptions,
   ): Promise<z.output<S>>
+  /** Petición JSON cuyo contrato permite también HTTP 204. */
+  requestOptional<S extends z.ZodType>(
+    path: string,
+    schema: S,
+    options?: RequestOptions,
+  ): Promise<z.output<S> | null>
   /** Petición sin cuerpo de respuesta esperado (204 o cuerpo ignorado). */
   requestVoid(path: string, options?: RequestOptions): Promise<void>
   /**
@@ -163,22 +169,41 @@ export function createHttpClient(options: HttpClientOptions = {}): HttpClient {
     return response
   }
 
+  async function readJson<S extends z.ZodType>(
+    response: Response,
+    path: string,
+    schema: S,
+    signal?: AbortSignal,
+  ): Promise<z.output<S>> {
+    let text: string
+    try {
+      text = await response.text()
+    } catch (error) {
+      if (signal?.aborted) throw error
+      throw new NetworkError(error)
+    }
+    if (text === '') throw new UnexpectedResponseError(`Respuesta vacía de ${path}`)
+    let json: unknown
+    try {
+      json = JSON.parse(text)
+    } catch (error) {
+      throw new UnexpectedResponseError(`Respuesta no JSON de ${path}`, error)
+    }
+    const parsed = schema.safeParse(json)
+    if (!parsed.success) {
+      throw new UnexpectedResponseError(`Respuesta fuera de contrato de ${path}`, parsed.error)
+    }
+    return parsed.data
+  }
+
   return {
     async request(path, schema, requestOptions = {}) {
+      return readJson(await send(path, requestOptions), path, schema, requestOptions.signal)
+    },
+    async requestOptional(path, schema, requestOptions = {}) {
       const response = await send(path, requestOptions)
-      const text = await response.text()
-      if (text === '') throw new UnexpectedResponseError(`Respuesta vacía de ${path}`)
-      let json: unknown
-      try {
-        json = JSON.parse(text)
-      } catch (error) {
-        throw new UnexpectedResponseError(`Respuesta no JSON de ${path}`, error)
-      }
-      const parsed = schema.safeParse(json)
-      if (!parsed.success) {
-        throw new UnexpectedResponseError(`Respuesta fuera de contrato de ${path}`, parsed.error)
-      }
-      return parsed.data
+      if (response.status === 204) return null
+      return readJson(response, path, schema, requestOptions.signal)
     },
     async requestVoid(path, requestOptions = {}) {
       const response = await send(path, requestOptions)

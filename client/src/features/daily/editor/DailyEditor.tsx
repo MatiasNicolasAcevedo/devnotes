@@ -8,6 +8,7 @@ import Document from '@tiptap/extension-document'
 import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
 import { Fragment, Slice } from '@tiptap/pm/model'
+import { closeHistory } from '@tiptap/pm/history'
 import { UndoRedo } from '@tiptap/extensions'
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { plainTextToDocument, validateDailyContent, type DailyContent } from './dailyDocument'
@@ -40,6 +41,10 @@ export interface DailyEditorProps {
   toolbarStart?: ReactNode
   /** Controles al final de la barra, tras un espacio flexible. Un hijo de ancho completo ocupa una fila propia. */
   toolbarEnd?: ReactNode
+  /** Franja contextual entre la barra y el área de escritura. */
+  beforeContent?: ReactNode
+  /** Documento confirmado por un POST de copia, que debe entrar al historial sin programar un PUT. */
+  confirmedCopyContent?: DailyContent
   /** El área de escritura ocupa el alto libre del contenedor en lugar de una altura fija redimensionable. */
   fillHeight?: boolean
 }
@@ -52,6 +57,8 @@ export function DailyEditor({
   children,
   toolbarStart,
   toolbarEnd,
+  beforeContent,
+  confirmedCopyContent,
   fillHeight = false,
 }: DailyEditorProps) {
   const narrow = useIsNarrow()
@@ -59,6 +66,7 @@ export function DailyEditor({
   const editorRef = useRef<ReturnType<typeof useEditor>>(null)
   const linkSelectionRef = useRef<{ from: number; to: number } | null>(null)
   const pointerDownRef = useRef<{ x: number; y: number } | null>(null)
+  const lastCopyRef = useRef<DailyContent>(undefined)
 
   const [linkDialogOpen, setLinkDialogOpen] = useState(false)
   const [selectedText, setSelectedText] = useState('')
@@ -177,26 +185,41 @@ export function DailyEditor({
     },
   })
 
-  // La nota remota puede llegar después del montaje. Hidratar no es una edición
-  // y no debe programar un PUT ni cambiar la selección en cada pulsación.
-  useEffect(() => {
-    if (!editor || !initialContent) return
-    const result = validateDailyContent(initialContent)
-    if (
-      result.valid &&
-      result.data &&
-      !editor.state.doc.eq(editor.schema.nodeFromJSON(result.data))
-    ) {
-      editor.commands.setContent(result.data, { emitUpdate: false })
-    }
-  }, [editor, initialContent])
-
-  // Actualizar editable cuando cambia readOnly
+  // Actualizar editable antes de aplicar un ACK que devuelva el foco.
   useEffect(() => {
     if (editor && editor.isEditable !== !readOnly) {
       editor.setEditable(!readOnly, false)
     }
   }, [editor, readOnly])
+
+  // La nota remota puede llegar después del montaje. Hidratar no es una edición
+  // y no debe programar un PUT ni cambiar la selección en cada pulsación.
+  useEffect(() => {
+    if (!editor || !initialContent) return
+    const result = validateDailyContent(initialContent)
+    if (!result.valid || !result.data) return
+    const replacement = editor.schema.nodeFromJSON(result.data)
+    if (editor.state.doc.eq(replacement)) return
+    if (initialContent === confirmedCopyContent && lastCopyRef.current !== confirmedCopyContent) {
+      lastCopyRef.current = confirmedCopyContent
+      const transaction = editor.state.tr.replaceWith(
+        0,
+        editor.state.doc.content.size,
+        replacement.content,
+      )
+      // La copia y la siguiente pulsación pertenecen a operaciones distintas de undo.
+      editor.view.dispatch(closeHistory(transaction).setMeta('preventUpdate', true))
+      editor.view.dispatch(closeHistory(editor.state.tr))
+      if (!window.matchMedia('(pointer: coarse)').matches) editor.commands.focus()
+    } else {
+      editor.view.dispatch(
+        editor.state.tr
+          .replaceWith(0, editor.state.doc.content.size, replacement.content)
+          .setMeta('preventUpdate', true)
+          .setMeta('addToHistory', false),
+      )
+    }
+  }, [editor, initialContent, confirmedCopyContent])
 
   // Sincronizar editorRef después de crear el editor
   useEffect(() => {
@@ -403,6 +426,7 @@ export function DailyEditor({
           {toolbarEnd}
         </div>
       )}
+      {beforeContent}
       {pasteError && (
         <div role="alert" className="daily-editor-error">
           El texto supera los límites de la nota y no se pegó.

@@ -2,12 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-066](tasks/T-066-copy-previous-api.md) · Copia transaccional de la última nota anterior ([S-110](specs/S-110-previous-day-copy.md)) |
-| Estado | `mergeable` |
-| Acción actual | Merge de PR69 en una sesión posterior, con el veredicto R2 y `verify-required` vigentes sobre los SHA publicados. T-067 se habilita tras confirmar PR69 MERGED. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-066-copy-previous-api` · [PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69) |
+| Tarea y contrato | [T-067](tasks/T-067-copy-previous-client.md) · Empezar el día desde una nota anterior ([S-110](specs/S-110-previous-day-copy.md)) |
+| Estado | `in_progress` |
+| Acción actual | Implementar y verificar T-067 según S-110. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-067-copy-previous-client` · Pendiente de publicación |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+
+[T-066](tasks/T-066-copy-previous-api.md#conciliación) conciliada como `done` tras PR69 MERGED.
 
 [T-065](tasks/T-065-spaces-journey.md#conciliación) conciliada como `done` tras PR68 MERGED.
 

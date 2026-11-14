@@ -1,6 +1,6 @@
 ---
 id: T-067
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M5
@@ -8,7 +8,7 @@ spec: S-110
 depends_on: [T-066]
 branch: codex/t-067-copy-previous-client
 role: implementer
-executor: junie
+executor: frontier
 pr: null
 ---
 
@@ -18,7 +18,7 @@ pr: null
 
 Ofrecer copia explícita con fecha/espacio visibles y dejar la nota lista para editar con un gesto.
 
-Draft **solo por dependencias**: T-066 MERGED y conciliada. Contrato completo en S-110; al cumplirse las dependencias no se necesita otra sesión planner. Cada tarea/revisión usa sesión independiente.
+Habilitada con [T-066 MERGED y conciliada](T-066-copy-previous-api.md#conciliación). Contrato completo en S-110. Cada tarea y revisión usa una sesión independiente.
 
 ## Alcance y decisiones resueltas
 
@@ -63,7 +63,23 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. Al tomar la tarea, registrar SHA/base, comandos, resultados y pendientes. Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
+Frontera en rol implementer, Codex Desktop (GPT-6, variante y esfuerzo sin exponer), PowerShell, Git, `gh`, Node y Git Bash. La entrega habilita sugerencia y copia explícita en la UI diaria con la API, permisos y datos de S-110. El ACK confirma la copia y el historial local permite deshacerla con autosave.
+
+`gh pr view 69` confirmó MERGED y `git ls-remote origin refs/heads/main` confirmó `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb`. `gh pr list --state open` informó cero PR al iniciar. Worktree propio `.orchestrator/t-067`. La implementación y las verificaciones dirigidas están completas. Próximo paso: publicar el código y cerrar el traspaso documental. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
+
+## Evidencia dirigida
+
+- `npm ci --no-audit --no-fund`, exit 0, lockfile sin cambios. Los tres archivos Vitest del contrato pasaron **75/75**, exit 0. Regresión complementaria, **85/85**, exit 0: `npm test -- --run src/features/daily/editor/DailyEditor.test.tsx src/features/daily/DailyNotesPage.test.tsx src/features/daily/DailyDraftNavigation.test.tsx src/features/daily/SaveDailyVersion.test.tsx src/features/spaces/SpaceSelector.test.tsx src/services/http.test.ts`.
+- `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build`, exit 0. Vite informó el aviso de tamaño del chunk.
+- Los dos comandos `copy previous:` de esta tarea pasaron **2/2 desktop y 2/2 mobile**, exit 0 en cada proyecto, con PostgreSQL 18.6 y OIDC ficticio. El harness confirmó ausencia previa y eliminó sus contenedores, redes y volúmenes. Reportes saneados en `e2e/artifacts/starter-e2e-t067-{desktop,mobile}/sanitized/junit.xml` en el worktree propio. Los builds de ambos recorridos produjeron el mismo bundle de cliente. El ajuste posterior de espera en Vitest solo afecta el test de componente.
+- CP-01/02/05/07/08: Playwright comprobó selección del viernes, límites de fecha y espacio, preservación del enlace/separador/referencia, revisión y persistencia, origen y versiones intactos, undo, recarga, teclado desktop y toque mobile a 375 px. CP-04: 409 reales por fuente modificada y destino remoto, además de POST único y texto local en Vitest. CP-03/06/07: Vitest comprobó ausencia, error, cambio de fecha/espacio, logout durante POST y respuesta perdida con relectura antes de repetir.
+
+## Correcciones durante la implementación
+
+| Problema | Arreglo y evidencia |
+|---|---|
+| jsdom no implementa la geometría de `Range` y el click sintético dentro del editor disparó una excepción de `elementFromPoint`. | Geometría de prueba como en DailyEditor.test y foco DOM para la escritura del test. Playwright valida foco mediante teclado y toque reales del navegador. Selección Vitest final 75/75. |
+| Al perder el ACK, un destino aún no confirmado podía quedar editable antes de la relectura. | El coordinador conserva la necesidad de recargar por nota y la UI suspende edición y guardado manual hasta recuperar el destino. Negativos de red/409 en Vitest y recarga tras 409 en ambos proyectos Playwright. |
 
 ## Cierre y siguiente tarea
 

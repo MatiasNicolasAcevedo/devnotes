@@ -26,15 +26,18 @@ import { useSpaceHref } from '../spaces/spaceContext'
 export function SaveDailyVersion({
   save,
   date,
+  disabled = false,
 }: {
   save: UseSaveDailyVersionReturn
   date: string
+  disabled?: boolean
 }) {
   const { phase, handleClick, handleConfirm, handleCancel, showConfirmDialog, confirmDate } = save
 
   const formattedDate = confirmDate ? formatDateLocal(confirmDate) : formatDateLocal(date)
 
   const buttonDisabled =
+    disabled ||
     save.isLocked ||
     phase === 'success' ||
     phase === 'error' ||
