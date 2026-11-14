@@ -13,7 +13,6 @@ import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.Validator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -24,7 +23,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -46,7 +44,8 @@ import org.springframework.stereotype.Component;
  * It inspects the ZIP container, then the workbook structure, then every record with the domain validators
  * used on save. Each version is read with its own exact schema: version 1 has no space and is read as
  * {@link PrivateSpace#WORK}; version 2 requires the {@code space} of every record, keys daily notes and
- * versions by space and date, and rejects an atom pointing to an included reference of another space. A mix
+ * versions by space and date, and keeps an atom pointing to a reference of another space as it is (owner
+ * decision of T-062: the importer leaves it unresolved, as an absent reference). A mix
  * of both schemas is rejected. It never touches the database and never reads the readable columns. Failures
  * are {@link XlsxCodecException} without cell content.
  */
@@ -104,7 +103,6 @@ public class XlsxWorkbookReader {
         boolean spaces = meta.version() == 2;
 
         List<ReferenceRecord> references = new ArrayList<>();
-        Map<String, PrivateSpace> referenceSpaces = new HashMap<>();
         Set<SpaceDate> notes = new HashSet<>();
         List<DailyNoteRecord> dailyNotes = new ArrayList<>();
         List<DailyVersionRecord> dailyVersions = new ArrayList<>();
@@ -112,17 +110,15 @@ public class XlsxWorkbookReader {
 
         readSheet(
                 sheets.get(1), spaces ? XlsxFormat.HEADER_REFERENCES : XlsxFormat.HEADER_REFERENCES_V1, (key, json) -> {
-                    ReferenceRecord reference = reference(key, json, spaces);
-                    referenceSpaces.put(reference.id().toString(), reference.space());
-                    references.add(reference);
+                    references.add(reference(key, json, spaces));
                 });
         readSheet(sheets.get(2), spaces ? XlsxFormat.HEADER_DAILY : XlsxFormat.HEADER_DAILY_V1, (key, json) -> {
-            DailyNoteRecord note = dailyNote(key, json, spaces, referenceSpaces);
+            DailyNoteRecord note = dailyNote(key, json, spaces);
             notes.add(new SpaceDate(note.space(), note.date()));
             dailyNotes.add(note);
         });
         readSheet(sheets.get(3), spaces ? XlsxFormat.HEADER_VERSIONS : XlsxFormat.HEADER_VERSIONS_V1, (key, json) -> {
-            DailyVersionRecord version = dailyVersion(key, json, spaces, referenceSpaces);
+            DailyVersionRecord version = dailyVersion(key, json, spaces);
             // A version hangs from the note of its own space and date (S-109).
             if (!notes.contains(new SpaceDate(version.space(), version.date()))) {
                 throw new RecordRejected();
@@ -352,26 +348,22 @@ public class XlsxWorkbookReader {
         return new ReferenceRecord(space, id, title, description, createdAt, updatedAt);
     }
 
-    private static DailyNoteRecord dailyNote(
-            String key, JsonNode json, boolean spaces, Map<String, PrivateSpace> referenceSpaces) {
+    private static DailyNoteRecord dailyNote(String key, JsonNode json, boolean spaces) {
         requireFields(json, spaces, "date", "content", "createdAt", "updatedAt");
         PrivateSpace space = space(json, spaces);
         LocalDate date = date(json, key, space, spaces);
         JsonNode content = DailyContent.validate(json.get("content")).getTree();
-        requireReferencesInSpace(content, space, referenceSpaces);
         Instant createdAt = instant(json, "createdAt");
         Instant updatedAt = instant(json, "updatedAt");
         // Versions before T-040 could persist an inverted pair. Both instants are authoritative in v1 and v2.
         return new DailyNoteRecord(space, date, content, createdAt, updatedAt);
     }
 
-    private static DailyVersionRecord dailyVersion(
-            String key, JsonNode json, boolean spaces, Map<String, PrivateSpace> referenceSpaces) {
+    private static DailyVersionRecord dailyVersion(String key, JsonNode json, boolean spaces) {
         requireFields(json, spaces, "date", "content", "savedAt");
         PrivateSpace space = space(json, spaces);
         LocalDate date = date(json, key, space, spaces);
         JsonNode content = DailyContent.validate(json.get("content")).getTree();
-        requireReferencesInSpace(content, space, referenceSpaces);
         return new DailyVersionRecord(space, date, content, instant(json, "savedAt"));
     }
 
@@ -401,29 +393,6 @@ public class XlsxWorkbookReader {
     /** {@link PrivateSpace#WORK} for version 1; for version 2 the exact {@code space} value, without default. */
     private static PrivateSpace space(JsonNode json, boolean spaces) {
         return spaces ? PrivateSpace.parse(string(json, "space")) : PrivateSpace.WORK;
-    }
-
-    /**
-     * Rejects an atom pointing to a reference included in the book but of another space (S-109). Atoms to
-     * references absent from the book keep the S-107 meaning of "not available". The atom matching is the one
-     * the importer uses to rewrite identifiers.
-     */
-    private static void requireReferencesInSpace(
-            JsonNode node, PrivateSpace space, Map<String, PrivateSpace> referenceSpaces) {
-        if (node.isObject()
-                && "reference".equals(node.path("type").asText(null))
-                && node.get("attrs") instanceof ObjectNode attrs) {
-            PrivateSpace target = referenceSpaces.get(attrs.path("id").asText(""));
-            if (target != null && target != space) {
-                throw new RecordRejected();
-            }
-            return;
-        }
-        if (node.isContainerNode()) {
-            for (JsonNode child : node) {
-                requireReferencesInSpace(child, space, referenceSpaces);
-            }
-        }
     }
 
     private static void requireFields(JsonNode json, Set<String> expected) {

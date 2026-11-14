@@ -2,6 +2,8 @@ package com.example.devnotes.portability.web;
 
 import com.example.devnotes.portability.application.PortabilityExportService;
 import com.example.devnotes.portability.application.PortabilityImportService;
+import com.example.devnotes.portability.application.PortabilityImportService.ImportResult;
+import com.example.devnotes.portability.application.PortabilityImportService.SpaceCounts;
 import com.example.devnotes.portability.xlsx.XlsxFormat;
 import com.example.devnotes.portability.xlsx.XlsxWorkbookWriter.Counts;
 import com.example.devnotes.security.AuthOpenApi;
@@ -44,7 +46,6 @@ public class PortabilityController {
 
     private static final String FILE_PART = "file";
     private static final String IMPORT_FORMAT = "devnotes-xlsx";
-    private static final int IMPORT_VERSION = 1;
 
     /** Counts of a workbook, with the field names of the S-107 contract. */
     public record ImportCounts(int references, int dailyNotes, int dailyVersions, int voiceNotes) {
@@ -54,10 +55,22 @@ public class PortabilityController {
         }
     }
 
-    public record ImportPreviewResponse(
-            String format, int version, Instant exportedAt, ImportCounts counts, boolean accountEmpty) {}
+    /** Counts of each private space (S-109); for a version 1 book Personal is zero. */
+    public record CountsBySpace(ImportCounts work, ImportCounts personal) {
+        static CountsBySpace of(SpaceCounts counts) {
+            return new CountsBySpace(ImportCounts.of(counts.work()), ImportCounts.of(counts.personal()));
+        }
+    }
 
-    public record ImportResponse(ImportCounts counts) {}
+    public record ImportPreviewResponse(
+            String format,
+            int version,
+            Instant exportedAt,
+            ImportCounts counts,
+            CountsBySpace countsBySpace,
+            boolean accountEmpty) {}
+
+    public record ImportResponse(ImportCounts counts, CountsBySpace countsBySpace) {}
 
     private final PortabilityExportService service;
     private final PortabilityImportService importService;
@@ -70,7 +83,8 @@ public class PortabilityController {
     @GetMapping("/export")
     @Operation(
             summary = "Descarga los datos de la cuenta en .xlsx",
-            description = "Libro devnotes-xlsx v1 con referencias, notas diarias, versiones y notas de voz propias.")
+            description = "Libro devnotes-xlsx v2 con referencias, notas diarias, versiones y notas de voz propias de "
+                    + "Trabajo y Personal. No admite filtro por espacio.")
     @ApiResponse(
             responseCode = "200",
             description = "Adjunto devnotes-YYYY-MM-DD.xlsx (fecha UTC de exportación)",
@@ -113,7 +127,9 @@ public class PortabilityController {
     @Operation(
             summary = "Valida un .xlsx y resume su contenido sin escribir",
             description = "Multipart con exactamente una parte file de 1 a 10 485 760 bytes. No modifica la cuenta.")
-    @ApiResponse(responseCode = "200", description = "Conteos del archivo y si la cuenta está vacía")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Versión leída (1 o 2), conteos totales y por espacio, y si la cuenta está vacía en ambos")
     @ApiResponse(
             responseCode = "400",
             description = "IMPORT_INVALID_FILE, IMPORT_UNSUPPORTED_FORMAT o IMPORT_INVALID_RECORD (con sheet y row)",
@@ -136,9 +152,10 @@ public class PortabilityController {
                 .cacheControl(CacheControl.noStore())
                 .body(new ImportPreviewResponse(
                         IMPORT_FORMAT,
-                        IMPORT_VERSION,
+                        preview.version(),
                         preview.exportedAt(),
                         ImportCounts.of(preview.counts()),
+                        CountsBySpace.of(preview.countsBySpace()),
                         preview.accountEmpty()));
     }
 
@@ -146,8 +163,9 @@ public class PortabilityController {
     @SecurityRequirement(name = AuthOpenApi.CSRF_HEADER)
     @Operation(
             summary = "Importa un .xlsx en la cuenta vacía de la sesión",
-            description = "Todo o nada: recrea referencias, notas diarias, versiones y notas de voz con IDs nuevos.")
-    @ApiResponse(responseCode = "201", description = "Conteos importados")
+            description = "Todo o nada: recrea referencias, notas diarias, versiones y notas de voz con IDs nuevos, "
+                    + "cada una en el espacio del archivo; un libro v1 entra en Trabajo.")
+    @ApiResponse(responseCode = "201", description = "Conteos importados, totales y por espacio")
     @ApiResponse(
             responseCode = "400",
             description = "IMPORT_INVALID_FILE, IMPORT_UNSUPPORTED_FORMAT o IMPORT_INVALID_RECORD (con sheet y row)",
@@ -172,10 +190,10 @@ public class PortabilityController {
     public ResponseEntity<ImportResponse> importAccount(Authentication authentication, HttpServletRequest request)
             throws IOException, ServletException {
         UUID owner = owner(authentication);
-        Counts counts = importService.importInto(owner, importFile(request));
+        ImportResult result = importService.importInto(owner, importFile(request));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .cacheControl(CacheControl.noStore())
-                .body(new ImportResponse(ImportCounts.of(counts)));
+                .body(new ImportResponse(ImportCounts.of(result.counts()), CountsBySpace.of(result.countsBySpace())));
     }
 
     /** The bytes of the only part, {@code file}; duplicate, unknown, empty or oversized parts are rejected. */
