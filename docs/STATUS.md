@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-059](tasks/T-059-reference-spaces.md) · Referencias y búsqueda dentro del espacio ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente de PR62 sobre HEAD y base publicados según la [entrega de T-059](tasks/T-059-reference-spaces.md#entrega-para-revisión), con `verify-required` del HEAD vigente. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Estado | `mergeable` |
+| Acción actual | Completar el cierre de PR62 según la [revisión de T-059](tasks/T-059-reference-spaces.md#revisión-independiente-r1). Confirmado MERGED, la siguiente sesión concilia T-059 y toma T-060. FULL/STARTER DIFERIDO POR EL DUEÑO. |
 | Rama / PR | `codex/t-059-reference-spaces` · [PR62](https://github.com/MatiasNicolasAcevedo/devnotes/pull/62) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
@@ -102,5 +102,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Continuá como Frontera en rol reviewer en una sesión independiente para T-059 (docs/tasks/T-059-reference-spaces.md) de MatiasNicolasAcevedo/devnotes. Confirmá en GitHub que PR62 está OPEN, listo para revisión y contra main, y cotejá HEAD y base publicados. Revisá el diff en un checkout aislado según docs/agents/reviewer.md y docs/AUTONOMY.md. Verificá la evidencia dirigida en PostgreSQL 18.6, el aislamiento por propietario y espacio en SQL, la compatibilidad y los negativos HTTP, y exigí verify-required SUCCESS para el HEAD vigente. Publicá el veredicto ligado a los SHA y seguí el protocolo de merger solo si corresponde. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+Verificá PR62 según la comprobación MERGED de docs/agents/implementer.md y docs/agents/merger.md. Si sigue abierto, retomá el cierre de T-059 según AUTONOMY y terminá la sesión al cerrar ese PR. Confirmado MERGED, actuá como Frontera en rol implementer en una sesión nueva, conciliá T-059 y tomá T-060 (docs/tasks/T-060-voice-spaces.md) en codex/t-060-voice-spaces, sobre main publicado. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
 ```

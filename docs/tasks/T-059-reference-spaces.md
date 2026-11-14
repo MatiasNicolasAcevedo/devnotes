@@ -1,6 +1,6 @@
 ---
 id: T-059
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M5
@@ -83,3 +83,15 @@ El POST de Personal devuelve una `Location` relativa con `?space=personal` para 
 ## Cierre y siguiente tarea
 
 No done hasta MERGED comprobado. Tras MERGED confirmado, la siguiente sesión concilia esta tarea y toma T-060 si sus dependencias están done. No modificar protecciones, incorporar otras propuestas ni desplegar por pasar tests locales.
+
+## Revisión independiente R1
+
+2026-11-13 · Frontera en rol reviewer, Codex de escritorio (GPT-6, variante y esfuerzo sin verificar), PowerShell, Git Bash, Git, `gh`, Node, Java 21 y Docker Linux. Checkout aislado `.orchestrator/t-059-review`, HEAD `78ed0206dfa0dd8846dea7dce766f9da3bebe584`, base publicada `1b445e954adac4f84e01688ad2fd281e82131214`.
+
+- PR62 OPEN, listo para revisión y contra `main`. `gh pr view` y `git ls-remote` coincidieron en HEAD y base. [CI de entrada](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43535185574/job/132262350591) con `verify-required` SUCCESS para `78ed0206dfa0dd8846dea7dce766f9da3bebe584`. El run anterior del mismo SHA se canceló. El diff de fuentes coincide con `5b7dcba8bea0bd496bb748c9a6693430e33ebae4`.
+- API, permisos y datos. Propietario derivado de la sesión y espacio explícito en las altas. SQL de listados, búsqueda y conteos filtra por ambos antes de paginar. Detalle, UPDATE y DELETE incluyen ID, dueño y espacio. Los negativos directos de escritura devuelven cero filas afectadas.
+- Compatibilidad y negativos HTTP. La omisión de `space` conserva Trabajo, DTO, límites y orden. La `Location` de Personal conserva el contexto. Dos cuentas y dos espacios con títulos iguales prueban aislamiento de resultados y conteos, búsqueda literal de `%` y `_`, equivalencia de 404 para ID ajeno, fuera del espacio e inexistente, 400 sin mutación para espacio inválido/repetido y 401/403 por sesión/CSRF. Se conserva `no-store` y el guardado de átomos de referencia ausente en diario y versiones.
+- PostgreSQL. Se cotejaron el rojo de cuatro casos y los reportes verdes del implementer. Corrida independiente desde `server/` en Git Bash, `./mvnw -o -B -q verify -Dtest=PrivateSpaceTest,ReferenceItemServiceTest,ReferenceItemControllerTest -Dit.test=ReferenceSpaceApiIT,ReferenceItemIT,ReferenceItemRepositoryIT,DailyNoteApiIT#acceptsNoteWithReferenceAtom,DailyVersionApiIT#versionPreservesReferenceAtom -Djacoco.skip=true` → exit 0, Surefire 28/28 y Failsafe 28/28, cero omitidos. Flyway identificó PostgreSQL 18.6 en los cinco contextos. Retiro comprobado por ID y etiqueta de los cinco PostgreSQL y Ryuk. Log local en `.orchestrator/t-059-review-logs/backend-directed.log`.
+- Checks locales. `node scripts/docs-check.mjs` y `git diff --check` OK. `node scripts/ci/classify-diff.mjs --base 1b445e954adac4f84e01688ad2fd281e82131214 --head HEAD --phase FULL` → `FULL / APPLICATION`, ocho rutas técnicas.
+
+**Resultado favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El veredicto canónico se publica en PR62 con el HEAD documental y la base vigentes tras comprobar la CI de ese par. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
