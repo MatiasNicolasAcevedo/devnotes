@@ -1,6 +1,6 @@
 ---
 id: T-060
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -9,7 +9,7 @@ depends_on: [T-059]
 branch: codex/t-060-voice-spaces
 role: implementer
 executor: frontier
-pr: null
+pr: 63
 ---
 
 # T-060 · Biblioteca de voz por espacio
@@ -76,6 +76,10 @@ Dos cuentas ficticias con OIDC local, espacios independientes, listados y conteo
 |---|---|---|
 | El CRUD ignoraba `space`, la entidad fijaba Trabajo y las consultas se acotaban solo por propietario | Parser compartido, persistencia explícita y filtro por propietario y espacio en listado, conteo, detalle y CAS | Cinco casos de `VoiceSpaceApiIT` en rojo sobre `c6d4831` y 58 IT verdes |
 | El PUT con la revisión tope devolvía 409 antes de verificar el ámbito del ID | Comprobación acotada al mismo propietario y espacio antes de resolver el conflicto por revisión tope | Negativos de CAS con revisión tope y regresión 409 para nota propia |
+
+### Entrega para revisión
+
+[PR63](https://github.com/MatiasNicolasAcevedo/devnotes/pull/63) contra `main`. Fuentes probadas en `c12564e95c27e0c07a7315ecdda00b1d25f060b3` sobre la base publicada `c6d48310387f1e6d509f83ec14c33f736c23ba39`. `node scripts/docs-check.mjs`, `git diff --check` y `git diff --check origin/main...HEAD` → exit 0. `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → exit 0, `policy=FULL`, `profile=APPLICATION`, ocho rutas técnicas. Este traspaso solo cambia Markdown. Próximo paso: revisión independiente del HEAD y la base publicados, con `verify-required` para el HEAD vigente.
 
 ## Cierre y siguiente tarea
 
