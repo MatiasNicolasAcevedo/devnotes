@@ -1,6 +1,6 @@
 ---
 id: T-067
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M5
@@ -63,7 +63,7 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-El dueño autorizó el 2026-11-14 la corrección acotada de B-2 y una revisión independiente adicional. La corrección técnica `d3ba00d59ecf2c69b0e229e7c01e8f7e604b4814` está publicada en PR70 contra `main`, base `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb`. R3 debe comprobar el HEAD/base vigentes, su `verify-required` y la evidencia de la corrección en un checkout independiente. El prompt está en [STATUS](../STATUS.md#prompt-de-la-siguiente-sesión).
+La [revisión independiente R3](#revisión-independiente-r3) cierra B-2 y confirma el cierre de B-1. El veredicto canónico de [PR70](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70) se liga al HEAD de esta transición documental y a la base vigente tras comprobar `verify-required`. El merge sigue el [protocolo](../agents/merger.md) y [AUTONOMY](../AUTONOMY.md#revisión-y-merge). La retoma está en [STATUS](../STATUS.md#prompt-de-la-siguiente-sesión).
 
 **FULL/STARTER DIFERIDO POR EL DUEÑO.** SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Render requiere autorización expresa separada sobre SHA y ventana.
 
@@ -153,6 +153,18 @@ CP-07. Con el POST sin respuesta, la vista muestra «Sin confirmar» y bloquea e
 Reproducción independiente de Vitest/MSW con los selectores reales de fecha, un POST con error de red y un GET 500 verificado en la caché al regresar. Desde `client/`, `npm test -- --run src/features/daily/CopyPreviousNote.r2-review.test.tsx -t 'al salir y volver'`, exit 1, 1 caso fallido y 13 omitidos por el filtro. Prueba temporal y salida de Vitest conservadas en el directorio ignorado `e2e/artifacts/t067-review-r2/` del worktree reviewer.
 
 Condición de cierre: al volver a una fecha con copia incierta, conservar la recuperación por cuenta, espacio y fecha hasta obtener una lectura concluyente. La regresión debe verificar «Sin confirmar», recuperación disponible, edición y guardado manual bloqueados tras el GET 500, desbloqueo tras una lectura concluyente y un solo POST por gesto. Conservar los negativos de B-1 y el aislamiento de fecha, espacio y sesión. Con autorización del dueño, Frontera implementer corrige en PR70 y Frontera reviewer verifica en otra sesión con el HEAD/base publicados y CI vigente.
+
+## Revisión independiente R3
+
+2026-11-14. Frontera reviewer en sesión independiente autorizada por el dueño tras [R2](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70#issuecomment-6883295325). Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git, gh y Node 24.21.0. Worktree propio `.orchestrator/t-067-review-r3-codex` sobre el HEAD de entrada publicado `c2337d93d53c34b92bb46eb9b381c387b6e7bf16`. GitHub confirmó PR70 abierto contra `main`, base y punta de `main` `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb` y [`verify-required` SUCCESS sobre el HEAD de entrada](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43635951503/job/132572673026). La corrección modifica el estado de recuperación en memoria y las guardias de escritura de la UI. La API, el esquema de persistencia y los permisos son los de T-066.
+
+- **B-2 cerrado.** La selección Vitest publicada de [diez archivos](#corrida-de-corrección-r1) pasó **184/184**, exit 0. También pasó la reproducción independiente original de R2, con `npm test -- --run src/features/daily/CopyPreviousNote.r3-review.test.tsx -t 'al salir y volver'` desde `client/` (1/1, 13 casos fuera del filtro). El POST pierde su respuesta, se cambia de fecha y el GET de detalle devuelve 500 al regresar. Siguen visibles «Sin confirmar» y «Recargar nota», el editor queda en solo lectura y «Guardar versión» deshabilitado. El GET 200 concluyente recupera el contenido y habilita la edición y el guardado. Se registra un POST por gesto. Se comprobó el aislamiento por fecha y espacio, la recuperación automática al volver con GET 200 y el descarte al cerrar sesión, incluso al ingresar otra vez con la misma cuenta. Las salidas y la reproducción temporal quedaron en `e2e/artifacts/t067-review-r3/` del worktree reviewer.
+- **B-1 cerrado.** El GET con revisión igual al ACK llega antes que el ACK. Confirmar genera cero PUT y un solo Ctrl+Z genera un PUT con el documento anterior y la revisión del ACK. Con revisión superior, la recuperación conserva el documento remoto y registra cero PUT.
+- `npm ci --no-audit --no-fund --offline`, `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build`, exit 0. Lockfile intacto. Vite mantuvo el aviso de tamaño del chunk.
+- Cotejados los dos JUnit saneados del implementer y las aserciones de `copy previous:`. **2/2 desktop y 2/2 mobile**, sin fallos ni omitidos, con backend real, PostgreSQL 18.6 y OIDC ficticio según esa corrida. Los árboles `client` `b73d8f5dc7361864e873a70b58d1951f769078d5`, `e2e` `3c97c9c687369c1773c411aa701d59311e3ca144` y `server` `371d0c67a8e54a29d948e30dee46aff777c37878` coinciden entre `d3ba00d59ecf2c69b0e229e7c01e8f7e604b4814` y el HEAD revisado. R3 repitió Vitest y verificó la evidencia Playwright del implementer.
+- En raíz, `node scripts/docs-check.mjs`, `git diff --check`, `git diff --check efd02e5...HEAD` y `node scripts/ci/classify-diff.mjs --base efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb --head HEAD --phase FULL`, exit 0. Clasificación `FULL/APPLICATION`, 18 rutas técnicas de 21. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
+
+Veredicto técnico favorable, sin bloqueantes. La transición modifica la tarea y STATUS. El veredicto canónico de PR70 identifica el HEAD documental y la base exactos con `verify-required` SUCCESS.
 
 ## Cierre y siguiente tarea
 
