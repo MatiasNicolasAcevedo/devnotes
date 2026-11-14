@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-064](tasks/T-064-space-navigation.md) · Selector de espacio y navegación Windows/Android ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `in_review` |
-| Acción actual | Correcciones de R1 publicadas en PR67. [Evidencia B1–B3](tasks/T-064-space-navigation.md#corrección-de-r1) disponible para la segunda revisión independiente. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Estado | `mergeable` |
+| Acción actual | [R2 favorable de PR67](tasks/T-064-space-navigation.md#revisión-independiente-r2). El merge requiere autorización expresa del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
 | Rama / PR | `codex/t-064-space-navigation` · [PR67](https://github.com/MatiasNicolasAcevedo/devnotes/pull/67) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).

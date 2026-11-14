@@ -1,6 +1,6 @@
 ---
 id: T-064
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M5
@@ -131,6 +131,25 @@ npm test -- --run src/features/spaces/SpaceSelector.test.tsx src/features/spaces
 `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build` → 0 cada uno. Las pruebas informan avisos de fixtures MSW de capacidades de voz/paginación y Vite conserva el aviso de chunks >500 kB. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
 
 Checkpoint para R2. Fuentes y pruebas publicadas en `612e8156c2c6f35edbee9f7af85c3b41cf7cabcb` contra `1a3e95d6de17d1a4e9b3fcc1118637704f219cb9`. Checks de cierre en raíz: `node scripts/docs-check.mjs` → 0 (124 Markdown, 68 tareas, HANDOFF 22/22), `git diff --check` → 0 y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` → 0 (`policy=FULL`, `profile=STARTER`, 36 rutas, 33 técnicas). Antes de R2, comprobar `verify-required` SUCCESS en el HEAD documental vigente de PR67. Pendientes de dueño: aceptación visual en Android físico y zoom nativo, autorización expresa de merge y, por separado, autorización de ensayo Render sobre SHA y ventana. Checkout principal, `trailer/` y worktrees ajenos preservados.
+
+## Revisión independiente R2
+
+2026-11-14 · Frontera reviewer en sesión nueva de Codex Desktop, GPT-6 (variante y esfuerzo no expuestos), con PowerShell, Git, `gh`, Node 24.21.0/npm 11.19.0, Git Bash y Docker Desktop. Worktree propio `.orchestrator/t-064-review-r2`. PR67 OPEN, HEAD `5d7ad5ca8f6f5f70fa0ae9582dd500c9e55567d5`, descendiente de `612e8156c2c6f35edbee9f7af85c3b41cf7cabcb` con solo dos Markdown posteriores, base main `1a3e95d6de17d1a4e9b3fcc1118637704f219cb9` y [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43558738873/job/132337420528) confirmados en GitHub.
+
+Checkpoint previo a Playwright. Desde Git Bash, `STARTER_E2E_PROJECT=starter-e2e-t064-r2-1114 bash scripts/e2e.sh --grep 'T-064: selector|T-050: visitor navigation|portability: A exports|T-020: direct URL|CA-04: dates|CA-05: reload and logout|CA-06: two identities on the same date only see their own versions|CA-02: select text|reference preview: insert' --project desktop`. Namespace propio vacío por label exacto antes del ensayo. OIDC/PostgreSQL locales con fixtures ficticias, salida saneada por el harness en `e2e/artifacts/starter-e2e-t064-r2-1114/sanitized/` y cleanup por labels del proyecto. Las fuentes técnicas quedan congeladas; verificar al terminar los resultados y la ausencia de contenedores, red y volúmenes. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
+
+- **B1 cerrado.** El selector emite una intención al coordinador, que conserva URL, selector y el mismo nodo del editor durante el PUT, el 503 y el reintento. El ACK del guardado de Trabajo precede al cambio de URL y al primer GET de Personal. Contrastado en `SpaceSelector.tsx`, `SpaceNavigation.tsx` y el negativo publicado en `SpaceSelector.test.tsx`.
+- **B2 cerrado.** `useBlocker` retiene las salidas de Datos de la SPA mientras está activo el bloqueo de importación. Chromium retuvo y liberó con CDP la respuesta HTTP real sin modificarla. Notas y Atrás mantuvieron `/data` y el encabezado montado, Personal se mantuvo deshabilitado con explicación y un único POST 201 dejó visible el resultado. El recorrido también comprobó la vista previa v2, la separación de cuentas y el rechazo de una reimportación.
+- **B3 cerrado.** Los helpers y T-020 comprueban URL canónica con fecha y espacio esperado. T-020 y los cinco casos que usan `readVersion` pasaron con sus aserciones de contenido, solo lectura, ausencia de escrituras donde corresponde y separación de identidades.
+
+Pruebas independientes sobre `5d7ad5c` y base `1a3e95d`:
+
+- `npm.cmd ci --no-audit --no-fund` → 0 desde el lockfile. La instalación previa `--offline` no encontró un paquete en la caché de la sesión.
+- El mismo comando de 13 archivos de «Corrección de R1», con `npm.cmd` en PowerShell, → 0, 224/224. `npm.cmd run typecheck`, `lint`, `format:check` y `build` → 0 en cada uno. Persisten los avisos de fixtures MSW y de tamaño de chunks de Vite.
+- El Playwright dirigido del checkpoint → 0, 9/9 en Chromium desktop con API real, PostgreSQL 18 y OIDC de prueba. JUnit saneado con 0 fallos y 0 omitidos. También pasaron el selector autenticado y la navegación de visitante en los viewports del contrato, incluida la reducción equivalente a 200 %, con teclado, foco y contraste de los acentos. Cleanup verificado por label exacto con 0 contenedores, 0 redes y 0 volúmenes.
+- `node scripts/docs-check.mjs` y `git diff --check` → 0. `node scripts/ci/classify-diff.mjs --base 1a3e95d6de17d1a4e9b3fcc1118637704f219cb9 --head HEAD --phase FULL` → 0, `policy=FULL`, `profile=STARTER`, 36 rutas, 33 técnicas. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
+
+Revisión técnica favorable, sin bloqueantes. Cambios publicados de navegación y UI, incluida la validación de DTO en cliente. El diff no modifica endpoints, permisos, esquema de persistencia ni dependencias. Quedan pendientes la aceptación visual del dueño en Android físico con teclado real y zoom nativo, y la autorización expresa de merge. Render requiere autorización separada sobre SHA y ventana. T-065 espera el cierre de T-064. El veredicto canónico queda en PR67 sobre el HEAD documental y la base vigentes tras `verify-required` SUCCESS.
 
 ## Cierre y siguiente tarea
 
