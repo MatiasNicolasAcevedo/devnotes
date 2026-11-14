@@ -1,6 +1,6 @@
 ---
 id: T-058
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M5
@@ -90,6 +90,10 @@ Verde sobre las fuentes de implementación de `codex/t-058-daily-spaces`, base `
 - **Checks locales.** `node scripts/docs-check.mjs` y `git diff --check` OK. `node scripts/ci/classify-diff.mjs --base e7d6bf66ff502e17d1d1ff04b0118c2594450f2b --head HEAD --phase FULL` → `FULL / APPLICATION`, 14 rutas técnicas. El checkout principal y `trailer/` se preservaron.
 
 **Resultado favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El veredicto canónico se publica en PR61 con el HEAD documental y la base vigentes tras comprobar la CI de ese par. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+
+## Conciliación
+
+GitHub confirmó [PR61](https://github.com/MatiasNicolasAcevedo/devnotes/pull/61) MERGED contra `main` el 2026-11-14T00:19:00Z (2026-11-13 en Buenos Aires). Squash `1b445e954adac4f84e01688ad2fd281e82131214`, HEAD aprobado `b332b3b57fa2e85bf1344201b32494517abfec37`, [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43533122489/job/132255451719). `git ls-remote` confirmó el squash como punta de `main` publicado y `git merge-base --is-ancestor` comprobó su inclusión tras el fetch. T-058 queda `done`.
 
 ## Cierre y siguiente tarea
 

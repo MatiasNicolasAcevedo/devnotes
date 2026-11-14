@@ -1,5 +1,7 @@
 package com.example.devnotes.reference.web;
 
+import static com.example.devnotes.shared.space.PrivateSpace.PERSONAL;
+import static com.example.devnotes.shared.space.PrivateSpace.WORK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -57,7 +59,7 @@ class ReferenceItemControllerTest {
     void derivesOnlyLocalSessionOwnerAndEmitsDtoLocationAndNoStore() throws Exception {
         var now = Instant.parse("2026-10-18T12:00:00Z");
         var view = new ReferenceItemView(ID, "Título", "", now, now);
-        when(service.create(eq(OWNER), any())).thenReturn(view);
+        when(service.create(eq(OWNER), eq(WORK), any())).thenReturn(view);
         var cookie = mvc.perform(get("/api/v1/auth/csrf").with(request -> {
                     request.setServerName("127.0.0.1");
                     request.setServerPort(5173);
@@ -77,7 +79,7 @@ class ReferenceItemControllerTest {
                 .andExpect(header().string("Location", PATH + "/" + ID))
                 .andExpect(header().string("Cache-Control", "no-store"))
                 .andExpect(jsonPath("$.ownerId").doesNotExist());
-        verify(service).create(OWNER, new ReferenceItemInput("Título", ""));
+        verify(service).create(OWNER, WORK, new ReferenceItemInput("Título", ""));
     }
 
     @Test
@@ -152,24 +154,26 @@ class ReferenceItemControllerTest {
     }
 
     @Test
-    void passesQueryToServiceAndReturnsNoStore() throws Exception {
-        when(service.list(eq(OWNER), eq(0), eq(20), eq("spring")))
-                .thenReturn(new ReferenceItemPage(List.of(), 0, 20, 0L, 0));
-        mvc.perform(get(PATH).queryParam("q", "spring").with(oidcLogin().oidcUser(user())))
+    void passesSpaceAndQueryToServiceAndReturnsNoStore() throws Exception {
+        when(service.list(OWNER, PERSONAL, 0, 20, "spring")).thenReturn(new ReferenceItemPage(List.of(), 0, 20, 0L, 0));
+        mvc.perform(get(PATH)
+                        .queryParam("space", "personal")
+                        .queryParam("q", "spring")
+                        .with(oidcLogin().oidcUser(user())))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", "no-store"))
                 .andExpect(jsonPath("$.content").isEmpty())
                 .andExpect(jsonPath("$.totalElements").value(0));
-        verify(service).list(OWNER, 0, 20, "spring");
+        verify(service).list(OWNER, PERSONAL, 0, 20, "spring");
     }
 
     @Test
     void omitsQueryDelegatesToListAll() throws Exception {
-        when(service.list(eq(OWNER), eq(0), eq(20), isNull()))
+        when(service.list(eq(OWNER), eq(WORK), eq(0), eq(20), isNull()))
                 .thenReturn(new ReferenceItemPage(List.of(), 0, 20, 0L, 0));
         mvc.perform(get(PATH).with(oidcLogin().oidcUser(user())))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", "no-store"));
-        verify(service).list(OWNER, 0, 20, null);
+        verify(service).list(OWNER, WORK, 0, 20, null);
     }
 }

@@ -2,12 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-058](tasks/T-058-daily-spaces.md) · Diario y versiones aislados por espacio ([S-109](specs/S-109-private-spaces.md)) |
+| Tarea y contrato | [T-059](tasks/T-059-reference-spaces.md) · Referencias y búsqueda dentro del espacio ([S-109](specs/S-109-private-spaces.md)) |
 | Estado | `mergeable` |
-| Acción actual | Completar el cierre de PR61 según la [revisión de T-058](tasks/T-058-daily-spaces.md#revisión-independiente-r1). Confirmado MERGED, la siguiente sesión concilia T-058 y toma T-059. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-058-daily-spaces` · [PR61](https://github.com/MatiasNicolasAcevedo/devnotes/pull/61) |
+| Acción actual | Completar el cierre de PR62 según la [revisión de T-059](tasks/T-059-reference-spaces.md#revisión-independiente-r1). Confirmado MERGED, la siguiente sesión concilia T-059 y toma T-060. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-059-reference-spaces` · [PR62](https://github.com/MatiasNicolasAcevedo/devnotes/pull/62) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+
+[T-058](tasks/T-058-daily-spaces.md#conciliación) conciliada como `done` tras PR61 MERGED.
 
 [T-057](tasks/T-057-space-storage.md#conciliación) conciliada como `done` tras PR60 MERGED.
 
@@ -100,5 +102,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Verificá PR61 según la comprobación MERGED de docs/agents/implementer.md y docs/agents/merger.md. Si sigue abierto, retomá el cierre de T-058 según AUTONOMY y terminá la sesión al cerrar ese PR. Confirmado MERGED, actuá como Frontera en rol implementer en una sesión nueva, conciliá T-058 y tomá T-059 (docs/tasks/T-059-reference-spaces.md) en codex/t-059-reference-spaces, sobre main publicado. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+Verificá PR62 según la comprobación MERGED de docs/agents/implementer.md y docs/agents/merger.md. Si sigue abierto, retomá el cierre de T-059 según AUTONOMY y terminá la sesión al cerrar ese PR. Confirmado MERGED, actuá como Frontera en rol implementer en una sesión nueva, conciliá T-059 y tomá T-060 (docs/tasks/T-060-voice-spaces.md) en codex/t-060-voice-spaces, sobre main publicado. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
 ```

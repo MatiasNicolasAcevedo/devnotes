@@ -2,6 +2,7 @@ package com.example.devnotes.reference.application;
 
 import com.example.devnotes.reference.persistence.ReferenceItem;
 import com.example.devnotes.reference.persistence.ReferenceItemRepository;
+import com.example.devnotes.shared.space.PrivateSpace;
 import java.time.Clock;
 import java.util.Objects;
 import java.util.UUID;
@@ -10,7 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Every resource lookup filters by owner in persistence, including mutations; no global existence probe. */
+/** All reads and mutations use the session owner and selected space in persistence. */
 @Service
 @Transactional
 public class ReferenceItemService {
@@ -25,7 +26,7 @@ public class ReferenceItemService {
     }
 
     @Transactional(readOnly = true)
-    public ReferenceItemPage list(UUID owner, int page, int size, String query) {
+    public ReferenceItemPage list(UUID owner, PrivateSpace space, int page, int size, String query) {
         Objects.requireNonNull(owner);
         if (page < 0 || size < 1 || size > 100) throw new IllegalArgumentException("Paginación inválida.");
         if (query != null && query.length() > QUERY_MAX) {
@@ -33,17 +34,17 @@ public class ReferenceItemService {
         }
         String trimmed = query == null ? null : query.trim();
         if (trimmed == null || trimmed.isEmpty()) {
-            return listAll(owner, page, size);
+            return listAll(owner, space, page, size);
         }
-        return listByTitle(owner, trimmed, page, size);
+        return listByTitle(owner, space, trimmed, page, size);
     }
 
-    private ReferenceItemPage listAll(UUID owner, int page, int size) {
+    private ReferenceItemPage listAll(UUID owner, PrivateSpace space, int page, int size) {
         var pageable = PageRequest.of(page, size);
         var result = new PageImpl<>(
-                repository.findPageByOwnerId(owner, pageable.getOffset(), size),
+                repository.findPageByOwnerIdAndSpace(owner, space.value(), pageable.getOffset(), size),
                 pageable,
-                repository.countByOwnerId(owner));
+                repository.countByOwnerIdAndSpace(owner, space));
         return new ReferenceItemPage(
                 result.map(ReferenceItemView::from).getContent(),
                 page,
@@ -52,11 +53,12 @@ public class ReferenceItemService {
                 result.getTotalPages());
     }
 
-    private ReferenceItemPage listByTitle(UUID owner, String pattern, int page, int size) {
+    private ReferenceItemPage listByTitle(UUID owner, PrivateSpace space, String pattern, int page, int size) {
         String escaped = "%" + escapeLike(pattern.toLowerCase(java.util.Locale.ROOT)) + "%";
         var pageable = PageRequest.of(page, size);
-        var items = repository.findPageByOwnerIdAndTitle(owner, escaped, pageable.getOffset(), size);
-        long total = repository.countByOwnerIdAndTitle(owner, escaped);
+        var items =
+                repository.findPageByOwnerIdAndSpaceAndTitle(owner, space.value(), escaped, pageable.getOffset(), size);
+        long total = repository.countByOwnerIdAndSpaceAndTitle(owner, space.value(), escaped);
         var result = new PageImpl<>(items, pageable, total);
         return new ReferenceItemPage(
                 result.map(ReferenceItemView::from).getContent(),
@@ -72,30 +74,37 @@ public class ReferenceItemService {
     }
 
     @Transactional(readOnly = true)
-    public ReferenceItemView get(UUID owner, UUID id) {
-        return ReferenceItemView.from(owned(owner, id));
+    public ReferenceItemView get(UUID owner, PrivateSpace space, UUID id) {
+        Objects.requireNonNull(owner);
+        return inSpace(owner, space, id);
     }
 
-    public ReferenceItemView create(UUID owner, ReferenceItemInput input) {
+    public ReferenceItemView create(UUID owner, PrivateSpace space, ReferenceItemInput input) {
         Objects.requireNonNull(owner);
         return ReferenceItemView.from(
-                repository.saveAndFlush(new ReferenceItem(owner, input.title(), input.description(), now())));
+                repository.saveAndFlush(new ReferenceItem(owner, space, input.title(), input.description(), now())));
     }
 
-    public ReferenceItemView update(UUID owner, UUID id, ReferenceItemInput input) {
-        var item = owned(owner, id);
-        item.update(input.title(), input.description(), now());
-        return ReferenceItemView.from(repository.saveAndFlush(item));
-    }
-
-    public void delete(UUID owner, UUID id) {
-        repository.delete(owned(owner, id));
-        repository.flush();
-    }
-
-    private ReferenceItem owned(UUID owner, UUID id) {
+    public ReferenceItemView update(UUID owner, PrivateSpace space, UUID id, ReferenceItemInput input) {
         Objects.requireNonNull(owner);
-        return repository.findByIdAndOwnerId(id, owner).orElseThrow(ReferenceItemNotFoundException::new);
+        if (repository.updateInSpace(id, owner, space, input.title(), input.description(), now()) == 0) {
+            throw new ReferenceItemNotFoundException();
+        }
+        return inSpace(owner, space, id);
+    }
+
+    public void delete(UUID owner, PrivateSpace space, UUID id) {
+        Objects.requireNonNull(owner);
+        if (repository.deleteInSpace(id, owner, space) == 0) {
+            throw new ReferenceItemNotFoundException();
+        }
+    }
+
+    private ReferenceItemView inSpace(UUID owner, PrivateSpace space, UUID id) {
+        return repository
+                .findByIdAndOwnerIdAndSpace(id, owner, space)
+                .map(ReferenceItemView::from)
+                .orElseThrow(ReferenceItemNotFoundException::new);
     }
 
     private java.time.Instant now() {
