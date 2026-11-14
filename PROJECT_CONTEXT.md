@@ -49,6 +49,10 @@ El dueño informó espera aproximada de dos minutos en Render alrededor de las 1
 
 El dueño autorizó una rama y PR **solo documental** para [T-052](docs/tasks/T-052-scope-expansion-plan.md) mientras PR54 continúa abierto. Implementación posterior en sesiones independientes y secuenciales, después de ambos cierres. FULL/STARTER/E2E completo diferidos hasta solicitud expresa según [TESTING](docs/TESTING.md#excepción-i5-del-2026-11-12). Las reglas de datos siguientes describen lo vigente; S-109 sustituirá la unicidad por `(propietario, espacio, fecha)` al implementarse, sin cambiar la propiedad de cuenta.
 
+## Después de I5 · Herramientas de texto seleccionadas el 2026-11-14
+
+Primero [copiar texto de una captura](docs/specs/S-112-screenshot-ocr.md), con OCR.space, captura local PNG/JPG, vista previa, extracción deliberada, resultado editable y copia. El dueño usa DevNotes en una ventana de escritorio de aproximadamente un cuarto de monitor y en móvil. El contrato propone una columna en ventana angosta, cotejo lado a lado cuando entra, y selector táctil en Android. El dueño autorizó el envío de la captura completa desde Trabajo y Personal con aviso antes de cada envío. Después de OCR, [evaluar Redactar](docs/tasks/T-072-writing-provider-evaluation.md) con GroqCloud y alternativas, con texto ficticio y sin dar por decidida su implementación.
+
 ## Datos vigentes, reglas y permisos
 
 - **NotaDiaria:** UUID, propietario local, fecha calendario sin hora, contenido estructurado (texto/enlaces/separadores), última modificación UTC y revisión técnica contra escrituras concurrentes. Única por `(propietario, fecha)`.

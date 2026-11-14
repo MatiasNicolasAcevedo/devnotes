@@ -1,6 +1,6 @@
 ---
 id: T-067
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M5
@@ -166,6 +166,24 @@ Condición de cierre: al volver a una fecha con copia incierta, conservar la rec
 
 Veredicto técnico favorable, sin bloqueantes. La transición modifica la tarea y STATUS. El veredicto canónico de PR70 identifica el HEAD documental y la base exactos con `verify-required` SUCCESS.
 
+## Conciliación
+
+El 2026-11-14, `gh pr view 70 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` (exit 0, con consulta adicional de `statusCheckRollup`) confirmó [PR70](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70) `MERGED` contra `main`, squash `405e7e58b5133220acd2e9c8c425594323469124` y `mergedAt` `2026-11-14T20:31:45Z` (17:31:45 de Buenos Aires). El [cierre publicado](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70#issuecomment-6883794829) y el repositorio coinciden: un único padre `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb` y el mismo árbol que el HEAD aprobado `cbe0db290f5b6244f05dcd3a12501f642bf13df2`. [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43636788734/job/132575241597). La consulta de la rama confirmó ese squash como punta de main y la lista de PR abiertos devolvió cero. T-067 queda `done`.
+
+## Control de avance de I5 · T-063 a T-067
+
+2026-11-14. Se cotejaron GitHub, la cadena de padres de main y los resultados publicados en las tareas. Los cinco PR figuran `MERGED` a `main`, con `verify-required` SUCCESS en sus HEAD finales. La evidencia dirigida procede de los autores y revisiones registradas.
+
+| Tarea / PR | Squash / fecha UTC | Dependencia y evidencia dirigida |
+|---|---|---|
+| T-063 / [PR66](https://github.com/MatiasNicolasAcevedo/devnotes/pull/66) | `1a3e95d` · 2026-11-14 02:57:54 | T-062 → T-063. 125/125 de contrato y 757/757 Vitest del autor. Aislamiento de rutas, queries y borradores, rechazo de parámetros y resultados tardíos. [R1](T-063-space-client-context.md#revisión-independiente-r1). |
+| T-064 / [PR67](https://github.com/MatiasNicolasAcevedo/devnotes/pull/67) | `dc18096` · 2026-11-14 05:13:12 | T-063 → T-064. R2 224/224 Vitest, 9/9 Chromium desktop con API/DB reales. Selector, foco, importación en vuelo, navegación y zoom equivalente. [R2](T-064-space-navigation.md#revisión-independiente-r2). |
+| T-065 / [PR68](https://github.com/MatiasNicolasAcevedo/devnotes/pull/68) | `a0321ec` · 2026-11-14 15:12:53 | T-064 → T-065. Autor 11/11 desktop y 11/11 mobile. R1 con dos actores, importación y escrituras concurrentes, migración real y navegación responsiva. [R1](T-065-spaces-journey.md#resultado-de-r1). |
+| T-066 / [PR69](https://github.com/MatiasNicolasAcevedo/devnotes/pull/69) | `efd02e5` · 2026-11-14 16:59:58 | T-065 → T-066. R2, 7/7 de copia y 4/4 de espacio en Failsafe con PostgreSQL 18.6. Permisos, origen anterior en el mismo espacio, destino vacío y carreras. [R2](T-066-copy-previous-api.md#revisión-independiente-r2). |
+| T-067 / [PR70](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70) | `405e7e5` · 2026-11-14 20:31:45 | T-066 → T-067. R3 184/184 Vitest y 1/1 reproducción independiente. Playwright dirigido 2/2 desktop y 2/2 mobile cotejado con las mismas fuentes. Cierres de undo y destino incierto tras perder respuesta. [R3](#revisión-independiente-r3). |
+
+S-109 y S-110 completaron su ruta en main con evidencia dirigida. Para OCR, las guardias de T-063, T-064 y T-067 fijan dos reglas de diseño: mantener el editor montado y descartar un resultado de otro contexto o generación. Los anchos y foco de SP-06 sirven de referencia. **SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño. FULL/STARTER DE I5 DIFERIDOS POR EL DUEÑO.** S-111 conserva el pendiente remoto y el [incidente posterior del piloto](T-056-service-activity-journey.md#observación-del-piloto-del-2026-11-14). No surgieron dependencias técnicas de I5 que impidan preparar OCR.
+
 ## Cierre y siguiente tarea
 
-El control de avance de I5 corresponde tras confirmar T-067 MERGED. Revisar las últimas cinco tareas (T-063 a T-067), sus dependencias y evidencia dirigida, el integrado diferido y SP-06 en Android físico con teclado real y zoom nativo, pendiente del dueño. Conciliar T-067 como `done` tras confirmación en GitHub y volver a Frontera/dueño para decidir el siguiente alcance. Render requiere autorización expresa separada sobre SHA y ventana.
+Control documental de I5 completado. La próxima capacidad es [S-112](../specs/S-112-screenshot-ocr.md), a partir de [T-068](T-068-ocr-api.md) cuando el dueño confirme el alcance de envío. La prueba con OCR.space, las claves y Render tienen hitos y autorizaciones propios.

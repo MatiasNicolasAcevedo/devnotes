@@ -106,6 +106,10 @@ devnotes:
     api-key: ${GROQ_API_KEY:}
     test-provider: ${DEVNOTES_VOICE_TEST_PROVIDER:false}
     test-provider-url: ${DEVNOTES_VOICE_TEST_PROVIDER_URL:}
+  ocr:
+    enabled: ${DEVNOTES_OCR_ENABLED:false}
+    allowed-spaces: ${DEVNOTES_OCR_ALLOWED_SPACES:}
+    api-key: ${OCR_SPACE_API_KEY:}
   # Service activity window (S-111) — off by default; the operator fixes the single allowed owner UUID.
   keep-awake:
     enabled: ${DEVNOTES_KEEP_AWAKE_ENABLED:false}

@@ -73,7 +73,11 @@ Pedido del dueño del 2026-11-12, preparado en [T-052](tasks/T-052-scope-expansi
 | [S-109](specs/S-109-private-spaces.md) · Trabajo/Personal | T-057 → T-058 → T-059 → T-060 → T-061 → T-062 → T-063 → T-064 → T-065 | Diario, versiones, referencias y voz separados; navegación clara y respaldo compatible |
 | [S-110](specs/S-110-previous-day-copy.md) · Continuidad de jornada | T-066 → T-067 | Copia explícita de la última anterior sin sobrescrituras ni mezcla de espacios |
 
-Quince tareas de producto; control de avance por Junie tras T-057, T-062 y T-067. **Frontera vuelve tras T-067 MERGED** con la evidencia dirigida y los pendientes reales (ensayo Render, prueba Android del dueño e integrado diferido) claramente separados, o ante decisión/bloqueo fuera de contrato. La ausencia de aprobación de un deploy no bloquea desarrollo local de los espacios ni se presenta como aceptación remota. Las categorías y las restantes propuestas no entran en esta iteración.
+Quince tareas de producto. Frontera cerró el [control final tras T-067](tasks/T-067-copy-previous-client.md#control-de-avance-de-i5--t-063-a-t-067) el 2026-11-14 con PR66…70 MERGED y evidencias dirigidas. Pendientes: SP-06 en Android físico con teclado real y zoom nativo, FULL/STARTER diferidos de I5 y el ensayo autorizado de Render. Las categorías y las propuestas restantes siguen fuera de I5.
+
+## I6 / M6 · Herramientas de texto en el diario
+
+Primero [S-112 · Copiar texto de una captura](specs/S-112-screenshot-ocr.md). Salida: captura PNG/JPG a texto editable/copiar, con borrador intacto y UX verificada en escritorio al 25 %, escritorio amplio y Android emulado. Secuencia de entorno local: T-068 API con doble → T-069 diálogo → T-070 navegador/API real con doble externo → T-071 precisión con capturas ficticias y autorización del dueño. El dueño autorizó Trabajo y Personal con aviso antes de cada envío. La clave y la prueba real son posteriores. Despliegue separado con autorización sobre SHA y ventana. Frontera pasa a evaluar [Redactar con GroqCloud y alternativas](tasks/T-072-writing-provider-evaluation.md) tras el veredicto de OCR. Esperar el experimento para decidir arquitectura o implementación de generación de texto.
 
 ## Objetivos futuros sin contrato de ejecución
 
@@ -81,4 +85,4 @@ Restauración/comparación/múltiples revisiones por día, búsquedas, plantilla
 
 ## Después de I5 · Ideas seleccionadas pendientes
 
-El dueño seleccionó las ideas 2, 9, 16, 21, 22, 24 y 34 para ampliar el producto al terminar lo ya definido. [Resúmenes y dirección de UX](FUTURE-FEATURES.md): notas libres, listas, formato compacto, código, búsqueda unificada, consulta en paralelo y reutilización de voz. Volver a frontera tras T-067 para definir contratos y prioridad; no iniciar estas ideas desde una tarea de I5.
+El dueño seleccionó las ideas 2, 9, 16, 21, 22, 24 y 34 para ampliar el producto al terminar lo ya definido. [Resúmenes y dirección de UX](FUTURE-FEATURES.md): notas libres, listas, formato compacto, código, búsqueda unificada, consulta en paralelo y reutilización de voz. Conservarlas como candidatas para definir contratos y prioridad con el dueño tras la ampliación de herramientas de texto.
