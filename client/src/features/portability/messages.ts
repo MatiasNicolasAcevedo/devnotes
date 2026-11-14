@@ -3,8 +3,9 @@ import { errorMessage } from '../../shared/ui/errorMessage'
 
 /** Textos de la pantalla «Datos» (S-107). */
 export const texts = {
-  title: 'Datos',
-  intro: 'Descargá un respaldo de tu cuenta en Excel o recuperalo en una cuenta sin datos.',
+  title: 'Datos de la cuenta',
+  intro:
+    'Descargá un respaldo de tu cuenta en Excel o recuperalo en una cuenta sin datos. Incluye Trabajo y Personal.',
   exportTitle: 'Exportar',
   exportHelp:
     'El archivo incluye tus notas diarias, la versión guardada de cada una, tus notas de voz y tus referencias. Es un respaldo: no está pensado para editarse en Excel.',
@@ -17,6 +18,8 @@ export const texts = {
   fileLabel: 'Archivo de respaldo (.xlsx)',
   previewing: 'Revisando el archivo…',
   previewTitle: 'Contenido del archivo',
+  legacyHelp: 'Los respaldos de versión 1 se importan en Trabajo.',
+  total: 'Total de la cuenta',
   notEmpty: 'Solo se puede importar en una cuenta sin datos.',
   importButton: 'Importar',
   importing: 'Importando…',
@@ -34,7 +37,7 @@ const CODE_MESSAGES: Record<string, string> = {
   EXPORT_LIMIT_EXCEEDED:
     'Tu cuenta supera los límites de cantidad o tamaño de un respaldo restaurable. No se generó ningún archivo.',
   IMPORT_INVALID_FILE: 'El archivo no es un Excel exportado desde DevNotes.',
-  IMPORT_UNSUPPORTED_FORMAT: 'El archivo no tiene el formato devnotes-xlsx versión 1.',
+  IMPORT_UNSUPPORTED_FORMAT: 'El archivo no tiene el formato devnotes-xlsx versión 1 o 2.',
   IMPORT_INVALID_RECORD: 'El archivo tiene datos inválidos y no se puede importar.',
   IMPORT_TOO_LARGE: 'El archivo supera el máximo de 10 MB.',
   IMPORT_ACCOUNT_NOT_EMPTY: texts.notEmpty,

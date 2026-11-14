@@ -1,4 +1,4 @@
-import { test, expect, control, readiness, layout, serverStatus } from './fixtures';
+import { test, expect, control, readiness, layout, serverStatus, login, accountButton } from './fixtures';
 
 test.describe.configure({ timeout: 90_000 });
 
@@ -13,23 +13,33 @@ test('T-050: visitor navigation fits on one row while readiness is pending', asy
   try {
     await page.goto('/');
     const banner = page.getByRole('banner');
-    const nav = banner.getByRole('navigation', { name: 'Navegación principal' });
+    const nav = page.getByRole('navigation', { name: 'Navegación principal' });
     const connecting = serverStatus(page, 'Conectando con el servidor');
     const login = banner.getByRole('link', { name: 'Ingresar', exact: true });
     const brand = banner.getByRole('link', { name: 'DevNotes', exact: true });
-    const tabs = ['Voz', 'Notas', 'Referencia', 'Historial', 'Datos'];
+    const tabs = ['Voz', 'Notas', 'Referencias', 'Historial'];
 
-    for (const width of [375, 600, 620, 1280]) {
+    for (const width of [360, 375, 390, 767, 768, 1280]) {
       await test.step(`${width} px`, async () => {
         await page.setViewportSize({ width, height: 800 });
-        const narrow = width < 600;
-        await expect(brand).toHaveCount(narrow ? 0 : 1);
+        const narrow = width < 768;
+        await expect(brand).toHaveCount(0);
         await expect(connecting).toHaveText(narrow ? '' : 'Conectando');
         const links = tabs.map(name => nav.getByRole('link', { name, exact: true }));
-        const controls = [...(narrow ? [] : [brand]), ...links, connecting, login];
+        const controls = [...(narrow ? [] : links), connecting, login];
+        const order = narrow ? ['Notas', 'Voz', 'Referencias', 'Historial'] : tabs;
+        await expect(nav.getByRole('link')).toHaveText(order);
+        if (narrow) {
+          const main = (await page.getByRole('main').boundingBox())!;
+          const bottom = (await nav.boundingBox())!;
+          expect(bottom.y).toBeGreaterThanOrEqual(main.y + main.height - 1);
+          expect(bottom.y + bottom.height).toBeLessThanOrEqual(800);
+          for (const link of links) expect((await link.boundingBox())!.height).toBeGreaterThanOrEqual(48);
+        }
+        await layout(page);
         await expect(banner).toBeVisible();
         const bar = (await banner.boundingBox())!;
-        expect(bar.height).toBeLessThanOrEqual(48);
+        expect(bar.height).toBe(56);
         let previousRight = -1;
         for (const control of controls) {
           await expect(control).toBeVisible();
@@ -47,6 +57,68 @@ test('T-050: visitor navigation fits on one row while readiness is pending', asy
     resolve();
   }
   await expect(serverStatus(page, 'Servidor conectado')).toBeVisible();
+});
+
+test('T-064: selector y navegación responden con la sesión real', async ({ page, identity }) => {
+  await login(page, identity);
+  const banner = page.getByRole('banner');
+  const selector = banner.getByRole('button', { name: 'Espacio: Trabajo' });
+  const nav = page.getByRole('navigation', { name: 'Navegación principal' });
+  const main = page.getByRole('main');
+  const work = '#86efac';
+  const personal = '#c4b5fd';
+
+  for (const width of [360, 375, 390, 767, 768, 1280]) {
+    await test.step(`${width} CSS px`, async () => {
+      await page.setViewportSize({ width, height: 800 });
+      await expect(selector).toBeVisible();
+      expect((await selector.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+      await expect(selector).toHaveCSS('color', 'rgb(134, 239, 172)');
+      expect(await banner.getByRole('navigation').count()).toBe(width >= 768 ? 1 : 0);
+      if (width < 768) {
+        const mainBox = (await main.boundingBox())!;
+        const navBox = (await nav.boundingBox())!;
+        expect(mainBox.y + mainBox.height).toBeLessThanOrEqual(navBox.y + 1);
+      }
+      await layout(page);
+    });
+  }
+
+  // Simula el viewport efectivo de una ventana de 1280 × 800 al 200 %.
+  await page.setViewportSize({ width: 640, height: 400 });
+  await expect(banner.getByRole('navigation')).toHaveCount(0);
+  await layout(page);
+  const account = accountButton(page);
+  await account.click();
+  await expect(page.getByRole('menuitem', { name: 'Datos de la cuenta' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(account).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(selector).toBeFocused();
+  await expect(selector).toHaveCSS('outline-width', '2px');
+  await selector.press('Enter');
+  const menu = page.getByRole('menu', { name: 'Cambiar de espacio' });
+  const selected = menu.getByRole('menuitemradio', { name: 'Trabajo', checked: true });
+  await expect(selected).toBeFocused();
+  expect((await selected.boundingBox())!.height).toBeGreaterThanOrEqual(48);
+  await page.keyboard.press('Escape');
+  await expect(selector).toBeFocused();
+  await page.keyboard.press('Space');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('Enter');
+  const changed = banner.getByRole('button', { name: 'Espacio: Personal' });
+  await expect(changed).toBeFocused();
+  await expect(changed).toHaveCSS('color', 'rgb(196, 181, 253)');
+  await expect(page).toHaveURL(/\/notes\/\d{4}-\d{2}-\d{2}\?space=personal$/);
+
+  // Los acentos sobre la superficie especificada superan 4,5:1 también con el fondo tenue en hover.
+  const luminance = (color: string) => {
+    const channels = color.slice(1).match(/../g)!.map(channel => parseInt(channel, 16) / 255);
+    const linear = channels.map(value => value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4);
+    return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+  };
+  expect((luminance(work) + 0.05) / (luminance('#314437') + 0.05)).toBeGreaterThan(4.5);
+  expect((luminance(personal) + 0.05) / (luminance('#3b3a47') + 0.05)).toBeGreaterThan(4.5);
 });
 
 // T-050: sin pantalla de inicio, el estado real del servidor se muestra en el indicador de la barra superior.

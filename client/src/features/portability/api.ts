@@ -19,19 +19,46 @@ export const importCountsSchema = z.object({
 })
 export type ImportCounts = z.infer<typeof importCountsSchema>
 
-/** Contrato de `POST /api/v1/portability/import-preview` (S-107). */
-export const importPreviewSchema = z.object({
-  format: z.literal('devnotes-xlsx'),
-  version: z.literal(1),
-  exportedAt: z.string().datetime(),
+const countsBySpaceSchema = z.object({ work: importCountsSchema, personal: importCountsSchema })
+const accountCountsSchema = z.object({
   counts: importCountsSchema,
-  accountEmpty: z.boolean(),
+  countsBySpace: countsBySpaceSchema,
 })
+export type ImportResult = z.infer<typeof accountCountsSchema>
+
+const countKeys = importCountsSchema.keyof().options
+
+function countsMatch({ counts, countsBySpace: { work, personal } }: ImportResult): boolean {
+  return countKeys.every((key) => work[key] + personal[key] === counts[key])
+}
+
+/** Contrato de `POST /api/v1/portability/import-preview` (S-109). */
+export const importPreviewSchema = accountCountsSchema
+  .extend({
+    format: z.literal('devnotes-xlsx'),
+    version: z.literal([1, 2]),
+    exportedAt: z.string().datetime(),
+    accountEmpty: z.boolean(),
+  })
+  .refine(countsMatch, {
+    path: ['countsBySpace'],
+    message: 'Los conteos no coinciden con el total',
+  })
+  .refine(
+    ({ version, countsBySpace }) =>
+      version === 2 || countKeys.every((key) => countsBySpace.personal[key] === 0),
+    {
+      path: ['countsBySpace', 'personal'],
+      message: 'Un respaldo v1 solo contiene datos de Trabajo',
+    },
+  )
 export type ImportPreview = z.infer<typeof importPreviewSchema>
 
 /** Contrato de `POST /api/v1/portability/imports` (201). */
-export const importResultSchema = z.object({ counts: importCountsSchema })
-export type ImportResult = z.infer<typeof importResultSchema>
+export const importResultSchema = accountCountsSchema.refine(countsMatch, {
+  path: ['countsBySpace'],
+  message: 'Los conteos no coinciden con el total',
+})
 
 /** Señal y vigencia de la identidad que inició la petición. */
 export type PortabilityScope = Pick<RequestOptions, 'signal' | 'sessionIsCurrent'>

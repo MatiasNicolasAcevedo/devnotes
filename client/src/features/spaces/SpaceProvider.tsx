@@ -34,6 +34,10 @@ export function SpaceProvider({ owner, children }: { owner: string; children: Re
   const space = state.owner === owner ? state.space : null
   // Primera resolución: todavía no hay nada montado en ningún espacio que proteger.
   if (space === null && requested?.kind === 'valid') setState({ owner, space: requested.space })
+  // Datos puede ser la entrada inicial de una sesión. Resolver el contexto del selector sin cambiar /data.
+  if (space === null && owner && pathname === '/data') {
+    setState({ owner, space: readSpacePreference(owner) ?? FIRST_SPACE })
+  }
 
   const missing = requested?.kind === 'missing'
   useLayoutEffect(() => {

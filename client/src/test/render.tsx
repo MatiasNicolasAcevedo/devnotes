@@ -1,14 +1,15 @@
 import { render, type RenderOptions } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { ReactElement, ReactNode } from 'react'
-import { MemoryRouter } from 'react-router'
+import { createContext, useContext, type ReactElement, type ReactNode } from 'react'
+import { createMemoryRouter } from 'react-router'
+import { RouterProvider } from 'react-router/dom'
 import { AppProviders } from '../app/AppProviders'
 import { createQueryClient } from '../app/queryClient'
 import type { Space } from '../features/spaces/space'
 import { FixedSpace } from './space'
 
 interface ProvidersOptions extends Omit<RenderOptions, 'wrapper'> {
-  /** Ruta inicial del MemoryRouter. */
+  /** Ruta inicial del router de memoria. */
   route?: string
   /** Espacio confirmado para lo que se monta fuera del shell (el shell real lo resuelve desde la URL). */
   space?: Space
@@ -29,12 +30,20 @@ export function renderWithProviders(
   })
   const user = userEvent.setup()
 
+  const ViewContext = createContext<ReactNode>(null)
+  function View() {
+    return <FixedSpace space={space}>{useContext(ViewContext)}</FixedSpace>
+  }
+  const router = createMemoryRouter([{ path: '*', element: <View /> }], {
+    initialEntries: [route],
+  })
+
   function Wrapper({ children }: { children: ReactNode }) {
     return (
       <AppProviders queryClient={queryClient}>
-        <MemoryRouter initialEntries={[route]}>
-          <FixedSpace space={space}>{children}</FixedSpace>
-        </MemoryRouter>
+        <ViewContext value={children}>
+          <RouterProvider router={router} />
+        </ViewContext>
       </AppProviders>
     )
   }

@@ -20,7 +20,7 @@ test('reference preview: insert, save, edit original, delete, and preview access
   const today = new Date().toISOString().slice(0, 10);
 
   /* 1. Crear referencia */
-  await page.getByRole('link', { name: 'Referencia', exact: true }).click();
+  await page.getByRole('link', { name: 'Referencias', exact: true }).click();
   await expect(page.getByText('No tenés elementos en esta página.')).toBeVisible();
   await page.getByRole('button', { name: 'Crear elemento', exact: true }).click();
   await page.getByRole('textbox', { name: 'Título', exact: false }).fill('Referencia E2E');
@@ -73,7 +73,7 @@ test('reference preview: insert, save, edit original, delete, and preview access
   await readVersion(page, today, '@Referencia E2E');
 
   /* 6. Editar título de la referencia original */
-  await page.getByRole('link', { name: 'Referencia', exact: true }).click();
+  await page.getByRole('link', { name: 'Referencias', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Referencia E2E' })).toBeVisible();
   await page.getByRole('button', { name: 'Editar Referencia E2E', exact: true }).click();
   await page.getByRole('textbox', { name: 'Título', exact: false }).fill('Referencia Editada');
@@ -115,7 +115,7 @@ test('reference preview: insert, save, edit original, delete, and preview access
   await expect(atom).toBeFocused();
 
   /* 12. Borrar referencia original */
-  await page.getByRole('link', { name: 'Referencia', exact: true }).click();
+  await page.getByRole('link', { name: 'Referencias', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Referencia Editada' })).toBeVisible();
   await page.getByRole('button', { name: 'Eliminar Referencia Editada', exact: true }).click();
   await page.getByRole('button', { name: 'Confirmar eliminación', exact: true }).click();

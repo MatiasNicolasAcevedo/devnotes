@@ -598,7 +598,7 @@ describe('transición de voz, referencias y bloqueos', () => {
     expect(await screen.findByRole('heading', { name: 'Importando' })).toBeVisible()
     await user.click(screen.getByRole('link', { name: 'Enlace a Personal' }))
     expect(
-      await screen.findByText(/Hay una importación en curso\. No se puede cambiar de espacio/),
+      await screen.findByText(/Hay una importación en curso\. No se puede salir de Datos/),
     ).toBeVisible()
     expect(location()).toHaveTextContent(/^\/lock$/)
     expect(requests.some((request) => request.spaces[0] === 'personal')).toBe(false)

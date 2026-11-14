@@ -14,6 +14,7 @@ export const spaceSchema = z.enum(SPACES)
 export const FIRST_SPACE: Space = 'work'
 
 export const SPACE_LABELS: Record<Space, string> = { work: 'Trabajo', personal: 'Personal' }
+export const SPACE_SELECTOR_INTENT = 'space-selector'
 
 export function isSpace(value: unknown): value is Space {
   return spaceSchema.safeParse(value).success

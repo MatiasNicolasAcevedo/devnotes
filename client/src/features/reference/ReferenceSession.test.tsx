@@ -85,7 +85,7 @@ describe.each(['logout', 'expiry', 'switch'] as const)(
           await queryClient.refetchQueries({ queryKey: authQueryKeys.session })
         })
         if (transition === 'logout')
-          await user.click(screen.getByRole('link', { name: 'Referencia' }))
+          await user.click(screen.getByRole('link', { name: 'Referencias' }))
         await screen.findByRole('heading', { name: 'Privado de B' })
         const bCalls = backend.calls.list.get(b.id)
         const csrfCalls = auth.calls.csrf

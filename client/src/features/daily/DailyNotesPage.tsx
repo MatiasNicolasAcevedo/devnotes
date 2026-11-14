@@ -296,14 +296,14 @@ function DailyNotesInner() {
         Notas diarias
       </Typography>
 
-      {/* Primera pantalla: columna del alto libre de la ventana (barra de 48 px y márgenes), donde el editor crece. */}
+      {/* Primera pantalla: alto libre de la ventana después de las barras de navegación y los márgenes. */}
       <Box
         sx={{
           display: 'flex',
           flexDirection: 'column',
           height: {
-            xs: 'max(calc(100dvh - 64px), 320px)',
-            sm: 'max(calc(100dvh - 72px), 320px)',
+            xs: 'max(calc(100dvh - var(--shell-chrome-height, 56px) - 16px), 220px)',
+            sm: 'max(calc(100dvh - var(--shell-chrome-height, 56px) - 24px), 220px)',
           },
         }}
       >

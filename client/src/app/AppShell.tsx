@@ -1,4 +1,3 @@
-import projectIdentity from '../project-identity.json'
 import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
 import CircularProgress from '@mui/material/CircularProgress'
@@ -7,7 +6,7 @@ import Link from '@mui/material/Link'
 import Stack from '@mui/material/Stack'
 import { alpha } from '@mui/material/styles'
 import Toolbar from '@mui/material/Toolbar'
-import Tooltip from '@mui/material/Tooltip'
+import useMediaQuery from '@mui/material/useMediaQuery'
 import Typography from '@mui/material/Typography'
 import { useRef, type ReactNode, type RefObject } from 'react'
 import { Link as RouterLink, matchPath, useLocation } from 'react-router'
@@ -17,12 +16,12 @@ import { useSession } from '../features/auth/sessionContext'
 import { DailyDraftWorkspace } from '../features/daily/DailyDraftNavigation'
 import { SpaceNavigation } from '../features/spaces/SpaceNavigation'
 import { SpaceProvider } from '../features/spaces/SpaceProvider'
+import { SpaceSelector } from '../features/spaces/SpaceSelector'
 import { useOptionalActiveSpace, useSpaceHref } from '../features/spaces/spaceContext'
 import { ServerStatus } from '../features/system/ServerStatus'
 import { VoiceDraftNavigation } from '../features/voice/VoiceDraftNavigation'
 import { VoiceDraftProvider } from '../features/voice/VoiceDraftProvider'
-import { BookmarkIcon, DatabaseIcon, HistoryIcon, MicIcon, NoteIcon } from '../shared/ui/icons'
-import { useIsNarrow } from '../shared/ui/useIsNarrow'
+import { BookmarkIcon, HistoryIcon, MicIcon, NoteIcon } from '../shared/ui/icons'
 import { AMBER } from './theme'
 
 /**
@@ -65,9 +64,7 @@ function SpaceWorkspaces({
             bypassLinkFlush={bypassDailyLinks}
             navigationRoot={navigationRoot}
           >
-            {(outlet) => (
-              <SpaceNavigation navigationRoot={navigationRoot}>{outlet}</SpaceNavigation>
-            )}
+            {(outlet) => <SpaceNavigation>{outlet}</SpaceNavigation>}
           </DailyDraftWorkspace>
         )}
       </VoiceDraftNavigation>
@@ -75,51 +72,72 @@ function SpaceWorkspaces({
   )
 }
 
-/** `inSpace`: el destino pertenece a un espacio y su enlace lleva el confirmado. Datos es de toda la cuenta. */
-const TABS = [
-  { label: 'Voz', to: '/voice', Icon: MicIcon, inSpace: true },
-  { label: 'Notas', to: '/notes', Icon: NoteIcon, inSpace: true },
-  { label: 'Referencia', to: '/reference', Icon: BookmarkIcon, inSpace: true },
-  { label: 'Historial', to: '/history', Icon: HistoryIcon, inSpace: true },
-  { label: 'Datos', to: '/data', Icon: DatabaseIcon, inSpace: false },
-] as const
+const VOICE_TAB = { label: 'Voz', to: '/voice', Icon: MicIcon }
+const NOTES_TAB = { label: 'Notas', to: '/notes', Icon: NoteIcon }
+const OTHER_TABS = [
+  { label: 'Referencias', to: '/reference', Icon: BookmarkIcon },
+  { label: 'Historial', to: '/history', Icon: HistoryIcon },
+]
 
-/** Pestaña de la barra: texto en ancho; icono con nombre accesible y tooltip en angosto. Sigue siendo un `Link`. */
-function NavTab({ label, to, Icon, inSpace }: (typeof TABS)[number]) {
+function PrimaryNavigation({ mobile }: { mobile: boolean }) {
   const { pathname } = useLocation()
-  const narrow = useIsNarrow()
   const href = useSpaceHref()
-  // `end: false` cubre las rutas con fecha: /notes/:date y /history/:date.
-  const active = matchPath({ path: to, end: false }, pathname) != null
+  const tabs = mobile
+    ? [NOTES_TAB, VOICE_TAB, ...OTHER_TABS]
+    : [VOICE_TAB, NOTES_TAB, ...OTHER_TABS]
 
-  const link = (
-    <Link
-      component={RouterLink}
-      to={inSpace ? href(to) : to}
-      underline="none"
-      color="inherit"
-      aria-current={active ? 'page' : undefined}
-      aria-label={narrow ? label : undefined}
-      sx={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        flexShrink: 0,
-        px: narrow ? 0.75 : 1,
-        py: 0.5,
-        borderRadius: '6px',
-        fontSize: '0.9375rem',
-        lineHeight: 1.5,
-        whiteSpace: 'nowrap',
-        '&:hover': { color: AMBER },
-        '&[aria-current="page"]': { color: AMBER, bgcolor: alpha(AMBER, 0.16) },
-        '&:focus-visible': { outline: `2px solid ${AMBER}`, outlineOffset: 2 },
-      }}
+  return (
+    <Box
+      component="nav"
+      aria-label="Navegación principal"
+      sx={
+        mobile
+          ? {
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+              flexShrink: 0,
+              bgcolor: 'background.paper',
+              borderTop: 1,
+              borderColor: 'divider',
+              pl: 'env(safe-area-inset-left)',
+              pr: 'env(safe-area-inset-right)',
+              pb: 'env(safe-area-inset-bottom)',
+            }
+          : { display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }
+      }
     >
-      {narrow ? <Icon /> : label}
-    </Link>
+      {tabs.map(({ label, to, Icon }) => (
+        <Link
+          key={to}
+          component={RouterLink}
+          to={href(to)}
+          underline="none"
+          color="inherit"
+          aria-current={matchPath({ path: to, end: false }, pathname) ? 'page' : undefined}
+          sx={{
+            display: 'flex',
+            flexDirection: mobile ? 'column' : 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            gap: 0.25,
+            minHeight: mobile ? 48 : 44,
+            px: mobile ? 0.25 : 1,
+            borderRadius: '6px',
+            fontSize: mobile ? '0.75rem' : '0.9375rem',
+            lineHeight: 1.25,
+            overflowWrap: 'anywhere',
+            '&:hover': { color: AMBER },
+            '&[aria-current="page"]': { color: AMBER, bgcolor: alpha(AMBER, 0.16) },
+            '&:focus-visible': { outline: `2px solid ${AMBER}`, outlineOffset: -2 },
+          }}
+        >
+          {mobile && <Icon />}
+          {label}
+        </Link>
+      ))}
+    </Box>
   )
-
-  return narrow ? <Tooltip title={label}>{link}</Tooltip> : link
 }
 
 function AppShellContent({
@@ -130,57 +148,47 @@ function AppShellContent({
   children: ReactNode
 }) {
   const { status } = useSession()
-  const narrow = useIsNarrow()
-  const href = useSpaceHref()
+  const desktop = useMediaQuery('(min-width: 768px)', { noSsr: true })
+  // Datos sigue siendo un enlace del shell para el coordinador de navegación diaria.
+  const menuContainer = () => navigationRoot.current
 
   return (
     <Box
       ref={navigationRoot}
-      sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column' }}
+      sx={{
+        minHeight: desktop ? '100dvh' : 0,
+        height: desktop ? 'auto' : '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        '--shell-chrome-height': desktop
+          ? 'calc(56px + env(safe-area-inset-top))'
+          : 'calc(105px + env(safe-area-inset-top) + env(safe-area-inset-bottom))',
+      }}
     >
-      <AppBar position="static" elevation={0}>
-        {/* Una sola fila de 48 px como máximo, sin salto de línea en 375 px ni en 1280 px. */}
+      <AppBar
+        position="static"
+        elevation={0}
+        sx={{ flexShrink: 0, pt: 'env(safe-area-inset-top)' }}
+      >
         <Toolbar
           variant="dense"
           disableGutters
           sx={{
-            gap: narrow ? 0.5 : 1,
-            flexWrap: 'nowrap',
-            minHeight: 48,
-            maxHeight: 48,
-            px: narrow ? 1 : 1.5,
+            gap: desktop ? 1.5 : 0.5,
+            minHeight: 56,
+            pl: 'max(8px, env(safe-area-inset-left))',
+            pr: 'max(8px, env(safe-area-inset-right))',
           }}
         >
-          {narrow ? null : (
-            <Link
-              component={RouterLink}
-              to={href('/notes')}
-              color="inherit"
-              underline="none"
-              variant="h6"
-              sx={{ fontWeight: 600, flexShrink: 0 }}
-            >
-              {projectIdentity.name}
-            </Link>
-          )}
-          <Stack
-            component="nav"
-            aria-label="Navegación principal"
-            direction="row"
-            spacing={0.25}
-            sx={{ flexWrap: 'nowrap', alignItems: 'center', flexShrink: 0 }}
-          >
-            {TABS.map((tab) => (
-              <NavTab key={tab.to} {...tab} />
-            ))}
-          </Stack>
+          <SpaceSelector />
+          {desktop && <PrimaryNavigation mobile={false} />}
           <Stack
             direction="row"
-            spacing={narrow ? 0.5 : 1}
+            spacing={desktop ? 1 : 0.5}
             sx={{ ml: 'auto', flexShrink: 0, alignItems: 'center' }}
           >
-            <ServerStatus />
-            <SessionControls />
+            <ServerStatus compact={!desktop} />
+            <SessionControls menuContainer={menuContainer} />
           </Stack>
         </Toolbar>
       </AppBar>
@@ -188,7 +196,20 @@ function AppShellContent({
         component="main"
         maxWidth="lg"
         disableGutters
-        sx={{ flexGrow: 1, px: { xs: 1, sm: 2 }, py: { xs: 1, sm: 1.5 } }}
+        sx={{
+          flexGrow: 1,
+          minHeight: 0,
+          overflowY: desktop ? undefined : 'auto',
+          pl: {
+            xs: 'max(8px, env(safe-area-inset-left))',
+            sm: 'max(16px, env(safe-area-inset-left))',
+          },
+          pr: {
+            xs: 'max(8px, env(safe-area-inset-right))',
+            sm: 'max(16px, env(safe-area-inset-right))',
+          },
+          py: { xs: 1, sm: 1.5 },
+        }}
       >
         <Stack spacing={1}>
           <SessionAlerts />
@@ -202,6 +223,7 @@ function AppShellContent({
           )}
         </Stack>
       </Container>
+      {!desktop && <PrimaryNavigation mobile />}
     </Box>
   )
 }

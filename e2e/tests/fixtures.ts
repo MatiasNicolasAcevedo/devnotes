@@ -4,7 +4,7 @@ import { readFile, writeFile, rename, unlink } from 'node:fs/promises';
 
 export const issuer = 'http://host.docker.internal:8090/default';
 /** Notas abierta en hoy: `/notes`, que la SPA canoniza a `/notes/<fecha de hoy>` al cargar la nota. */
-export const notesUrl = /^http:\/\/localhost\/notes(\/\d{4}-\d{2}-\d{2})?$/;
+export const notesUrl = /^http:\/\/localhost\/notes(\/\d{4}-\d{2}-\d{2})?\?space=work$/;
 export async function control(operation: string, identity?: string): Promise<unknown> {
   const id = randomUUID();
   await writeFile('/artifacts/control/request.tmp', JSON.stringify({ id, operation, identity }));

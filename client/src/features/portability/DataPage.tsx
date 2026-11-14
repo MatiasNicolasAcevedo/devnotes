@@ -18,6 +18,7 @@ import { Link as RouterLink } from 'react-router'
 import { ErrorAlert } from '../../shared/ui/ErrorAlert'
 import { authQueryKeys, renewCsrf, withCsrfRenewal, type AuthUser } from '../auth/api'
 import { useSession } from '../auth/sessionContext'
+import { spaceHref, SPACE_LABELS, SPACES, type Space } from '../spaces/space'
 import { useSpaceTransitionLock } from '../spaces/spaceContext'
 import {
   downloadExport,
@@ -26,6 +27,7 @@ import {
   saveBlob,
   type ImportCounts,
   type ImportPreview,
+  type ImportResult,
 } from './api'
 import { COUNT_LABELS, formatExportedAt, portabilityErrorMessage, texts } from './messages'
 
@@ -70,7 +72,7 @@ type ImportState =
   | { kind: 'previewing'; file: File }
   | { kind: 'preview'; file: File; preview: ImportPreview }
   | { kind: 'importing'; file: File; preview: ImportPreview }
-  | { kind: 'success'; counts: ImportCounts }
+  | { kind: 'success'; result: ImportResult }
   | { kind: 'error'; file: File; stage: 'preview' | 'import'; error: unknown }
 
 function PrivateData({ owner }: { owner: string }) {
@@ -170,7 +172,7 @@ function PrivateData({ owner }: { owner: string }) {
         () => (sessionIsCurrent() ? renewCsrf() : Promise.resolve()),
       )
       if (!sessionIsCurrent()) return
-      setImportState({ kind: 'success', counts: result.counts })
+      setImportState({ kind: 'success', result })
       // Todo lo privado de esta identidad quedó desactualizado: notas, historial, voz y referencias.
       void client.invalidateQueries()
     } catch (error) {
@@ -284,9 +286,13 @@ function PrivateData({ owner }: { owner: string }) {
                   {texts.previewTitle}
                 </Typography>
                 <Typography>
-                  Exportado el {formatExportedAt(importState.preview.exportedAt)}
+                  Versión {importState.preview.version} · Exportado el{' '}
+                  {formatExportedAt(importState.preview.exportedAt)}
                 </Typography>
-                <CountList counts={importState.preview.counts} label={texts.previewTitle} />
+                {importState.preview.version === 1 && (
+                  <Typography color="text.secondary">{texts.legacyHelp}</Typography>
+                )}
+                <AccountCounts result={importState.preview} />
                 {!importState.preview.accountEmpty ? (
                   <Alert severity="info" role="status" sx={{ alignSelf: 'stretch' }}>
                     {texts.notEmpty}
@@ -335,7 +341,7 @@ function PrivateData({ owner }: { owner: string }) {
                 <AlertTitle ref={successHeading} tabIndex={-1}>
                   {texts.successTitle}
                 </AlertTitle>
-                <CountList counts={importState.counts} label={texts.successTitle} links />
+                <AccountCounts result={importState.result} linkToContent />
               </Alert>
             ) : null}
           </Stack>
@@ -353,7 +359,12 @@ function PrivateData({ owner }: { owner: string }) {
         <DialogContent>
           <DialogContentText>{texts.confirmHelp}</DialogContentText>
           {importState.kind === 'preview' ? (
-            <CountList counts={importState.preview.counts} label={texts.confirmHelp} />
+            <>
+              {importState.preview.version === 1 && (
+                <DialogContentText>{texts.legacyHelp}</DialogContentText>
+              )}
+              <AccountCounts result={importState.preview} />
+            </>
           ) : null}
         </DialogContent>
         <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
@@ -367,30 +378,66 @@ function PrivateData({ owner }: { owner: string }) {
   )
 }
 
+function AccountCounts({
+  result,
+  linkToContent = false,
+}: {
+  result: ImportResult
+  linkToContent?: boolean
+}) {
+  return (
+    <Box
+      sx={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))',
+        width: '100%',
+        gap: 1.5,
+      }}
+    >
+      <CountList counts={result.counts} label={texts.total} />
+      {SPACES.map((space) => (
+        <CountList
+          key={space}
+          counts={result.countsBySpace[space]}
+          label={SPACE_LABELS[space]}
+          linkSpace={linkToContent ? space : undefined}
+        />
+      ))}
+    </Box>
+  )
+}
+
 function CountList({
   counts,
   label,
-  links = false,
+  linkSpace,
 }: {
   counts: ImportCounts
   label: string
-  links?: boolean
+  linkSpace?: Space
 }) {
   return (
-    <Box component="ul" aria-label={label} sx={{ m: 0, pl: 2.5 }}>
-      {COUNT_LABELS.map((item) => (
-        <li key={item.key}>
-          {item.label}: {counts[item.key]}
-          {links ? (
-            <>
-              {' · '}
-              <Link component={RouterLink} to={item.to}>
-                Ver en {item.link}
-              </Link>
-            </>
-          ) : null}
-        </li>
-      ))}
+    <Box>
+      <Typography variant="subtitle2">{label}</Typography>
+      <Box component="ul" aria-label={label} sx={{ m: 0, pl: 2.5 }}>
+        {COUNT_LABELS.map((item) => (
+          <li key={item.key}>
+            {item.label}: {counts[item.key]}
+            {linkSpace && counts[item.key] > 0 && (
+              <>
+                {' · '}
+                <Link
+                  component={RouterLink}
+                  to={spaceHref(item.to, linkSpace)}
+                  aria-label={`Ver en ${item.link} (${SPACE_LABELS[linkSpace]})`}
+                >
+                  Ver en {item.link}
+                </Link>
+              </>
+            )}
+          </li>
+        ))}
+      </Box>
     </Box>
   )
 }

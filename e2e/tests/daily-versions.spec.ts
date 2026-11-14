@@ -14,6 +14,7 @@ test('T-020: direct URL, reload, Hoy and empty dates keep route and editor coher
     if (['PUT', 'POST'].includes(request.method()) && new URL(request.url()).pathname.startsWith('/api/v1/daily-')) writes.push(request.url());
   });
   await page.goto(`/notes/${day19}`);
+  await expect(page).toHaveURL(`http://localhost/notes/${day19}?space=work`);
   await expect(page.getByLabel('Fecha', { exact: true })).toHaveValue(day19);
   const editor = page.getByRole('textbox', { name: 'Editor de nota diaria' });
   await expect(editor).toHaveAttribute('contenteditable', 'true');
@@ -21,7 +22,7 @@ test('T-020: direct URL, reload, Hoy and empty dates keep route and editor coher
   await chooseDate(page, day20);
   await expect(editor).toHaveText('');
   await page.reload();
-  await expect(page).toHaveURL(`http://localhost/notes/${day20}`);
+  await expect(page).toHaveURL(`http://localhost/notes/${day20}?space=work`);
   await expect(page.getByLabel('Fecha', { exact: true })).toHaveValue(day20);
   await expect(editor).toHaveAttribute('contenteditable', 'true');
   await expect(editor).toHaveText('');
@@ -31,7 +32,7 @@ test('T-020: direct URL, reload, Hoy and empty dates keep route and editor coher
     const value = new Date();
     return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
   });
-  await expect(page).toHaveURL(`http://localhost/notes/${today}`);
+  await expect(page).toHaveURL(`http://localhost/notes/${today}?space=work`);
   await expect(page.getByLabel('Fecha', { exact: true })).toHaveValue(today);
   await expect(editor).toHaveAttribute('contenteditable', 'true');
   // Completar un debounce real prueba que montar/hidratar no programa una escritura.
@@ -98,7 +99,7 @@ test('CA-05: reload and logout/login recover work and version copy', async ({ pa
   const version = await saveVersion(page, date);
   await writeWork(page, date, 'Trabajo posterior que se recupera');
   await page.reload();
-  await expect(page).toHaveURL(`http://localhost/notes/${date}`);
+  await expect(page).toHaveURL(`http://localhost/notes/${date}?space=work`);
   await expect(page.getByLabel('Fecha', { exact: true })).toHaveValue(date);
   await expect(page.getByRole('textbox', { name: 'Editor de nota diaria' })).toHaveText('Trabajo posterior que se recupera');
   await readVersion(page, date, 'Copia guardada que se recupera');

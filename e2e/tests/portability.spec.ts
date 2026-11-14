@@ -3,14 +3,14 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Locator, Page, Request, Response } from '@playwright/test';
-import { control, csrfHeaders, expect, interactiveLogin, layout, readiness, test, savedIndicator } from './fixtures';
+import { accountButton, control, csrfHeaders, expect, interactiveLogin, layout, readiness, test, savedIndicator } from './fixtures';
 import { saveVersion } from './daily-helpers';
 
 /**
  * T-045 · S-107 / XL-06. Recorrido real de ida y vuelta: A crea datos en las cuatro colecciones y exporta su
  * Excel; B, cuenta vacía y simultánea, lo previsualiza, confirma e importa, y ve lo mismo con IDs propios.
- * Reimportar en B se rechaza y A queda intacta. Chromium real con API/DB/OIDC propios reales, sin page.route ni
- * interceptores sobre la API propia. El archivo se descarga con el evento download a un directorio temporal del
+ * Reimportar en B se rechaza y A queda intacta. Chromium usa API/DB/OIDC propios y entrega intacta la respuesta
+ * de importación retenida con CDP. El archivo se descarga con el evento download a un directorio temporal del
  * test, fuera de los artefactos exportados, y se borra al terminar.
  */
 test.describe.configure({ timeout: 180_000 });
@@ -26,6 +26,10 @@ const importsPath = '/api/v1/portability/imports';
 const xlsx = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 const href = 'https://jira.ejemplo.test/browse/ABC-1279';
 const counts = { references: 1, dailyNotes: 1, dailyVersions: 1, voiceNotes: 1 };
+const countsBySpace = {
+  work: counts,
+  personal: { references: 0, dailyNotes: 0, dailyVersions: 0, voiceNotes: 0 },
+};
 const countLines = ['Notas diarias: 1', 'Versiones guardadas: 1', 'Notas de voz: 1', 'Referencias: 1'];
 
 function on(path: string, method: string) {
@@ -60,9 +64,10 @@ async function account(page: Page, date: string) {
 }
 
 async function openData(page: Page) {
-  await page.getByRole('link', { name: 'Datos', exact: true }).click();
+  await accountButton(page).click();
+  await page.getByRole('menuitem', { name: 'Datos de la cuenta', exact: true }).click();
   await expect(page).toHaveURL(`${origin}/data`);
-  await expect(page.getByRole('heading', { level: 1, name: 'Datos' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: 'Datos de la cuenta' })).toBeVisible();
 }
 
 /** La nota visible: marca, enlace, separador de 50 % y átomo resuelto a la referencia de esa cuenta. */
@@ -81,7 +86,7 @@ async function expectNote(editor: Locator, marker: string, title: string, refere
 async function expectPreview(page: Page) {
   const region = page.getByRole('region', { name: 'Contenido del archivo' });
   await expect(region).toBeVisible();
-  for (const line of countLines) await expect(region.getByText(line, { exact: true })).toBeVisible();
+  for (const line of countLines) await expect(region.getByRole('list', { name: 'Total de la cuenta' }).getByText(line, { exact: true })).toBeVisible();
   return region;
 }
 
@@ -96,7 +101,7 @@ test('portability: A exports, empty B previews and imports the same data, reimpo
   const voiceText = `Idea ficticia ${tag} escrita a mano.`;
 
   /* 1. A crea la referencia. */
-  await page.getByRole('link', { name: 'Referencia', exact: true }).click();
+  await page.getByRole('link', { name: 'Referencias', exact: true }).click();
   await expect(page.getByText('No tenés elementos en esta página.')).toBeVisible();
   await page.getByRole('button', { name: 'Crear elemento', exact: true }).click();
   await page.getByRole('textbox', { name: 'Título', exact: false }).fill(title);
@@ -152,7 +157,7 @@ test('portability: A exports, empty B previews and imports the same data, reimpo
 
   /* 1. A crea una nota de voz escribiendo texto, sin micrófono. */
   await page.getByRole('link', { name: 'Voz', exact: true }).click();
-  await expect(page).toHaveURL(`${origin}/voice`);
+  await expect(page).toHaveURL(`${origin}/voice?space=work`);
   await page.getByRole('textbox', { name: 'Texto de la nota' }).fill(voiceText);
   const voiceCreation = page.waitForResponse(on(voiceNotes, 'POST'));
   await page.getByRole('button', { name: 'Guardar', exact: true }).click();
@@ -201,7 +206,7 @@ test('portability: A exports, empty B previews and imports the same data, reimpo
     const previewResponse = await previewed;
     expect(previewResponse.status()).toBe(200);
     expect(previewResponse.request().headers()['content-type']).toMatch(/^multipart\/form-data; boundary=/);
-    expect(await previewResponse.json()).toMatchObject({ format: 'devnotes-xlsx', version: 1, counts, accountEmpty: true });
+    expect(await previewResponse.json()).toMatchObject({ format: 'devnotes-xlsx', version: 2, counts, countsBySpace, accountEmpty: true });
     await expectPreview(bPage);
     for (const path of [references, voiceNotes, dailyNotes, dailyVersions]) {
       expect((await json(bPage, path)).totalElements, `Preview wrote nothing: ${path}`).toBe(0);
@@ -210,19 +215,67 @@ test('portability: A exports, empty B previews and imports the same data, reimpo
     await bPage.getByRole('button', { name: 'Importar', exact: true }).click();
     const confirm = bPage.getByRole('dialog', { name: '¿Importar este archivo?' });
     await expect(confirm).toBeVisible();
-    for (const line of countLines) await expect(confirm.getByText(line, { exact: true })).toBeVisible();
+    for (const line of countLines) await expect(confirm.getByRole('list', { name: 'Total de la cuenta' }).getByText(line, { exact: true })).toBeVisible();
     const confirmButton = confirm.getByRole('button', { name: 'Confirmar importación', exact: true });
     const bounds = await confirmButton.boundingBox();
     expect(bounds !== null && bounds.x >= 0 && bounds.x + bounds.width <= bPage.viewportSize()!.width,
       'Confirm action fits within the viewport').toBe(true);
+    // Retiene la respuesta real en Chromium hasta comprobar las tres transiciones de SPA.
+    const browserSession = await bPage.context().newCDPSession(bPage);
+    let pausedRequest: string | undefined;
+    await browserSession.send('Fetch.enable', {
+      patterns: [{ urlPattern: `${origin}${importsPath}`, requestStage: 'Response' }],
+    });
+    browserSession.on('Fetch.requestPaused', event => { pausedRequest = event.requestId; });
+    const importRequests: Request[] = [];
+    const recordImport = (request: Request) => {
+      if (on(importsPath, 'POST')(request)) importRequests.push(request);
+    };
+    bPage.on('request', recordImport);
     const imported = bPage.waitForResponse(on(importsPath, 'POST'));
-    await confirmButton.click();
+    // Si falla una aserción con la respuesta aún retenida, el cierre de la página también rechaza esta espera.
+    void imported.catch(() => {});
+    try {
+      await confirmButton.click();
+      await expect.poll(() => importRequests.length).toBe(1);
+      await expect.poll(() => pausedRequest).toBeDefined();
+      await expect(bPage.getByText('Importando…', { exact: true })).toBeVisible();
+      const dataHeading = bPage.getByRole('heading', { level: 1, name: 'Datos de la cuenta' });
+      const mountedHeading = await dataHeading.elementHandle();
+      await bPage.getByRole('link', { name: 'Notas', exact: true }).click();
+      await expect(bPage).toHaveURL(`${origin}/data`);
+      await expect(bPage.getByText(/No se puede salir de Datos/)).toBeVisible();
+      const selector = bPage.getByRole('button', { name: 'Espacio: Trabajo' });
+      await selector.click();
+      const menu = bPage.getByRole('menu', { name: 'Cambiar de espacio' });
+      await expect(menu).toHaveAccessibleDescription('Hay una importación en curso.');
+      await expect(menu.getByRole('menuitemradio', { name: 'Personal' })).toBeDisabled();
+      await bPage.keyboard.press('Escape');
+      await expect(selector).toBeVisible();
+      const pops = await bPage.evaluateHandle(() => {
+        const paths: string[] = [];
+        window.addEventListener('popstate', () => paths.push(location.pathname));
+        history.back();
+        return paths;
+      });
+      await expect.poll(() => pops.jsonValue()).toEqual([expect.stringMatching(/^\/notes/), '/data']);
+      await pops.dispose();
+      await expect(bPage).toHaveURL(`${origin}/data`);
+      expect(await mountedHeading.evaluate(element => element.isConnected)).toBe(true);
+      await expect(bPage.getByText('Importando…', { exact: true })).toBeVisible();
+      await expect(bPage.getByText('Importación completa', { exact: true })).toHaveCount(0);
+      await browserSession.send('Fetch.continueResponse', { requestId: pausedRequest! });
+    } finally {
+      await browserSession.detach();
+    }
     const importResponse = await imported;
     expect(importResponse.status()).toBe(201);
-    expect(await importResponse.json()).toEqual({ counts });
+    expect(await importResponse.json()).toEqual({ counts, countsBySpace });
     await expect(bPage.getByText('Importación completa', { exact: true })).toBeVisible();
+    expect(importRequests).toHaveLength(1);
+    bPage.off('request', recordImport);
     for (const name of ['Ver en Notas', 'Ver en Historial', 'Ver en Voz', 'Ver en Referencias']) {
-      await expect(bPage.getByRole('link', { name, exact: true })).toBeVisible();
+      await expect(bPage.getByRole('link', { name: name + ' (Trabajo)', exact: true })).toBeVisible();
     }
     await layout(bPage);
 
@@ -240,8 +293,8 @@ test('portability: A exports, empty B previews and imports the same data, reimpo
     expect(copy.voice).toEqual({ ...before.voice, id: copy.voice.id, revision: 1 });
 
     /* 3. B lo ve en pantalla: referencia, nota con enlace/separador/átomo resuelto, historial y voz. */
-    await bPage.getByRole('link', { name: 'Ver en Referencias', exact: true }).click();
-    await expect(bPage).toHaveURL(`${origin}/reference`);
+    await bPage.getByRole('link', { name: 'Ver en Referencias (Trabajo)', exact: true }).click();
+    await expect(bPage).toHaveURL(`${origin}/reference?space=work`);
     await expect(bPage.getByRole('heading', { name: title, exact: true })).toBeVisible();
     await expect(bPage.getByText(description, { exact: true })).toBeVisible();
     await bPage.goto(`/notes/${date}`);
@@ -255,14 +308,14 @@ test('portability: A exports, empty B previews and imports the same data, reimpo
     await bPage.keyboard.press('Escape');
     await layout(bPage);
     await bPage.getByRole('link', { name: 'Historial', exact: true }).click();
-    await expect(bPage).toHaveURL(`${origin}/history`);
+    await expect(bPage).toHaveURL(`${origin}/history?space=work`);
     await bPage.getByRole('link', { name: new RegExp(date.split('-').reverse().join('/')) }).click();
-    await expect(bPage).toHaveURL(`${origin}/history/${date}`);
+    await expect(bPage).toHaveURL(`${origin}/history/${date}?space=work`);
     const bVersion = bPage.getByRole('textbox', { name: 'Versión de solo lectura' });
     await expect(bVersion).toHaveAttribute('contenteditable', 'false');
     await expectNote(bVersion, marker, title, copy.reference.id);
     await bPage.getByRole('link', { name: 'Voz', exact: true }).click();
-    await expect(bPage).toHaveURL(`${origin}/voice`);
+    await expect(bPage).toHaveURL(`${origin}/voice?space=work`);
     const bVoice = bPage.getByRole('button', { name: new RegExp(`Idea ficticia ${tag}`) });
     await expect(bVoice).toBeVisible();
     await bVoice.click();

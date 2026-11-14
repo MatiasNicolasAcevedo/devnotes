@@ -2,12 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-063](tasks/T-063-space-client-context.md) · Contexto privado en rutas, transporte y borradores ([S-109](specs/S-109-private-spaces.md)) |
+| Tarea y contrato | [T-064](tasks/T-064-space-navigation.md) · Selector de espacio y navegación Windows/Android ([S-109](specs/S-109-private-spaces.md)) |
 | Estado | `mergeable` |
-| Acción actual | Revisión favorable de PR66 según la [revisión de T-063](tasks/T-063-space-client-context.md#revisión-independiente-r1). El merge requiere autorización expresa del dueño. Paso intermedio sin selector visual (T-064): no desplegar. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-063-space-client-context` · [PR66](https://github.com/MatiasNicolasAcevedo/devnotes/pull/66) |
+| Acción actual | [R2 favorable de PR67](tasks/T-064-space-navigation.md#revisión-independiente-r2). El merge requiere autorización expresa del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-064-space-navigation` · [PR67](https://github.com/MatiasNicolasAcevedo/devnotes/pull/67) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+
+[T-063](tasks/T-063-space-client-context.md#conciliación) conciliada como `done` tras PR66 MERGED.
 
 [T-062](tasks/T-062-xlsx-spaces-api.md#conciliación) conciliada como `done` tras PR65 MERGED (veredicto R1 `APROBADO` sobre `22cb1c3`, squash `40361d8`).
 
@@ -110,5 +112,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera en rol reviewer en una sesión nueva, distinta de la implementación, y revisá PR66 de MatiasNicolasAcevedo/devnotes (T-063, docs/tasks/T-063-space-client-context.md, S-109) sobre el HEAD y la base publicados, en un checkout aislado. Comprobá verify-required del HEAD vigente y que el diff cumpla solo el contrato: espacio fijo en URL y preferencia (enum, memoria si el almacenamiento falla, borrado al cerrar sesión, sin evento storage), coordinador único de transición con las guardias de S-109, space en cada request persistente y en las keys owner+space de diario, versiones, referencias y voz, contexto capturado ante respuestas tardías, URL inválida que nunca lee ni escribe, y sin selector visual. Ejecutá desde client/ el npm test dirigido de la tarea, typecheck, lint, format:check y build, y desde la raíz docs-check, git diff --check y classify-diff. Registrá el veredicto en la tarea y en PR66; no mergees sin autorización según docs/AUTONOMY.md. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. No ejecutes T-064 ni despliegues; el ensayo de Render requiere autorización expresa sobre SHA y ventana.
+Actuá como Frontera en rol reviewer en una sesión nueva e independiente de la implementación y de R1. Revisá R2 de T-064 (S-109) en PR67 de MatiasNicolasAcevedo/devnotes, rama codex/t-064-space-navigation. Confirmá en GitHub el HEAD vigente, descendiente del commit técnico 612e8156c2c6f35edbee9f7af85c3b41cf7cabcb, la base main 1a3e95d6de17d1a4e9b3fcc1118637704f219cb9 y verify-required SUCCESS. Leé docs/agents/reviewer.md y la corrección de R1 en docs/tasks/T-064-space-navigation.md. Contrastá B1–B3 y su evidencia con las fuentes publicadas, ejecutá los dirigidos que requiera la revisión y publicá el veredicto R2 ligado a HEAD/base. FULL/STARTER DIFERIDO POR EL DUEÑO. Preservá el checkout principal, trailer/ y los worktrees ajenos. El merge y el ensayo de Render requieren autorización expresa del dueño. El ensayo de Render requiere SHA y ventana. T-065 espera el cierre de T-064.
 ```

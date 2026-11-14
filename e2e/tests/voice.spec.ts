@@ -37,7 +37,7 @@ function countPosts(page: Page) {
 
 async function openVoice(page: Page) {
   await page.getByRole('link', { name: 'Voz', exact: true }).click();
-  await expect(page).toHaveURL(`${origin}/voice`);
+  await expect(page).toHaveURL(`${origin}/voice?space=work`);
   await expect(page.getByRole('heading', { level: 1, name: 'Notas de voz' })).toBeVisible();
 }
 
@@ -183,19 +183,19 @@ test('voice: capture, transcribe, edit, copy, save, reload, second note, correct
   await expect(page.getByText('Hay cambios pendientes en la nota de voz.')).toBeVisible();
   await expect(page.locator('.daily-editor-content')).toHaveCount(0);
   await page.getByRole('button', { name: 'Volver a voz', exact: true }).click();
-  await expect(page).toHaveURL(`${origin}/voice`);
+  await expect(page).toHaveURL(`${origin}/voice?space=work`);
   await expect(text).toHaveValue('Borrador pendiente de voz');
   await page.getByRole('link', { name: 'Historial', exact: true }).click();
-  await expect(page).toHaveURL(`${origin}/history`);
+  await expect(page).toHaveURL(`${origin}/history?space=work`);
   await page.getByRole('button', { name: 'Descartar y continuar', exact: true }).click();
   await expect(page.getByText('Hay cambios pendientes en la nota de voz.')).toHaveCount(0);
-  await expect(page).toHaveURL(`${origin}/history`);
+  await expect(page).toHaveURL(`${origin}/history?space=work`);
 
   // Daily y referencia siguen disponibles; volver a voz muestra un borrador vacío y la nota restante.
   await page.getByRole('link', { name: 'Notas', exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'Editor de nota diaria' })).toHaveAttribute('contenteditable', 'true');
-  await page.getByRole('link', { name: 'Referencia', exact: true }).click();
-  await expect(page).toHaveURL(`${origin}/reference`);
+  await page.getByRole('link', { name: 'Referencias', exact: true }).click();
+  await expect(page).toHaveURL(`${origin}/reference?space=work`);
   await openVoice(page);
   await expect(text).toHaveValue('');
   await expect(secondItem).toBeVisible();

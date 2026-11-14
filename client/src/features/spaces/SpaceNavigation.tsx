@@ -4,14 +4,27 @@ import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
-import { useLocation, useNavigate } from 'react-router'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import {
+  NavigationType,
+  useBlocker,
+  useLocation,
+  useNavigate,
+  type BlockerFunction,
+} from 'react-router'
 import { useSession } from '../auth/sessionContext'
 import { useOptionalDailyDraftContext } from '../daily/DailyDraftProvider'
 import { formatDateLocal } from '../daily/dateUtils'
 import { voiceNoteTextSchema, type SaveOutcome } from '../voice/useVoiceDraft'
 import { useVoiceDraftContext } from '../voice/voiceDraftContext'
-import { readSpaceParam, searchWithSpace, SPACE_LABELS, SPACES, type Space } from './space'
+import {
+  readSpaceParam,
+  searchWithSpace,
+  SPACE_LABELS,
+  SPACE_SELECTOR_INTENT,
+  SPACES,
+  type Space,
+} from './space'
 import { useSpaceContext } from './spaceContext'
 
 /**
@@ -23,19 +36,11 @@ export type SpaceTransitionStep =
   'locked' | 'version' | 'daily-flush' | 'daily-failed' | 'voice-stop' | 'voice-confirm' | 'commit'
 
 /**
- * Coordinador único de transición entre espacios (S-109). Cubre enlaces, Atrás/Adelante, rutas escritas a mano y el
- * futuro selector: todos cambian la URL y llegan aquí con la misma decisión. Mientras el destino no se confirma, el
- * espacio del contexto sigue siendo el de origen, con su borrador, su cola y sus keys; el destino no se monta ni lee
- * nada. Una URL sin espacio espera su canonicalización; una inválida muestra «Espacio no válido» y nunca carga ni
- * escribe en ningún espacio.
+ * Coordinador único de transición entre espacios (S-109). Retiene la navegación del selector antes de publicar
+ * su URL y protege el resultado de Datos durante la importación. Conserva el espacio confirmado y sus borradores
+ * hasta resolver las guardias, también al llegar a una URL de otro espacio por el historial.
  */
-export function SpaceNavigation({
-  children,
-  navigationRoot,
-}: {
-  children: ReactNode
-  navigationRoot?: RefObject<HTMLDivElement | null>
-}) {
+export function SpaceNavigation({ children }: { children: ReactNode }) {
   const ctx = useSpaceContext()
   const daily = useOptionalDailyDraftContext()
   const voice = useVoiceDraftContext()
@@ -44,9 +49,33 @@ export function SpaceNavigation({
   const location = useLocation()
   const { requested, space: origin, commit, lockReason } = ctx
 
+  const [blockedNotice, setBlockedNotice] = useState<string | null>(null)
+  if (blockedNotice && !lockReason) setBlockedNotice(null)
+  const shouldBlock = useCallback<BlockerFunction>(
+    ({ currentLocation, nextLocation, historyAction }) => {
+      if (ctx.owner && lockReason && currentLocation.pathname !== nextLocation.pathname) {
+        setBlockedNotice(lockReason)
+        return true
+      }
+      return (
+        ctx.owner !== '' &&
+        origin !== null &&
+        historyAction === NavigationType.Push &&
+        nextLocation.state === SPACE_SELECTOR_INTENT
+      )
+    },
+    [ctx.owner, lockReason, origin],
+  )
+  const blocker = useBlocker(shouldBlock)
+  const selectorIntent =
+    blocker.state === 'blocked' && blocker.location.state === SPACE_SELECTOR_INTENT
+      ? readSpaceParam(blocker.location.search)
+      : null
+  const keepingOrigin = selectorIntent?.kind === 'valid' && !blockedNotice
+  const destination = keepingOrigin ? selectorIntent : requested
   const target =
-    requested?.kind === 'valid' && origin !== null && requested.space !== origin
-      ? requested.space
+    destination?.kind === 'valid' && origin !== null && destination.space !== origin
+      ? destination.space
       : null
 
   // Estados de un intento: se reinician al cambiar de destino (incluido volver al origen).
@@ -97,46 +126,32 @@ export function SpaceNavigation({
     if (step === 'voice-stop') stopForNavigation()
   }, [step, stopForNavigation])
 
-  // Sin guardias pendientes: se confirma antes de pintar, para que el destino nunca vea el contexto del origen.
+  // Tras las guardias del selector, publicar la URL. Luego confirmar el espacio antes de pintar el destino.
   useLayoutEffect(() => {
-    if (step === 'commit' && target) commit(target)
-  }, [step, target, commit])
+    if (step !== 'commit' || !target) return
+    if (keepingOrigin && blocker.state === 'blocked') blocker.proceed()
+    else commit(target)
+  }, [step, target, commit, keepingOrigin, blocker])
 
-  const [blockedNotice, setBlockedNotice] = useState<string | null>(null)
-  if (blockedNotice && !lockReason) setBlockedNotice(null)
   useEffect(() => {
-    const root = navigationRoot?.current
-    if (!root || !lockReason || origin === null) return
-    // Un enlace a otro espacio desmontaría la operación en curso: se queda aquí y se explica por qué.
-    const captureNavigation = (event: MouseEvent) => {
-      if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey)
-        return
-      const link = event.target instanceof Element ? event.target.closest('a[href]') : null
-      if (!(link instanceof HTMLAnchorElement) || link.target === '_blank') return
-      const destination = new URL(link.href)
-      if (destination.origin !== window.location.origin) return
-      const param = readSpaceParam(destination.search)
-      if (param.kind === 'valid' && param.space === origin) return
-      event.preventDefault()
-      event.stopPropagation()
-      setBlockedNotice(lockReason)
-    }
-    root.addEventListener('click', captureNavigation, true)
-    return () => root.removeEventListener('click', captureNavigation, true)
-  }, [navigationRoot, lockReason, origin])
+    if (blocker.state === 'blocked' && blockedNotice) blocker.reset()
+  }, [blocker, blockedNotice])
 
-  const backToOrigin = () => void navigate(ctx.originHref(), { replace: true })
-
-  if (!ctx.owner || requested === null) {
-    return (
-      <>
-        {blockedNotice && <LockNotice reason={blockedNotice} />}
-        {children}
-      </>
-    )
+  const backToOrigin = () => {
+    if (keepingOrigin && blocker.state === 'blocked') blocker.reset()
+    else void navigate(ctx.originHref(), { replace: true })
   }
+  // La pantalla de origen conserva su posición en el árbol al agregar o quitar el aviso.
+  const withOrigin = (notice?: ReactNode) => (
+    <>
+      {notice}
+      {children}
+    </>
+  )
+  if ((!ctx.owner || requested === null) && !keepingOrigin)
+    return withOrigin(blockedNotice ? <LockNotice reason={blockedNotice} /> : undefined)
 
-  if (requested.kind === 'invalid') {
+  if (requested?.kind === 'invalid' && !keepingOrigin) {
     const open = (space: Space) =>
       void navigate(
         {
@@ -164,37 +179,39 @@ export function SpaceNavigation({
     )
   }
 
-  if (requested.kind === 'missing' || origin === null) return <Busy text="Abriendo espacio…" />
-  if (!target || !step) return children
+  if (requested?.kind === 'missing' || (!keepingOrigin && origin === null))
+    return <Busy text="Abriendo espacio…" />
+  if (!origin || !target || !step) return withOrigin()
 
+  const showGuard = (notice: ReactNode) => (keepingOrigin ? withOrigin(notice) : notice)
   const from = SPACE_LABELS[origin]
   const to = SPACE_LABELS[target]
   const back = <Button onClick={backToOrigin}>Volver a {from}</Button>
 
   switch (step) {
     case 'locked':
-      return (
+      return showGuard(
         <Alert severity="info" role="status">
           {lockReason} El cambio a {to} espera a que termine.
           <Actions>{back}</Actions>
-        </Alert>
+        </Alert>,
       )
     case 'version':
-      return (
+      return showGuard(
         <Alert severity="info" role="status">
           Se está guardando una versión de la nota del {formatDateLocal(daily!.activeDate)} en{' '}
           {from}. El cambio a {to} espera su resultado.
           <Actions>{back}</Actions>
-        </Alert>
+        </Alert>,
       )
     case 'daily-flush':
-      return (
+      return showGuard(
         <Busy
           text={`Guardando la nota del ${formatDateLocal(daily!.activeDate)} en ${from} antes de cambiar a ${to}…`}
-        />
+        />,
       )
     case 'daily-failed':
-      return (
+      return showGuard(
         <Alert severity="warning" role="alert">
           No se pudo guardar la nota del {formatDateLocal(daily!.activeDate)} en {from}. El borrador
           se conserva en {from} y el cambio a {to} no se hizo.
@@ -202,10 +219,10 @@ export function SpaceNavigation({
             {back}
             <Button onClick={() => setDailyFailed(false)}>Reintentar</Button>
           </Actions>
-        </Alert>
+        </Alert>,
       )
     case 'voice-stop':
-      return <Busy text="Deteniendo la grabación sin transcribir…" />
+      return showGuard(<Busy text="Deteniendo la grabación sin transcribir…" />)
     case 'voice-confirm': {
       const audioPending = draft.state.captureResult != null
       const writing =
@@ -226,7 +243,7 @@ export function SpaceNavigation({
         setVoiceSaving(false)
         if (outcome !== 'saved') setVoiceOutcome(outcome)
       }
-      return (
+      return showGuard(
         <Alert severity="warning" role="alert">
           <AlertTitle>Hay cambios sin guardar en la nota de voz de {from}</AlertTitle>
           {audioPending &&
@@ -245,11 +262,11 @@ export function SpaceNavigation({
               Seguir aquí
             </Button>
           </Actions>
-        </Alert>
+        </Alert>,
       )
     }
     case 'commit':
-      return <Busy text={`Abriendo ${to}…`} />
+      return showGuard(<Busy text={`Abriendo ${to}…`} />)
   }
 }
 
@@ -273,7 +290,7 @@ function Busy({ text }: { text: string }) {
 function LockNotice({ reason }: { reason: string }) {
   return (
     <Alert severity="info" role="status">
-      {reason} No se puede cambiar de espacio hasta que termine.
+      {reason} No se puede salir de Datos ni cambiar de espacio hasta que termine.
     </Alert>
   )
 }

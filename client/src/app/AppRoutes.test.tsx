@@ -8,16 +8,14 @@ import { buildAuthUser, problemResponse } from '../test/factories'
 import { installAuthBackend } from '../test/msw/authBackend'
 import { server } from '../test/msw/server'
 import { renderWithProviders } from '../test/render'
-import { NARROW_VIEWPORT, setViewportWidth } from '../test/viewport'
 import { AppRoutes } from './AppRoutes'
 
 const nav = () => screen.getByRole('navigation', { name: 'Navegación principal' })
 const TABS = [
   ['Voz', '/voice'],
   ['Notas', '/notes'],
-  ['Referencia', '/reference'],
+  ['Referencias', '/reference'],
   ['Historial', '/history'],
-  ['Datos', '/data'],
 ]
 
 /** Las pantallas privadas consultan su API aunque las visite alguien sin sesión: el server responde 401. */
@@ -70,17 +68,7 @@ describe('AppRoutes', () => {
     expect(screen.getByLabelText('Fecha')).toHaveValue(todayLocal())
   })
 
-  it(`el nombre ${projectIdentity.name} de la barra enlaza a /notes`, async () => {
-    installAuthBackend()
-    renderWithProviders(<AppRoutes />, { route: '/login' })
-
-    expect(await screen.findByRole('link', { name: `${projectIdentity.name}` })).toHaveAttribute(
-      'href',
-      '/notes',
-    )
-  })
-
-  it('la barra ordena Voz, Notas, Referencia, Historial y Datos, sin «Inicio»', () => {
+  it('la barra de escritorio ordena Voz, Notas, Referencias e Historial, sin «Inicio»', () => {
     installAuthBackend()
     renderWithProviders(<AppRoutes />, { route: '/login' })
 
@@ -97,8 +85,7 @@ describe('AppRoutes', () => {
     ['/history', 'Historial'],
     ['/history/2024-06-15', 'Historial'],
     ['/voice', 'Voz'],
-    ['/reference', 'Referencia'],
-    ['/data', 'Datos'],
+    ['/reference', 'Referencias'],
   ])('en %s solo la pestaña «%s» lleva aria-current', async (route, active) => {
     installAuthBackend()
     installVisitorApis()
@@ -109,33 +96,6 @@ describe('AppRoutes', () => {
       .filter((link) => link.getAttribute('aria-current') === 'page')
     expect(current.map((link) => link.textContent)).toEqual([active])
     await screen.findByRole('link', { name: 'Ingresar' })
-  })
-
-  it('en angosto las pestañas son iconos con nombre accesible y se oculta el nombre de la aplicación', () => {
-    setViewportWidth(NARROW_VIEWPORT)
-    installAuthBackend()
-    renderWithProviders(<AppRoutes />, { route: '/login' })
-
-    const links = within(nav()).getAllByRole('link')
-    expect(
-      links.map((link) => [link.getAttribute('aria-label'), link.getAttribute('href')]),
-    ).toEqual(TABS)
-    for (const link of links) {
-      expect(link).toHaveTextContent('')
-      expect(link.querySelector('svg')).not.toBeNull()
-    }
-    expect(screen.queryByRole('link', { name: `${projectIdentity.name}` })).not.toBeInTheDocument()
-  })
-
-  it('en angosto la pestaña activa conserva aria-current y muestra su nombre al pasar el puntero', async () => {
-    setViewportWidth(NARROW_VIEWPORT)
-    installAuthBackend()
-    const { user } = renderWithProviders(<AppRoutes />, { route: '/notes/2024-06-15' })
-
-    const notes = within(nav()).getByRole('link', { name: 'Notas' })
-    expect(notes).toHaveAttribute('aria-current', 'page')
-    await user.hover(notes)
-    expect(await screen.findByRole('tooltip')).toHaveTextContent('Notas')
   })
 
   it('una ruta desconocida muestra la página no encontrada con vuelta a Notas', async () => {
@@ -173,15 +133,18 @@ describe('Página /voice', () => {
 })
 
 describe('Página /data', () => {
-  it('el enlace «Datos» de la barra lleva a la pantalla de exportar e importar', async () => {
+  it('el menú de cuenta lleva a la pantalla de exportar e importar', async () => {
     installAuthBackend({ user: buildAuthUser() })
     const { user } = renderWithProviders(<AppRoutes />, { route: '/login' })
 
-    const link = within(nav()).getByRole('link', { name: 'Datos' })
+    await user.click(await screen.findByRole('button', { name: /^Cuenta de / }))
+    const link = screen.getByRole('menuitem', { name: 'Datos de la cuenta' })
     expect(link).toHaveAttribute('href', '/data')
     await user.click(link)
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Datos' })).toBeVisible()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Datos de la cuenta' }),
+    ).toBeVisible()
     expect(await screen.findByRole('button', { name: 'Descargar Excel' })).toBeVisible()
     expect(screen.getByLabelText('Archivo de respaldo (.xlsx)')).toHaveAttribute('accept', '.xlsx')
   })
@@ -190,7 +153,9 @@ describe('Página /data', () => {
     installAuthBackend()
     renderWithProviders(<AppRoutes />, { route: '/data' })
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Datos' })).toBeVisible()
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Datos de la cuenta' }),
+    ).toBeVisible()
     expect(await screen.findByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute(
       'href',
       '/login',

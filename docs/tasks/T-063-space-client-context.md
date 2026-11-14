@@ -1,6 +1,6 @@
 ---
 id: T-063
-status: mergeable
+status: done
 priority: P1
 size: L
 milestone: M5
@@ -118,6 +118,10 @@ Observaciones no bloqueantes, para que T-064/T-065 las tengan a la vista sin cam
 3. Con una importación en vuelo solo se retienen los enlaces a otro espacio; salir de Datos hacia otra ruta del mismo espacio desmonta la pantalla como antes de esta tarea.
 
 **Resultado favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El veredicto canónico se publica en PR66 con el HEAD documental y la base vigentes, después de comprobar la CI de ese par. No se mergea sin autorización expresa del dueño según [AUTONOMY](../AUTONOMY.md#revisión-y-merge). Sin selector visual ni Datos v2 hasta T-064: no desplegar; el ensayo de Render requiere autorización expresa sobre SHA y ventana.
+
+## Conciliación
+
+GitHub confirmó [PR66](https://github.com/MatiasNicolasAcevedo/devnotes/pull/66) MERGED contra `main` el 2026-11-14T02:57:54Z (2026-11-13 en Buenos Aires). Squash `1a3e95d6de17d1a4e9b3fcc1118637704f219cb9`, HEAD `af955050d442dbb0784270a169401abd63c7375b` con [veredicto R1 APROBADO](https://github.com/MatiasNicolasAcevedo/devnotes/pull/66#issuecomment-6870566127) y `verify-required` SUCCESS. El fetch confirmó el squash como punta de `origin/main` y base de T-064. T-063 queda `done`. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
 
 ## Cierre y siguiente tarea
 

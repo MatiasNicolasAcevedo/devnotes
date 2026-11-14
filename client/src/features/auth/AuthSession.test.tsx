@@ -145,7 +145,7 @@ afterEach(() => {
 })
 
 describe('Sesión en el shell', () => {
-  it('muestra el estado de carga y después el menú de usuario con el nombre y «Cerrar sesión», sin roles ni selector', async () => {
+  it('muestra el estado de carga y después el menú con el nombre, Datos y Cerrar sesión', async () => {
     installPrivateApi(installAuthBackend({ user: personaA }))
     const releaseMe = holdNext('get', AUTH_ME_PATH)
 
@@ -167,7 +167,7 @@ describe('Sesión en el shell', () => {
       within(menu)
         .getAllByRole('menuitem')
         .map((item) => item.textContent),
-    ).toEqual(['Persona A', 'Cerrar sesión'])
+    ).toEqual(['Persona A', 'Datos de la cuenta', 'Cerrar sesión'])
     expect(within(menu).getByText('Persona A').closest('li')).toHaveAttribute(
       'aria-disabled',
       'true',
