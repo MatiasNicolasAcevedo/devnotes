@@ -2,12 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-060](tasks/T-060-voice-spaces.md) · Biblioteca de voz por espacio ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `mergeable` |
-| Acción actual | Completar el cierre de PR63 según la [revisión de T-060](tasks/T-060-voice-spaces.md#revisión-independiente-r1). Confirmado MERGED, la siguiente sesión concilia T-060 y toma T-061. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-060-voice-spaces` · [PR63](https://github.com/MatiasNicolasAcevedo/devnotes/pull/63) |
+| Tarea y contrato | [T-061](tasks/T-061-xlsx-spaces-codec.md) · Formato XLSX v2 y lectura de respaldos v1 ([S-109](specs/S-109-private-spaces.md)) |
+| Estado | `in_progress` |
+| Acción actual | Implementar el códec v1/v2 según el [checkpoint de T-061](tasks/T-061-xlsx-spaces-codec.md#checkpoint-vigente), con pruebas dirigidas y PR contra `main` para revisión independiente. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-061-xlsx-spaces-codec` · PR pendiente |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+
+[T-060](tasks/T-060-voice-spaces.md#conciliación) conciliada como `done` tras PR63 MERGED.
 
 [T-059](tasks/T-059-reference-spaces.md#conciliación) conciliada como `done` tras PR62 MERGED.
 
@@ -104,5 +106,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Verificá PR62 según la comprobación MERGED de docs/agents/implementer.md y docs/agents/merger.md. Si sigue abierto, retomá el cierre de T-059 según AUTONOMY y terminá la sesión al cerrar ese PR. Confirmado MERGED, actuá como Frontera en rol implementer en una sesión nueva, conciliá T-059 y tomá T-060 (docs/tasks/T-060-voice-spaces.md) en codex/t-060-voice-spaces, sobre main publicado. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+Continuá como Frontera en rol implementer en una sesión nueva la T-061 (docs/tasks/T-061-xlsx-spaces-codec.md) en codex/t-061-xlsx-spaces-codec, retomando su checkpoint vigente sobre main publicado. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
 ```

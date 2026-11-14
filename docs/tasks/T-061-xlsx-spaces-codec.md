@@ -1,6 +1,6 @@
 ---
 id: T-061
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M5
@@ -8,7 +8,7 @@ spec: S-109
 depends_on: [T-060]
 branch: codex/t-061-xlsx-spaces-codec
 role: implementer
-executor: junie
+executor: frontier
 pr: null
 ---
 
@@ -18,7 +18,7 @@ pr: null
 
 Representar dos espacios en un respaldo y mantener lectura exacta de libros anteriores.
 
-Draft **solo por dependencias**: T-060 MERGED y conciliada. Contrato completo en S-109; al cumplirse las dependencias no se necesita otra sesión planner. Cada tarea/revisión usa sesión independiente.
+Habilitada tras T-060 MERGED y [conciliada](T-060-voice-spaces.md#conciliación). Contrato completo en S-109. Cada tarea/revisión usa sesión independiente.
 
 ## Alcance y decisiones resueltas
 
@@ -58,7 +58,11 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. Al tomar la tarea, registrar SHA/base, comandos, resultados y pendientes. Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
+**2026-11-13 · Frontera en rol implementer**, Claude Code de escritorio (Claude Opus 5.5, esfuerzo sin verificar), Git Bash, PowerShell, Git, `gh`, Java 21.0.9 y Docker Linux. Impacto: formato del respaldo `.xlsx` (escritura v2, lectura v1/v2) dentro del códec; sin cambios de API, permisos, esquema ni UI. Las llamadas de persistencia/servicio compilan con Trabajo hasta T-062 y este paso intermedio no se despliega.
+
+Base `0dcf38c6873d64be35d1312e37b5cf1fdf004248` (squash de PR63) en `.orchestrator/t-061/`. `gh pr view 63` confirmó MERGED y la [conciliación de T-060](T-060-voice-spaces.md#conciliación). Fixture v1 inmutable generado con el escritor v1 de esa base antes de cualquier cambio: `server/src/test/resources/portability/xlsx/devnotes-v1.xlsx`, SHA-256 `7e7f784b5b8c4d6fe3952d197cb29c606687141ebdbee0f27330feef4ad4a9c5`.
+
+Pendiente: pruebas rojas, implementación, pruebas dirigidas, checks de cierre y PR.
 
 ## Cierre y siguiente tarea
 
