@@ -1,6 +1,6 @@
 ---
 id: T-066
-status: changes_requested
+status: in_progress
 priority: P1
 size: M
 milestone: M5
@@ -57,6 +57,24 @@ Los nombres nuevos de tests son archivos/clases que esta tarea debe crear. Confi
 Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`. Registrar **FULL/STARTER DIFERIDO POR EL DUEÑO**. No ejecutar FULL, STARTER, tooling completo ni E2E completo hasta solicitud expresa, aunque el clasificador dé FULL/STARTER. CI liviana/revisión independiente siguen obligatorias.
 
 ## Checkpoint vigente
+
+2026-11-14. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git, gh, Git Bash, JDK 21 y Docker Desktop Linux. Worktree propio `.orchestrator/t-066-fix-b1`, iniciado en el HEAD de R1 `2dce1a67f4b58c59159b868a648c5fd90f4861fa` del PR abierto, base publicada `a0321ec0a5c134b39628ac85609408980a42ec92`. B-1 restaura la ejecución de las aserciones del slice de seguridad. El cambio está circunscrito al test.
+
+Desde `server/` con Git Bash, JDK 21 y Maven offline:
+
+```bash
+./mvnw -o -B -q test -Dtest=SecurityConfigTest -Djacoco.skip=true
+./mvnw -o -B -q verify -Dtest=CopyPreviousDailyNoteTest,DailyContentTest -Dit.test=CopyPreviousDailyNoteApiIT,DailySpaceApiIT,OpenApiContractIT -Djacoco.skip=true
+```
+
+- Rojo de `SecurityConfigTest` sobre el HEAD de R1: exit 1, 13 errores de contexto por ausencia de `CopyPreviousDailyNoteService`.
+- Verde con el mock (blob de `SecurityConfigTest.java` `74d7b8c3919d3dbb74f681f8cda1d0b9a5e37fd5`): exit 0 y 13/13.
+- `verify` dirigido: exit 0, Surefire 87/87 (3 copia, 84 contenido), Failsafe 17/17 (7 copia, 4 aislamiento de diario, 6 OpenAPI). Cero fallos, errores u omitidos en las pruebas corregidas. HTTP con OIDC ficticio y PostgreSQL real `postgres:18.6`.
+- Cleanup confirmado tras la salida de Ryuk: la consulta `docker ps -aq --no-trunc --filter label=org.testcontainers=true` devolvió cero coincidencias con los cuatro IDs de esta corrida (tres PostgreSQL y un Ryuk). Logs locales `server/target/t066-b1-*.log` y reportes de Maven en `server/target/`.
+
+**FULL/STARTER DIFERIDO POR EL DUEÑO.** Siguiente paso: publicar B-1 y pasar a R2.
+
+### Evidencia de la implementación inicial
 
 2026-11-14. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git, gh, Git Bash, JDK 21 y Docker Desktop Linux. Checkout propio `.orchestrator/t-066`, HEAD inicial y base publicada `a0321ec0a5c134b39628ac85609408980a42ec92`. La tarea agrega dos endpoints privados, conserva la sesión y CSRF, y crea o actualiza el documento de trabajo dentro de una transacción. La interfaz de copia corresponde a T-067.
 

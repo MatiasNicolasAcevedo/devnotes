@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.devnotes.daily.application.CopyPreviousDailyNoteService;
 import com.example.devnotes.identity.IdentityService;
 import java.net.URI;
 import java.net.URLDecoder;
@@ -36,6 +37,9 @@ class SecurityConfigTest {
 
     @MockitoBean
     private com.example.devnotes.daily.application.DailyNoteService dailyNotes;
+
+    @MockitoBean
+    private CopyPreviousDailyNoteService copyPreviousDailyNotes;
 
     @MockitoBean
     private com.example.devnotes.daily.application.DailyVersionService dailyVersions;
