@@ -6,12 +6,14 @@ import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyVersionReco
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ReferenceRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.VoiceNoteRecord;
 import com.example.devnotes.reference.application.ReferenceItemInput;
+import com.example.devnotes.shared.space.PrivateSpace;
 import com.example.devnotes.voice.domain.VoiceText;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.Validator;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -22,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -38,11 +41,14 @@ import org.dhatim.fastexcel.reader.Sheet;
 import org.springframework.stereotype.Component;
 
 /**
- * Reader and validator of the {@code devnotes-xlsx} version 1 workbook (S-107 §Validación, steps 2–4).
+ * Reader and validator of the {@code devnotes-xlsx} workbook (S-107 §Validación, steps 2–4; S-109).
  *
  * It inspects the ZIP container, then the workbook structure, then every record with the domain validators
- * used on save. It never touches the database and never reads the readable columns. Failures are
- * {@link XlsxCodecException} without cell content.
+ * used on save. Each version is read with its own exact schema: version 1 has no space and is read as
+ * {@link PrivateSpace#WORK}; version 2 requires the {@code space} of every record, keys daily notes and
+ * versions by space and date, and rejects an atom pointing to an included reference of another space. A mix
+ * of both schemas is rejected. It never touches the database and never reads the readable columns. Failures
+ * are {@link XlsxCodecException} without cell content.
  */
 @Component
 public class XlsxWorkbookReader {
@@ -95,39 +101,56 @@ public class XlsxWorkbookReader {
         }
         Meta meta = readMeta(sheets.get(0));
         requireSheets(sheets);
+        boolean spaces = meta.version() == 2;
 
         List<ReferenceRecord> references = new ArrayList<>();
-        Set<LocalDate> noteDates = new HashSet<>();
+        Map<String, PrivateSpace> referenceSpaces = new HashMap<>();
+        Set<SpaceDate> notes = new HashSet<>();
         List<DailyNoteRecord> dailyNotes = new ArrayList<>();
         List<DailyVersionRecord> dailyVersions = new ArrayList<>();
         List<VoiceNoteRecord> voiceNotes = new ArrayList<>();
 
-        readSheet(sheets.get(1), XlsxFormat.HEADER_REFERENCES, (key, json) -> references.add(reference(key, json)));
-        readSheet(sheets.get(2), XlsxFormat.HEADER_DAILY, (key, json) -> {
-            DailyNoteRecord note = dailyNote(key, json);
-            noteDates.add(note.date());
+        readSheet(
+                sheets.get(1), spaces ? XlsxFormat.HEADER_REFERENCES : XlsxFormat.HEADER_REFERENCES_V1, (key, json) -> {
+                    ReferenceRecord reference = reference(key, json, spaces);
+                    referenceSpaces.put(reference.id().toString(), reference.space());
+                    references.add(reference);
+                });
+        readSheet(sheets.get(2), spaces ? XlsxFormat.HEADER_DAILY : XlsxFormat.HEADER_DAILY_V1, (key, json) -> {
+            DailyNoteRecord note = dailyNote(key, json, spaces, referenceSpaces);
+            notes.add(new SpaceDate(note.space(), note.date()));
             dailyNotes.add(note);
         });
-        readSheet(sheets.get(3), XlsxFormat.HEADER_VERSIONS, (key, json) -> {
-            DailyVersionRecord version = dailyVersion(key, json);
-            if (!noteDates.contains(version.date())) {
+        readSheet(sheets.get(3), spaces ? XlsxFormat.HEADER_VERSIONS : XlsxFormat.HEADER_VERSIONS_V1, (key, json) -> {
+            DailyVersionRecord version = dailyVersion(key, json, spaces, referenceSpaces);
+            // A version hangs from the note of its own space and date (S-109).
+            if (!notes.contains(new SpaceDate(version.space(), version.date()))) {
                 throw new RecordRejected();
             }
             dailyVersions.add(version);
         });
-        readSheet(sheets.get(4), XlsxFormat.HEADER_VOICE, (key, json) -> voiceNotes.add(voiceNote(key, json)));
+        readSheet(
+                sheets.get(4),
+                spaces ? XlsxFormat.HEADER_VOICE : XlsxFormat.HEADER_VOICE_V1,
+                (key, json) -> voiceNotes.add(voiceNote(key, json, spaces)));
 
         requireCount(meta.references(), references.size(), 4);
         requireCount(meta.dailyNotes(), dailyNotes.size(), 5);
         requireCount(meta.dailyVersions(), dailyVersions.size(), 6);
         requireCount(meta.voiceNotes(), voiceNotes.size(), 7);
         return new XlsxWorkbookContent(
-                meta.exportedAt(), new PortabilityRecords(references, dailyNotes, dailyVersions, voiceNotes));
+                meta.version(),
+                meta.exportedAt(),
+                new PortabilityRecords(references, dailyNotes, dailyVersions, voiceNotes));
     }
 
     // ── Workbook structure ──
 
-    private record Meta(Instant exportedAt, int references, int dailyNotes, int dailyVersions, int voiceNotes) {}
+    private record Meta(
+            int version, Instant exportedAt, int references, int dailyNotes, int dailyVersions, int voiceNotes) {}
+
+    /** Identity of a daily note, and of its version, within the account since S-109. */
+    private record SpaceDate(PrivateSpace space, LocalDate date) {}
 
     private static Meta readMeta(Sheet sheet) throws IOException {
         List<String> values = new ArrayList<>();
@@ -152,7 +175,7 @@ public class XlsxWorkbookReader {
                             : invalidRecord(XlsxFormat.SHEET_META, row.getRowNum());
                 }
                 if ((index == 0 && !XlsxFormat.FORMAT.equals(value))
-                        || (index == 1 && !XlsxFormat.VERSION.equals(value))) {
+                        || (index == 1 && !XlsxFormat.VERSION_1.equals(value) && !XlsxFormat.VERSION.equals(value))) {
                     throw new XlsxCodecException(XlsxErrorCode.IMPORT_UNSUPPORTED_FORMAT);
                 }
                 if (index == 2 && parseInstant(value) == null) {
@@ -171,6 +194,7 @@ public class XlsxWorkbookReader {
             throw invalidRecord(XlsxFormat.SHEET_META, null);
         }
         return new Meta(
+                Integer.parseInt(values.get(1)),
                 parseInstant(values.get(2)),
                 Integer.parseInt(values.get(3)),
                 Integer.parseInt(values.get(4)),
@@ -309,8 +333,9 @@ public class XlsxWorkbookReader {
 
     // ── Records ──
 
-    private ReferenceRecord reference(String key, JsonNode json) {
-        requireFields(json, Set.of("id", "title", "description", "createdAt", "updatedAt"));
+    private ReferenceRecord reference(String key, JsonNode json, boolean spaces) {
+        requireFields(json, spaces, "id", "title", "description", "createdAt", "updatedAt");
+        PrivateSpace space = space(json, spaces);
         UUID id = uuid(json, key);
         String title = string(json, "title");
         String description = string(json, "description");
@@ -324,28 +349,35 @@ public class XlsxWorkbookReader {
         Instant createdAt = instant(json, "createdAt");
         Instant updatedAt = instant(json, "updatedAt");
         requireOrdered(createdAt, updatedAt);
-        return new ReferenceRecord(id, title, description, createdAt, updatedAt);
+        return new ReferenceRecord(space, id, title, description, createdAt, updatedAt);
     }
 
-    private static DailyNoteRecord dailyNote(String key, JsonNode json) {
-        requireFields(json, Set.of("date", "content", "createdAt", "updatedAt"));
-        LocalDate date = date(json, key);
+    private static DailyNoteRecord dailyNote(
+            String key, JsonNode json, boolean spaces, Map<String, PrivateSpace> referenceSpaces) {
+        requireFields(json, spaces, "date", "content", "createdAt", "updatedAt");
+        PrivateSpace space = space(json, spaces);
+        LocalDate date = date(json, key, space, spaces);
         JsonNode content = DailyContent.validate(json.get("content")).getTree();
+        requireReferencesInSpace(content, space, referenceSpaces);
         Instant createdAt = instant(json, "createdAt");
         Instant updatedAt = instant(json, "updatedAt");
-        // Versions before T-040 could persist an inverted pair. Both instants are authoritative in v1.
-        return new DailyNoteRecord(date, content, createdAt, updatedAt);
+        // Versions before T-040 could persist an inverted pair. Both instants are authoritative in v1 and v2.
+        return new DailyNoteRecord(space, date, content, createdAt, updatedAt);
     }
 
-    private static DailyVersionRecord dailyVersion(String key, JsonNode json) {
-        requireFields(json, Set.of("date", "content", "savedAt"));
-        LocalDate date = date(json, key);
+    private static DailyVersionRecord dailyVersion(
+            String key, JsonNode json, boolean spaces, Map<String, PrivateSpace> referenceSpaces) {
+        requireFields(json, spaces, "date", "content", "savedAt");
+        PrivateSpace space = space(json, spaces);
+        LocalDate date = date(json, key, space, spaces);
         JsonNode content = DailyContent.validate(json.get("content")).getTree();
-        return new DailyVersionRecord(date, content, instant(json, "savedAt"));
+        requireReferencesInSpace(content, space, referenceSpaces);
+        return new DailyVersionRecord(space, date, content, instant(json, "savedAt"));
     }
 
-    private static VoiceNoteRecord voiceNote(String key, JsonNode json) {
-        requireFields(json, Set.of("id", "text", "createdAt", "updatedAt"));
+    private static VoiceNoteRecord voiceNote(String key, JsonNode json, boolean spaces) {
+        requireFields(json, spaces, "id", "text", "createdAt", "updatedAt");
+        PrivateSpace space = space(json, spaces);
         UUID id = uuid(json, key);
         String text = string(json, "text");
         if (!text.equals(VoiceText.validate(text).getValue())) {
@@ -353,8 +385,45 @@ public class XlsxWorkbookReader {
         }
         Instant createdAt = instant(json, "createdAt");
         Instant updatedAt = instant(json, "updatedAt");
-        // Versions before T-037 could persist an inverted pair. Both instants are authoritative in v1.
-        return new VoiceNoteRecord(id, text, createdAt, updatedAt);
+        // Versions before T-037 could persist an inverted pair. Both instants are authoritative in v1 and v2.
+        return new VoiceNoteRecord(space, id, text, createdAt, updatedAt);
+    }
+
+    /** The exact fields of the record in its version: version 2 adds a mandatory {@code space}. */
+    private static void requireFields(JsonNode json, boolean spaces, String... fields) {
+        Set<String> expected = new HashSet<>(List.of(fields));
+        if (spaces) {
+            expected.add("space");
+        }
+        requireFields(json, expected);
+    }
+
+    /** {@link PrivateSpace#WORK} for version 1; for version 2 the exact {@code space} value, without default. */
+    private static PrivateSpace space(JsonNode json, boolean spaces) {
+        return spaces ? PrivateSpace.parse(string(json, "space")) : PrivateSpace.WORK;
+    }
+
+    /**
+     * Rejects an atom pointing to a reference included in the book but of another space (S-109). Atoms to
+     * references absent from the book keep the S-107 meaning of "not available". The atom matching is the one
+     * the importer uses to rewrite identifiers.
+     */
+    private static void requireReferencesInSpace(
+            JsonNode node, PrivateSpace space, Map<String, PrivateSpace> referenceSpaces) {
+        if (node.isObject()
+                && "reference".equals(node.path("type").asText(null))
+                && node.get("attrs") instanceof ObjectNode attrs) {
+            PrivateSpace target = referenceSpaces.get(attrs.path("id").asText(""));
+            if (target != null && target != space) {
+                throw new RecordRejected();
+            }
+            return;
+        }
+        if (node.isContainerNode()) {
+            for (JsonNode child : node) {
+                requireReferencesInSpace(child, space, referenceSpaces);
+            }
+        }
     }
 
     private static void requireFields(JsonNode json, Set<String> expected) {
@@ -407,9 +476,11 @@ public class XlsxWorkbookReader {
         return UUID.fromString(id);
     }
 
-    private static LocalDate date(JsonNode json, String key) {
+    /** Version 1 keys are the date; version 2 keys are {@code <space>:<date>}. */
+    private static LocalDate date(JsonNode json, String key, PrivateSpace space, boolean spaces) {
         String text = string(json, "date");
-        if (!text.equals(key) || !DATE_PATTERN.matcher(text).matches()) {
+        String expectedKey = spaces ? space.value() + ":" + text : text;
+        if (!expectedKey.equals(key) || !DATE_PATTERN.matcher(text).matches()) {
             throw new RecordRejected();
         }
         // ISO_LOCAL_DATE resolves strictly: no 02-30. S-101 range is 0001-01-01…9999-12-31.

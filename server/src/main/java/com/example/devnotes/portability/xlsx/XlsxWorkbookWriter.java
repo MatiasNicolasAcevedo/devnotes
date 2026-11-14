@@ -18,7 +18,7 @@ import org.dhatim.fastexcel.Worksheet;
 import org.springframework.stereotype.Component;
 
 /**
- * Streaming writer of the {@code devnotes-xlsx} version 1 workbook (S-107).
+ * Streaming writer of the {@code devnotes-xlsx} version 2 workbook (S-107 layout plus the spaces of S-109).
  *
  * Records are written in the order received; the caller provides the deterministic order of S-107. Text
  * goes out as inline strings, so no shared-string table grows in memory and no cell is ever a formula.
@@ -171,10 +171,16 @@ public class XlsxWorkbookWriter {
         json.put("description", record.description());
         json.put("createdAt", created);
         json.put("updatedAt", updated);
+        json.put("space", record.space().value());
         return new RecordRow(
                 record.id().toString(),
                 serialize(json),
-                List.of(XlsxText.readable(record.title()), XlsxText.readable(record.description()), created, updated));
+                List.of(
+                        XlsxText.readable(record.title()),
+                        XlsxText.readable(record.description()),
+                        created,
+                        updated,
+                        XlsxFormat.spaceLabel(record.space())));
     }
 
     private static RecordRow dailyRow(DailyNoteRecord record) {
@@ -186,10 +192,15 @@ public class XlsxWorkbookWriter {
         json.set("content", content);
         json.put("createdAt", created);
         json.put("updatedAt", updated);
+        json.put("space", record.space().value());
         return new RecordRow(
-                record.date().toString(),
+                XlsxFormat.dailyKey(record.space(), record.date()),
                 serialize(json),
-                List.of(XlsxText.readableText(XlsxText.plainText(content)), created, updated));
+                List.of(
+                        XlsxText.readableText(XlsxText.plainText(content)),
+                        created,
+                        updated,
+                        XlsxFormat.spaceLabel(record.space())));
     }
 
     private static RecordRow versionRow(DailyVersionRecord record) {
@@ -199,10 +210,14 @@ public class XlsxWorkbookWriter {
         json.put("date", record.date().toString());
         json.set("content", content);
         json.put("savedAt", saved);
+        json.put("space", record.space().value());
         return new RecordRow(
-                record.date().toString(),
+                XlsxFormat.dailyKey(record.space(), record.date()),
                 serialize(json),
-                List.of(XlsxText.readableText(XlsxText.plainText(content)), saved));
+                List.of(
+                        XlsxText.readableText(XlsxText.plainText(content)),
+                        saved,
+                        XlsxFormat.spaceLabel(record.space())));
     }
 
     private static RecordRow voiceRow(VoiceNoteRecord record) {
@@ -213,10 +228,11 @@ public class XlsxWorkbookWriter {
         json.put("text", record.text());
         json.put("createdAt", created);
         json.put("updatedAt", updated);
+        json.put("space", record.space().value());
         return new RecordRow(
                 record.id().toString(),
                 serialize(json),
-                List.of(XlsxText.readableText(record.text()), created, updated));
+                List.of(XlsxText.readableText(record.text()), created, updated, XlsxFormat.spaceLabel(record.space())));
     }
 
     private static String serialize(ObjectNode json) {

@@ -12,6 +12,7 @@ import com.example.devnotes.portability.xlsx.XlsxTestBooks;
 import com.example.devnotes.portability.xlsx.XlsxWorkbookReader;
 import com.example.devnotes.security.OidcHttpBrowser;
 import com.example.devnotes.security.OidcHttpProvider;
+import com.example.devnotes.shared.space.PrivateSpace;
 import java.io.ByteArrayOutputStream;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
@@ -467,6 +468,7 @@ class PortabilityImportApiIT {
             assertThat(recreated.id()).isNotEqualTo(original.id());
             assertThat(recreated.id().version()).isEqualTo(7);
             assertThat(new ReferenceRecord(
+                            PrivateSpace.WORK,
                             original.id(),
                             recreated.title(),
                             recreated.description(),
@@ -483,13 +485,17 @@ class PortabilityImportApiIT {
         List<DailyNoteRecord> expectedNotes = new ArrayList<>();
         for (DailyNoteRecord note : source.dailyNotes()) {
             expectedNotes.add(new DailyNoteRecord(
-                    note.date(), withIds(note.content(), newIds), note.createdAt(), note.updatedAt()));
+                    PrivateSpace.WORK,
+                    note.date(),
+                    withIds(note.content(), newIds),
+                    note.createdAt(),
+                    note.updatedAt()));
         }
         assertThat(copy.dailyNotes()).isEqualTo(expectedNotes);
         List<DailyVersionRecord> expectedVersions = new ArrayList<>();
         for (DailyVersionRecord saved : source.dailyVersions()) {
-            expectedVersions.add(
-                    new DailyVersionRecord(saved.date(), withIds(saved.content(), newIds), saved.savedAt()));
+            expectedVersions.add(new DailyVersionRecord(
+                    PrivateSpace.WORK, saved.date(), withIds(saved.content(), newIds), saved.savedAt()));
         }
         assertThat(copy.dailyVersions()).isEqualTo(expectedVersions);
         String edited = copy.dailyNotes().get(1).content().toString();
@@ -504,7 +510,11 @@ class PortabilityImportApiIT {
             VoiceNoteRecord recreated = copy.voiceNotes().get(i);
             assertThat(recreated.id()).isNotEqualTo(original.id());
             assertThat(new VoiceNoteRecord(
-                            original.id(), recreated.text(), recreated.createdAt(), recreated.updatedAt()))
+                            PrivateSpace.WORK,
+                            original.id(),
+                            recreated.text(),
+                            recreated.createdAt(),
+                            recreated.updatedAt()))
                     .isEqualTo(original);
         }
 
@@ -575,9 +585,9 @@ class PortabilityImportApiIT {
                 XlsxTestBooks.build(XlsxTestBooks.validSheets()),
                 "xl/vbaProject.bin",
                 SECRET.getBytes(StandardCharsets.UTF_8));
-        // Format or version.
+        // Format or version: 1 and 2 are known since S-109.
         var otherVersion = XlsxTestBooks.validSheets();
-        XlsxTestBooks.sheet(otherVersion, "devnotes").rows.get(1).set(1, "2");
+        XlsxTestBooks.sheet(otherVersion, "devnotes").rows.get(1).set(1, "3");
         // Sheet, header, fragment or record.
         var badHeader = XlsxTestBooks.validSheets();
         XlsxTestBooks.sheet(badHeader, "diarias").rows.get(0).set(0, SECRET);

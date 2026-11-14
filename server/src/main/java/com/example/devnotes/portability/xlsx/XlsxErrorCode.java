@@ -4,8 +4,8 @@ package com.example.devnotes.portability.xlsx;
 public enum XlsxErrorCode {
     /** Transport or ZIP container problem. */
     IMPORT_INVALID_FILE,
-    /** Not a {@code devnotes-xlsx} version 1 workbook. */
+    /** Not a {@code devnotes-xlsx} workbook of version 1 or 2. */
     IMPORT_UNSUPPORTED_FORMAT,
-    /** Sheet, header, fragment or record problem. */
+    /** Sheet, header, fragment, record or relation problem, including a mix of version 1 and 2 schemas. */
     IMPORT_INVALID_RECORD
 }

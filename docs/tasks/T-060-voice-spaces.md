@@ -1,6 +1,6 @@
 ---
 id: T-060
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M5
@@ -95,6 +95,10 @@ Dos cuentas ficticias con OIDC local, espacios independientes, listados y conteo
 - Observación no bloqueante y preexistente: `VoiceTranscriptionApiIT#transcriptionRequiresCsrf` acepta 400/403/415 ante la falta de CSRF. Registrada en BACKLOG; no afecta el alcance de T-060.
 
 **Resultado favorable, sin bloqueantes. FULL/STARTER DIFERIDO POR EL DUEÑO.** El veredicto canónico se publica en PR63 con el HEAD documental y la base vigentes tras comprobar la CI de ese par. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+
+## Conciliación
+
+GitHub confirmó [PR63](https://github.com/MatiasNicolasAcevedo/devnotes/pull/63) MERGED contra `main` el 2026-11-14T01:12:13Z (2026-11-13 en Buenos Aires). Squash `0dcf38c6873d64be35d1312e37b5cf1fdf004248`, [HEAD aprobado](https://github.com/MatiasNicolasAcevedo/devnotes/pull/63#issuecomment-6869125604) `6f3055bcc1fff04a268fc29cc808af7f72bbb97e` y [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43538940282/job/132274668076). `git ls-remote` confirmó el squash como punta de `main` publicado y `git merge-base --is-ancestor` comprobó su inclusión tras el fetch. T-060 queda `done`.
 
 ## Cierre y siguiente tarea
 

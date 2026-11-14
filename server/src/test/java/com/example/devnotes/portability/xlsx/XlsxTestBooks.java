@@ -77,10 +77,30 @@ public final class XlsxTestBooks {
                 .row("versiones", "1")
                 .row("voz", "1")
                 .row("aviso", XlsxFormat.NOTICE));
-        sheets.add(header("referencias", XlsxFormat.HEADER_REFERENCES).row(REF_ID, 1, 1, REF_JSON));
-        sheets.add(header("diarias", XlsxFormat.HEADER_DAILY).row(DATE, 1, 1, DAILY_JSON));
-        sheets.add(header("versiones", XlsxFormat.HEADER_VERSIONS).row(DATE, 1, 1, VERSION_JSON));
-        sheets.add(header("voz", XlsxFormat.HEADER_VOICE).row(VOICE_ID, 1, 1, VOICE_JSON));
+        sheets.add(header("referencias", XlsxFormat.HEADER_REFERENCES_V1).row(REF_ID, 1, 1, REF_JSON));
+        sheets.add(header("diarias", XlsxFormat.HEADER_DAILY_V1).row(DATE, 1, 1, DAILY_JSON));
+        sheets.add(header("versiones", XlsxFormat.HEADER_VERSIONS_V1).row(DATE, 1, 1, VERSION_JSON));
+        sheets.add(header("voz", XlsxFormat.HEADER_VOICE_V1).row(VOICE_ID, 1, 1, VOICE_JSON));
+        return sheets;
+    }
+
+    /** {@code json} with the {@code space} field appended, as version 2 writes it. */
+    public static String inSpace(String json, String space) {
+        return json.substring(0, json.length() - 1) + ",\"space\":\"" + space + "\"}";
+    }
+
+    /** A valid version 2 workbook with one record per collection in Trabajo, as mutable raw sheets. */
+    public static List<RawSheet> validSheetsV2() {
+        List<RawSheet> sheets = validSheets();
+        sheet(sheets, "devnotes").rows.get(1).set(1, "2");
+        sheets.set(1, header("referencias", XlsxFormat.HEADER_REFERENCES).row(REF_ID, 1, 1, inSpace(REF_JSON, "work")));
+        sheets.set(
+                2, header("diarias", XlsxFormat.HEADER_DAILY).row("work:" + DATE, 1, 1, inSpace(DAILY_JSON, "work")));
+        sheets.set(
+                3,
+                header("versiones", XlsxFormat.HEADER_VERSIONS)
+                        .row("work:" + DATE, 1, 1, inSpace(VERSION_JSON, "work")));
+        sheets.set(4, header("voz", XlsxFormat.HEADER_VOICE).row(VOICE_ID, 1, 1, inSpace(VOICE_JSON, "work")));
         return sheets;
     }
 
@@ -170,7 +190,12 @@ public final class XlsxTestBooks {
 
     /** Pads a valid workbook to the selected exact limit using an ignored ZIP entry. */
     public static byte[] atByteSize(boolean compressed, int excess) {
-        Map<String, byte[]> entries = entries(build(validSheets()));
+        return atByteSize(validSheets(), compressed, excess);
+    }
+
+    /** Pads the given workbook to the selected exact limit using an ignored ZIP entry. */
+    public static byte[] atByteSize(List<RawSheet> sheets, boolean compressed, int excess) {
+        Map<String, byte[]> entries = entries(build(sheets));
         String padding = "docProps/relleno.bin";
         if (compressed) {
             entries.put(padding, new byte[0]);

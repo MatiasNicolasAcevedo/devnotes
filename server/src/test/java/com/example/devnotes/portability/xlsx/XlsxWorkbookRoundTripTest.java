@@ -7,6 +7,7 @@ import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyNoteRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyVersionRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ReferenceRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.VoiceNoteRecord;
+import com.example.devnotes.shared.space.PrivateSpace;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayInputStream;
@@ -46,13 +47,14 @@ class XlsxWorkbookRoundTripTest {
 
         XlsxWorkbookContent content = reader.read(file);
 
+        assertThat(content.version()).isEqualTo(2);
         assertThat(content.exportedAt()).isEqualTo(EXPORTED);
         assertThat(content.records()).isEqualTo(PortabilityRecords.empty());
         assertThat(sheetNames(file)).containsExactly("devnotes", "referencias", "diarias", "versiones", "voz");
         assertThat(texts(rawRows(file, 0)))
                 .containsExactly(
                         List.of("formato", "devnotes-xlsx"),
-                        List.of("version", "1"),
+                        List.of("version", "2"),
                         List.of("exportado_utc", "2026-11-10T20:00:20.973456Z"),
                         List.of("referencias", "0"),
                         List.of("diarias", "0"),
@@ -76,22 +78,23 @@ class XlsxWorkbookRoundTripTest {
                 + "{\"type\":\"separator\",\"attrs\":{\"width\":50}},"
                 + "{\"type\":\"paragraph\"}]}");
         PortabilityRecords records = new PortabilityRecords(
-                List.of(new ReferenceRecord(REF, "Runbook", "", T1, T2)),
-                List.of(new DailyNoteRecord(LocalDate.parse("2026-10-19"), document, T1, T2)),
-                List.of(new DailyVersionRecord(LocalDate.parse("2026-10-19"), document, T2)),
-                List.of(new VoiceNoteRecord(VOICE, "Idea ficticia\n", T1, T1)));
+                List.of(new ReferenceRecord(PrivateSpace.WORK, REF, "Runbook", "", T1, T2)),
+                List.of(new DailyNoteRecord(PrivateSpace.WORK, LocalDate.parse("2026-10-19"), document, T1, T2)),
+                List.of(new DailyVersionRecord(PrivateSpace.WORK, LocalDate.parse("2026-10-19"), document, T2)),
+                List.of(new VoiceNoteRecord(PrivateSpace.WORK, VOICE, "Idea ficticia\n", T1, T1)));
 
         byte[] file = write(records);
 
         assertThat(reader.read(file).records()).isEqualTo(records);
         List<Row> daily = rawRows(file, 2);
-        assertThat(daily.get(1).getCell(0).asString()).isEqualTo("2026-10-19");
+        assertThat(daily.get(1).getCell(0).asString()).isEqualTo("work:2026-10-19");
         assertThat(daily.get(1).getCell(1).getType()).isEqualTo(CellType.NUMBER);
         assertThat(daily.get(1).getCell(1).asNumber().intValueExact()).isEqualTo(1);
         assertThat(daily.get(1).getCell(2).asNumber().intValueExact()).isEqualTo(1);
         assertThat(daily.get(1).getCell(3).asString())
-                .isEqualTo("{\"date\":\"2026-10-19\",\"content\":" + document
-                        + ",\"createdAt\":\"2026-10-19T12:00:00.123456Z\",\"updatedAt\":\"2026-10-19T12:30:00Z\"}");
+                .isEqualTo(
+                        "{\"date\":\"2026-10-19\",\"content\":" + document
+                                + ",\"createdAt\":\"2026-10-19T12:00:00.123456Z\",\"updatedAt\":\"2026-10-19T12:30:00Z\",\"space\":\"work\"}");
         // Readable text: visible text, unresolved reference placeholder and an empty line per separator.
         assertThat(daily.get(1).getCell(4).asString()).isEqualTo("Ver docs[Referencia no disponible]\n\n");
         assertThat(daily.get(1).getCell(5).asString()).isEqualTo("2026-10-19T12:00:00.123456Z");
@@ -107,7 +110,10 @@ class XlsxWorkbookRoundTripTest {
     void instantsAreTruncatedToMicroseconds() throws IOException {
         Instant nanos = Instant.parse("2026-10-19T12:00:00.123456789Z");
         PortabilityRecords records = new PortabilityRecords(
-                List.of(), List.of(), List.of(), List.of(new VoiceNoteRecord(VOICE, "x", nanos, nanos)));
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(new VoiceNoteRecord(PrivateSpace.WORK, VOICE, "x", nanos, nanos)));
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         writer.write(records, nanos, out);
 
@@ -122,7 +128,7 @@ class XlsxWorkbookRoundTripTest {
         // {"id":"<36>","text":" is 53 units, so the pair starts at index 29 999 of the JSON.
         String text = "a".repeat(29_999 - 53) + PAIR + "b".repeat(15_000);
         PortabilityRecords records = new PortabilityRecords(
-                List.of(), List.of(), List.of(), List.of(new VoiceNoteRecord(VOICE, text, T1, T2)));
+                List.of(), List.of(), List.of(), List.of(new VoiceNoteRecord(PrivateSpace.WORK, VOICE, text, T1, T2)));
 
         byte[] file = write(records);
 
@@ -131,7 +137,8 @@ class XlsxWorkbookRoundTripTest {
         String first = rows.get(1).getCell(3).asString();
         String second = rows.get(2).getCell(3).asString();
         assertThat(first).hasSize(29_999);
-        assertThat(second).startsWith(PAIR).hasSize(text.length() + 53 + 79 - 29_999);
+        // The JSON ends with the instants and the space: 94 units after the text.
+        assertThat(second).startsWith(PAIR).hasSize(text.length() + 53 + 94 - 29_999);
         for (int i = 1; i <= 2; i++) {
             assertThat(rows.get(i).getCell(0).asString()).isEqualTo(XlsxTestBooks.VOICE_ID);
             assertThat(rows.get(i).getCell(1).asNumber().intValueExact()).isEqualTo(i);
@@ -148,7 +155,7 @@ class XlsxWorkbookRoundTripTest {
         String text = "áé ".repeat(16_666) + "zz";
         assertThat(text).hasSize(50_000);
         PortabilityRecords records = new PortabilityRecords(
-                List.of(), List.of(), List.of(), List.of(new VoiceNoteRecord(VOICE, text, T1, T2)));
+                List.of(), List.of(), List.of(), List.of(new VoiceNoteRecord(PrivateSpace.WORK, VOICE, text, T1, T2)));
 
         assertThat(reader.read(write(records)).records()).isEqualTo(records);
     }
@@ -170,10 +177,10 @@ class XlsxWorkbookRoundTripTest {
                                                                 .put("type", "text")
                                                                 .put("text", odd)))));
         PortabilityRecords records = new PortabilityRecords(
-                List.of(new ReferenceRecord(REF, odd, odd, T1, T2)),
-                List.of(new DailyNoteRecord(LocalDate.parse("2026-10-19"), document, T1, T2)),
+                List.of(new ReferenceRecord(PrivateSpace.WORK, REF, odd, odd, T1, T2)),
+                List.of(new DailyNoteRecord(PrivateSpace.WORK, LocalDate.parse("2026-10-19"), document, T1, T2)),
                 List.of(),
-                List.of(new VoiceNoteRecord(VOICE, odd + "\n", T1, T2)));
+                List.of(new VoiceNoteRecord(PrivateSpace.WORK, VOICE, odd + "\n", T1, T2)));
 
         byte[] file = write(records);
 
@@ -191,9 +198,9 @@ class XlsxWorkbookRoundTripTest {
         List<ReferenceRecord> references = new ArrayList<>();
         for (int i = 0; i < risky.size(); i++) {
             UUID id = UUID.fromString("01900000-0000-7000-8000-00000000030" + i);
-            voice.add(new VoiceNoteRecord(id, risky.get(i), T1, T2));
-            references.add(
-                    new ReferenceRecord(id, risky.get(i).trim(), risky.get(i).trim(), T1, T2));
+            voice.add(new VoiceNoteRecord(PrivateSpace.WORK, id, risky.get(i), T1, T2));
+            references.add(new ReferenceRecord(
+                    PrivateSpace.WORK, id, risky.get(i).trim(), risky.get(i).trim(), T1, T2));
         }
         PortabilityRecords records = new PortabilityRecords(references, List.of(), List.of(), voice);
 
@@ -220,7 +227,7 @@ class XlsxWorkbookRoundTripTest {
     void whitespaceAtFragmentBordersIsPreserved() throws IOException {
         String text = "a".repeat(30_000 - 53 - 2) + "    " + "b".repeat(10) + "\n";
         PortabilityRecords records = new PortabilityRecords(
-                List.of(), List.of(), List.of(), List.of(new VoiceNoteRecord(VOICE, text, T1, T2)));
+                List.of(), List.of(), List.of(), List.of(new VoiceNoteRecord(PrivateSpace.WORK, VOICE, text, T1, T2)));
 
         byte[] file = write(records);
 
@@ -235,7 +242,11 @@ class XlsxWorkbookRoundTripTest {
         List<VoiceNoteRecord> voice = new ArrayList<>();
         for (int i = 0; i < 500; i++) {
             voice.add(new VoiceNoteRecord(
-                    UUID.fromString(String.format("01900000-0000-7000-8000-%012d", i)), "nota " + i, T1, T2));
+                    PrivateSpace.WORK,
+                    UUID.fromString(String.format("01900000-0000-7000-8000-%012d", i)),
+                    "nota " + i,
+                    T1,
+                    T2));
         }
         PortabilityRecords records = new PortabilityRecords(List.of(), List.of(), List.of(), voice);
 
@@ -244,7 +255,7 @@ class XlsxWorkbookRoundTripTest {
 
     @Test
     void streamingOverloadRejectsACountThatDoesNotMatchTheRecords() {
-        List<VoiceNoteRecord> voice = List.of(new VoiceNoteRecord(VOICE, "x", T1, T2));
+        List<VoiceNoteRecord> voice = List.of(new VoiceNoteRecord(PrivateSpace.WORK, VOICE, "x", T1, T2));
 
         assertThatThrownBy(() -> writer.write(
                         EXPORTED,
@@ -287,14 +298,14 @@ class XlsxWorkbookRoundTripTest {
     @Test
     void recordsAreImmutableCopies() throws IOException {
         JsonNode document = JSON.readTree(XlsxTestBooks.DOC);
-        DailyNoteRecord note = new DailyNoteRecord(LocalDate.parse("2026-10-19"), document, T1, T2);
+        DailyNoteRecord note = new DailyNoteRecord(PrivateSpace.WORK, LocalDate.parse("2026-10-19"), document, T1, T2);
         ((com.fasterxml.jackson.databind.node.ObjectNode) document).put("type", "changed");
         ((com.fasterxml.jackson.databind.node.ObjectNode) note.content()).put("type", "changed");
 
         assertThat(note.content().path("type").asText()).isEqualTo("doc");
         List<ReferenceRecord> source = new ArrayList<>();
         PortabilityRecords records = new PortabilityRecords(source, List.of(note), List.of(), List.of());
-        source.add(new ReferenceRecord(REF, "t", "", T1, T2));
+        source.add(new ReferenceRecord(PrivateSpace.WORK, REF, "t", "", T1, T2));
         assertThat(records.references()).isEmpty();
         assertThatThrownBy(() -> records.dailyNotes().clear()).isInstanceOf(UnsupportedOperationException.class);
     }
