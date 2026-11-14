@@ -1,6 +1,6 @@
 ---
 id: T-067
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -9,7 +9,7 @@ depends_on: [T-066]
 branch: codex/t-067-copy-previous-client
 role: implementer
 executor: frontier
-pr: null
+pr: 70
 ---
 
 # T-067 · Empezar el día desde una nota anterior
@@ -65,12 +65,13 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 Frontera en rol implementer, Codex Desktop (GPT-6, variante y esfuerzo sin exponer), PowerShell, Git, `gh`, Node y Git Bash. La entrega habilita sugerencia y copia explícita en la UI diaria con la API, permisos y datos de S-110. El ACK confirma la copia y el historial local permite deshacerla con autosave.
 
-`gh pr view 69` confirmó MERGED y `git ls-remote origin refs/heads/main` confirmó `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb`. `gh pr list --state open` informó cero PR al iniciar. Worktree propio `.orchestrator/t-067`. La implementación y las verificaciones dirigidas están completas. Próximo paso: publicar el código y cerrar el traspaso documental. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
+Implementación publicada en [PR70](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70), commit técnico `dd48794e112d2850c1d9a96136974de0e5eb34a9` sobre `main` `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb`. Worktree propio `.orchestrator/t-067`. El commit de traspaso cambia solo Markdown. Siguiente paso: revisión independiente sobre HEAD y base publicados con `verify-required` del HEAD vigente. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
 
 ## Evidencia dirigida
 
 - `npm ci --no-audit --no-fund`, exit 0, lockfile sin cambios. Los tres archivos Vitest del contrato pasaron **75/75**, exit 0. Regresión complementaria, **85/85**, exit 0: `npm test -- --run src/features/daily/editor/DailyEditor.test.tsx src/features/daily/DailyNotesPage.test.tsx src/features/daily/DailyDraftNavigation.test.tsx src/features/daily/SaveDailyVersion.test.tsx src/features/spaces/SpaceSelector.test.tsx src/services/http.test.ts`.
 - `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build`, exit 0. Vite informó el aviso de tamaño del chunk.
+- `node scripts/docs-check.mjs`, `git diff --check`, `git diff --check origin/main...HEAD` y clasificación de cierre, exit 0. Perfil `FULL/APPLICATION` por 15 rutas técnicas de 18. Árboles del commit técnico: `client` `9e6bd9dcdb3190556d6ab9b099c58d3608eacf20`, `e2e` `3c97c9c687369c1773c411aa701d59311e3ca144`, `server` `371d0c67a8e54a29d948e30dee46aff777c37878`.
 - Los dos comandos `copy previous:` de esta tarea pasaron **2/2 desktop y 2/2 mobile**, exit 0 en cada proyecto, con PostgreSQL 18.6 y OIDC ficticio. El harness confirmó ausencia previa y eliminó sus contenedores, redes y volúmenes. Reportes saneados en `e2e/artifacts/starter-e2e-t067-{desktop,mobile}/sanitized/junit.xml` en el worktree propio. Los builds de ambos recorridos produjeron el mismo bundle de cliente. El ajuste posterior de espera en Vitest solo afecta el test de componente.
 - CP-01/02/05/07/08: Playwright comprobó selección del viernes, límites de fecha y espacio, preservación del enlace/separador/referencia, revisión y persistencia, origen y versiones intactos, undo, recarga, teclado desktop y toque mobile a 375 px. CP-04: 409 reales por fuente modificada y destino remoto, además de POST único y texto local en Vitest. CP-03/06/07: Vitest comprobó ausencia, error, cambio de fecha/espacio, logout durante POST y respuesta perdida con relectura antes de repetir.
 
@@ -83,4 +84,4 @@ Frontera en rol implementer, Codex Desktop (GPT-6, variante y esfuerzo sin expon
 
 ## Cierre y siguiente tarea
 
-Control de cinco tareas de I5: revisar dependencias, evidencia dirigida, integrado diferido y hallazgos en esta tarea; volver a frontera solo por decisión fuera del contrato. No done hasta MERGED comprobado. Tras MERGED confirmado, una nueva sesión concilia esta tarea y vuelve a frontera/dueño para elegir otras propuestas. No inventar la siguiente implementación. No modificar protecciones, incorporar otras propuestas ni desplegar por pasar tests locales.
+El control de avance de I5 corresponde tras confirmar T-067 MERGED. Revisar las últimas cinco tareas (T-063 a T-067), sus dependencias y evidencia dirigida, el integrado diferido y SP-06 en Android físico con teclado real y zoom nativo, pendiente del dueño. Conciliar T-067 como `done` tras confirmación en GitHub y volver a Frontera/dueño para decidir el siguiente alcance. Render requiere autorización expresa separada sobre SHA y ventana.

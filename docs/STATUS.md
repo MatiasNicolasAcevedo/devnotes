@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-067](tasks/T-067-copy-previous-client.md) · Empezar el día desde una nota anterior ([S-110](specs/S-110-previous-day-copy.md)) |
-| Estado | `in_progress` |
-| Acción actual | Implementar y verificar T-067 según S-110. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-067-copy-previous-client` · Pendiente de publicación |
+| Estado | `in_review` |
+| Acción actual | Revisar PR70 en una sesión independiente sobre HEAD y base publicados. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-067-copy-previous-client` · [PR70](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
 
@@ -118,5 +118,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera en rol merger para PR69 de MatiasNicolasAcevedo/devnotes (T-066, S-110), en sesión distinta de R2. Leé AGENTS.md, docs/AUTONOMY.md, docs/agents/merger.md, docs/STATUS.md, T-066 y el veredicto R2 publicado en PR69. Usá un worktree propio y preservá el checkout principal, trailer/ y worktrees ajenos. Confirmá en GitHub el estado, el HEAD exacto del veredicto APROBADO y la base main a0321ec0a5c134b39628ac85609408980a42ec92, verify-required SUCCESS sobre ese HEAD y las conversaciones bloqueantes resueltas. Cotejá docs-check, diff y evidencia dirigida de R2 para las mismas fuentes/base. Si cambió HEAD/base o falta una condición, seguí el protocolo de merger. Si ya está MERGED, verificá y registrá la confirmación. Si sigue abierto y es elegible, hacé squash con --match-head-commit sobre el SHA aprobado y borrá solo la rama de tarea mergeada. Confirmá PR69 MERGED en GitHub (merge SHA y mergedAt) y publicá el cierre con la retoma de T-067 conforme al protocolo. T-067 se habilita solo tras esa confirmación y concilia T-066 al comenzar su propia sesión. FULL/STARTER DIFERIDO POR EL DUEÑO. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Render requiere autorización expresa separada sobre SHA y ventana.
+Actuá como Frontera en rol reviewer independiente para PR70 de MatiasNicolasAcevedo/devnotes (T-067, S-110), en una sesión nueva. Leé AGENTS.md, docs/AUTONOMY.md, docs/STATUS.md, docs/agents/reviewer.md y docs/tasks/T-067-copy-previous-client.md con sus referencias. Confirmá en GitHub PR abierto y listo para revisión contra main, HEAD y base publicados y verify-required sobre el HEAD vigente. Usá un worktree propio del SHA publicado y preservá el checkout principal, trailer/ y los worktrees ajenos. Revisá el diff, la coordinación de ACK/undo, los negativos de fecha/espacio/sesión y carrera, y la evidencia dirigida de Vitest y copy previous: desktop/mobile con backend real. Registrá el veredicto ligado a HEAD y base según el protocolo. Tras confirmar T-067 MERGED en la sesión correspondiente, hacé el control de avance de I5 y devolvé el siguiente alcance a Frontera/dueño. FULL/STARTER DIFERIDO POR EL DUEÑO. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Render requiere autorización expresa separada sobre SHA y ventana.
 ```
