@@ -1,6 +1,6 @@
 ---
 id: T-067
-status: changes_requested
+status: in_review
 priority: P1
 size: M
 milestone: M5
@@ -63,11 +63,28 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-Frontera en rol implementer, Codex Desktop (GPT-6, variante y esfuerzo sin exponer), PowerShell, Git, `gh`, Node y Git Bash. La entrega habilita sugerencia y copia explícita en la UI diaria con la API, permisos y datos de S-110. El ACK confirma la copia y el historial local permite deshacerla con autosave.
-
-Implementación publicada en [PR70](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70), commit técnico `dd48794e112d2850c1d9a96136974de0e5eb34a9` sobre `main` `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb`. Worktree del implementer `.orchestrator/t-067`. La [revisión independiente R1](#revisión-independiente-r1) pide corregir la carrera GET/ACK y el indicador de guardado con destino incierto, en una sesión implementer sobre la misma rama y PR. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
+Corrección de los dos bloqueantes de [R1](#revisión-independiente-r1) publicada en [PR70](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70), commit técnico `dc4176cf348d17a2184bca6ea8c955e5ea47844a` sobre base `main` `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb`. Pendiente R2 independiente sobre el HEAD documental publicado y su base, con `verify-required` del HEAD vigente. **FULL/STARTER DIFERIDO POR EL DUEÑO.** SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Render requiere autorización expresa separada sobre SHA y ventana.
 
 ## Evidencia dirigida
+
+### Corrida de corrección R1
+
+Frontera implementer en Codex Desktop (GPT-6, variante y esfuerzo sin exponer), PowerShell, Git/gh, Node 24.21.0, Git Bash y Docker. Worktree propio `.orchestrator/t-067-fix-r1` desde HEAD publicado `5f329e4f4c2c616a3c8d6a85e622066d20b8e70f`, base `efd02e5e7a4016c9c8fee11ce80fbd7a54aa00fb`. Cambio de coordinación y estado de guardado en cliente, con la API, los permisos y el esquema de datos de S-110.
+
+- Rojo antes de tocar producción, desde `client/`: `npm test -- --run src/features/daily/CopyPreviousNote.test.tsx -t 'coordina el GET|reconsulta el destino'`, exit 1. B-1 mismo ACK: cero PUT después de Ctrl+Z. B-2: «Guardado» presente pese a «Recargar nota», tanto tras respuesta perdida como tras los dos conflictos de destino. El control con revisión superior al ACK pasó. Salida local en `e2e/artifacts/t067-r1-vitest/red.log`.
+- Verde desde `client/`, exit 0, 181/181 en diez archivos:
+
+  ```bash
+  npm test -- --run src/features/daily/CopyPreviousNote.test.tsx src/features/daily/api.test.ts src/features/daily/useDailyNote.test.tsx src/features/daily/editor/DailyEditor.test.tsx src/features/daily/DailyNotesPage.test.tsx src/features/daily/DailyDraftNavigation.test.tsx src/features/daily/SaveDailyVersion.test.tsx src/features/daily/DailyNotesToolbar.test.tsx src/features/spaces/SpaceSelector.test.tsx src/services/http.test.ts
+  ```
+
+- `npm ci --no-audit --no-fund`, `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build`, exit 0. Lockfile intacto. Vite conserva el aviso de tamaño del chunk. Salida Vitest en `e2e/artifacts/t067-r1-vitest/green.log`.
+- Desde raíz y Git Bash, `STARTER_E2E_PROJECT=starter-e2e-t067-r1-desktop bash scripts/e2e.sh --grep 'copy previous:' --project desktop` y `STARTER_E2E_PROJECT=starter-e2e-t067-r1-mobile bash scripts/e2e.sh --grep 'copy previous:' --project mobile`. Exit 0, **2/2 desktop y 2/2 mobile** con backend real, PostgreSQL 18.6 y OIDC ficticio. JUnit saneados en `e2e/artifacts/starter-e2e-t067-r1-{desktop,mobile}/sanitized/junit.xml`. Ambos reportan cero fallos y cero omitidos. Cleanup verificado por el harness y por label exacto de contenedores, redes y volúmenes de ambos proyectos.
+- Árboles probados de `dc4176c`: `client` `51e93ecab28799ba377f3119574f31e61c93970b`, `e2e` `3c97c9c687369c1773c411aa701d59311e3ca144` y `server` `371d0c67a8e54a29d948e30dee46aff777c37878`. `node scripts/docs-check.mjs`, `git diff --check`, `git diff --check origin/main...HEAD` y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`, exit 0. Clasificación `FULL/APPLICATION`, 17 rutas técnicas de 20. **FULL/STARTER DIFERIDO POR EL DUEÑO.**
+
+### Primera entrega
+
+Commit técnico `dd48794e112d2850c1d9a96136974de0e5eb34a9`, worktree `.orchestrator/t-067`. Frontera implementer en Codex Desktop (GPT-6, variante y esfuerzo sin exponer), PowerShell, Git/gh, Node y Git Bash. La entrega habilitó la sugerencia y la copia explícita en la UI diaria con la API, permisos y datos de S-110.
 
 - `npm ci --no-audit --no-fund`, exit 0, lockfile sin cambios. Los tres archivos Vitest del contrato pasaron **75/75**, exit 0. Regresión complementaria, **85/85**, exit 0: `npm test -- --run src/features/daily/editor/DailyEditor.test.tsx src/features/daily/DailyNotesPage.test.tsx src/features/daily/DailyDraftNavigation.test.tsx src/features/daily/SaveDailyVersion.test.tsx src/features/spaces/SpaceSelector.test.tsx src/services/http.test.ts`.
 - `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build`, exit 0. Vite informó el aviso de tamaño del chunk.
@@ -81,6 +98,8 @@ Implementación publicada en [PR70](https://github.com/MatiasNicolasAcevedo/devn
 |---|---|
 | jsdom no implementa la geometría de `Range` y el click sintético dentro del editor disparó una excepción de `elementFromPoint`. | Geometría de prueba como en DailyEditor.test y foco DOM para la escritura del test. Playwright valida foco mediante teclado y toque reales del navegador. Selección Vitest final 75/75. |
 | Al perder el ACK, un destino aún no confirmado podía quedar editable antes de la relectura. | El coordinador conserva la necesidad de recargar por nota y la UI suspende edición y guardado manual hasta recuperar el destino. Negativos de red/409 en Vitest y recarga tras 409 en ambos proyectos Playwright. |
+| R1 B-1. Un GET con la revisión copiada hidrataba el editor antes de que el ACK pudiera registrar el undo. | El coordinador difiere la hidratación durante el POST y coteja el ACK con la revisión en caché. En `dc4176c`, Vitest confirma cero PUT con el ACK, un PUT tras un solo undo con la revisión del ACK y recuperación si el GET trae una revisión superior. |
+| R1 B-2. El indicador volvía a «Guardado» con el destino incierto. | En `dc4176c`, la barra muestra «Sin confirmar» mientras se mantiene el bloqueo. Los negativos de respuesta perdida y conflicto verifican el bloqueo, un POST por gesto y recuperación. Un GET fallido conserva el aviso; uno concluyente restablece «Guardado». |
 
 ## Revisión independiente R1
 
