@@ -67,14 +67,16 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 **FULL/STARTER DIFERIDO POR EL DUEÑO.**
 
-Preflight de Playwright. HEAD/base dc18096cc25e53f07212143c3b62558c416fffd2, con spec en el árbol de trabajo (blob ebd8c8cec44f8b49367aa7fd1beb2be394156e08). Ejecutar los comandos desktop y mobile de Aceptación con sus namespaces exactos y fuentes congeladas. Guardar JUnit y capturas de fixtures bajo e2e/artifacts/<namespace>/sanitized/ y verificar container -a, network y volume con label=com.docker.compose.project=<namespace> antes y después. Siguiente acción: comprobar casos ejecutados, revisar fallos saneados y cerrar checks.
+Playwright en curso sobre `184945a4535ba06798bb08c000bf017975ce4b5d`, base `dc18096cc25e53f07212143c3b62558c416fffd2`. Usar los dos comandos de Aceptación con los namespaces exactos. Regresión adicional: `STARTER_E2E_PROJECT=starter-e2e-t065-regression bash scripts/e2e.sh --grep 'private reference CRUD|portability: A exports' --project desktop`. JUnit y capturas de fixtures bajo `e2e/artifacts/<namespace>/sanitized/`. Verificar contenedores (incluidos detenidos), redes y volúmenes con `label=com.docker.compose.project=<namespace>` antes y después. Siguiente acción: confirmar casos, corregir fallos y cerrar checks.
 
-Complemento SP-02 y SP-09. En server/ con Git Bash y JDK 21: ./mvnw -o -B -q verify -Dtest=PrivateSpaceTest -Dit.test=PrivateSpaceMigrationIT,PortabilityImportServiceIT -Djacoco.skip=true sobre fuentes de backend de la base. Usar Testcontainers PostgreSQL 18.6 con sesión efímera. Verificar reports y el cleanup de Testcontainers por su label exacto. Siguiente acción: registrar los casos de migración y ambas intercalaciones del respaldo.
+Complemento SP-02 y SP-09. En `server/` con Git Bash y JDK 21, `./mvnw -o -B -q verify -Dtest=PrivateSpaceTest -Dit.test=PrivateSpaceMigrationIT,PortabilityImportServiceIT -Djacoco.skip=true` sobre el backend de la base. Exit 0 con 10 unitarios y 22 IT, cero omitidos. SP-02 comprobó el upgrade de V6 poblada a V7 con las cuatro colecciones y los datos originales intactos. Los IT de importación cubrieron ambos órdenes de la carrera en cada espacio. Cleanup por IDs exactos de los dos PostgreSQL 18.6 y Ryuk, cero restantes.
 
 ## Bitácora de correcciones
 
-- Primer desktop sobre el blob del checkpoint: exit 1, 10 casos, 5 fallos y cleanup 0/0/0 por label exacto. Se corrigieron los selectores de búsqueda y de error de importación, la lectura del detalle de voz y el acceso por Tab en ambos layouts. JUnit saneado en `e2e/artifacts/t065-desktop-first-sanitized/`. Se agregó el caso de respuesta de transcripción real retenida con CDP y micrófono/proveedor sintéticos.
+- Primer desktop sobre el blob `ebd8c8cec44f8b49367aa7fd1beb2be394156e08`: exit 1, 10 casos, 5 fallos y cleanup 0/0/0 por label exacto. Se corrigieron los selectores de búsqueda y de error de importación, la lectura del detalle de voz y el acceso por Tab en ambos layouts. JUnit saneado en `e2e/artifacts/t065-desktop-first-sanitized/`. Se agregó el caso de respuesta de transcripción real retenida con CDP y micrófono/proveedor sintéticos.
 - Primer arranque Maven: PowerShell separó `.skip=true` y Maven salió 1 antes de crear recursos. Se pasó el comando completo a Git Bash con `-c` y el dirigido quedó verde con 10/10 unitarios y 22/22 IT (migración 1, importación 21). Cleanup de Testcontainers por IDs exactos de los dos PostgreSQL y Ryuk: cero restantes.
+
+- Desktop, mobile y regresión sobre `184945a` salieron 1 sin ejecutar casos. La imagen propia con `playwright test --list --reporter=list` reprodujo el fallo: Playwright exige declarar `launchOptions` a nivel de archivo porque cambia el worker. Se movió la opción del dispositivo sintético al nivel del spec; los demás casos no solicitan micrófono. Cleanup de los tres namespaces por label exacto: 0/0/0.
 
 ## Comprobación del dueño en Android físico
 

@@ -5,6 +5,7 @@ import { readVersion, saveVersion, writeWork } from './daily-helpers';
 import { accountButton, control, csrfHeaders, expect, interactiveLogin, keyboardActivate, layout, login, logout, readiness, test } from './fixtures';
 import { fakeMicrophone, prepareVoiceContext, trackStates } from '../fixtures/voice-fixture';
 
+test.use({ launchOptions: fakeMicrophone });
 test.describe.configure({ timeout: 120_000 });
 
 const origin = 'http://localhost';
@@ -603,46 +604,42 @@ test('spaces: SP-08/SP-09 Personal-only data blocks a stale import confirmation'
 });
 
 
-test.describe('synthetic voice capture', () => {
-  test.use({ launchOptions: fakeMicrophone });
-
-  test('spaces: SP-05 a late transcription cannot populate the destination', async ({ page, context, identity }) => {
-    await prepareVoiceContext(context);
-    await login(page, identity);
-    await page.getByRole('link', { name: 'Voz', exact: true }).click();
-    const transcriptions = '/api/v1/voice/transcriptions';
-    const calls: Request[] = [];
-    page.on('request', request => {
-      if (matches(request, transcriptions, 'POST')) calls.push(request);
-    });
-    const cdp = await context.newCDPSession(page);
-    let pausedStatus: number | undefined;
-    await cdp.send('Fetch.enable', {
-      patterns: [{ urlPattern: origin + transcriptions, requestStage: 'Response' }],
-    });
-    cdp.on('Fetch.requestPaused', event => { pausedStatus = event.responseStatusCode; });
-    try {
-      await page.getByRole('button', { name: 'Grabar', exact: true }).click();
-      await expect(page.getByRole('timer')).toHaveText(/^00:0[1-9]$/);
-      await page.getByRole('button', { name: 'Detener y transcribir' }).click();
-      await expect.poll(() => pausedStatus).toBe(200);
-      expect(await trackStates(page)).toEqual(['audio:ended']);
-      await switchSpace(page, 'work', 'personal');
-      const guard = page.getByRole('alert').filter({ hasText: 'El audio pendiente se perderá si descartás' });
-      await expect(guard).toBeVisible();
-      await expect(guard.getByRole('button', { name: 'Guardar y cambiar' })).toBeDisabled();
-      await guard.getByRole('button', { name: 'Descartar y cambiar' }).click();
-      await expect(page).toHaveURL(origin + '/voice?space=personal');
-      await cdp.send('Fetch.disable');
-      await expect(voiceText(page)).toHaveValue('');
-      expect(calls).toHaveLength(1);
-      expect(await counts(page, 'work')).toEqual(none);
-      expect(await counts(page, 'personal')).toEqual(none);
-      await switchSpace(page, 'personal', 'work');
-      await expect(page).toHaveURL(origin + '/voice?space=work');
-      await expect(voiceText(page)).toHaveValue('');
-    } finally {
-      await cdp.detach();
-    }
+test('spaces: SP-05 a late transcription cannot populate the destination', async ({ page, context, identity }) => {
+  await prepareVoiceContext(context);
+  await login(page, identity);
+  await page.getByRole('link', { name: 'Voz', exact: true }).click();
+  const transcriptions = '/api/v1/voice/transcriptions';
+  const calls: Request[] = [];
+  page.on('request', request => {
+    if (matches(request, transcriptions, 'POST')) calls.push(request);
   });
+  const cdp = await context.newCDPSession(page);
+  let pausedStatus: number | undefined;
+  await cdp.send('Fetch.enable', {
+    patterns: [{ urlPattern: origin + transcriptions, requestStage: 'Response' }],
+  });
+  cdp.on('Fetch.requestPaused', event => { pausedStatus = event.responseStatusCode; });
+  try {
+    await page.getByRole('button', { name: 'Grabar', exact: true }).click();
+    await expect(page.getByRole('timer')).toHaveText(/^00:0[1-9]$/);
+    await page.getByRole('button', { name: 'Detener y transcribir' }).click();
+    await expect.poll(() => pausedStatus).toBe(200);
+    expect(await trackStates(page)).toEqual(['audio:ended']);
+    await switchSpace(page, 'work', 'personal');
+    const guard = page.getByRole('alert').filter({ hasText: 'El audio pendiente se perderá si descartás' });
+    await expect(guard).toBeVisible();
+    await expect(guard.getByRole('button', { name: 'Guardar y cambiar' })).toBeDisabled();
+    await guard.getByRole('button', { name: 'Descartar y cambiar' }).click();
+    await expect(page).toHaveURL(origin + '/voice?space=personal');
+    await cdp.send('Fetch.disable');
+    await expect(voiceText(page)).toHaveValue('');
+    expect(calls).toHaveLength(1);
+    expect(await counts(page, 'work')).toEqual(none);
+    expect(await counts(page, 'personal')).toEqual(none);
+    await switchSpace(page, 'personal', 'work');
+    await expect(page).toHaveURL(origin + '/voice?space=work');
+    await expect(voiceText(page)).toHaveValue('');
+  } finally {
+    await cdp.detach();
+  }
 });
