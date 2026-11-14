@@ -6,13 +6,17 @@ import com.example.devnotes.reference.application.ReferenceItemService;
 import com.example.devnotes.reference.application.ReferenceItemView;
 import com.example.devnotes.security.AuthOpenApi;
 import com.example.devnotes.security.LocalOidcUser;
+import com.example.devnotes.shared.space.PrivateSpace;
+import com.example.devnotes.shared.space.PrivateSpaceQuery;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -67,12 +71,21 @@ public class ReferenceItemController {
     }
 
     @GetMapping
+    @Parameter(
+            name = "space",
+            in = ParameterIn.QUERY,
+            description = "Espacio privado. Por omisión, Trabajo.",
+            schema =
+                    @Schema(
+                            allowableValues = {"work", "personal"},
+                            defaultValue = "work"))
     @Operation(
             summary = "Lista privada paginada",
             description =
                     "Opcional q para búsqueda por título (máximo 120 caracteres). Orden fijo createdAt DESC, id DESC; páginas desde cero, defaults 0/20.")
     public ResponseEntity<ReferenceItemPage> list(
             Authentication authentication,
+            HttpServletRequest request,
             @Parameter(description = "Consulta por título (opcional, máximo 120 caracteres)")
                     @RequestParam(required = false)
                     String q,
@@ -89,45 +102,90 @@ public class ReferenceItemController {
         }
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
-                .body(service.list(owner(authentication), page, size, q));
+                .body(service.list(owner(authentication), PrivateSpaceQuery.from(request), page, size, q));
     }
 
     @GetMapping("/{id}")
+    @Parameter(
+            name = "space",
+            in = ParameterIn.QUERY,
+            description = "Espacio privado. Por omisión, Trabajo.",
+            schema =
+                    @Schema(
+                            allowableValues = {"work", "personal"},
+                            defaultValue = "work"))
     @Operation(summary = "Consulta un elemento propio")
-    public ResponseEntity<ReferenceItemView> get(Authentication authentication, @PathVariable UUID id) {
-        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(service.get(owner(authentication), id));
+    public ResponseEntity<ReferenceItemView> get(
+            Authentication authentication, HttpServletRequest request, @PathVariable UUID id) {
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(service.get(owner(authentication), PrivateSpaceQuery.from(request), id));
     }
 
     @PostMapping
+    @Parameter(
+            name = "space",
+            in = ParameterIn.QUERY,
+            description = "Espacio privado. Por omisión, Trabajo.",
+            schema =
+                    @Schema(
+                            allowableValues = {"work", "personal"},
+                            defaultValue = "work"))
     @Operation(summary = "Crea un elemento privado")
     @SecurityRequirement(name = AuthOpenApi.CSRF_HEADER)
     @ApiResponse(responseCode = "201", description = "Creado; Location relativa al recurso")
     public ResponseEntity<ReferenceItemView> create(
-            Authentication authentication, @Valid @RequestBody ReferenceItemInput input) {
-        var created = service.create(owner(authentication), input);
-        return ResponseEntity.created(URI.create("/api/v1/reference-items/" + created.id()))
+            Authentication authentication, HttpServletRequest request, @Valid @RequestBody ReferenceItemInput input) {
+        var owner = owner(authentication);
+        var space = PrivateSpaceQuery.from(request);
+        var created = service.create(owner, space, input);
+        String path = "/api/v1/reference-items/" + created.id();
+        if (space == PrivateSpace.PERSONAL) {
+            path += "?space=" + space.value();
+        }
+        return ResponseEntity.created(URI.create(path))
                 .cacheControl(CacheControl.noStore())
                 .body(created);
     }
 
     @PutMapping("/{id}")
+    @Parameter(
+            name = "space",
+            in = ParameterIn.QUERY,
+            description = "Espacio privado. Por omisión, Trabajo.",
+            schema =
+                    @Schema(
+                            allowableValues = {"work", "personal"},
+                            defaultValue = "work"))
     @Operation(
             summary = "Reemplaza título y descripción propios",
             description = "Sin upsert; conserva propiedad y fecha de creación. Última escritura confirmada.")
     @SecurityRequirement(name = AuthOpenApi.CSRF_HEADER)
     public ResponseEntity<ReferenceItemView> update(
-            Authentication authentication, @PathVariable UUID id, @Valid @RequestBody ReferenceItemInput input) {
+            Authentication authentication,
+            HttpServletRequest request,
+            @PathVariable UUID id,
+            @Valid @RequestBody ReferenceItemInput input) {
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
-                .body(service.update(owner(authentication), id, input));
+                .body(service.update(owner(authentication), PrivateSpaceQuery.from(request), id, input));
     }
 
     @DeleteMapping("/{id}")
+    @Parameter(
+            name = "space",
+            in = ParameterIn.QUERY,
+            description = "Espacio privado. Por omisión, Trabajo.",
+            schema =
+                    @Schema(
+                            allowableValues = {"work", "personal"},
+                            defaultValue = "work"))
     @Operation(summary = "Borra solo el elemento propio")
     @SecurityRequirement(name = AuthOpenApi.CSRF_HEADER)
     @ApiResponse(responseCode = "204", description = "Borrado, sin cuerpo")
-    public ResponseEntity<Void> delete(Authentication authentication, @PathVariable UUID id) {
-        service.delete(owner(authentication), id);
+    public ResponseEntity<Void> delete(
+            Authentication authentication, HttpServletRequest request, @PathVariable UUID id) {
+        service.delete(owner(authentication), PrivateSpaceQuery.from(request), id);
         return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
     }
 

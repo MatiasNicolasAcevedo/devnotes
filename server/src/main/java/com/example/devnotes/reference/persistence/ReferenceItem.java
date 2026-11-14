@@ -39,18 +39,12 @@ public class ReferenceItem {
 
     protected ReferenceItem() {}
 
-    public ReferenceItem(UUID ownerId, String title, String description, Instant now) {
+    public ReferenceItem(UUID ownerId, PrivateSpace space, String title, String description, Instant now) {
         this.ownerId = ownerId;
-        this.space = PrivateSpace.WORK;
+        this.space = space;
         this.title = title;
         this.description = description;
         this.createdAt = now;
-        this.updatedAt = now;
-    }
-
-    public void update(String title, String description, Instant now) {
-        this.title = title;
-        this.description = description;
         this.updatedAt = now;
     }
 

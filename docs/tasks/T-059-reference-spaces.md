@@ -1,6 +1,6 @@
 ---
 id: T-059
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M5
@@ -8,7 +8,7 @@ spec: S-109
 depends_on: [T-058]
 branch: codex/t-059-reference-spaces
 role: implementer
-executor: junie
+executor: frontier
 pr: null
 ---
 
@@ -18,7 +18,7 @@ pr: null
 
 Crear y consultar referencias en Trabajo o Personal sin filtrar IDs, títulos ni conteos de otro contexto.
 
-Draft **solo por dependencias**: T-058 MERGED y conciliada. Contrato completo en S-109; al cumplirse las dependencias no se necesita otra sesión planner. Cada tarea/revisión usa sesión independiente.
+Dependencia satisfecha: [T-058 MERGED y conciliada](T-058-daily-spaces.md#conciliación). Contrato completo en S-109. Cada tarea/revisión usa sesión independiente.
 
 ## Alcance y decisiones resueltas
 
@@ -58,7 +58,23 @@ Cierre desde raíz: `node scripts/docs-check.mjs`, `git diff --check` y `node sc
 
 ## Checkpoint vigente
 
-Plan preparado en T-052 el 2026-11-12; sin implementación ni tests ejecutados. Al tomar la tarea, registrar SHA/base, comandos, resultados y pendientes. Antes de operación larga: checkpoint con recursos propios y cleanup; comprobar que los nombres E2E de los comandos estén ausentes y limpiar solo por labels del harness. Nunca usar el stack persistente del dueño ni instalar herramientas globales.
+**2026-11-13 · Frontera en rol implementer**, Codex de escritorio (GPT-6, variante y esfuerzo sin verificar), PowerShell, Git Bash, Git, `gh`, Node 24.21.0, Java 21 y Docker Linux. Impacto en API, permisos y datos: referencias acotadas al propietario autenticado y al espacio elegido, persistencia en la columna de V7 y compatibilidad previa por omisión de `space`. Alcance de backend.
+
+`gh pr view 61` y `git ls-remote` confirmaron la [conciliación de T-058](T-058-daily-spaces.md#conciliación). HEAD/base `1b445e954adac4f84e01688ad2fd281e82131214` en el worktree aislado `.orchestrator/t-059/`. Sin PR abiertos ni rama T-059 publicada al inicio.
+
+Rojo sobre las fuentes de `1b445e9` con `ReferenceSpaceApiIT` agregado. Desde `server/` en Git Bash, `./mvnw -o -B -q verify -Dtest=PrivateSpaceTest -Dit.test=ReferenceSpaceApiIT -Djacoco.skip=true` → exit 1. Failsafe ejecutó cuatro casos en PostgreSQL 18.6. Fallaron lectura cruzada (200 en vez de 404), validación (200 en vez de 400), conteo de Personal (4 en vez de 3) y compatibilidad por omisión (1 en vez de 0 para una cuenta con una sola referencia creada en Personal). Se comprobó retiro de PostgreSQL y Ryuk por los IDs exactos de la corrida. Log local `.orchestrator/t-059-logs/backend-red.log`.
+
+Verde sobre las fuentes de implementación de `codex/t-059-reference-spaces`, base `1b445e954adac4f84e01688ad2fd281e82131214`. Desde `server/` en Git Bash, `./mvnw -o -B -q spotless:apply` y `./mvnw -o -B -q verify -Dtest=PrivateSpaceTest,ReferenceItemServiceTest,ReferenceItemControllerTest -Dit.test=ReferenceSpaceApiIT,ReferenceItemIT,ReferenceItemRepositoryIT,DailyNoteApiIT#acceptsNoteWithReferenceAtom,DailyVersionApiIT#versionPreservesReferenceAtom -Djacoco.skip=true` → exit 0, Spotless OK. Surefire 28/28 (10 enum, 12 servicio, 6 MVC) y Failsafe 28/28 (4 API espacios, 15 API referencias, 7 repositorio, 2 regresiones de átomos en diario y versiones), sin omitidos, con PostgreSQL 18.6. Dos identidades y dos espacios, lecturas y escrituras acotadas, páginas y conteos con señuelos, búsqueda literal, 404 equivalente a ID inexistente, 400 sin mutación, 401 y 403 de CSRF ausente o incorrecto. Se verificó el retiro de cinco PostgreSQL y Ryuk por ID y etiqueta, y la ausencia de recursos con etiqueta `com.docker.compose.project=starter-e2e-t-059`. Log local `.orchestrator/t-059-logs/backend-directed.log` y reportes Maven en `server/target/`.
+
+El POST de Personal devuelve una `Location` relativa con `?space=personal` para poder abrir el recurso creado. Trabajo conserva la ruta relativa previa. Los DTO y los límites existentes se conservan.
+
+**FULL/STARTER DIFERIDO POR EL DUEÑO.** El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+
+### Correcciones significativas
+
+| Problema o condición | Arreglo | Prueba |
+|---|---|---|
+| El controller ignoraba `space`, la entidad fijaba Trabajo y las consultas de referencias se acotaban solo por dueño | Parser compartido, espacio explícito al crear y ámbito dueño+espacio en el SQL de listados, conteos, detalle, actualización y borrado | Cuatro casos de `ReferenceSpaceApiIT` en rojo sobre `1b445e9` y luego 28 IT verdes, incluidos negativos directos de escritura en el repositorio |
 
 ## Cierre y siguiente tarea
 
