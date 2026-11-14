@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-061](tasks/T-061-xlsx-spaces-codec.md) · Formato XLSX v2 y lectura de respaldos v1 ([S-109](specs/S-109-private-spaces.md)) |
-| Estado | `in_progress` |
-| Acción actual | Implementar el códec v1/v2 según el [checkpoint de T-061](tasks/T-061-xlsx-spaces-codec.md#checkpoint-vigente), con pruebas dirigidas y PR contra `main` para revisión independiente. FULL/STARTER DIFERIDO POR EL DUEÑO. |
-| Rama / PR | `codex/t-061-xlsx-spaces-codec` · PR pendiente |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente de PR64 según la [entrega de T-061](tasks/T-061-xlsx-spaces-codec.md#entrega-para-revisión), sobre el HEAD y la base publicados. Paso intermedio: no desplegar hasta T-062. FULL/STARTER DIFERIDO POR EL DUEÑO. |
+| Rama / PR | `codex/t-061-xlsx-spaces-codec` · [PR64](https://github.com/MatiasNicolasAcevedo/devnotes/pull/64) |
 
 FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
 
@@ -106,5 +106,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Continuá como Frontera en rol implementer en una sesión nueva la T-061 (docs/tasks/T-061-xlsx-spaces-codec.md) en codex/t-061-xlsx-spaces-codec, retomando su checkpoint vigente sobre main publicado. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
+Actuá como Frontera en rol reviewer en una sesión nueva, distinta de la implementación, y revisá PR64 de MatiasNicolasAcevedo/devnotes (T-061, docs/tasks/T-061-xlsx-spaces-codec.md) sobre el HEAD y la base publicados, en un checkout aislado. Comprobá verify-required del HEAD vigente, el formato v2, la lectura exacta del fixture v1 como Trabajo, los negativos de espacio, clave, mezcla, duplicados y referencias cruzadas, y la conservación de límites, fragmentación y controles ZIP con las pruebas dirigidas de la tarea. Registrá el veredicto en la tarea y en PR64; no mergees sin autorización según docs/AUTONOMY.md. Preservá el checkout principal, trailer/ y FULL/STARTER DIFERIDO POR EL DUEÑO. El ensayo de Render requiere autorización expresa sobre SHA y ventana.
 ```
