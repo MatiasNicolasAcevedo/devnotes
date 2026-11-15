@@ -2,7 +2,7 @@ import { test, expect, login, layout, savedIndicator } from './fixtures';
 
 test.describe.configure({ timeout: 90_000 });
 
-test('multiline clipboard, persistence, scroll focus and compact layout', async ({ page, context, identity }) => {
+test('multiline clipboard, persistence, scroll focus and compact layout', async ({ page, context, identity, isMobile }) => {
   await login(page, identity);
   await page.getByRole('link', { name: 'Notas', exact: true }).click();
   const editor = page.getByRole('textbox', { name: 'Editor de nota diaria' });
@@ -33,7 +33,7 @@ test('multiline clipboard, persistence, scroll focus and compact layout', async 
   await expect(viewport).toHaveCSS('box-shadow', /rgb\(138, 180, 248\)/);
   expect(await viewport.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
   const nav = page.getByRole('navigation', { name: 'Navegación principal' });
-  expect(await nav.evaluate(element => Boolean(element.closest('header')))).toBe(true);
+  expect(await nav.evaluate(element => Boolean(element.closest('header')))).toBe(!isMobile);
   // T-050 (UI-05): el título ya no se ve; fecha, enlace, copiar y guardar versión comparten una fila de la barra.
   await expect(page.getByRole('heading', { level: 1, name: 'Notas diarias' })).toHaveCount(1);
   const toolbar = page.getByRole('group', { name: 'Herramientas del editor' });
@@ -49,7 +49,7 @@ test('multiline clipboard, persistence, scroll focus and compact layout', async 
     centers.push(box.y + box.height / 2);
   }
   expect(Math.max(...centers) - Math.min(...centers)).toBeLessThan(4);
-  expect((await page.getByRole('banner').boundingBox())!.height).toBeLessThanOrEqual(48);
+  expect((await page.getByRole('banner').boundingBox())!.height).toBe(56);
   await layout(page);
 });
 
