@@ -1,6 +1,6 @@
 ---
 id: T-068
-status: changes_requested
+status: in_review
 priority: P1
 size: M
 milestone: M6
@@ -51,7 +51,21 @@ Los nombres `Ocr*` son clases a crear. Guardar recuentos Surefire y Failsafe. De
 
 ## Checkpoint vigente
 
-R2 solicita cambios por [B-2](#b-2--un-resultado-parcial-con-página-inválida-se-clasifica-como-coherente). Frontera implementer corrige en la misma rama y PR y aporta los negativos indicados. El dueño decide la autorización para el STARTER sobre el nuevo SHA técnico y para una R3 independiente. T-069 espera PR71 MERGED.
+Frontera implementer en Codex Desktop (GPT-6, variante y esfuerzo sin dato expuesto), con PowerShell, Git/gh, JDK 21, Node 24 y Docker Desktop Linux. [PR71](https://github.com/MatiasNicolasAcevedo/devnotes/pull/71) OPEN en `codex/t-068-ocr-api`, HEAD de [R2 · CAMBIOS REQUERIDOS](https://github.com/MatiasNicolasAcevedo/devnotes/pull/71#issuecomment-6897102035) `3c697230f70a3225d3692aa1f2d30a0069bf297d`, `verify-required` SUCCESS y punta de `main` `405e7e58b5133220acd2e9c8c425594323469124`. El worktree `.orchestrator/t-068-ocr-api` conserva sus ediciones preexistentes de `AGENTS.md`, `docs/TESTING.md` y `docs/agents/implementer.md`.
+
+Rojo desde `server/`. `mvnw.cmd -o -q -Dtest=OcrSpaceClientTest test` salió 1 con 3 fallos de 20 (`.orchestrator/t068-b2-r2-red.log`). Ante un código de página ausente, un código ilegible tras una página exitosa o un código numérico desconocido tras una página fallida, el doble HTTP reprodujo `OCR_PARTIAL` donde se esperaba `OCR_PROVIDER_ERROR`. La corrección valida todos los códigos de página presentes antes de clasificar el parcial y usa los valores admitidos por [el esquema de respuesta de OCR.space](https://ocr.space/ocrapi#JSON). El cambio se limita a la clasificación de errores del adaptador dentro de S-112.
+
+Verde dirigido en el mismo HEAD/base con el delta local de OCR congelado. `mvnw.cmd -o -q verify -Dtest=OcrScreenshotValidatorTest,OcrSpaceClientTest,OcrConfigurationTest -Dit.test=OcrExtractionApiIT,VoiceTranscriptionApiIT,PortabilityImportApiIT -Djacoco.skip=true` desde `server/` salió 0 (`.orchestrator/t068-b2-r2-directed.log`). Pasaron Spotless, 25/25 Surefire (20/20 del adaptador) y 24/24 Failsafe (4 OCR, 9 voz, 11 portabilidad), con PostgreSQL 18.6 de Testcontainers, OIDC ficticio y doble HTTP. El parcial mixto dio `OCR_PARTIAL` sin fragmentos. Los 429 con cuerpo pequeño, sobredimensionado y retenido conservaron `OCR_QUOTA_EXHAUSTED` sin reintentos. Los controles de tamaño, timeout y éxito ambiguo pasaron. Cleanup confirmado en los cuatro IDs de Testcontainers y 0/0/0 por etiqueta exacta `org.testcontainers=true`.
+
+`git hash-object` coincidió con las versiones probadas de `OcrSpaceResponse.java` (`40fb5a75ab99d9a5e0740c816b2f0f1b90d9df4e`) y `OcrSpaceClientTest.java` (`52a580b06d92ffba3fe220b29b0938abc2c7743b`). El candidato `57771416b4f3c9aa7944acdc95c6c25295348a8a`, árbol `ae43294beeb0a717132d2124ee8a5e5f06f20a15`, congela ambos archivos como único delta sobre el HEAD de R2. GitHub y `git ls-remote` reconfirmaron PR71 OPEN, estado de CI y el par HEAD/base anterior. En el checkout limpio detached `.orchestrator/t068-b2-n1115-51ea`, `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` salieron 0. El merge-base coincide con `main` y la clasificación devuelve `FULL/STARTER`.
+
+El dueño autorizó una única corrida sobre B-2 y una R3 independiente excepcional si pasa. Desde el checkout aislado, PowerShell con Git Bash explícito y Node 24 ejecuta `COMPOSE_ENV_FILES=.env.example STARTER_SERVER_TESTS=container COMPOSE_PROJECT_NAME=starter-verify-t068-b2-n1115-51ea STARTER_LOCAL_TEST_PREFIX=starter-dev-test-t068-b2-n1115-51ea STARTER_E2E_PROJECT=starter-e2e-t068-b2-n1115-51ea bash scripts/verify.sh --starter`. Solo fixtures ficticias. Preflight con puertos 15175/15176/18090 libres y 0/0/0 contenedores, redes y volúmenes por etiqueta exacta en verify, nginx, vite y E2E. Salida y exit en `.orchestrator/t068-b2-n1115-51ea.log` y `.orchestrator/t068-b2-n1115-51ea.exit`. Esperar el cleanup de los harnesses, retirar el proyecto verify por nombre exacto y comprobar 0/0/0 en los proyectos propios, con evidencia en `.orchestrator/t068-b2-n1115-51ea-cleanup.log`.
+
+**STARTER exit 0.** Docs, backend, cliente, tooling y Playwright pasaron. Backend: 629 Surefire, 308 Failsafe con PostgreSQL 18.6, Spotless y JaCoCo. Cliente: 803 pruebas, typecheck, lint, formato, cobertura y build. Playwright: 77/77, 39 escritorio y 38 móvil. JUnit saneado en `e2e/artifacts/starter-e2e-t068-b2-n1115-51ea/sanitized/junit.xml` dentro del checkout aislado, con cero fallos, errores y omitidos. Al cierre coincidieron SHA, árbol y merge-base, y `git status --porcelain` quedó vacío. `git diff --check origin/main...HEAD` salió 0.
+
+Se retiraron la red y el volumen de caché del proyecto verify. Los cuatro proyectos fijos y cinco auxiliares de tooling quedaron en 0/0/0 contenedores, redes y volúmenes por etiqueta exacta. Quedaron 0 de los 68 IDs de Testcontainers registrados en la salida. El log de cleanup y el checkout aislado se conservan como evidencia local.
+
+Tras reconfirmar PR71 OPEN en el HEAD de R2 y la base indicada, se publicó `57771416b4f3c9aa7944acdc95c6c25295348a8a` por fast-forward. GitHub y `git ls-remote` confirmaron el nuevo HEAD técnico y la misma base. Este traspaso modifica únicamente esta tarea y STATUS sobre ese SHA. R3 debe verificar el HEAD final y la base publicados en una sesión independiente. T-069 espera PR71 MERGED.
 
 ## Evidencia de STARTER y traspaso a R2
 
@@ -140,6 +154,7 @@ FULL/STARTER acumulado de I5 sigue diferido.
 | El E2E completo de `8b304e5` expuso cuatro expectativas preexistentes de autenticación/layout, 7 fallos sobre 77 casos. | Alinear solo las aserciones obsoletas con S-109 y la navegación actual. Dirigidos 8/8 con sesiones, PostgreSQL y navegador reales en el checkpoint. |
 | R1 B-1. Un HTTP 429 con cuerpo ficticio de 1.000.001 bytes fallaba por el límite del lector. El primer arreglo cerraba el cuerpo dentro del mapper y falló con 429 pequeño en Temurin Linux. | Esperar la respuesta de cabeceras de HTTP 429, clasificar la cuota y cerrar el cuerpo. Regresión roja con `OCR_PROVIDER_ERROR`; verde con `OCR_QUOTA_EXHAUSTED` para cuerpos pequeño, excesivo y demorado, y una sola solicitud en `c6c9797`. |
 | R1 B-2. `OCRExitCode=2` devolvía `OCR_PARTIAL` aunque todas las páginas informaran éxito. | Rechazar la contradicción como `OCR_PROVIDER_ERROR`. Regresión roja con `OCR_PARTIAL`, verde en `c6c9797`, con control de parcial mixto cuyo texto queda fuera del error. |
+| R2 B-2. Un código de página ausente, ilegible o desconocido se tomaba como fallo de página admitido. | Validar cada código presente. Sobre `3c69723`, el doble HTTP dio tres rojos. El delta dio 20/20 verdes, con parcial mixto y regresiones de cuota, timeout y éxito ambiguo. STARTER exit 0 sobre `5777141`. |
 | Los controles de Notas se montaban durante el reemplazo de `/notes` por la URL con fecha, dejando una ventana en la que la selección podía quedar pisada por la navegación a hoy. | Mostrar carga hasta la URL con fecha. Rojo del montaje transitorio y verde en `320125a`; Playwright móvil 4/4 con las aserciones existentes. |
 
 ## Cierre y siguiente tarea
