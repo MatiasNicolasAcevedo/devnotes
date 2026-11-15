@@ -1,6 +1,6 @@
 ---
 id: T-068
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 milestone: M6
@@ -50,6 +50,10 @@ Desde `server/` con Git Bash, JDK 21 y Docker Linux:
 Los nombres `Ocr*` son clases a crear. Guardar recuentos Surefire y Failsafe. Desde raíz ejecutar `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`. La clasificación aplica la política ordinaria de iniciativas nuevas de [TESTING](../TESTING.md#regla-general-fuera-de-la-excepción) en el cierre técnico, según instrucciones vigentes del dueño. El integrado de I5 queda diferido. Gates de OCR con dobles y valores ficticios.
 
 ## Checkpoint vigente
+
+R2 solicita cambios por [B-2](#b-2--un-resultado-parcial-con-página-inválida-se-clasifica-como-coherente). Frontera implementer corrige en la misma rama y PR y aporta los negativos indicados. El dueño decide la autorización para el STARTER sobre el nuevo SHA técnico y para una R3 independiente. T-069 espera PR71 MERGED.
+
+## Evidencia de STARTER y traspaso a R2
 
 El 2026-11-15 el dueño autorizó una sola corrida adicional de STARTER. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Git Bash, Node 24.21.0 y Docker Desktop Linux. La sesión verificó el candidato existente.
 
@@ -161,3 +165,21 @@ Cierre observable: un 429 con cuerpo pequeño o superior al límite conserva `OC
 S-112 exige `502 OCR_PROVIDER_ERROR` para señales contradictorias. `OcrSpaceResponse.text` devuelve `OCR_PARTIAL` cuando `OCRExitCode=2` antes de contrastarlo con el resultado de página. La prueba devuelve una sola página, exit global 2 y exit de página 1 con texto: el adaptador responde `OCR_PARTIAL` pese a que el único resultado de página indica éxito completo.
 
 Cierre observable: validar la coherencia de las señales de página presentes antes de clasificar un parcial. El caso contradictorio devuelve `OCR_PROVIDER_ERROR`; un parcial coherente sigue devolviendo `OCR_PARTIAL` sin exponer fragmentos. Conservar los negativos de cuota, timeout y éxito ambiguo.
+
+## Revisión independiente R2
+
+2026-11-15, Buenos Aires. Frontera reviewer independiente en Codex Desktop (GPT-6, variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, JDK 21, Node 24.21.0 y Docker Desktop. Checkout detached `.orchestrator/t-068-review-r2-codex`. GitHub confirmó [PR71](https://github.com/MatiasNicolasAcevedo/devnotes/pull/71) OPEN en `codex/t-068-ocr-api`, HEAD de entrada `f0f2c7741af2581bd78f5aa662a391598785d034`, base y punta de `main` `405e7e58b5133220acd2e9c8c425594323469124`, y [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43705422519/job/132785339702) en el mismo HEAD. El padre `320125a623d482763e988db86c76cdf446c27ed0` coincide con el candidato de STARTER. Su delta al HEAD solo modifica STATUS y T-068.
+
+- `node scripts/docs-check.mjs` y `git diff --check 405e7e5...HEAD` pasaron. `node scripts/ci/classify-diff.mjs --base 405e7e58b5133220acd2e9c8c425594323469124 --head HEAD --phase FULL` dio `FULL/STARTER` (29 de 42 rutas técnicas). Cotejé checkout limpio, SHA/árbol/base, el resumen con las cinco etapas en verde, 626 Surefire, 308 Failsafe, 803 Vitest y el JUnit saneado de Playwright con 77 casos y cero fallos, errores u omitidos. El log de cleanup y la consulta a Docker por etiqueta exacta coincidieron en 0/0/0 para los nueve proyectos de STARTER. Se conserva esa evidencia sobre las fuentes de entrada. R2 ejecutó solo dirigidos.
+- En `server/`, `mvnw.cmd -o -q verify -Dtest=OcrScreenshotValidatorTest,OcrSpaceClientTest,OcrConfigurationTest -Dit.test=OcrExtractionApiIT,VoiceTranscriptionApiIT,PortabilityImportApiIT -Djacoco.skip=true` salió 0: **22/22 Surefire y 24/24 Failsafe**, con PostgreSQL 18.6 y OIDC/proveedor ficticios. Los cuatro contenedores de Testcontainers identificados quedaron ausentes. **B-1 cerrado**: los 429 con cuerpo pequeño, mayor a 1 MB y retenido por el doble conservaron `OCR_QUOTA_EXHAUSTED`. El HTTP 200 excesivo devolvió `OCR_PROVIDER_ERROR` y el lento, `OCR_TIMEOUT`. Sin redirección ni reintento.
+- En `client/`, `npm.cmd test -- --run src/features/daily/DailyDraftNavigation.test.tsx src/features/daily/DailyNotesPage.test.tsx src/features/daily/DailyNotesToolbar.test.tsx src/app/AppRoutes.test.tsx src/features/spaces/SpaceNavigation.test.tsx` salió 0: **76/76**. En `/notes` la carga precede al montaje del selector en la URL definitiva. El JUnit de STARTER conserva T-020, CA-04, CA-06 y SP-06/SP-07 en escritorio y móvil.
+
+### B-2 · Un resultado parcial con página inválida se clasifica como coherente
+
+El caso exacto de R1 (exit global 2 y todas las páginas exitosas) ya devuelve `OCR_PROVIDER_ERROR`, y el parcial mixto coherente conserva `OCR_PARTIAL`. Sin embargo, [OcrSpaceResponse.java](../../server/src/main/java/com/example/devnotes/ocr/OcrSpaceResponse.java) acepta cualquier valor de página distinto de `1`. `code()` convierte un valor ausente o inválido en `Integer.MIN_VALUE`, de modo que una página malformada se toma como evidencia de fallo de página.
+
+Reproducción independiente sobre las clases compiladas del HEAD de entrada, con respuestas ficticias y sin cambios en fuentes. `server/target/OcrPartialReviewerCheck.java` salió 1 (dos controles verdes y dos fallos). Con `OCRExitCode=2` e `IsErroredOnProcessing=false`, tanto `ParsedResults:[{}]` como una página exitosa seguida por `{"FileParseExitCode":"invalid"}` devolvieron `OCR_PARTIAL`. S-112 exige HTTP 502 `OCR_PROVIDER_ERROR` para una respuesta inválida. Los detalles saneados quedan en `server/target/t068-r2-malformed-partial.log` del checkout aislado.
+
+**Condición de cierre.** Validar la presencia y el valor admitido de `FileParseExitCode` en cada página presente antes de clasificar un parcial. Agregar los dos casos rojos al doble HTTP y demostrar que devuelven `OCR_PROVIDER_ERROR`, que el parcial mixto válido conserva `OCR_PARTIAL` sin fragmentos y que siguen verdes los negativos de cuota, timeout y éxito ambiguo.
+
+**Siguiente decisión.** Frontera implementer corrige en una sesión nueva sobre PR71 y deja las regresiones rojo/verde y los dirigidos de OCR. Para cerrar fuentes nuevas, el dueño debe autorizar un STARTER de T-068 según el perfil del PR y, agotadas las dos rondas, una R3 independiente que coteje la corrección, el gate y `verify-required` sobre el HEAD y la base vigentes. Solo tras ese veredicto y los requisitos de AUTONOMY corresponde evaluar el merge. T-069 espera PR71 MERGED. El gate acumulado de I5, la clave de T-071 y la autorización de Render conservan sus condiciones.
