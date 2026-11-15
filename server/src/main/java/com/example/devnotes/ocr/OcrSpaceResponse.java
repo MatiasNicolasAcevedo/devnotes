@@ -44,12 +44,16 @@ final class OcrSpaceResponse {
         JsonNode page = pages.path(0);
         int pageCode = code(page.path("FileParseExitCode"));
         boolean quota = quota(root.path("ErrorMessage")) || quota(root.path("ErrorDetails"));
-        if (exit == 2
-                && !error.booleanValue()
-                && !quota
-                && (pages.isEmpty()
-                        || pages.valueStream().anyMatch(result -> code(result.path("FileParseExitCode")) != 1))) {
-            throw OCR_PARTIAL.failure();
+        if (exit == 2 && !error.booleanValue() && !quota) {
+            boolean partial = pages.isEmpty();
+            for (JsonNode result : pages) {
+                switch (code(result.path("FileParseExitCode"))) {
+                    case 1 -> {}
+                    case 0, -10, -20, -30, -99 -> partial = true;
+                    default -> throw OCR_PROVIDER_ERROR.failure();
+                }
+            }
+            throw (partial ? OCR_PARTIAL : OCR_PROVIDER_ERROR).failure();
         }
         if ((exit == 3 || exit == 4) && error.booleanValue()) {
             if (!quota && pages.size() == 1 && pageCode == -20 && absentText(page.path("ParsedText"))) {

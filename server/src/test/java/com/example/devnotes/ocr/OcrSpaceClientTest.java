@@ -94,6 +94,9 @@ class OcrSpaceClientTest {
             OCR_PARTIAL | {"OCRExitCode":2,"IsErroredOnProcessing":false}
             OCR_PARTIAL | {"OCRExitCode":2,"IsErroredOnProcessing":false,"ParsedResults":[{"FileParseExitCode":1,"ParsedText":"private"},{"FileParseExitCode":-10}]}
             OCR_PROVIDER_ERROR | {"OCRExitCode":2,"IsErroredOnProcessing":false,"ParsedResults":[{"FileParseExitCode":1,"ParsedText":"private"}]}
+            OCR_PROVIDER_ERROR | {"OCRExitCode":2,"IsErroredOnProcessing":false,"ParsedResults":[{}]}
+            OCR_PROVIDER_ERROR | {"OCRExitCode":2,"IsErroredOnProcessing":false,"ParsedResults":[{"FileParseExitCode":1,"ParsedText":"private"},{"FileParseExitCode":"invalid"}]}
+            OCR_PROVIDER_ERROR | {"OCRExitCode":2,"IsErroredOnProcessing":false,"ParsedResults":[{"FileParseExitCode":1,"ParsedText":"private"},{"FileParseExitCode":-10},{"FileParseExitCode":99}]}
             OCR_NO_TEXT | {"OCRExitCode":1,"IsErroredOnProcessing":false,"ParsedResults":[{"FileParseExitCode":1,"ParsedText":" "}]}
             OCR_NO_TEXT | {"OCRExitCode":1,"IsErroredOnProcessing":false,"ParsedResults":[{"FileParseExitCode":1}]}
             OCR_TIMEOUT | {"OCRExitCode":3,"IsErroredOnProcessing":true,"ParsedResults":[{"FileParseExitCode":-20}]}
