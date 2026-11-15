@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { useLayoutEffect } from 'react'
 import { Link, Route, Routes, useLocation, useNavigate } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import { http as mock, HttpResponse } from 'msw'
@@ -8,6 +9,7 @@ import { installAuthBackend } from '../../test/msw/authBackend'
 import { buildAuthUser, problemResponse } from '../../test/factories'
 import { DailyDraftWorkspace } from './DailyDraftNavigation'
 import { useDailyDraftContext, useOptionalDailyDraftContext } from './DailyDraftProvider'
+import { todayLocal } from './dateUtils'
 import { setTestDebounce } from './useDailyNote'
 
 const date = '2026-10-19'
@@ -97,6 +99,35 @@ describe('borrador diario y espacio', () => {
 })
 
 describe('navegación del borrador', () => {
+  it('monta los controles de la nota solo cuando la URL de hoy ya tiene fecha', async () => {
+    const today = todayLocal()
+    const mountedAt: string[] = []
+    installAuthBackend({ user: buildAuthUser() })
+    server.use(mock.get(`/api/v1/daily-notes/${today}`, () => problemResponse(404)))
+
+    function NoteControls() {
+      const { pathname } = useLocation()
+      useLayoutEffect(() => {
+        mountedAt.push(pathname)
+      }, [pathname])
+      return <input type="date" aria-label="Fecha" defaultValue={today} />
+    }
+
+    renderWithProviders(
+      <Routes>
+        <Route element={<Shell />}>
+          <Route path="notes" element={<NoteControls />} />
+          <Route path="notes/:date" element={<NoteControls />} />
+        </Route>
+      </Routes>,
+      { route: '/notes?space=work' },
+    )
+
+    expect(await screen.findByLabelText('Fecha')).toHaveValue(today)
+    expect(screen.getByTestId('route')).toHaveTextContent(`/notes/${today}`)
+    expect(mountedAt).not.toContain('/notes')
+  })
+
   it('un fallo de flush conserva ruta y texto al pulsar un enlace del shell', async () => {
     server.use(mock.put(detailPath, () => problemResponse(503)))
     const { user } = renderWorkspace()
