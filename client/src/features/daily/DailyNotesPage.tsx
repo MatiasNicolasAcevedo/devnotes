@@ -31,6 +31,7 @@ import { useSaveDailyVersion } from '../../features/daily/useSaveDailyVersion'
 import { isValidIsoDate } from './dateUtils'
 import { useSpaceHref } from '../spaces/spaceContext'
 import { CopyPreviousNote } from './CopyPreviousNote'
+import { OcrTools } from '../ocr/OcrTools'
 
 // ——— Fallbacks sin provider ———
 
@@ -71,7 +72,7 @@ function DailyNotesLoginRequired() {
 
 function DailyNotesInner() {
   const navigate = useNavigate()
-  const { status: sessionStatus, user: sessionUser } = useSession()
+  const { status: sessionStatus, user: sessionUser, csrfReady } = useSession()
 
   // Hook del provider — siempre disponible aquí porque solo se monta dentro de DailyDraftProvider
   const ctx = useDailyDraftContext()
@@ -263,6 +264,14 @@ function DailyNotesInner() {
           save={saveVersion}
           date={targetDate}
           disabled={ctx.isCopyingPrevious || ctx.copyTargetNeedsReload}
+        />
+      )}
+      {sessionUser && (
+        <OcrTools
+          key={JSON.stringify([sessionUser.id, space, targetDate])}
+          owner={sessionUser.id}
+          space={space}
+          csrfReady={csrfReady}
         />
       )}
       {/* Los avisos largos no entran en la fila de controles: van en una fila propia justo debajo. */}

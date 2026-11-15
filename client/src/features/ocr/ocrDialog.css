@@ -1,0 +1,85 @@
+.ocr-dialog-content {
+  container-type: inline-size;
+  min-height: 0;
+}
+
+.ocr-panes,
+.ocr-capture,
+.ocr-result {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ocr-capture,
+.ocr-result {
+  align-content: start;
+  justify-items: start;
+}
+
+.ocr-result[data-empty='true'],
+.ocr-preview[data-collapsed='true'] {
+  display: none;
+}
+
+.ocr-paste-zone,
+.ocr-preview {
+  width: 100%;
+}
+
+.ocr-preview img {
+  display: block;
+  width: 100%;
+  max-height: min(46dvh, 32rem);
+  object-fit: contain;
+}
+
+.ocr-image-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ocr-feedback {
+  display: grid;
+  gap: 8px;
+}
+
+.ocr-feedback:not(:has(:not(:empty))) {
+  display: none;
+}
+
+.ocr-feedback,
+.ocr-actions {
+  margin-top: 16px;
+}
+
+.ocr-actions.MuiDialogActions-root {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 16px;
+}
+
+.ocr-actions p {
+  flex: 1 1 20rem;
+}
+
+@container (min-width: 880px) {
+  .ocr-panes {
+    grid-template-columns: minmax(0, 1fr) minmax(400px, 1fr);
+    gap: 24px;
+  }
+
+  .ocr-result[data-empty='true'] {
+    display: grid;
+  }
+
+  .ocr-preview[data-collapsed='true'] {
+    display: block;
+  }
+
+  .ocr-preview-toggle.MuiButton-root {
+    display: none;
+  }
+}

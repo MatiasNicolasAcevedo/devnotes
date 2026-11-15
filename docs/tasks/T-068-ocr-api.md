@@ -1,6 +1,6 @@
 ---
 id: T-068
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M6
@@ -51,7 +51,11 @@ Los nombres `Ocr*` son clases a crear. Guardar recuentos Surefire y Failsafe. De
 
 ## Checkpoint vigente
 
-[R3 independiente favorable](#revisión-independiente-r3). La retoma de merge debe corroborar en PR71 el comentario de veredicto sobre HEAD y base vigentes, `verify-required` verde y las condiciones de AUTONOMY. Render conserva su autorización separada sobre SHA y ventana. T-069 espera PR71 MERGED.
+[PR71 MERGED y conciliada](#conciliación). Se conserva el [STARTER de B-2](#evidencia-de-starter-de-b-2-y-traspaso-a-r3) cotejado en [R3](#revisión-independiente-r3). Sigue T-069.
+
+## Conciliación
+
+El 2026-11-15, `gh pr view 71 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName,baseRefOid,statusCheckRollup` salió 0 y confirmó [PR71](https://github.com/MatiasNicolasAcevedo/devnotes/pull/71) en `MERGED`, a las `22:05:42Z` (19:05:42 de Buenos Aires), con squash `b8ba81f950dd190851b9b5430e479691e19361df` a `main`. HEAD final `7440e722eb64c242d1796433f89ef148d4e52389`, base del PR `405e7e58b5133220acd2e9c8c425594323469124` y [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43764828467/job/132967473877). `git ls-remote --heads origin main` confirmó el squash como punta de `main`. Conciliada en el primer avance de T-069.
 
 ## Evidencia de STARTER de B-2 y traspaso a R3
 

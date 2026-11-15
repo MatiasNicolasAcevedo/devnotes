@@ -1,6 +1,6 @@
 ---
 id: T-069
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M6
@@ -55,7 +55,19 @@ Desde raíz, `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/c
 
 ## Checkpoint vigente
 
-Draft por dependencia T-068. El recorrido mantiene el borrador en el editor y define la extracción y la copia como acciones deliberadas. Las pruebas de navegador, precisión real y Render siguen sus tareas o permisos propios.
+2026-11-15 (Buenos Aires). Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Node 24.21.0 y skill `frontend-design`. Base remota `b8ba81f950dd190851b9b5430e479691e19361df`. [T-068 conciliada](T-068-ocr-api.md#conciliación) con STARTER conservado. El cambio afecta la UI de Notas y consume la API OCR existente; los archivos y el texto OCR son transitorios. El gate acumulado de I5 sigue diferido y la clave real corresponde a T-071.
+
+## Verificación dirigida
+
+- Los seis archivos indicados en el contrato dieron 90/90, incluido el POST explícito con CSRF, cancelación/validación, aborto y descarte al cambiar de imagen, fecha, espacio o cuenta, cierre de sesión, cuota, timeout, edición y portapapeles. `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build` salieron 0. El build avisó por tamaño del chunk principal. Log de Vitest en `.orchestrator/t069-directed.log`.
+- Chromium con una captura y resultado ficticios en un render local aislado. El selector nativo entregó el PNG completo y el ensayo de disposición hizo cero peticiones a la API. Escritorio 400/480/640 en una columna y 1280 en dos, con 496 px útiles de texto. Táctil 360/375/390 y horizontal 640×280 en pantalla completa, con campo de 16 px, controles de 48 px y sin desborde horizontal. A 1280 se conservaron nodo editable, borrador, posición del cursor y undo, con foco de vuelta en Herramientas. Script y registro en `.orchestrator/t069-layout.mjs` y `.orchestrator/t069-layout.log`. El recorrido con backend real corresponde a T-070.
+
+## Correcciones de implementación
+
+| Problema y causa | Arreglo y evidencia |
+|---|---|
+| El diálogo incluía «Cerrar» en el nombre accesible porque el botón estaba dentro del título. | El cierre queda junto al encabezado, con nombre propio. Vitest encuentra el diálogo por su título y comprueba el retorno de foco a Herramientas. |
+| El tope de ancho predeterminado de MUI dejaba 32 px de margen a cada lado en escritorio angosto. El evento nativo `cancel` del selector tampoco llegaba al manejador React del input. | El papel usa el ancho previsto con margen de 12 px y se escucha `cancel` en el input. Chromium midió 376 px de diálogo a 400 px de ventana. Vitest comprueba el aviso y que se conserva la captura anterior. |
 
 ## Cierre y siguiente tarea
 

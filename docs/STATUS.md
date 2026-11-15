@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-068](tasks/T-068-ocr-api.md) · Extracción OCR autenticada con proveedor simulado ([S-112](specs/S-112-screenshot-ocr.md)) |
-| Estado | `mergeable` |
-| Acción actual | [R3 independiente favorable](tasks/T-068-ocr-api.md#revisión-independiente-r3). Verificar el veredicto vigente de PR71 y coordinar el merge conforme a AUTONOMY y la autorización de Render. |
-| Rama / PR | `codex/t-068-ocr-api` · [PR71](https://github.com/MatiasNicolasAcevedo/devnotes/pull/71) |
+| Tarea y contrato | [T-069](tasks/T-069-ocr-workspace.md) · Copiar texto de una captura desde Notas ([S-112](specs/S-112-screenshot-ocr.md)) |
+| Estado | `in_progress` |
+| Acción actual | Verificar el cierre de T-069 en un checkout limpio y publicar para revisión independiente. |
+| Rama / PR | `codex/t-069-ocr-workspace` · pendiente de publicación |
+
+[T-068](tasks/T-068-ocr-api.md#conciliación) conciliada como `done` tras PR71 MERGED, con su evidencia de STARTER conservada.
 
 [T-067](tasks/T-067-copy-previous-client.md#conciliación) conciliada como `done`. [Control de I5](tasks/T-067-copy-previous-client.md#control-de-avance-de-i5--t-063-a-t-067) completo. **FULL/STARTER de I5 diferidos por el dueño.** SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño.
 
@@ -128,5 +130,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera merger para T-068, PR71 de MatiasNicolasAcevedo/devnotes. Leé AGENTS.md, docs/STATUS.md, docs/tasks/T-068-ocr-api.md, docs/AUTONOMY.md y docs/agents/merger.md. Consultá primero el estado remoto. Si PR71 sigue OPEN, verificá el comentario R3 APROBADO sobre HEAD/base vigentes, verify-required SUCCESS, evidencia de STARTER y conversaciones bloqueantes resueltas. Render tiene Auto-Deploy On Commit y requiere autorización separada sobre SHA y ventana. Aclaralo con el dueño antes del squash si el merge dispara un deploy. Si se cumplen las condiciones, completá el squash ligado al SHA revisado y confirmá MERGED, SHA y fecha en GitHub. Si ya figura MERGED, verificá esos datos. T-069 espera PR71 MERGED. Conservá el STARTER ya ejecutado, el gate acumulado de I5 diferido y la clave real para T-071.
+Actuá como Frontera implementer para continuar T-069 en codex/t-069-ocr-workspace. Leé AGENTS.md, docs/STATUS.md, docs/tasks/T-069-ocr-workspace.md, client/AGENTS.md y docs/agents/implementer.md. Confirmá en GitHub que PR71 sigue MERGED y verificá main y la rama de tarea antes de publicar. Retomá por el checkpoint y el resultado del FULL propio de T-069. Si el gate sigue activo, esperá su salida y cotejá SHA, base y cleanup. Con evidencia verde, publicá el PR contra main y dejá el prompt de revisión independiente. Conservá la evidencia STARTER de T-068, el gate acumulado de I5 diferido y la clave real para T-071.
 ```
