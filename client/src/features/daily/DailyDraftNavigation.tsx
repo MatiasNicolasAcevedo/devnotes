@@ -143,6 +143,7 @@ function DailyDraftOutlet({
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const date = routeDate(pathname)
+  const isTodayAlias = pathname === '/notes'
   const noteHref = spaceHref(`/notes/${ctx.activeDate}`, ctx.space)
   const onActiveNote = date === ctx.activeDate
   const pending =
@@ -154,10 +155,10 @@ function DailyDraftOutlet({
     if (!pending && date && date !== ctx.activeDate) {
       void ctx.navigateToDate(date).catch(() => {})
     }
-    if (pathname === '/notes' && onActiveNote) {
+    if (isTodayAlias && onActiveNote) {
       void navigate(noteHref, { replace: true })
     }
-  }, [ctx, date, pending, pathname, onActiveNote, navigate, outletOverride, noteHref])
+  }, [ctx, date, pending, isTodayAlias, onActiveNote, navigate, outletOverride, noteHref])
 
   if (outletOverride !== undefined) return outletOverride
   if (pending)
@@ -190,6 +191,7 @@ function DailyDraftOutlet({
         </Stack>
       </Alert>
     )
-  if (date && !onActiveNote) return <p role="status">Cargando nota…</p>
+  // El selector debe montarse en la URL definitiva: el replace de hoy podría pisar su navegación.
+  if (isTodayAlias || (date && !onActiveNote)) return <p role="status">Cargando nota…</p>
   return <Outlet />
 }

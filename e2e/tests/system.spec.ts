@@ -1,4 +1,4 @@
-import { test, expect, control, readiness, layout, serverStatus, login, accountButton } from './fixtures';
+import { test, expect, control, readiness, layout, serverStatus, login, accountButton, returnToForeground } from './fixtures';
 
 test.describe.configure({ timeout: 90_000 });
 
@@ -167,7 +167,8 @@ test('compiled shell displays the real server status and recovers accessibly thr
   expect((await recovered).status()).toBe(401);
   await expect(error).toHaveCount(0);
   await expect(page.getByRole('link', { name: 'Ingresar', exact: true })).toBeVisible();
-  // El indicador revalida solo cada 5 s: vuelve a «conectado» sin recargar la página.
+  // El indicador vuelve a consultar readiness al regresar al primer plano, sin recargar.
+  await returnToForeground(page);
   // Directed red assay changes this relevant expected UI result, never the server response.
   await expect(serverStatus(page, process.env.E2E_ASSERT_FAILURE === '1'
     ? 'INDUCED_WRONG_CONNECTED_LABEL' : 'Servidor conectado')).toBeVisible({ timeout: 20_000 });

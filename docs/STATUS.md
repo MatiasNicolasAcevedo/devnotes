@@ -2,12 +2,22 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-067](tasks/T-067-copy-previous-client.md) · Empezar el día desde una nota anterior ([S-110](specs/S-110-previous-day-copy.md)) |
+| Tarea y contrato | [T-068](tasks/T-068-ocr-api.md) · Extracción OCR autenticada con proveedor simulado ([S-112](specs/S-112-screenshot-ocr.md)) |
 | Estado | `mergeable` |
-| Acción actual | [Revisión independiente R3 favorable](tasks/T-067-copy-previous-client.md#revisión-independiente-r3). Verificar el veredicto de PR70 sobre HEAD/base vigentes y confirmar el merge según AUTONOMY. |
-| Rama / PR | `codex/t-067-copy-previous-client` · [PR70](https://github.com/MatiasNicolasAcevedo/devnotes/pull/70) |
+| Acción actual | [R3 independiente favorable](tasks/T-068-ocr-api.md#revisión-independiente-r3). Verificar el veredicto vigente de PR71 y coordinar el merge conforme a AUTONOMY y la autorización de Render. |
+| Rama / PR | `codex/t-068-ocr-api` · [PR71](https://github.com/MatiasNicolasAcevedo/devnotes/pull/71) |
 
-FULL/STARTER diferidos según [TESTING](TESTING.md#excepción-i5-del-2026-11-12).
+[T-067](tasks/T-067-copy-previous-client.md#conciliación) conciliada como `done`. [Control de I5](tasks/T-067-copy-previous-client.md#control-de-avance-de-i5--t-063-a-t-067) completo. **FULL/STARTER de I5 diferidos por el dueño.** SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño.
+
+**Cuándo interviene el dueño con claves**
+
+| Hito | Variable y lugar |
+|---|---|
+| [T-071](tasks/T-071-ocr-first-real-test.md#alcance-e-intervención-del-dueño) · Primer ensayo real de OCR, tras T-070 | Cuando Frontera confirme el SHA y el stack ficticio esté preparado, autorizar las muestras y cargar `OCR_SPACE_API_KEY` en el entorno privado que inicia el servicio backend local aislado. Avisar «cargada» basta. T-068 a T-070 usan un doble. |
+| [T-072](tasks/T-072-writing-provider-evaluation.md#decisiones-y-primera-prueba-real) · Experimento local posterior a OCR | Tras el veredicto de OCR y al autorizar el experimento, cargar para cada configuración que se pruebe `GROQ_API_KEY`, `CLOUDFLARE_API_TOKEN` con `CLOUDFLARE_ACCOUNT_ID`, o `GEMINI_API_KEY` en el entorno privado del backend local aislado. |
+| Render · Activación posterior | El dueño configura la variable del proveedor elegido en **Render Dashboard → devnotes-pilot → Environment**, solo con autorización expresa sobre SHA y ventana. Guardar con **Save only** antes del deploy por SHA autorizado. Frontera avisa cuando el siguiente paso dependa de la carga privada. |
+
+**Render, disponibilidad.** Auto-Deploy quedó en **On Commit** para main. El 2026-11-14 a las 18:16:26 de Buenos Aires, Render confirmó `405e7e5` **Live** y readiness devolvió HTTP 200 `UP`. La activación o prueba de la sonda y la futura configuración de claves en Render conservan su autorización separada sobre SHA y ventana. [Observación y confirmación](tasks/T-056-service-activity-journey.md#observación-del-piloto-del-2026-11-14).
 
 [T-066](tasks/T-066-copy-previous-api.md#conciliación) conciliada como `done` tras PR69 MERGED.
 
@@ -118,5 +128,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera en rol merger para T-067 (S-110), PR70 de MatiasNicolasAcevedo/devnotes. Leé AGENTS.md, docs/STATUS.md, docs/tasks/T-067-copy-previous-client.md, docs/AUTONOMY.md y docs/agents/merger.md. Consultá primero el estado remoto. Si PR70 sigue abierto, comprobá contra main el veredicto R3 APROBADO sobre el par HEAD/base vigente, verify-required SUCCESS en ese HEAD, evidencia dirigida y conversaciones bloqueantes resueltas. Completá el squash ligado al SHA revisado si cumple AUTONOMY. Si ya figura MERGED, verificá el squash y mergedAt en GitHub. Conservá esa evidencia y devolvé a Frontera/dueño el control de avance de I5 (T-063 a T-067) y la decisión del siguiente alcance. Dejá la conciliación documental para el primer avance autorizado. Preservá el checkout principal, trailer/ y los worktrees ajenos. FULL/STARTER DIFERIDO POR EL DUEÑO. SP-06 en Android físico con teclado real y zoom nativo pendiente del dueño. Render requiere autorización expresa separada sobre SHA y ventana.
+Actuá como Frontera merger para T-068, PR71 de MatiasNicolasAcevedo/devnotes. Leé AGENTS.md, docs/STATUS.md, docs/tasks/T-068-ocr-api.md, docs/AUTONOMY.md y docs/agents/merger.md. Consultá primero el estado remoto. Si PR71 sigue OPEN, verificá el comentario R3 APROBADO sobre HEAD/base vigentes, verify-required SUCCESS, evidencia de STARTER y conversaciones bloqueantes resueltas. Render tiene Auto-Deploy On Commit y requiere autorización separada sobre SHA y ventana. Aclaralo con el dueño antes del squash si el merge dispara un deploy. Si se cumplen las condiciones, completá el squash ligado al SHA revisado y confirmá MERGED, SHA y fecha en GitHub. Si ya figura MERGED, verificá esos datos. T-069 espera PR71 MERGED. Conservá el STARTER ya ejecutado, el gate acumulado de I5 diferido y la clave real para T-071.
 ```

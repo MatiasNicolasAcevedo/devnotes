@@ -65,6 +65,13 @@ async function loggedIn(page) {
   await page.keyboard.press('Escape');
   await expect(page.getByRole('menu')).toHaveCount(0);
 }
+
+async function revalidateAfterDatabaseChange(page, status) {
+  // Wait for the real backend transition before asking the open page to revalidate on foreground.
+  await expect.poll(async () => (await page.request.get('/actuator/health/readiness', { timeout: 5000 })).status(),
+    { timeout: 30_000 }).toBe(status);
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange', { bubbles: true })));
+}
 const tunnels = new Set();
 const tunnel = net.createServer(socket => {
   const upstream = net.connect({ host: proxy === 'vite' ? 'client-dev' : 'client', port: proxy === 'vite' ? 5173 : 80 });
@@ -96,10 +103,15 @@ try {
   phase = 'login';
   await page.goto('/login');
   if (!(await context.request.get('/api/v1/auth/me')).ok()) {
+    phase = 'login-oidc';
     const target = page.getByRole('link', { name: 'Continuar con Google', exact: true });
     await expect(target).toBeVisible();
     await target.press('Enter');
   } else await page.goto('/');
+  phase = 'login-notes';
+  // The account menu closes on route changes. Wait for the authenticated space URL before opening it.
+  await expect(page).toHaveURL(/\/notes(?:\/\d{4}-\d{2}-\d{2})?\?space=work$/);
+  phase = 'login-account-menu';
   await loggedIn(page);
   const me = await context.request.get('/api/v1/auth/me');
   assert.equal(me.status(), 200);
@@ -124,6 +136,7 @@ try {
     const started = Date.now();
     writeFileSync('/artifacts/outage-ready', 'ready');
     const offline = serverStatus(page, 'Servidor sin conexión');
+    await revalidateAfterDatabaseChange(page, 503);
     await expect(offline).toBeVisible({ timeout: 30_000 });
     assert.ok(Date.now() - started < 30_000);
     await expect(serverStatus(page, 'Servidor conectado')).toHaveCount(0);
@@ -133,12 +146,14 @@ try {
     assert.equal((await context.request.get('/api/v1/system/info')).status(), 200);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     await page.screenshot({ path: `/artifacts/safe-home-down-${action.split('-')[1]}.png` });
+    console.log(`Local browser ${proxy}: DB ${action.split('-')[1]} offline in ${Date.now() - started} ms from stop coordination.`);
     writeFileSync('/artifacts/outage-down', 'down');
     phase = 'database-restart-coordination';
     await expect.poll(() => existsSync('/artifacts/outage-restart'), { timeout: 30_000 }).toBe(true);
     const recovery = Date.now();
     phase = 'database-recovery';
     writeFileSync('/artifacts/outage-restart-ready', 'ready');
+    await revalidateAfterDatabaseChange(page, 200);
     await expect(serverStatus(page, 'Servidor conectado')).toBeVisible({ timeout: 30_000 });
     assert.ok(Date.now() - recovery < 30_000);
     await expect(offline).toHaveCount(0);

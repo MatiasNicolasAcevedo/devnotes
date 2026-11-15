@@ -52,6 +52,8 @@ public final class OidcHttpProvider implements AutoCloseable {
     private final Map<String, Grant> codes = new ConcurrentHashMap<>();
     private final Map<String, Grant> accessTokens = new ConcurrentHashMap<>();
     private final AtomicInteger subjects = new AtomicInteger();
+    private final java.util.concurrent.atomic.AtomicBoolean reuseSubject =
+            new java.util.concurrent.atomic.AtomicBoolean();
     final AtomicInteger tokenCalls = new AtomicInteger();
     final AtomicInteger userInfoCalls = new AtomicInteger();
     final AtomicInteger jwksCalls = new AtomicInteger();
@@ -73,6 +75,11 @@ public final class OidcHttpProvider implements AutoCloseable {
 
     public String issuer() {
         return "http://127.0.0.1:" + server.getAddress().getPort() + "/default";
+    }
+
+    /** Use the last fictitious account in the next authorization, with fresh codes and session state. */
+    public void reuseSubjectOnNextAuthorization() {
+        reuseSubject.set(true);
     }
 
     void select(Variant value) {
@@ -133,7 +140,8 @@ public final class OidcHttpProvider implements AutoCloseable {
         require(OidcHttpBrowser.CALLBACK.equals(query.get("redirect_uri")));
         require(query.containsKey("state") && query.containsKey("nonce"));
         String code = UUID.randomUUID().toString();
-        String subject = "oidc-fixture-" + subjects.incrementAndGet();
+        int subjectNumber = reuseSubject.getAndSet(false) ? subjects.get() : subjects.incrementAndGet();
+        String subject = "oidc-fixture-" + subjectNumber;
         if (variant == Variant.DB_CONSTRAINT) subject = "oidc-fixture-" + "x".repeat(300);
         codes.put(code, new Grant(variant, query.get("nonce"), subject));
         exchange.getResponseHeaders()

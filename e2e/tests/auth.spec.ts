@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { test, expect, control, readiness, login, label, layout, keyboardActivate, issuer, accountButton, expectLoggedIn, notesUrl } from './fixtures';
+import { test, expect, control, readiness, login, label, layout, keyboardActivate, issuer, accountButton, expectLoggedIn, notesUrl, returnToForeground } from './fixtures';
 
 test.describe.configure({ timeout: 90_000 });
 
@@ -26,12 +26,13 @@ test('visitor, real OIDC callback, reload and repeated login preserve the Postgr
   await expect(accountButton(page, identity)).toBeVisible();
   expect((await (await page.request.get('/api/v1/auth/me')).json()).id).toBe(id);
   expect(await control('fingerprint', identity)).toEqual(fingerprint);
-  const exposure = await page.evaluate(() => ({
+  const exposure = await page.evaluate(spaceKey => ({
     cookies: document.cookie.split(';').filter(Boolean).map(item => item.trim().split('=')[0]),
-    local: localStorage.length, session: sessionStorage.length,
-  }));
+    local: localStorage.length, space: localStorage.getItem(spaceKey), session: sessionStorage.length,
+  }), `devnotes:last-space:${id}`);
   expect(exposure.cookies).toEqual(['XSRF-TOKEN']);
-  expect(exposure.local).toBe(0);
+  expect(exposure.local).toBe(1);
+  expect(exposure.space).toBe('work');
   expect(exposure.session).toBe(0);
 });
 
@@ -46,8 +47,9 @@ test('logout requires CSRF, confirms 204, renews protection and rejects the old 
   expect((await (await page.request.get('/api/v1/auth/me')).json()).id).toBe(id);
   await expect(page.getByText('La sesión terminó. Volvé a ingresar.')).toHaveCount(0);
   const logout = page.waitForResponse(response => new URL(response.url()).pathname === '/logout' && response.request().method() === 'POST');
-  // Por teclado: el botón de cuenta abre el menú y el foco cae en «Cerrar sesión».
+  // Por teclado: abrir el menú de cuenta y llegar a su última acción, «Cerrar sesión».
   await keyboardActivate(page, 'button', `Cuenta de ${label(identity)}`);
+  await page.keyboard.press('End');
   const item = page.getByRole('menuitem', { name: 'Cerrar sesión', exact: true });
   await expect(item).toBeFocused();
   await page.keyboard.press('Enter');
@@ -57,6 +59,7 @@ test('logout requires CSRF, confirms 204, renews protection and rejects the old 
   expect((await page.request.get('/api/v1/auth/me')).status()).toBe(401);
   await expect(accountButton(page)).toHaveCount(0);
   await expect(page.getByText(label(identity), { exact: true })).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.length)).toBe(0);
   expect((await page.request.post('/logout', { headers: { 'X-XSRF-TOKEN': csrf!.value } })).status()).toBe(403);
   // Cookie values remain in memory only; never attach storageState or log them.
   const stale = await browser.newContext({ baseURL: 'http://localhost' });
@@ -80,7 +83,7 @@ test('backend restart expires the session once without redirects; a different id
     if (request.isNavigationRequest()) redirects++;
   });
   const expired = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/auth/me');
-  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange', { bubbles: true })));
+  await returnToForeground(page);
   expect((await expired).status()).toBe(401);
   // Notas agrega su propio aviso para visitantes: se elige el de sesión.
   await expect(page.getByRole('alert').filter({ hasText: 'La sesión terminó' })).toContainText('La sesión terminó. Volvé a ingresar.');

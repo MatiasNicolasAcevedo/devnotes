@@ -76,17 +76,24 @@ test('CA-01: text blocks, separator, empty lines are numbered consecutively; wra
   const viewport = page.locator('.daily-editor-viewport');
   // T-050 (UI-06): el área ya no se redimensiona a mano; ocupa el alto libre de la ventana, hasta su borde inferior.
   await expect(viewport).toHaveCSS('resize', 'none');
-  await page.evaluate(() => scrollTo(0, 0));
+  await page.getByRole('main').evaluate(element => {
+    element.scrollTo(0, 0);
+    window.scrollTo(0, 0);
+  });
   const fill = await viewport.evaluate(element => {
     const box = element.getBoundingClientRect();
     return { height: box.height, bottom: box.bottom, window: innerHeight, scrolled: scrollY };
   });
   expect(fill.scrolled).toBe(0);
   expect(fill.height).toBeGreaterThanOrEqual(240);
-  // Solo quedan fuera la barra superior (48 px), la barra del editor y los márgenes.
-  expect(fill.height).toBeGreaterThanOrEqual(fill.window - 48 - 110);
-  expect(fill.bottom).toBeLessThanOrEqual(fill.window);
-  expect(fill.bottom).toBeGreaterThanOrEqual(fill.window - 20);
+  const headerHeight = (await page.getByRole('banner').boundingBox())!.height;
+  const availableBottom = testInfo.project.name === 'mobile'
+    ? (await page.getByRole('navigation', { name: 'Navegación principal' }).boundingBox())!.y
+    : fill.window;
+  // Los controles del editor y los márgenes ocupan el resto del espacio entre la cabecera y el límite disponible.
+  expect(fill.height).toBeGreaterThanOrEqual(availableBottom - headerHeight - 110);
+  expect(fill.bottom).toBeLessThanOrEqual(availableBottom);
+  expect(fill.bottom).toBeGreaterThanOrEqual(availableBottom - 20);
   await expect(page.locator('.daily-editor-toolbar')).toHaveCSS('position', 'sticky');
   await expect(page.getByText(/Arrastrá la esquina inferior derecha/)).toHaveCount(0);
 

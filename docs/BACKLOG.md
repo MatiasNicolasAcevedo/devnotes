@@ -24,7 +24,19 @@ Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este í
 | 14 | [T-066](tasks/T-066-copy-previous-api.md) · Copia protegida en servidor | T-065 |
 | 15 | [T-067](tasks/T-067-copy-previous-client.md) · Botón y recorrido diario | T-066 |
 
-Todas draft solo por la dependencia indicada; máximo cinco ready y una implementación activa. La eficacia remota de la sonda no bloquea T-057: T-056 distingue cierre local de ensayo con el dueño. Contratos y criterios en S-109…S-111. No ejecutar FULL al completar la tabla sin solicitud expresa del dueño.
+La ruta I5 está conciliada. [Control final](tasks/T-067-copy-previous-client.md#control-de-avance-de-i5--t-063-a-t-067). Quedan pendientes operativos el integrado de I5, SP-06 físico y el [ensayo remoto de disponibilidad](tasks/T-056-service-activity-journey.md#observación-del-piloto-del-2026-11-14), con autorización de SHA y ventana.
+
+## Siguientes · Herramientas de texto
+
+| Orden | Tarea / resultado | Dependencia |
+|---|---|---|
+| 1 | [T-068](tasks/T-068-ocr-api.md) · API y OCR.space con doble | T-067 conciliada. El dueño autorizó Trabajo y Personal con aviso antes de cada envío. |
+| 2 | [T-069](tasks/T-069-ocr-workspace.md) · Diálogo de captura y texto | T-068 |
+| 3 | [T-070](tasks/T-070-ocr-journey.md) · Recorrido de teclado, táctil y proxy con doble externo | T-069 |
+| 4 | [T-071](tasks/T-071-ocr-first-real-test.md) · Primera precisión real en local | T-070 y autorización/carga privada de OCR.space |
+| 5 | [T-072](tasks/T-072-writing-provider-evaluation.md) · Evaluar Redactar y proveedores | T-071 y autorización del experimento |
+
+La prioridad de implementación es [S-112](specs/S-112-screenshot-ocr.md). Las [siete ideas ya seleccionadas](FUTURE-FEATURES.md) conservan su lugar de candidatas posteriores. El seguimiento de Render es un pendiente operativo de I5. Si el dueño elige una ventana fija, Frontera prepara su contrato propio antes de activar un disparador.
 
 ## Siguientes · plan del dueño del 2026-11-10, ajustado el 2026-11-11
 
