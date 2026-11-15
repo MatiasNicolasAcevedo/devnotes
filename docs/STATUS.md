@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-068](tasks/T-068-ocr-api.md) · Extracción OCR autenticada con proveedor simulado ([S-112](specs/S-112-screenshot-ocr.md)) |
-| Estado | `in_progress` |
-| Acción actual | Frontera ejecuta STARTER de T-068 tras validar la corrección de login y readiness. |
-| Rama / PR | `codex/t-068-ocr-api` local · sin PR |
+| Estado | `in_review` |
+| Acción actual | Frontera reviewer en sesión independiente revisa la API OCR y la evidencia STARTER de T-068 en PR71. |
+| Rama / PR | `codex/t-068-ocr-api` · [PR71](https://github.com/MatiasNicolasAcevedo/devnotes/pull/71) |
 
 [T-067](tasks/T-067-copy-previous-client.md#conciliación) conciliada como `done`. [Control de I5](tasks/T-067-copy-previous-client.md#control-de-avance-de-i5--t-063-a-t-067) completo. **FULL/STARTER de I5 diferidos por el dueño.** SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño.
 
@@ -128,5 +128,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera implementer para terminar T-068 en MatiasNicolasAcevedo/devnotes. Retomá codex/t-068-ocr-api en .orchestrator/t-068-ocr-api. Leé AGENTS.md, docs/STATUS.md y el checkpoint de T-068. Reconfirmá PR70 MERGED, main remoto y que no haya otro PR en vuelo. Verificá los dirigidos de login y readiness y, con las fuentes congeladas, completá STARTER de T-068 con fixtures ficticias. Publicá el PR para revisión independiente con evidencia ligada a HEAD/base. FULL/STARTER integrado de I5 sigue diferido. La clave OCR real queda para T-071 y Render requiere autorización separada sobre SHA y ventana. Preservá el checkout principal, trailer/ y los worktrees ajenos.
+Actuá como Frontera reviewer en una sesión independiente para T-068 en MatiasNicolasAcevedo/devnotes. Revisá PR71 contra main. Confirmá HEAD remoto, base y CI verify-required. Leé AGENTS.md, docs/STATUS.md, el contrato S-112, el checkpoint de T-068 y docs/agents/reviewer.md. Revisá la API OCR, sus permisos y límites, y las regresiones de login/readiness/layout. Validá la evidencia STARTER del SHA técnico 3c93fae sobre base 405e7e58b5133220acd2e9c8c425594323469124 y la equivalencia técnica del cierre documental. Publicá el veredicto ligado al HEAD/base según AUTONOMY. El integrado de I5 sigue diferido, la clave OCR real corresponde a T-071 y Render requiere autorización separada sobre SHA y ventana.
 ```

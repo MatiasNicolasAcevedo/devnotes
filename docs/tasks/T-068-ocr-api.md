@@ -1,6 +1,6 @@
 ---
 id: T-068
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M6
@@ -9,7 +9,7 @@ depends_on: [T-067]
 branch: codex/t-068-ocr-api
 role: implementer
 executor: frontier
-pr: null
+pr: 71
 ---
 
 # T-068 · Extracción OCR autenticada con proveedor simulado
@@ -64,6 +64,12 @@ Checkpoint de corrida larga: HEAD técnico `8b304e56469768e82d50fe23d524dd6157ab
 Resultado de esa corrida: docs, backend, cliente y tooling completos pasaron (incluidos nginx y Vite). Playwright terminó con 70/77 y exit 1. Las siete apariciones corresponden a cuatro expectativas anteriores al contrato de espacios: almacenamiento local vacío pese a la preferencia por cuenta, foco inicial en «Cerrar sesión» pese a «Datos de la cuenta», altura/ubicación anterior de la cabecera, y medición del editor móvil hasta el borde inferior de la ventana sin descontar la navegación inferior. Los fallos se localizaron mediante metadatos de acción y números de línea. SHA/árbol/base permanecieron idénticos y los proyectos propios quedaron en 0/0/0 por etiqueta exacta.
 
 En una copia aislada del mismo SHA, `bash scripts/e2e.sh --project desktop|mobile --grep "visitor, real OIDC callback|logout requires CSRF|multiline clipboard"` y `bash scripts/e2e.sh --project desktop|mobile --grep "CA-01: text blocks"` pasaron 8/8 entre cuatro corridas (exit 0 en todas, logs locales `t068-frontier-compat-{desktop,mobile}.log` y `t068-frontier-height-{desktop,mobile}.log`). Se verifican una única preferencia válida por cuenta, borrado en logout, recorrido por teclado hasta logout y límites del editor medidos contra la navegación vigente. Las demás aserciones de autenticación, seguridad, editor, foco, scroll y layout de los recorridos se mantienen. Las tres fuentes de prueba ensayadas pasaron al worktree de T-068 con las mismas huellas. Siguiente paso: repetir el gate de cierre como FULL de aplicación y tooling sobre el mismo SHA/base.
+
+Corrida de cierre STARTER en dos comandos canónicos, con SHA técnico `3c93fae69915f5e5ebdd74b5edb070472e23f8f3`, árbol `099c43bf8269646420a26d72fe1c255353c89e66` y base `405e7e58b5133220acd2e9c8c425594323469124`. FULL de aplicación: `COMPOSE_ENV_FILES=.env.example STARTER_SERVER_TESTS=container COMPOSE_PROJECT_NAME=starter-verify-t068-final-1114 STARTER_E2E_PROJECT=starter-e2e-t068-final-1114 bash scripts/verify.sh` en el worktree de T-068, log `t068-frontier-full-final.log`. Tooling: `COMPOSE_ENV_FILES=.env.example STARTER_LOCAL_TEST_PREFIX=starter-dev-test-t068final bash scripts/verify.sh --tooling` en el worktree propio detached `.orchestrator/t068-starter-tooling-1114`, log `t068-frontier-tooling-final.log`. Tooling inicia después del backend FULL y usa su propio checkout para aislar la edición reversible del ensayo HMR. Los comandos usan Git Bash explícito y fixtures ficticias. Al cerrar, comprobar SHA/árbol/base, cleanup 0/0/0 de los namespaces por etiqueta exacta, retirar el worktree temporal y publicar si ambos concluyen con exit 0.
+
+**STARTER verde.** FULL de aplicación y tooling salieron 0 y conservaron el SHA, el árbol y la base anteriores. Docs-check OK; backend 622/622 Surefire y 308/308 Failsafe con PostgreSQL, Spotless y JaCoCo; cliente 802/802 y verificación completa; Playwright real **77/77** en escritorio y móvil, con export saneado sin fallos; tooling completo, incluidos copia, guards, lifecycle de nginx y Vite, rollback, HMR, persistencia, proxies y señales. Las cuatro transiciones de caída y las cuatro de recuperación de PostgreSQL en tooling tardaron menos de 8 s por transición. Los proyectos de verificación, E2E y lifecycle terminaron sin contenedores, redes ni volúmenes por etiqueta exacta. Esta evidencia corresponde a T-068 sobre `405e7e5`.
+
+Entrega para revisión independiente en [PR71](https://github.com/MatiasNicolasAcevedo/devnotes/pull/71). Worktree temporal de tooling retirado. El cierre posterior al SHA técnico solo modifica Markdown. La revisión independiente verifica la base, el HEAD publicado y `verify-required`; el veredicto se registra en la sesión revisora.
 
 ## Evidencia previa de la API y del gate
 
