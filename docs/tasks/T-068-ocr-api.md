@@ -1,6 +1,6 @@
 ---
 id: T-068
-status: blocked
+status: in_review
 priority: P1
 size: M
 milestone: M6
@@ -51,7 +51,27 @@ Los nombres `Ocr*` son clases a crear. Guardar recuentos Surefire y Failsafe. De
 
 ## Checkpoint vigente
 
-PR71 sigue abierto y conserva el HEAD y la base de R1. La corrección OCR está en el SHA técnico local `c6c9797f6866e85ff561039d98f5782801776e28` con dirigidos verdes. El cierre STARTER queda bloqueado por Playwright. CA-04 y CA-06 móvil fallaron en corridas completas distintas al seleccionar la fecha y pasaron en ensayos aislados. Frontera/dueño debe decidir si ampliar T-068 a la investigación y corrección de esa transición de versiones diarias o acordar otra salida. El siguiente gate debe conservar las aserciones y documentar su SHA/base antes de publicar y entregar a R2.
+El 2026-11-15 el dueño autorizó una sola corrida adicional de STARTER. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Git Bash, Node 24.21.0 y Docker Desktop Linux. La sesión verificó el candidato existente.
+
+GitHub confirmó PR71 OPEN, HEAD `645530de1ebc23031ebfda00e8f0b1714c2b7356`, `verify-required` SUCCESS y base `main` en la punta remota `405e7e58b5133220acd2e9c8c425594323469124`. Candidato técnico `320125a623d482763e988db86c76cdf446c27ed0`, árbol `1ec318707d62ee3f96c2c377f57b2c9adfb2c4a3`, merge-base igual a la base autorizada y clasificación FULL/STARTER. Checkout limpio detached en `.orchestrator/t068-a1115-c37f` para aislar el cambio reversible del ensayo HMR.
+
+Desde ese checkout, con Git Bash explícito y Node del host, se ejecutó una sola vez `COMPOSE_ENV_FILES=.env.example STARTER_SERVER_TESTS=container COMPOSE_PROJECT_NAME=starter-verify-t068-a1115-c37f STARTER_LOCAL_TEST_PREFIX=starter-dev-test-t068-a1115-c37f STARTER_E2E_PROJECT=starter-e2e-t068-a1115-c37f bash scripts/verify.sh --starter`. Solo fixtures ficticias. Antes de iniciar se comprobaron puertos libres y 0/0/0 contenedores, redes y volúmenes por etiqueta exacta en verify, nginx, vite y E2E.
+
+**STARTER exit 0.** Docs, backend, cliente, tooling y Playwright verdes. Backend con 626 Surefire, 308 Failsafe con PostgreSQL, Spotless y JaCoCo. Cliente con 803 pruebas, typecheck, lint, formato, cobertura y build. Playwright 77/77 (39 desktop, 38 mobile), incluidos CA-04, CA-06 y SP-06/SP-07. El JUnit saneado confirmó cero fallos, errores y omitidos. Salida local en `.orchestrator/t068-a1115-c37f.log` y JUnit en `e2e/artifacts/starter-e2e-t068-a1115-c37f/sanitized/junit.xml` dentro del checkout.
+
+Al cierre se cotejaron el SHA, el árbol, la base y el checkout limpio. Se retiraron la red y el volumen de caché de verify. Los cuatro proyectos fijos y los cinco proyectos auxiliares identificados en la salida quedaron en 0/0/0 contenedores, redes y volúmenes por etiqueta exacta (`.orchestrator/t068-a1115-c37f-cleanup.log`). Los ensayos de tooling también pasaron sus verificaciones de limpieza. Se conserva el checkout aislado para consultar la evidencia.
+
+GitHub confirmó de nuevo PR71 OPEN con HEAD de R1 y base autorizados. Se publicó `320125a623d482763e988db86c76cdf446c27ed0` a PR71 mediante fast-forward. Este traspaso agrega solo el checkpoint y STATUS sobre ese SHA. R2 revisa el HEAD publicado con el prompt de STATUS. T-069 espera PR71 MERGED.
+
+## Resolución de Frontera · transición de Notas
+
+El 2026-11-15, Frontera planner/implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Git Bash, Node 24 y Docker Desktop. Se acota la corrección a la navegación del cliente: resolver la URL de hoy antes de ofrecer controles de la nota que puedan recibir un cambio de fecha. Conservar el flush, el espacio confirmado, el historial del navegador, el contrato de versiones y todas las aserciones de CA-04 y CA-06. Sin impacto en API, permisos, formato de datos ni proveedor.
+
+Las trazas saneadas de ambos FULL muestran que el `fill` inmediatamente posterior al clic en «Notas» terminó, pero la primera expectativa de URL agotó su plazo. El código permite montar los controles en `/notes?space=work` mientras un efecto reemplaza esa URL por la de hoy. La prueba de componente comprueba si esa ruta de paso expone controles; después, el stack real verifica el cambio de fecha, la independencia y la propiedad de versiones.
+
+Rojo reproducible, desde `client/`: `npm.cmd test -- --run src/features/daily/DailyDraftNavigation.test.tsx`, exit 1, 4/5 casos. Registró controles en `/notes` y en la ruta con fecha (`t068-r2-date-red.log`). Se deja el indicador de carga durante la transición; el editor y selector montan en la URL con fecha. Con el cambio, `npm.cmd test -- --run src/features/daily/DailyDraftNavigation.test.tsx src/features/daily/DailyNotesPage.test.tsx src/features/daily/DailyNotesToolbar.test.tsx src/app/AppRoutes.test.tsx src/features/spaces/SpaceNavigation.test.tsx` salió 0, 76/76 (`t068-r2-date-green.log`); typecheck, ESLint y Prettier de los archivos cambiados también salieron 0.
+
+Dirigido móvil: desde la raíz con Git Bash explícito, `STARTER_E2E_PROJECT=starter-e2e-t068-r2-date-mobile bash scripts/e2e.sh --project mobile --grep 'T-020: direct URL|CA-04: dates 19/10 and 20/10|CA-06: two identities on the same date'` (`t068-r2-date-mobile.log`). HEAD local de partida `55ede1e`, base `405e7e58b5133220acd2e9c8c425594323469124`; delta técnico limitado a `DailyDraftNavigation.tsx` y su prueba, congelados sin cambios en `320125a623d482763e988db86c76cdf446c27ed0` (árbol `1ec318707d62ee3f96c2c377f57b2c9adfb2c4a3`). Exit 0, **4/4**: T-020, CA-04, CA-06 de versiones y CA-06 de espacios, con OIDC/API/PostgreSQL reales y fixtures ficticias. JUnit saneado en `e2e/artifacts/starter-e2e-t068-r2-date-mobile/sanitized/junit.xml`: cero fallos, errores u omisiones. Fuentes técnicas y base cotejadas al final; cleanup 0 contenedores, 0 redes y 0 volúmenes por etiqueta exacta.
 
 ## Evidencia de la corrección de R1
 
@@ -116,6 +136,7 @@ FULL/STARTER acumulado de I5 sigue diferido.
 | El E2E completo de `8b304e5` expuso cuatro expectativas preexistentes de autenticación/layout, 7 fallos sobre 77 casos. | Alinear solo las aserciones obsoletas con S-109 y la navegación actual. Dirigidos 8/8 con sesiones, PostgreSQL y navegador reales en el checkpoint. |
 | R1 B-1. Un HTTP 429 con cuerpo ficticio de 1.000.001 bytes fallaba por el límite del lector. El primer arreglo cerraba el cuerpo dentro del mapper y falló con 429 pequeño en Temurin Linux. | Esperar la respuesta de cabeceras de HTTP 429, clasificar la cuota y cerrar el cuerpo. Regresión roja con `OCR_PROVIDER_ERROR`; verde con `OCR_QUOTA_EXHAUSTED` para cuerpos pequeño, excesivo y demorado, y una sola solicitud en `c6c9797`. |
 | R1 B-2. `OCRExitCode=2` devolvía `OCR_PARTIAL` aunque todas las páginas informaran éxito. | Rechazar la contradicción como `OCR_PROVIDER_ERROR`. Regresión roja con `OCR_PARTIAL`, verde en `c6c9797`, con control de parcial mixto cuyo texto queda fuera del error. |
+| Los controles de Notas se montaban durante el reemplazo de `/notes` por la URL con fecha, dejando una ventana en la que la selección podía quedar pisada por la navegación a hoy. | Mostrar carga hasta la URL con fecha. Rojo del montaje transitorio y verde en `320125a`; Playwright móvil 4/4 con las aserciones existentes. |
 
 ## Cierre y siguiente tarea
 
