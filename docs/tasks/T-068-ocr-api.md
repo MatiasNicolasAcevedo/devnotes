@@ -1,6 +1,6 @@
 ---
 id: T-068
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 milestone: M6
@@ -51,6 +51,10 @@ Los nombres `Ocr*` son clases a crear. Guardar recuentos Surefire y Failsafe. De
 
 ## Checkpoint vigente
 
+[R1](#revisión-independiente-r1) pide corregir dos casos de respuesta del proveedor. Retomar en el mismo [PR71](https://github.com/MatiasNicolasAcevedo/devnotes/pull/71): Frontera implementer reproduce B-1 y B-2, corrige el adaptador, valida el nuevo SHA técnico según TESTING y devuelve a revisión independiente. El veredicto remoto identifica el HEAD de esta transición y su base. No avanzar a T-069 hasta confirmar MERGED.
+
+## Evidencia del cierre técnico
+
 Frontera reabrió el cierre técnico en `.orchestrator/t-068-ocr-api` sobre `31a9da0464ad790008f611860dc5975235209ac8`. GitHub reconfirmó PR70 MERGED contra main, `verify-required` verde y squash `405e7e58b5133220acd2e9c8c425594323469124` igual a main remoto, con cero PR abiertos.
 
 El ensayo nginx aislado reprodujo dos fallos del harness. El login ficticio completó callback 302 y `GET /api/v1/auth/me` 200, pero el menú podía cerrarse por el cambio de ruta al espacio predeterminado. Esperar la URL final de Notas antes de abrir el menú permitió completar login, recarga, preservación de identidad y Swagger. Luego se reprodujo la espera de `database-outage`: PostgreSQL estaba detenido y una sonda de loopback al nginx propio obtuvo `503 {"status":"DOWN"}` mientras el navegador no hacía una nueva consulta de readiness. Los dos ensayos rojos (`t068-frontier-red.log` y `t068-frontier-outage-red.log`) devolvieron 1, con 0/0/0 contenedores/redes/volúmenes por etiqueta exacta al terminar.
@@ -96,3 +100,23 @@ FULL/STARTER acumulado de I5 sigue diferido.
 ## Cierre y siguiente tarea
 
 Tras MERGED confirmado, habilita [T-069](T-069-ocr-workspace.md) para integrar la experiencia. La sesión de implementación publica para revisión independiente y se detiene.
+
+## Revisión independiente R1
+
+2026-11-14, Buenos Aires. Frontera reviewer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Git Bash, JDK 21 y Docker. Worktree propio `.orchestrator/t-068-review-codex`. GitHub confirmó [PR71](https://github.com/MatiasNicolasAcevedo/devnotes/pull/71) abierto y listo para revisión, HEAD de entrada `8f8a96370631d89218eff8a1ac3e1cbf82319b54`, base y punta de `main` `405e7e58b5133220acd2e9c8c425594323469124`, y [`verify-required` SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43662283132/job/132653999942). Los hallazgos afectan los errores HTTP del adaptador, dentro de la API acordada. Las pruebas usan datos ficticios.
+
+- `git diff --check 405e7e5...HEAD` y `node scripts/docs-check.mjs` pasaron. El clasificador sobre esa base dio `FULL/STARTER`, 27 rutas técnicas de 40. El delta desde el SHA técnico `3c93fae69915f5e5ebdd74b5edb070472e23f8f3`, árbol `099c43bf8269646420a26d72fe1c255353c89e66`, solo modifica STATUS y T-068. Se cotejaron las salidas `t068-frontier-full-final.log` y `t068-frontier-tooling-final.log` con exit 0 para docs/backend/client/E2E/tooling, y el JUnit saneado con 77 casos sin fallos, errores ni omitidos. Se revisaron los cambios de login, readiness y layout contra el contrato vigente de espacios y revalidación en primer plano.
+- El comando dirigido de aceptación con `-o` dio **18/18 Surefire y 24/24 Failsafe** (4 OCR, 9 voz, 11 portabilidad), con PostgreSQL real, OIDC ficticio y el doble de OCR.space. El `verify` salió 1 en Spotless al detectar la prueba temporal añadida por el reviewer. Tras moverla fuera de los fuentes, `mvnw.cmd -o -q spotless:check` salió 0 sobre el árbol publicado.
+- En `server/`, `./mvnw -o -q -Dtest=OcrProviderReviewerTest test` salió 1, **2 casos ejecutados y ambos fallidos** por los códigos descritos abajo. La prueba y la salida saneada quedan en `e2e/artifacts/t068-review-r1/` del worktree reviewer. La transición del reviewer solo modifica T-068 y STATUS.
+
+### B-1 · El cuerpo de un HTTP 429 puede ocultar la cuota agotada
+
+S-112 exige `429 OCR_QUOTA_EXHAUSTED` cuando OCR.space responde HTTP 429. `OcrSpaceClient.extract` aplica el lector de cuerpo de 1 MB antes de examinar el status. Con HTTP 429 y un cuerpo ficticio de 1.000.001 bytes, el adaptador devuelve `OCR_PROVIDER_ERROR` (502). El estado de cuota ya es concluyente en las cabeceras.
+
+Cierre observable: un 429 con cuerpo pequeño o superior al límite conserva `OCR_QUOTA_EXHAUSTED`, sin consumir un cuerpo sin límite ni reintentar. Un 200 con cuerpo excesivo sigue dando `OCR_PROVIDER_ERROR` y uno lento sigue dando `OCR_TIMEOUT`.
+
+### B-2 · Se clasifica como parcial un resultado contradictorio
+
+S-112 exige `502 OCR_PROVIDER_ERROR` para señales contradictorias. `OcrSpaceResponse.text` devuelve `OCR_PARTIAL` cuando `OCRExitCode=2` antes de contrastarlo con el resultado de página. La prueba devuelve una sola página, exit global 2 y exit de página 1 con texto: el adaptador responde `OCR_PARTIAL` pese a que el único resultado de página indica éxito completo.
+
+Cierre observable: validar la coherencia de las señales de página presentes antes de clasificar un parcial. El caso contradictorio devuelve `OCR_PROVIDER_ERROR`; un parcial coherente sigue devolviendo `OCR_PARTIAL` sin exponer fragmentos. Conservar los negativos de cuota, timeout y éxito ambiguo.
