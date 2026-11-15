@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-068](tasks/T-068-ocr-api.md) · Extracción OCR autenticada con proveedor simulado ([S-112](specs/S-112-screenshot-ocr.md)) |
-| Estado | `changes_requested` |
-| Acción actual | [R1](tasks/T-068-ocr-api.md#revisión-independiente-r1) encontró dos errores al interpretar respuestas de OCR.space. Frontera implementer los corrige en PR71 y entrega a una revisión independiente. |
+| Estado | `blocked` |
+| Acción actual | Frontera/dueño decide el alcance para resolver el [bloqueo de Playwright](tasks/T-068-ocr-api.md#checkpoint-vigente). La corrección OCR de R1 tiene pruebas dirigidas verdes y STARTER pendiente. |
 | Rama / PR | `codex/t-068-ocr-api` · [PR71](https://github.com/MatiasNicolasAcevedo/devnotes/pull/71) |
 
 [T-067](tasks/T-067-copy-previous-client.md#conciliación) conciliada como `done`. [Control de I5](tasks/T-067-copy-previous-client.md#control-de-avance-de-i5--t-063-a-t-067) completo. **FULL/STARTER de I5 diferidos por el dueño.** SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño.
@@ -128,5 +128,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera implementer en una sesión nueva para T-068 en MatiasNicolasAcevedo/devnotes. Confirmá PR71 abierto, HEAD remoto, base y veredicto R1 ligados al SHA. Leé AGENTS.md, server/AGENTS.md, docs/STATUS.md, S-112, R1 de T-068 y docs/agents/implementer.md. Corregí B-1 y B-2 del adaptador OCR en la misma rama/PR: primero reproducí ambos fallos con pruebas de regresión, después verificá el verde y conservá los límites de cuerpo, tiempo y reintentos. Cerrá el SHA técnico con el gate de T-068 según TESTING y dejá el PR para revisión independiente. Conservá el checkout principal, trailer/ y los worktrees ajenos. El integrado de I5 sigue diferido; la clave OCR real corresponde a T-071 y Render requiere autorización separada sobre SHA y ventana.
+Actuá como Frontera en una sesión nueva para resolver el bloqueo de cierre de T-068 en MatiasNicolasAcevedo/devnotes. Confirmá PR71 abierto, HEAD remoto 645530de1ebc23031ebfda00e8f0b1714c2b7356 y base main 405e7e58b5133220acd2e9c8c425594323469124. Consultá STATUS y el checkpoint de T-068 en el worktree local .orchestrator/t-068-ocr-api. La corrección OCR está en el SHA técnico local c6c9797f6866e85ff561039d98f5782801776e28 con dirigidos verdes. Los dos FULL fallaron en Playwright y CA-04/CA-06 móvil comparten un fallo al cambiar de fecha. Decidí si aislar y corregir ese comportamiento de versiones diarias en el mismo PR antes de un nuevo gate. Con gate verde sobre el SHA/base resultantes, publicá y entregá a revisión independiente R2. T-069 depende de PR71 MERGED. El gate acumulado de I5 sigue diferido, la clave real corresponde a T-071 y Render requiere autorización separada sobre SHA y ventana.
 ```
