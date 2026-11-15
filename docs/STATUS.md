@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-068](tasks/T-068-ocr-api.md) · Extracción OCR autenticada con proveedor simulado ([S-112](specs/S-112-screenshot-ocr.md)) |
-| Estado | `in_review` |
-| Acción actual | [B-2 publicado y STARTER verde](tasks/T-068-ocr-api.md#checkpoint-vigente). Frontera reviewer realiza la R3 independiente autorizada para PR71. |
+| Estado | `mergeable` |
+| Acción actual | [R3 independiente favorable](tasks/T-068-ocr-api.md#revisión-independiente-r3). Verificar el veredicto vigente de PR71 y coordinar el merge conforme a AUTONOMY y la autorización de Render. |
 | Rama / PR | `codex/t-068-ocr-api` · [PR71](https://github.com/MatiasNicolasAcevedo/devnotes/pull/71) |
 
 [T-067](tasks/T-067-copy-previous-client.md#conciliación) conciliada como `done`. [Control de I5](tasks/T-067-copy-previous-client.md#control-de-avance-de-i5--t-063-a-t-067) completo. **FULL/STARTER de I5 diferidos por el dueño.** SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño.
@@ -128,5 +128,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá en una sesión nueva como Frontera reviewer para la R3 independiente excepcional de T-068, autorizada por el dueño. Reconfirmá PR71 OPEN en codex/t-068-ocr-api de MatiasNicolasAcevedo/devnotes, el HEAD publicado y la punta de main 405e7e58b5133220acd2e9c8c425594323469124. Usá un checkout independiente del HEAD publicado. Leé AGENTS.md, server/AGENTS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/tasks/T-068-ocr-api.md y el contrato HTTP de S-112. Cotejá que el HEAD difiera del candidato técnico 57771416b4f3c9aa7944acdc95c6c25295348a8a solo en STATUS y el checkpoint de T-068. Contrastá el STARTER con las fuentes y la base probadas, el JUnit saneado y el cleanup. Revisá B-2 con los tres negativos de código de página y el parcial mixto válido mediante el doble HTTP. Usá dirigidos con fixtures ficticias y conservá el STARTER ya ejecutado. Emití el veredicto según el protocolo sobre el HEAD/base vigentes, con verify-required verde. T-069 espera PR71 MERGED. El gate acumulado de I5 sigue diferido, la clave real corresponde a T-071 y Render requiere autorización separada sobre SHA y ventana.
+Actuá como Frontera merger para T-068, PR71 de MatiasNicolasAcevedo/devnotes. Leé AGENTS.md, docs/STATUS.md, docs/tasks/T-068-ocr-api.md, docs/AUTONOMY.md y docs/agents/merger.md. Consultá primero el estado remoto. Si PR71 sigue OPEN, verificá el comentario R3 APROBADO sobre HEAD/base vigentes, verify-required SUCCESS, evidencia de STARTER y conversaciones bloqueantes resueltas. Render tiene Auto-Deploy On Commit y requiere autorización separada sobre SHA y ventana. Aclaralo con el dueño antes del squash si el merge dispara un deploy. Si se cumplen las condiciones, completá el squash ligado al SHA revisado y confirmá MERGED, SHA y fecha en GitHub. Si ya figura MERGED, verificá esos datos. T-069 espera PR71 MERGED. Conservá el STARTER ya ejecutado, el gate acumulado de I5 diferido y la clave real para T-071.
 ```

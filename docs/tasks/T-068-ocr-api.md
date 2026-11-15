@@ -1,6 +1,6 @@
 ---
 id: T-068
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M6
@@ -50,6 +50,10 @@ Desde `server/` con Git Bash, JDK 21 y Docker Linux:
 Los nombres `Ocr*` son clases a crear. Guardar recuentos Surefire y Failsafe. Desde raíz ejecutar `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL`. La clasificación aplica la política ordinaria de iniciativas nuevas de [TESTING](../TESTING.md#regla-general-fuera-de-la-excepción) en el cierre técnico, según instrucciones vigentes del dueño. El integrado de I5 queda diferido. Gates de OCR con dobles y valores ficticios.
 
 ## Checkpoint vigente
+
+[R3 independiente favorable](#revisión-independiente-r3). La retoma de merge debe corroborar en PR71 el comentario de veredicto sobre HEAD y base vigentes, `verify-required` verde y las condiciones de AUTONOMY. Render conserva su autorización separada sobre SHA y ventana. T-069 espera PR71 MERGED.
+
+## Evidencia de STARTER de B-2 y traspaso a R3
 
 Frontera implementer en Codex Desktop (GPT-6, variante y esfuerzo sin dato expuesto), con PowerShell, Git/gh, JDK 21, Node 24 y Docker Desktop Linux. [PR71](https://github.com/MatiasNicolasAcevedo/devnotes/pull/71) OPEN en `codex/t-068-ocr-api`, HEAD de [R2 · CAMBIOS REQUERIDOS](https://github.com/MatiasNicolasAcevedo/devnotes/pull/71#issuecomment-6897102035) `3c697230f70a3225d3692aa1f2d30a0069bf297d`, `verify-required` SUCCESS y punta de `main` `405e7e58b5133220acd2e9c8c425594323469124`. El worktree `.orchestrator/t-068-ocr-api` conserva sus ediciones preexistentes de `AGENTS.md`, `docs/TESTING.md` y `docs/agents/implementer.md`.
 
@@ -198,3 +202,14 @@ Reproducción independiente sobre las clases compiladas del HEAD de entrada, con
 **Condición de cierre.** Validar la presencia y el valor admitido de `FileParseExitCode` en cada página presente antes de clasificar un parcial. Agregar los dos casos rojos al doble HTTP y demostrar que devuelven `OCR_PROVIDER_ERROR`, que el parcial mixto válido conserva `OCR_PARTIAL` sin fragmentos y que siguen verdes los negativos de cuota, timeout y éxito ambiguo.
 
 **Siguiente decisión.** Frontera implementer corrige en una sesión nueva sobre PR71 y deja las regresiones rojo/verde y los dirigidos de OCR. Para cerrar fuentes nuevas, el dueño debe autorizar un STARTER de T-068 según el perfil del PR y, agotadas las dos rondas, una R3 independiente que coteje la corrección, el gate y `verify-required` sobre el HEAD y la base vigentes. Solo tras ese veredicto y los requisitos de AUTONOMY corresponde evaluar el merge. T-069 espera PR71 MERGED. El gate acumulado de I5, la clave de T-071 y la autorización de Render conservan sus condiciones.
+
+## Revisión independiente R3
+
+2026-11-15, Buenos Aires. Ronda excepcional autorizada por el dueño. Frontera reviewer en Codex Desktop (GPT-6, variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, JDK 21, Node 24.21.0 y Docker Desktop Linux. Checkout independiente `.orchestrator/t-068-review-r3-codex`, detached sobre `9eab403a5a064a114be7894ee64d7854de18524e`. GitHub y `git ls-remote` confirmaron PR71 OPEN en `codex/t-068-ocr-api`, base y punta de `main` `405e7e58b5133220acd2e9c8c425594323469124`, [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43760381197/job/132953626820) y cero hilos de revisión. La corrección afecta la clasificación de errores de la API. La transición de revisión es documental.
+
+- `node scripts/docs-check.mjs` y `git diff --check 405e7e5...HEAD` pasaron. `node scripts/ci/classify-diff.mjs --base 405e7e58b5133220acd2e9c8c425594323469124 --head HEAD --phase FULL` dio `FULL/STARTER` (29 de 42 rutas técnicas). El delta desde `57771416b4f3c9aa7944acdc95c6c25295348a8a` se limita a STATUS, el estado de tarea, su checkpoint y la entrada de bitácora de B-2. Coinciden la base probada, el árbol del checkout de STARTER `ae43294beeb0a717132d2124ee8a5e5f06f20a15` y los blobs del adaptador y su test.
+- Cotejé STARTER exit 0 y sus cinco etapas. Backend 629 Surefire y 308 Failsafe con PostgreSQL 18.6, Spotless y JaCoCo. Cliente 803 pruebas. Playwright 77/77 (39 escritorio y 38 móvil), con cero nodos de fallo, error u omisión en el JUnit saneado. El log de cleanup coincide con la consulta a Docker por etiqueta exacta, con 0/0/0 en los nueve proyectos y ausentes los 68 IDs registrados de Testcontainers. Se conserva STARTER sobre las mismas fuentes y base.
+- Desde `server/`, `mvnw.cmd -o -q verify -Dtest=OcrScreenshotValidatorTest,OcrSpaceClientTest,OcrConfigurationTest -Dit.test=OcrExtractionApiIT,VoiceTranscriptionApiIT,PortabilityImportApiIT -Djacoco.skip=true` salió 0 con las variables OCR y de voz retiradas del proceso para usar las fixtures de las pruebas. El primer intento había fijado variables OCR que pisaron la configuración ficticia de `OcrExtractionApiIT` y devolvió cuatro fallos. El reintento dio 25/25 Surefire y 24/24 Failsafe (4 OCR, 9 voz, 11 portabilidad), con PostgreSQL 18.6, OIDC ficticio y el doble HTTP. Cleanup comprobado para los cuatro IDs de Testcontainers de cada intento. Logs locales `.orchestrator/t068-review-r3-directed.log` y `.orchestrator/t068-review-r3-directed-retry.log`.
+- **B-2 cerrado.** Los tres negativos de `FileParseExitCode` dieron `OCR_PROVIDER_ERROR` vía HTTP: ausente, ilegible después de un éxito y desconocido después de un fallo admitido. El parcial mixto válido mantuvo `OCR_PARTIAL` y descartó los fragmentos. Quedaron verdes el éxito contradictorio y los casos de cuota, límite y timeout. Los valores admitidos coinciden con el [esquema de OCR.space](https://ocr.space/ocrapi#JSON).
+
+Revisión favorable sin bloqueantes. El comentario en PR71 fija el veredicto al HEAD documental final y la base, tras el check requerido. El gate acumulado de I5 sigue diferido y la clave real corresponde a T-071.
