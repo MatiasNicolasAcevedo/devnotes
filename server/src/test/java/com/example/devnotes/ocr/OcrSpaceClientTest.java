@@ -127,6 +127,16 @@ class OcrSpaceClientTest {
     }
 
     @Test
+    void reportsQuotaBeforeBodyArrives() throws Exception {
+        status = 429;
+        releaseBody = new CountDownLatch(1);
+        client.close();
+        client = new OcrSpaceClient(endpoint(), Duration.ofSeconds(2));
+        fails(Reason.OCR_QUOTA_EXHAUSTED);
+        assertThat(requests).hasValue(1);
+    }
+
+    @Test
     void boundsBodyAndTimesOutEvenAfterHeaders() throws Exception {
         payload = "x".repeat(1_000_001);
         fails(Reason.OCR_PROVIDER_ERROR);

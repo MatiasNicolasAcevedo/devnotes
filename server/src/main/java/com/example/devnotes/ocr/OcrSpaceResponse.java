@@ -6,6 +6,7 @@ import static com.example.devnotes.ocr.OcrFailure.Reason.OCR_PROVIDER_ERROR;
 import static com.example.devnotes.ocr.OcrFailure.Reason.OCR_QUOTA_EXHAUSTED;
 import static com.example.devnotes.ocr.OcrFailure.Reason.OCR_TIMEOUT;
 
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -27,7 +28,7 @@ final class OcrSpaceResponse {
 
     private OcrSpaceResponse() {}
 
-    static String text(byte[] body) {
+    static String text(InputStream body) {
         JsonNode root;
         try {
             root = JSON.readTree(body);
