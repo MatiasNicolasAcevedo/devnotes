@@ -43,7 +43,11 @@ final class OcrSpaceResponse {
         JsonNode page = pages.path(0);
         int pageCode = code(page.path("FileParseExitCode"));
         boolean quota = quota(root.path("ErrorMessage")) || quota(root.path("ErrorDetails"));
-        if (exit == 2 && !error.booleanValue() && !quota) {
+        if (exit == 2
+                && !error.booleanValue()
+                && !quota
+                && (pages.isEmpty()
+                        || pages.valueStream().anyMatch(result -> code(result.path("FileParseExitCode")) != 1))) {
             throw OCR_PARTIAL.failure();
         }
         if ((exit == 3 || exit == 4) && error.booleanValue()) {

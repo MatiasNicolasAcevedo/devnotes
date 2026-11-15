@@ -6,6 +6,7 @@ import static com.example.devnotes.ocr.OcrFailure.Reason.OCR_TIMEOUT;
 
 import com.example.devnotes.ocr.OcrScreenshotValidator.Screenshot;
 import jakarta.annotation.PreDestroy;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -55,7 +56,8 @@ class OcrSpaceClient {
         } catch (IllegalArgumentException failure) {
             throw OCR_PROVIDER_ERROR.failure();
         }
-        var exchange = http.sendAsync(request, info -> new BoundedBody());
+        var exchange =
+                http.sendAsync(request, info -> info.statusCode() == 429 ? ignoreQuotaBody() : new BoundedBody());
         HttpResponse<byte[]> response;
         try {
             // A request timeout alone no longer covers a slow response body once headers arrive.
@@ -78,6 +80,17 @@ class OcrSpaceClient {
             case 429 -> throw OCR_QUOTA_EXHAUSTED.failure();
             default -> throw OCR_PROVIDER_ERROR.failure();
         };
+    }
+
+    private static HttpResponse.BodySubscriber<byte[]> ignoreQuotaBody() {
+        return HttpResponse.BodySubscribers.mapping(HttpResponse.BodySubscribers.ofInputStream(), body -> {
+            try {
+                body.close();
+            } catch (IOException ignored) {
+                // The response status already identifies quota exhaustion.
+            }
+            return null;
+        });
     }
 
     private HttpRequest request(Screenshot screenshot, String key) {

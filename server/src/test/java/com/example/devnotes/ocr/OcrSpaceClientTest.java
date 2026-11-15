@@ -92,6 +92,8 @@ class OcrSpaceClientTest {
     @ParameterizedTest
     @CsvSource(delimiter = '|', textBlock = """
             OCR_PARTIAL | {"OCRExitCode":2,"IsErroredOnProcessing":false}
+            OCR_PARTIAL | {"OCRExitCode":2,"IsErroredOnProcessing":false,"ParsedResults":[{"FileParseExitCode":1,"ParsedText":"private"},{"FileParseExitCode":-10}]}
+            OCR_PROVIDER_ERROR | {"OCRExitCode":2,"IsErroredOnProcessing":false,"ParsedResults":[{"FileParseExitCode":1,"ParsedText":"private"}]}
             OCR_NO_TEXT | {"OCRExitCode":1,"IsErroredOnProcessing":false,"ParsedResults":[{"FileParseExitCode":1,"ParsedText":" "}]}
             OCR_NO_TEXT | {"OCRExitCode":1,"IsErroredOnProcessing":false,"ParsedResults":[{"FileParseExitCode":1}]}
             OCR_TIMEOUT | {"OCRExitCode":3,"IsErroredOnProcessing":true,"ParsedResults":[{"FileParseExitCode":-20}]}
@@ -114,6 +116,14 @@ class OcrSpaceClientTest {
         status = 429;
         fails(Reason.OCR_QUOTA_EXHAUSTED);
         assertThat(requests).hasValue(2);
+    }
+
+    @Test
+    void reportsQuotaEvenWhenBodyExceedsLimit() throws Exception {
+        status = 429;
+        payload = "x".repeat(1_000_001);
+        fails(Reason.OCR_QUOTA_EXHAUSTED);
+        assertThat(requests).hasValue(1);
     }
 
     @Test
