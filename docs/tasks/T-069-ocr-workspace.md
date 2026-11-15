@@ -57,6 +57,10 @@ Desde raíz, `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/c
 
 2026-11-15 (Buenos Aires). Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Node 24.21.0 y skill `frontend-design`. Base remota `b8ba81f950dd190851b9b5430e479691e19361df`. [T-068 conciliada](T-068-ocr-api.md#conciliación) con STARTER conservado. El cambio afecta la UI de Notas y consume la API OCR existente; los archivos y el texto OCR son transitorios. El gate acumulado de I5 sigue diferido y la clave real corresponde a T-071.
 
+Candidato `0f1b5a13e6d7ca64bd4e4369511977cbe357dc4e`, árbol `83db926a324b1fa7bc2d4006eafd262f721f4748`, checkout limpio `.orchestrator/t069-full-n1115-a8d3`. `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` salieron 0 allí. `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` dio `FULL/APPLICATION` (8 rutas técnicas de 11). Se usa el checkout aislado para dejar intacto el directorio `trailer/` preexistente y ajeno a la tarea, cuyo `CLAUDE.md` interfiere con la comprobación del árbol local original.
+
+El primer FULL de aplicación salió 1 en E2E tras pasar docs, backend y cliente. El rojo fue SP-06/SP-07 móvil, que capturó una petición privada donde esperaba cero al comprobar un espacio inválido. El reporte y cleanup quedan en [la bitácora de la corrección](#correcciones-de-implementación). Se aísla la observación del tramo anterior de historial y se conserva la aserción original. Retoma: comprobar SP-06/SP-07 dirigido en ambos proyectos y cerrar las fuentes corregidas con FULL/APPLICATION antes de publicar.
+
 ## Verificación dirigida
 
 - Los seis archivos indicados en el contrato dieron 90/90, incluido el POST explícito con CSRF, cancelación/validación, aborto y descarte al cambiar de imagen, fecha, espacio o cuenta, cierre de sesión, cuota, timeout, edición y portapapeles. `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build` salieron 0. El build avisó por tamaño del chunk principal. Log de Vitest en `.orchestrator/t069-directed.log`.
@@ -68,6 +72,7 @@ Desde raíz, `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/c
 |---|---|
 | El diálogo incluía «Cerrar» en el nombre accesible porque el botón estaba dentro del título. | El cierre queda junto al encabezado, con nombre propio. Vitest encuentra el diálogo por su título y comprueba el retorno de foco a Herramientas. |
 | El tope de ancho predeterminado de MUI dejaba 32 px de margen a cada lado en escritorio angosto. El evento nativo `cancel` del selector tampoco llegaba al manejador React del input. | El papel usa el ancho previsto con margen de 12 px y se escucha `cancel` en el input. Chromium midió 376 px de diálogo a 400 px de ventana. Vitest comprueba el aviso y que se conserva la captura anterior. |
+| SP-06/SP-07 registró 1 petición privada donde esperaba 0 en `spaces.spec.ts:425`. Al armar el listener en la misma pestaña recién restaurada por `goForward`, la ventana de observación incluía tráfico posible de la nota válida. | Cada URL inválida se visita directamente en una pestaña nueva de la misma sesión, con listener propio antes de navegar. Se conservan la pantalla esperada y la aserción de cero peticiones para ambos casos, sin cambios en plazos ni retries. Se conserva el rojo del FULL sobre `0f1b5a1` en `.orchestrator/t069-full-n1115-a8d3.log` y el JUnit saneado del proyecto E2E. Cleanup `0/0/0` en ambos proyectos y 0 de 34 IDs propios de Testcontainers. |
 
 ## Cierre y siguiente tarea
 
