@@ -415,14 +415,20 @@ test('spaces: SP-06/SP-07 responsive navigation, history, tabs and logout prefer
   await expect(page).toHaveURL(origin + scoped('/notes/' + date, 'work'));
   await page.goForward();
   await expect(page).toHaveURL(origin + scoped('/notes/' + date, 'personal'));
-  const privateRequests: Request[] = [];
-  page.on('request', request => {
-    if (collections.some(path => new URL(request.url()).pathname.startsWith(path))) privateRequests.push(request);
-  });
   for (const invalid of ['space=unknown', 'space=work&space=personal']) {
-    await page.goto('/notes/' + date + '?' + invalid);
-    await expect(page.getByRole('heading', { name: 'Espacio no válido' })).toBeVisible();
-    expect(privateRequests).toHaveLength(0);
+    // Un refetch de la nota válida restaurada por el historial no pertenece a la URL inválida.
+    const invalidPage = await context.newPage();
+    try {
+      const privateRequests: Request[] = [];
+      invalidPage.on('request', request => {
+        if (collections.some(path => new URL(request.url()).pathname.startsWith(path))) privateRequests.push(request);
+      });
+      await invalidPage.goto('/notes/' + date + '?' + invalid);
+      await expect(invalidPage.getByRole('heading', { name: 'Espacio no válido' })).toBeVisible();
+      expect(privateRequests).toHaveLength(0);
+    } finally {
+      await invalidPage.close();
+    }
   }
   await openNote(page, 'personal');
   await logout(page);

@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-068](tasks/T-068-ocr-api.md) · Extracción OCR autenticada con proveedor simulado ([S-112](specs/S-112-screenshot-ocr.md)) |
+| Tarea y contrato | [T-069](tasks/T-069-ocr-workspace.md) · Copiar texto de una captura desde Notas ([S-112](specs/S-112-screenshot-ocr.md)) |
 | Estado | `mergeable` |
-| Acción actual | [R3 independiente favorable](tasks/T-068-ocr-api.md#revisión-independiente-r3). Verificar el veredicto vigente de PR71 y coordinar el merge conforme a AUTONOMY y la autorización de Render. |
-| Rama / PR | `codex/t-068-ocr-api` · [PR71](https://github.com/MatiasNicolasAcevedo/devnotes/pull/71) |
+| Acción actual | Confirmar el cierre de PR72 según el protocolo de merge y verificar MERGED antes de habilitar T-070. Consultar la [revisión independiente](tasks/T-069-ocr-workspace.md#revisión-independiente-r1) y el veredicto ligado al HEAD/base en GitHub. |
+| Rama / PR | `codex/t-069-ocr-workspace` · [PR72](https://github.com/MatiasNicolasAcevedo/devnotes/pull/72) |
+
+[T-068](tasks/T-068-ocr-api.md#conciliación) conciliada como `done` tras PR71 MERGED, con su evidencia de STARTER conservada.
 
 [T-067](tasks/T-067-copy-previous-client.md#conciliación) conciliada como `done`. [Control de I5](tasks/T-067-copy-previous-client.md#control-de-avance-de-i5--t-063-a-t-067) completo. **FULL/STARTER de I5 diferidos por el dueño.** SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño.
 
@@ -128,5 +130,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera merger para T-068, PR71 de MatiasNicolasAcevedo/devnotes. Leé AGENTS.md, docs/STATUS.md, docs/tasks/T-068-ocr-api.md, docs/AUTONOMY.md y docs/agents/merger.md. Consultá primero el estado remoto. Si PR71 sigue OPEN, verificá el comentario R3 APROBADO sobre HEAD/base vigentes, verify-required SUCCESS, evidencia de STARTER y conversaciones bloqueantes resueltas. Render tiene Auto-Deploy On Commit y requiere autorización separada sobre SHA y ventana. Aclaralo con el dueño antes del squash si el merge dispara un deploy. Si se cumplen las condiciones, completá el squash ligado al SHA revisado y confirmá MERGED, SHA y fecha en GitHub. Si ya figura MERGED, verificá esos datos. T-069 espera PR71 MERGED. Conservá el STARTER ya ejecutado, el gate acumulado de I5 diferido y la clave real para T-071.
+Actuá como Frontera implementer de T-070 en sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/tasks/T-069-ocr-workspace.md, docs/tasks/T-070-ocr-journey.md y docs/specs/S-112-screenshot-ocr.md. Antes de abrir la rama codex/t-070-ocr-journey, confirmá en GitHub PR72 MERGED contra main con merge SHA y mergedAt según el protocolo. Si sigue abierto, conservá T-070 en draft y dejá la retoma de merge de T-069 con HEAD/base, veredicto y CI vigentes. Con MERGED confirmado, conciliá T-069 en el primer avance de T-070. Acreditá el recorrido OCR en Chromium con API propia real, PostgreSQL 18, OIDC ficticio y el doble privado de OCR.space. Conservá el STARTER de T-068 y el gate acumulado de I5 diferido. La clave real corresponde a T-071 y Render conserva su autorización separada. Publicá T-070 para revisión independiente con el gate de cierre, evidencia saneada y cleanup.
 ```

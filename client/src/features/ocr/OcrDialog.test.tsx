@@ -1,0 +1,303 @@
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
+import { http as mock, HttpResponse } from 'msw'
+import { useLayoutEffect } from 'react'
+import { useNavigate, type NavigateFunction } from 'react-router'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { AppRoutes } from '../../app/AppRoutes'
+import { buildAuthUser, problemResponse } from '../../test/factories'
+import { installAuthBackend } from '../../test/msw/authBackend'
+import { server } from '../../test/msw/server'
+import { renderWithProviders } from '../../test/render'
+import { authQueryKeys } from '../auth/api'
+
+const CAPABILITIES = '/api/v1/ocr/capabilities'
+const EXTRACTIONS = '/api/v1/ocr/extractions'
+const DATE = '2026-11-15'
+const DIALOG = 'Copiar texto de una captura'
+const TEXT = 'T-055\nERR_CONNECTION_RESET\n/src/api/foo-bar.ts'
+const png = new File(['png ficticio'], 'captura.png', { type: 'image/png' })
+const jpeg = new File(['jpeg ficticio'], 'otra.jpeg', { type: 'image/jpeg' })
+const createUrl = vi.fn()
+const revokeUrl = vi.fn()
+
+beforeEach(() => {
+  createUrl.mockReset().mockReturnValueOnce('blob:captura').mockReturnValue('blob:otra')
+  revokeUrl.mockReset()
+  Object.assign(URL, { createObjectURL: createUrl, revokeObjectURL: revokeUrl })
+})
+
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((done) => {
+    resolve = done
+  })
+  return { promise, resolve }
+}
+
+function Navigation({ onReady }: { onReady: (navigate: NavigateFunction) => void }) {
+  const navigate = useNavigate()
+  useLayoutEffect(() => onReady(navigate), [navigate, onReady])
+  return <AppRoutes />
+}
+
+async function notes({ available = true, route = `/notes/${DATE}?space=work` } = {}) {
+  const auth = installAuthBackend({ user: buildAuthUser() })
+  const capability = vi.fn()
+  server.use(
+    mock.get(CAPABILITIES, ({ request }) => {
+      capability(new URL(request.url).search)
+      return HttpResponse.json({ available })
+    }),
+    mock.get('/api/v1/daily-notes/:date', ({ params }) =>
+      HttpResponse.json({
+        id: '01900000-0000-7000-8000-000000000002',
+        date: params.date,
+        content: {
+          type: 'doc',
+          content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Borrador' }] }],
+        },
+        revision: 1,
+        updatedAt: `${DATE}T10:00:00Z`,
+      }),
+    ),
+    mock.get('/api/v1/daily-notes', () =>
+      HttpResponse.json({ content: [], page: 0, size: 20, totalElements: 0, totalPages: 1 }),
+    ),
+  )
+  const navigation = deferred<NavigateFunction>()
+  const view = renderWithProviders(<Navigation onReady={navigation.resolve} />, { route })
+  const navigate = await navigation.promise
+  const trigger = await screen.findByRole('button', { name: 'Herramientas' })
+  const editor = await screen.findByLabelText('Editor de nota diaria')
+  await waitFor(() => expect(editor).toHaveTextContent('Borrador'))
+  return { ...view, auth, capability, navigate, trigger, editor }
+}
+
+async function openDialog(view: Awaited<ReturnType<typeof notes>>) {
+  await view.user.click(view.trigger)
+  const option = await screen.findByRole('menuitem', { name: new RegExp(DIALOG) })
+  await waitFor(() => expect(option).not.toHaveAttribute('aria-disabled', 'true'))
+  await view.user.click(option)
+  return screen.findByRole('dialog', { name: DIALOG })
+}
+
+function chooseFile(file: File) {
+  fireEvent.change(screen.getByLabelText('Archivo de la captura'), {
+    target: { files: [file] },
+  })
+}
+
+const extractButton = () => screen.getByRole('button', { name: 'Extraer texto' })
+const extractedText = () => screen.findByRole('textbox', { name: 'Texto extraído' })
+
+describe('Notas · diálogo de captura', () => {
+  it('muestra la explicación de disponibilidad en el espacio sin abrir el diálogo ni enviar un POST', async () => {
+    const post = vi.fn(() => HttpResponse.json({ text: TEXT }))
+    server.use(mock.post(EXTRACTIONS, post))
+    const view = await notes({ available: false, route: `/notes/${DATE}?space=personal` })
+    expect(view.capability).not.toHaveBeenCalled()
+    await view.user.click(view.trigger)
+    await screen.findByText('La extracción no está habilitada en este espacio.')
+    const option = screen.getByRole('menuitem', { name: new RegExp(DIALOG) })
+    expect(option).toHaveAttribute('aria-disabled', 'true')
+    option.focus()
+    await view.user.keyboard('{Enter}')
+    expect(view.capability).toHaveBeenCalledExactlyOnceWith('?space=personal')
+    expect(screen.queryByRole('dialog', { name: DIALOG })).not.toBeInTheDocument()
+    expect(post).not.toHaveBeenCalled()
+  })
+
+  it('pega o elige una imagen y conserva la previa al cancelar o invalidar', async () => {
+    const post = vi.fn(() => HttpResponse.json({ text: TEXT }))
+    server.use(mock.post(EXTRACTIONS, post))
+    const view = await notes()
+    await openDialog(view)
+    const pasteZone = screen.getByRole('group', { name: 'Zona para pegar una captura' })
+    expect(pasteZone).toHaveFocus()
+    expect(extractButton()).toBeDisabled()
+    fireEvent.paste(pasteZone, { clipboardData: { files: [png] } })
+    const preview = screen.getByAltText('Vista previa de la captura')
+    expect(preview).toHaveAttribute('src', 'blob:captura')
+    expect(extractButton()).toHaveAccessibleDescription(/imagen completa a OCR.space/)
+    fireEvent(
+      screen.getByLabelText('Archivo de la captura'),
+      new Event('cancel', { bubbles: true }),
+    )
+    expect(screen.getByText('La captura anterior sigue seleccionada.')).toBeVisible()
+    expect(preview).toHaveAttribute('src', 'blob:captura')
+    chooseFile(new File(['demo'], 'captura.gif', { type: 'image/gif' }))
+    expect(screen.getByRole('alert')).toHaveTextContent(/PNG o JPG/)
+    chooseFile(new File([new Uint8Array(1_000_001)], 'captura.png', { type: 'image/png' }))
+    expect(screen.getByRole('alert')).toHaveTextContent(/hasta 1 MB/)
+    expect(preview).toHaveAttribute('src', 'blob:captura')
+    chooseFile(jpeg)
+    expect(preview).toHaveAttribute('src', 'blob:otra')
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(createUrl.mock.calls).toEqual([[png], [jpeg]])
+    expect(revokeUrl).toHaveBeenCalledExactlyOnceWith('blob:captura')
+    expect(post).not.toHaveBeenCalled()
+  })
+
+  it('enfoca el resultado en escritorio, admite pegar texto y conserva la edición si falla copiar', async () => {
+    server.use(mock.post(EXTRACTIONS, () => HttpResponse.json({ text: TEXT })))
+    const view = await notes()
+    await openDialog(view)
+    chooseFile(png)
+    await view.user.click(extractButton())
+    const result = await extractedText()
+    expect(result).toHaveFocus()
+    expect(result).toHaveValue(TEXT)
+    if (!(result instanceof HTMLTextAreaElement)) throw new Error('Falta el campo editable')
+    result.setSelectionRange(TEXT.length, TEXT.length)
+    await view.user.paste('\nNotas de diagnóstico')
+    const edited = `${TEXT}\nNotas de diagnóstico`
+    expect(result).toHaveValue(edited)
+    expect(createUrl).toHaveBeenCalledTimes(1)
+
+    const clipboard = vi.spyOn(navigator.clipboard, 'writeText')
+    clipboard.mockRejectedValueOnce(new DOMException('fixture', 'NotAllowedError'))
+    const copy = screen.getByRole('button', { name: 'Copiar texto' })
+    await view.user.click(copy)
+    expect(await screen.findByRole('alert')).toHaveTextContent(/copiá el texto manualmente/)
+    expect(result).toHaveValue(edited)
+    expect(clipboard).toHaveBeenLastCalledWith(edited)
+    await view.user.click(copy)
+    expect(await screen.findByText('Texto copiado')).toBeVisible()
+    expect(clipboard).toHaveBeenCalledTimes(2)
+    await view.user.keyboard('{Escape}')
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: DIALOG })).not.toBeInTheDocument(),
+    )
+    expect(view.trigger).toHaveFocus()
+    expect(screen.getByLabelText('Editor de nota diaria')).toBe(view.editor)
+    expect(view.editor).toHaveTextContent('Borrador')
+    expect(revokeUrl).toHaveBeenCalledExactlyOnceWith('blob:captura')
+  })
+
+  it('confirma el descarte del texto editado al cerrar o reemplazar una selección válida', async () => {
+    server.use(mock.post(EXTRACTIONS, () => HttpResponse.json({ text: TEXT })))
+    const view = await notes()
+    await openDialog(view)
+    chooseFile(png)
+    await view.user.click(extractButton())
+    const result = await extractedText()
+    fireEvent.change(result, { target: { value: 'Texto editado' } })
+    await view.user.keyboard('{Escape}')
+    const confirm = await screen.findByRole('dialog', { name: /descartar los cambios/i })
+    await view.user.click(within(confirm).getByRole('button', { name: 'Seguir editando' }))
+    expect(result).toHaveValue('Texto editado')
+
+    chooseFile(jpeg)
+    await view.user.click(
+      within(await screen.findByRole('dialog', { name: /descartar los cambios/i })).getByRole(
+        'button',
+        { name: 'Descartar cambios' },
+      ),
+    )
+    expect(result).not.toBeInTheDocument()
+    expect(screen.getByAltText('Vista previa de la captura')).toHaveAttribute('src', 'blob:otra')
+    expect(revokeUrl).toHaveBeenCalledExactlyOnceWith('blob:captura')
+  })
+
+  it('anuncia el texto en pantalla táctil y espera el toque antes de enfocar el campo', async () => {
+    const matchMedia = window.matchMedia
+    vi.spyOn(window, 'matchMedia').mockImplementation((query) =>
+      query === '(pointer: coarse)' ? { ...matchMedia(query), matches: true } : matchMedia(query),
+    )
+    server.use(mock.post(EXTRACTIONS, () => HttpResponse.json({ text: TEXT })))
+    const view = await notes()
+    const dialog = await openDialog(view)
+    expect(dialog).toHaveClass('MuiDialog-paperFullScreen')
+    chooseFile(png)
+    await view.user.click(extractButton())
+    const result = await extractedText()
+    expect(result).not.toHaveFocus()
+    expect(screen.getByText('Texto listo')).toHaveAttribute('role', 'status')
+    await view.user.click(result)
+    expect(result).toHaveFocus()
+  })
+
+  it.each([
+    [400, null, 'No se pudo leer la imagen.'],
+    [413, null, 'La imagen supera los límites'],
+    [415, null, 'El archivo no es una imagen PNG o JPG válida.'],
+    [422, 'OCR_NO_TEXT', 'No se encontró texto'],
+    [504, 'OCR_TIMEOUT', 'Se agotó el tiempo'],
+    [429, 'OCR_QUOTA_EXHAUSTED', 'Se alcanzó el límite de OCR.space.'],
+    [429, 'OCR_BUSY', 'Ya hay extracciones en curso.'],
+    [502, 'OCR_PROVIDER_ERROR', 'No se pudo extraer texto'],
+    [502, 'OCR_PARTIAL', 'La extracción quedó incompleta.'],
+    [503, 'OCR_UNAVAILABLE', 'La extracción de texto no está disponible.'],
+  ])('muestra el error %s %s sin texto del proveedor', async (status, code, message) => {
+    server.use(
+      mock.post(EXTRACTIONS, () => problemResponse(status, { code, detail: 'detalle oculto' })),
+    )
+    const view = await notes()
+    await openDialog(view)
+    chooseFile(png)
+    await view.user.click(extractButton())
+    expect(await screen.findByRole('alert')).toHaveTextContent(message)
+    expect(screen.queryByText('detalle oculto')).not.toBeInTheDocument()
+    expect(screen.getByAltText('Vista previa de la captura')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Copiar texto' })).not.toBeInTheDocument()
+  })
+
+  it.each(['imagen', 'cierre', 'fecha', 'espacio', 'identidad', 'sesión'] as const)(
+    'aborta e ignora la respuesta anterior al cambiar %s, con un POST pese al doble clic',
+    async (change) => {
+      const release = deferred<Response>()
+      const view = await notes()
+      await openDialog(view)
+      chooseFile(png)
+      const fetchImpl = globalThis.fetch
+      const post = vi
+        .fn(() => release.promise)
+        .mockImplementationOnce(() => release.promise)
+        .mockResolvedValueOnce(HttpResponse.json({ text: 'respuesta nueva' }))
+      const fetch = vi
+        .spyOn(globalThis, 'fetch')
+        .mockImplementation((input, options) =>
+          typeof input === 'string' && input.startsWith(EXTRACTIONS)
+            ? post()
+            : fetchImpl(input, options),
+        )
+      await view.user.dblClick(extractButton())
+      const signal = fetch.mock.calls.find(
+        ([input]) => typeof input === 'string' && input.startsWith(EXTRACTIONS),
+      )?.[1]?.signal
+      expect(signal).toBeInstanceOf(AbortSignal)
+      expect(post).toHaveBeenCalledTimes(1)
+      expect(screen.getByText('Extrayendo texto…')).toBeVisible()
+      if (change === 'imagen') {
+        chooseFile(jpeg)
+        await view.user.click(extractButton())
+        expect(await extractedText()).toHaveValue('respuesta nueva')
+      } else if (change === 'cierre') {
+        await view.user.keyboard('{Escape}')
+      } else if (change === 'identidad' || change === 'sesión') {
+        const user =
+          change === 'identidad'
+            ? buildAuthUser({ id: '01900000-0000-7000-8000-000000000009' })
+            : null
+        if (user) view.auth.login(user)
+        else view.auth.expireSession()
+        act(() => view.queryClient.setQueryData(authQueryKeys.session, user))
+      } else {
+        const path =
+          change === 'fecha' ? '/notes/2026-11-14?space=work' : `/notes/${DATE}?space=personal`
+        await act(() => view.navigate(path))
+      }
+      try {
+        await waitFor(() => expect(signal?.aborted).toBe(true))
+        expect(revokeUrl).toHaveBeenCalledWith('blob:captura')
+      } finally {
+        await act(() => {
+          release.resolve(HttpResponse.json({ text: 'respuesta anterior' }))
+        })
+      }
+      if (change === 'cierre') await openDialog(view)
+      expect(screen.queryByDisplayValue('respuesta anterior')).not.toBeInTheDocument()
+      expect(post).toHaveBeenCalledTimes(change === 'imagen' ? 2 : 1)
+    },
+  )
+})
