@@ -1,6 +1,6 @@
 ---
 id: T-069
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M6
@@ -57,7 +57,7 @@ Desde raíz, `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/c
 
 2026-11-15 (Buenos Aires). Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Node 24.21.0 y skill `frontend-design`. Base remota `b8ba81f950dd190851b9b5430e479691e19361df`. [T-068 conciliada](T-068-ocr-api.md#conciliación) con STARTER conservado. El cambio afecta la UI de Notas y consume la API OCR existente; los archivos y el texto OCR son transitorios. El gate acumulado de I5 sigue diferido y la clave real corresponde a T-071.
 
-[Revisión independiente R1 favorable](#revisión-independiente-r1). El veredicto canónico queda en [PR72](https://github.com/MatiasNicolasAcevedo/devnotes/pull/72), asociado al HEAD documental final, la base y su `verify-required`. La confirmación de MERGED habilita T-070.
+[Revisión independiente R1 favorable](#revisión-independiente-r1). [PR72 fue conciliado](#conciliación) y T-070 quedó habilitada.
 
 ## Evidencia del FULL de cierre
 
@@ -92,6 +92,6 @@ El lanzador `.orchestrator/t069-full-corrected-n1115-697e.ps1` cotejó SHA, árb
 
 Revisión favorable, sin bloqueantes. Se conserva el [STARTER de T-068](T-068-ocr-api.md#evidencia-de-starter-de-b-2-y-traspaso-a-r3) y el gate acumulado de I5 sigue diferido. La clave real corresponde a T-071 y la activación en Render requiere su autorización separada.
 
-## Cierre y siguiente tarea
+## Conciliación
 
-Tras MERGED confirmado, habilita [T-070](T-070-ocr-journey.md).
+En la retoma de [T-070](T-070-ocr-journey.md), `gh pr view 72 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` confirmó `MERGED` contra `main` con squash `4f212efd4fe295290ddefb785b8d8edaf0b2b5ae` el 2026-11-16T17:24:15Z. La [evidencia de cierre en PR72](https://github.com/MatiasNicolasAcevedo/devnotes/pull/72#issuecomment-6923813020) registra HEAD `1ecc6cadd500274b502de1db41050ca2389fc4a4`, base `b8ba81f950dd190851b9b5430e479691e19361df`, revisión independiente R1 y `verify-required` SUCCESS. T-069 queda `done`.

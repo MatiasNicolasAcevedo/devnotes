@@ -1,14 +1,63 @@
-// Fictitious Groq transcription double for E2E and proxy assays (S-105 v2).
-// Runs on port 8091, responds to POST /openai/v1/audio/transcriptions.
-// Validates parameters, returns verbose_json with controlled scenarios.
-// Only logs counters — no bodies, cookies, or secrets.
+// Private E2E double for Groq transcription and OCR.space, with no request logging.
 
 import http from 'node:http';
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { Readable } from 'node:stream';
 
 const PORT = 8091;
 const HEALTH_PATH = '/healthz';
 const TRANSCRIPTION_PATH = '/openai/v1/audio/transcriptions';
+const OCR_PATH = '/parse/image';
+const OCR_KEY = 'fictitious-e2e-ocr-key';
+const OCR_TEXT = 'T-070\nERR_CONNECTION_RESET\n/src/api/fixture.ts';
+const ocrFixtures = [
+  ['terminal.png', 'image/png', 200],
+  ['terminal.jpg', 'image/jpeg', 200],
+  ['quota.png', 'image/png', 429],
+].map(([name, type, status]) => ({
+  type, status, bytes: readFileSync(new URL(`./ocr/${name}`, import.meta.url)),
+}));
+
+async function respondToOcr(req, res) {
+  if (req.headers.apikey !== OCR_KEY) {
+    res.writeHead(401).end();
+    return;
+  }
+  const type = req.headers['content-type'] ?? '';
+  const size = Number(req.headers['content-length']);
+  if (!type.startsWith('multipart/form-data;') || !(size > 0 && size <= 1_100_000)) {
+    res.writeHead(400).end();
+    return;
+  }
+  try {
+    const form = await new Response(Readable.toWeb(req), { headers: { 'Content-Type': type } }).formData();
+    const file = form.get('file');
+    if ([...form.keys()].sort().join(',') !== 'OCREngine,file,isOverlayRequired,language'
+        || form.get('OCREngine') !== '2' || form.get('language') !== 'auto'
+        || form.get('isOverlayRequired') !== 'false' || !(file instanceof File)) {
+      res.writeHead(400).end();
+      return;
+    }
+    const bytes = Buffer.from(await file.arrayBuffer());
+    const fixture = ocrFixtures.find(candidate => candidate.type === file.type && candidate.bytes.equals(bytes));
+    if (!fixture || file.name !== (file.type === 'image/png' ? 'screenshot.png' : 'screenshot.jpg')) {
+      res.writeHead(400).end();
+      return;
+    }
+    if (fixture.status === 429) {
+      res.writeHead(429, { 'Retry-After': '30' }).end();
+      return;
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' }).end(JSON.stringify({
+      OCRExitCode: 1,
+      IsErroredOnProcessing: false,
+      ParsedResults: [{ FileParseExitCode: 1, ParsedText: OCR_TEXT }],
+    }));
+  } catch {
+    res.writeHead(400).end();
+  }
+}
 
 // Counters for test verification
 let requestCount = 0;
@@ -53,6 +102,11 @@ const server = http.createServer((req, res) => {
     }
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end('ok\n');
+    return;
+  }
+
+  if (req.method === 'POST' && req.url === OCR_PATH) {
+    void respondToOcr(req, res);
     return;
   }
 

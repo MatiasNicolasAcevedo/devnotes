@@ -34,9 +34,8 @@ La ruta I5 está conciliada. [Control final](tasks/T-067-copy-previous-client.md
 | 2 | [T-069](tasks/T-069-ocr-workspace.md) · Diálogo de captura y texto | T-068 |
 | 3 | [T-070](tasks/T-070-ocr-journey.md) · Recorrido de teclado, táctil y proxy con doble externo | T-069 |
 | 4 | [T-071](tasks/T-071-ocr-first-real-test.md) · Primera precisión real en local | T-070 y autorización/carga privada de OCR.space |
-| 5 | [T-072](tasks/T-072-writing-provider-evaluation.md) · Evaluar Redactar y proveedores | T-071 y autorización del experimento |
 
-La prioridad de implementación es [S-112](specs/S-112-screenshot-ocr.md). Las [siete ideas ya seleccionadas](FUTURE-FEATURES.md) conservan su lugar de candidatas posteriores. El seguimiento de Render es un pendiente operativo de I5. Si el dueño elige una ventana fija, Frontera prepara su contrato propio antes de activar un disparador.
+La cola activa de [S-112](specs/S-112-screenshot-ocr.md) termina al cerrar T-071. [T-072 · Evaluar Redactar y proveedores](tasks/T-072-writing-provider-evaluation.md) queda en pausa como trabajo futuro hasta que el dueño decida retomarla. Las [siete ideas ya seleccionadas](FUTURE-FEATURES.md) conservan su lugar de candidatas posteriores. El seguimiento de Render es un pendiente operativo de I5. Si el dueño elige una ventana fija, Frontera prepara su contrato propio antes de activar un disparador.
 
 ## Siguientes · plan del dueño del 2026-11-10, ajustado el 2026-11-11
 

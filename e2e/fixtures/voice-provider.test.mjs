@@ -4,6 +4,7 @@
 
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { describe, it, before, after } from 'node:test';
@@ -176,5 +177,30 @@ describe('voice-provider double', () => {
   it('returns 404 for unknown paths', async () => {
     const res = await request(8091, '/unknown/path');
     assert.equal(res.status, 404);
+  });
+
+  it('accepts only the fictitious OCR key and exact multipart fixture', async () => {
+    const sendOcr = async (name, type, key = 'fictitious-e2e-ocr-key', extraField = false) => {
+      const form = new FormData();
+      form.set('OCREngine', '2');
+      form.set('language', 'auto');
+      form.set('isOverlayRequired', 'false');
+      if (extraField) form.set('space', 'work');
+      const bytes = await readFile(new URL(`./ocr/${name}`, import.meta.url));
+      form.set('file', new Blob([bytes], { type }), type === 'image/png' ? 'screenshot.png' : 'screenshot.jpg');
+      return fetch('http://127.0.0.1:8091/parse/image', { method: 'POST', body: form, headers: { apikey: key } });
+    };
+    const denied = await sendOcr('terminal.png', 'image/png', 'incorrect-fictitious-key');
+    assert.equal(denied.status, 401);
+    assert.equal((await sendOcr('terminal.png', 'image/jpeg')).status, 400);
+    assert.equal((await sendOcr('terminal.png', 'image/png', undefined, true)).status, 400);
+    for (const [name, type] of [['terminal.png', 'image/png'], ['terminal.jpg', 'image/jpeg']]) {
+      const success = await sendOcr(name, type);
+      assert.equal(success.status, 200);
+      assert.equal((await success.json()).ParsedResults[0].ParsedText, 'T-070\nERR_CONNECTION_RESET\n/src/api/fixture.ts');
+    }
+    const quota = await sendOcr('quota.png', 'image/png');
+    assert.equal(quota.status, 429);
+    assert.equal(quota.headers.get('retry-after'), '30');
   });
 });

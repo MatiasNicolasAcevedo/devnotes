@@ -77,9 +77,11 @@ Quince tareas de producto. Frontera cerró el [control final tras T-067](tasks/T
 
 ## I6 / M6 · Herramientas de texto en el diario
 
-Primero [S-112 · Copiar texto de una captura](specs/S-112-screenshot-ocr.md). Salida: captura PNG/JPG a texto editable/copiar, con borrador intacto y UX verificada en escritorio al 25 %, escritorio amplio y Android emulado. Secuencia de entorno local: T-068 API con doble → T-069 diálogo → T-070 navegador/API real con doble externo → T-071 precisión con capturas ficticias y autorización del dueño. El dueño autorizó Trabajo y Personal con aviso antes de cada envío. La clave y la prueba real son posteriores. Despliegue separado con autorización sobre SHA y ventana. Frontera pasa a evaluar [Redactar con GroqCloud y alternativas](tasks/T-072-writing-provider-evaluation.md) tras el veredicto de OCR. Esperar el experimento para decidir arquitectura o implementación de generación de texto.
+Salida de [S-112 · Copiar texto de una captura](specs/S-112-screenshot-ocr.md): captura PNG/JPG a texto editable/copiar, con borrador intacto y UX verificada en escritorio al 25 %, escritorio amplio y Android emulado. Secuencia de entorno local: T-068 API con doble → T-069 diálogo → T-070 navegador/API real con doble externo → T-071 precisión con capturas ficticias y autorización del dueño. El dueño autorizó Trabajo y Personal con aviso antes de cada envío. La clave real se usa en T-071. El corte acordado el 2026-11-16 se alcanza al cerrar T-071 con el recorrido y el veredicto de precisión registrados. El despliegue conserva su autorización separada sobre SHA y ventana.
 
 ## Objetivos futuros sin contrato de ejecución
+
+[T-072 · Evaluar Redactar y proveedores](tasks/T-072-writing-provider-evaluation.md) conserva la investigación y los modelos candidatos. Su evaluación queda en pausa hasta una decisión expresa del dueño.
 
 Restauración/comparación/múltiples revisiones por día, búsquedas, plantillas de enlaces y personalización son opciones del contexto, no tareas ready ni dependencias. La exportación/importación y el piloto de despliegue tienen contrato en S-107/S-108; producción en VPS sigue como propuesta de DEPLOYMENT. No instalar infraestructura para ellas. Google real, servicios pagos y datos reales reservados al dueño.
 

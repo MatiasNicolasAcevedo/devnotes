@@ -27,6 +27,8 @@ Medir la extracción contra OCR.space Free en un SHA de main congelado. Entregar
 
 Configurar el secreto local en el entorno privado de un Git Bash iniciado por el dueño o desde su gestor de secretos, fuera del chat, de `.env.example`, del archivo de puertos y de cualquier variable `VITE_*`. El agente usa solo una confirmación declarativa y el estado autenticado de capacidades. El flag y el estado disponible demuestran configuración. La primera extracción demuestra acceso al proveedor. El dueño puede iniciar el stack ya preparado desde su sesión privada y Frontera verificar por el navegador sin inspeccionar su proceso o credenciales. [Configuración de Render, consultada el 2026-11-14](https://render.com/docs/configure-environment-variables).
 
+El dueño puede solicitar la clave Free por correo desde el formulario oficial de OCR.space. La carga se necesita recién en T-071, cuando estén confirmados el SHA, el entorno local y las muestras ficticias del ensayo. [Alta de clave Free](https://ocr.space/ocrapi/freekey) · [Confirmación de entrega por correo](https://ocr.space/ocrapi/confirmation).
+
 ## Leer antes
 
 [S-112](../specs/S-112-screenshot-ocr.md), [SETUP](../SETUP.md#requisitos-del-host), [T-070](T-070-ocr-journey.md), [DEPLOYMENT](../DEPLOYMENT.md#primer-deploy-y-aceptación-del-dueño).
@@ -64,6 +66,6 @@ Como validación de UX separada, revisar Android físico con selector, perspecti
 
 Draft por T-070. Primera prueba local y Render tienen configuraciones y permisos separados. STATUS debe señalar al dueño cuando el siguiente paso dependa de su carga privada. La prueba real, el acceso al panel y un despliegue siguen pendientes.
 
-## Cierre y siguiente tarea
+## Cierre del tramo OCR
 
-Evidencia técnica y veredicto de precisión en esta tarea. Si el resultado cumple o el dueño acepta la limitación, llevar la evidencia documental a revisión y conciliar el MERGED antes de retomar [T-072](T-072-writing-provider-evaluation.md). Render espera SHA y ventana expresamente autorizados.
+Evidencia técnica y veredicto de precisión en esta tarea. Si el resultado cumple o el dueño acepta la limitación, llevar la evidencia documental a revisión y conciliar el MERGED. El dueño decidió el 2026-11-16 detener el trabajo al cerrar T-071 y registrar el resultado del recorrido y del ensayo real. [T-072](T-072-writing-provider-evaluation.md) queda en pausa hasta una decisión expresa del dueño. Render espera SHA y ventana expresamente autorizados.

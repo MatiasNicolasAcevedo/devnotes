@@ -1,6 +1,6 @@
 ---
 id: T-072
-status: draft
+status: blocked
 priority: P2
 size: S
 milestone: M6
@@ -14,9 +14,11 @@ pr: null
 
 # T-072 · Evaluar Redactar después de OCR
 
+**En pausa por decisión del dueño del 2026-11-16.** El tramo actual termina con el cierre de [T-071](T-071-ocr-first-real-test.md). La investigación queda como referencia futura. Retomar la evaluación de Redactar y de los modelos candidatos solo cuando el dueño lo pida expresamente.
+
 ## Objetivo y primer recorrido
 
-Después del veredicto de OCR, comparar hasta tres configuraciones Free con ejemplos ficticios y decidir si merece un contrato de implementación. Recomiendo empezar por **Redactar** en Notas → Herramientas, con un pedido independiente y resultado editable. Funciona aunque la nota esté vacía y deja el envío a decisión de la persona. **Convertir en prompt** tiene una entrada más rápida cuando ya hay un dictado, pero añade origen, prellenado, gestión del borrador y permisos sobre transcripciones. Evaluarlo con la misma herramienta. Desde Voz, una acción secundaria toma el texto vigente de la transcripción. Desde Notas, una acción contextual toma solo la selección. Mostrar el fragmento editable antes de **Generar**. Conservar el original accesible al fallar. Incorporar la salida a una nota sería una acción explícita posterior.
+Si el dueño retoma esta tarea tras el veredicto de OCR, comparar hasta tres configuraciones Free con ejemplos ficticios y decidir si merece un contrato de implementación. Recomiendo empezar por **Redactar** en Notas → Herramientas, con un pedido independiente y resultado editable. Funciona aunque la nota esté vacía y deja el envío a decisión de la persona. **Convertir en prompt** tiene una entrada más rápida cuando ya hay un dictado, pero añade origen, prellenado, gestión del borrador y permisos sobre transcripciones. Evaluarlo con la misma herramienta. Desde Voz, una acción secundaria toma el texto vigente de la transcripción. Desde Notas, una acción contextual toma solo la selección. Mostrar el fragmento editable antes de **Generar**. Conservar el original accesible al fallar. Incorporar la salida a una nota sería una acción explícita posterior.
 
 ```text
 Escritorio ancho, misma herramienta sobre Notas o Voz
@@ -81,4 +83,4 @@ Registrar hora, entorno/versión del ensayo, modelo pedido y servido, estado, la
 
 ## Checkpoint vigente
 
-Draft por T-071 y pendiente de autorización del experimento autenticado cuando llegue el turno. Esta investigación documental deja las hipótesis, fuentes, bocetos y los datos a medir. No registra llamadas, claves, facturación ni capacidad operativa de una cuenta. Cierre documental desde raíz con `node scripts/docs-check.mjs` y `git diff --check`. Retornar a Frontera/dueño con la comparación para decidir el primer contrato de producto y sus permisos.
+En pausa sin rama activa ni PR. Para retomar se requiere el cierre de T-071 y una decisión expresa del dueño. Si la retoma se autoriza, Frontera revalida las fuentes y acuerda el alcance del ensayo autenticado antes de solicitar claves o probar proveedores.
