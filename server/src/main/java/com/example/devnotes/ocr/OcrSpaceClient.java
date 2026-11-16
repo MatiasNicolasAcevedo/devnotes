@@ -26,12 +26,15 @@ import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 @Component
 class OcrSpaceClient {
     private static final int MAX_RESPONSE_BYTES = 1_000_000;
     private static final URI PROVIDER = URI.create("https://api.ocr.space/parse/image");
+    private static final URI E2E_PROVIDER = URI.create("http://voice-provider:8091/parse/image");
+    private static final String E2E_KEY = "fictitious-e2e-ocr-key";
 
     private final URI endpoint;
     private final Duration timeout;
@@ -42,8 +45,9 @@ class OcrSpaceClient {
             .build();
 
     @Autowired
-    OcrSpaceClient() {
-        this(PROVIDER, Duration.ofSeconds(20));
+    OcrSpaceClient(Environment environment) {
+        // E2E is pinned to the private double, including when the double is down.
+        this(environment.matchesProfiles("e2e") ? E2E_PROVIDER : PROVIDER, Duration.ofSeconds(20));
     }
 
     // Tests supply a loopback HTTP server in Java. Production has no URL override.
@@ -53,6 +57,9 @@ class OcrSpaceClient {
     }
 
     String extract(Screenshot screenshot, String key) {
+        if (E2E_PROVIDER.equals(endpoint) && !E2E_KEY.equals(key)) {
+            throw OCR_PROVIDER_ERROR.failure();
+        }
         HttpRequest request;
         try {
             request = request(screenshot, key);

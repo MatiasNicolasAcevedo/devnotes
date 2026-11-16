@@ -1,6 +1,6 @@
 # Overlay over docker-compose.yml + compose.auth-test.yml. No host ports.
 # Loopback origin stays valid under S-001: browser shares only the client's network namespace.
-# Voice provider (S-105 v2): isolated fake in private network, no host ports, fictitious key only.
+# Voice and OCR share a private double with no host ports and fictitious keys.
 services:
   server:
     environment:
@@ -11,6 +11,9 @@ services:
       DEVNOTES_VOICE_ENABLED: "true"
       GROQ_API_KEY: "fictitious-e2e-voice-key"
       DEVNOTES_VOICE_TEST_PROVIDER: "true"
+      DEVNOTES_OCR_ENABLED: "true"
+      DEVNOTES_OCR_ALLOWED_SPACES: "work,personal"
+      OCR_SPACE_API_KEY: "fictitious-e2e-ocr-key"
   client:
     ports: !reset []
     environment:
@@ -26,6 +29,7 @@ services:
     command: ["node", "/app/voice-provider.mjs"]
     volumes:
       - ./e2e/fixtures/voice-provider.mjs:/app/voice-provider.mjs:ro
+      - ./e2e/fixtures/ocr:/app/ocr:ro
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8091/healthz"]
       interval: 2s
