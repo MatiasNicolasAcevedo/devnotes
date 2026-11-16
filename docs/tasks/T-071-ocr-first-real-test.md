@@ -1,6 +1,6 @@
 ---
 id: T-071
-status: in_review
+status: mergeable
 priority: P1
 size: S
 milestone: M6
@@ -117,3 +117,13 @@ Evidencia saneada local, fuera del PR: `.orchestrator/ocr-t071-results.json` y c
 **Veredicto del dueño, 2026-11-16.** Acepta cerrar T-071 con la evidencia obtenida y registrar las pérdidas de precisión y la comprobación de copia inconclusa en el navegador. La evaluación de mejoras queda [pendiente en BACKLOG](../BACKLOG.md#pendientes-tras-t-071). La aceptación corresponde al ensayo local y permite revisar el PR documental. Conciliar T-071 al confirmar `MERGED` en GitHub.
 
 Entrega en [PR74](https://github.com/MatiasNicolasAcevedo/devnotes/pull/74), base `main` en `ec216bb5714ed4bd73403fb894cb2ee38ac1826b`. `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` verifican el gate `DOCS_ONLY / DOCUMENTATION`. El cambio conserva las fuentes del squash del ensayo, el STARTER de T-068 y el gate acumulado de I5 diferido. [T-072](T-072-writing-provider-evaluation.md) queda en pausa por el dueño. La [activación de OCR en Render](../DEPLOYMENT.md#preparación-de-ocr-en-render) espera SHA y ventana autorizados. El squash documental debe incluir `[skip render]` en su mensaje para que el auto-deploy de `main` no lo publique.
+
+## Revisión independiente R1
+
+2026-11-16 (Buenos Aires). Frontera reviewer en sesión nueva de Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Node 24.21.0 y Docker CLI para inventario. El PR documenta el ensayo y la guía operativa, sin cambios de comportamiento, API, permisos, datos ni UI.
+
+- GitHub confirmó PR74 `OPEN`, listo contra `main`, HEAD inicial `2a2b77ed0111f554fa3915bb810feeb18c29c14a`. La base remota, su ancestro común y el SHA técnico del ensayo coinciden con `ec216bb5714ed4bd73403fb894cb2ee38ac1826b`, squash de PR73 `MERGED` (2026-11-16T20:28:24Z). En el checkout detached `.orchestrator/t071-review-pr74-codex` revisé el diff completo: cinco Markdown regulares. `node scripts/docs-check.mjs`, `git diff --check` contra la base y `node scripts/ci/classify-diff.mjs --base ec216bb5714ed4bd73403fb894cb2ee38ac1826b --head HEAD --phase FULL` dieron `DOCS_ONLY / DOCUMENTATION` y exit 0.
+- Cotejé los tres SHA-256, el JSON saneado y las cinco capturas del diálogo. Recalculé las distancias: 2/66, 2/40 y 0/58 (4/164 en total); tres respuestas 200 con `no-store`. Se perdieron dos tokens críticos en dos muestras. La copia queda demostrada para terminal e IDE y es inconclusa para navegador. La aceptación del dueño cubre esas limitaciones. No repetí solicitudes. El inventario Docker de solo lectura con `com.docker.compose.project=starter-dev-ocr-real-071` confirmó 0 contenedores, 0 redes y 0 volúmenes.
+- Cotejé la guía Excel con S-107/S-109, los seis casos pertinentes del JUnit saneado de T-069 (escritorio y móvil) y la restauración local v1 de T-045. La guía mantiene aparte la importación real en Render, omitida en RP-04, y exige que el dueño verifique en privado el respaldo antes de retirar la base. La activación de OCR conserva el permiso separado sobre SHA exacto y ventana; la clave está guardada con **Save only** según el dueño.
+
+Revisión favorable sin bloqueantes. Se conservan el STARTER de T-068 y el gate acumulado de I5 diferido. El veredicto canónico se publica en PR74 tras comprobar el gate documental y `verify-required` sobre el HEAD definitivo. Tras confirmar `MERGED`, registrar la evidencia de cierre en PR74 y conciliar la tarea en el primer avance de una próxima rama autorizada, según [merger](../agents/merger.md). T-072 continúa en pausa.

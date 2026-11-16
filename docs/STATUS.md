@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-071](tasks/T-071-ocr-first-real-test.md) · Primera prueba real de OCR en local ([S-112](specs/S-112-screenshot-ocr.md)) |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente del cierre documental. El dueño aceptó las limitaciones del ensayo. |
+| Estado | `mergeable` |
+| Acción actual | Confirmar el cierre de PR74 según el protocolo de merge. La [revisión documental R1](tasks/T-071-ocr-first-real-test.md#revisión-independiente-r1) es favorable. Para hacer squash con `[skip render]`, exigir veredicto `APROBADO` y `verify-required` verde sobre el HEAD final y la base revisada. |
 | Rama / PR | `codex/t-071-ocr-first-real-test` · [PR74](https://github.com/MatiasNicolasAcevedo/devnotes/pull/74) |
 
 [T-070](tasks/T-070-ocr-journey.md#conciliación) conciliada como `done` tras PR73 MERGED.
@@ -135,11 +135,9 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá DevNotes como Frontera reviewer independiente de T-071 en sesión nueva. Consultá PR74 en GitHub, confirmá que está OPEN y listo contra main, y revisá su HEAD publicado en un checkout aislado. Leé AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/agents/reviewer.md, docs/agents/merger.md, docs/tasks/T-071-ocr-first-real-test.md y las referencias concretas del diff. Cotejá la base y el SHA técnico ec216bb5714ed4bd73403fb894cb2ee38ac1826b, squash de PR73 MERGED.
+Solo ante un nuevo pedido expreso del dueño, retomá DevNotes en sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/agents/merger.md y docs/tasks/T-071-ocr-first-real-test.md. Consultá PR74 en GitHub antes de actuar. Si sigue OPEN, retomá únicamente su cierre: exigí veredicto APROBADO y verify-required verde sobre el HEAD/base vigentes y usá squash ligado a ese HEAD con [skip render]. Si cambió HEAD o base, devolvé a revisión.
 
-Revisá el gate DOCS_ONLY, la evidencia saneada de las tres muestras y del cleanup, el veredicto del dueño sobre precisión, y que la guía Excel y Render distinga pruebas con fixtures de restauraciones reales. Las tres solicitudes autorizadas ya se ejecutaron. Publicá el veredicto independiente ligado al HEAD final y a la base, con verify-required verde y conforme a AUTONOMY.
+Si GitHub confirma PR74 MERGED contra main con squash y fecha, usá el comentario de cierre para conciliar T-071 como done y actualizar STATUS en el primer avance de la próxima rama autorizada. No escribas en la rama mergeada ni abras una rama o tarea solo para conciliar. El tramo OCR termina en T-071 y T-072 sigue en pausa hasta pedido expreso.
 
-Si el merge es elegible, usá squash ligado al HEAD revisado y poné literalmente [skip render] en el mensaje de squash para omitir el auto-deploy de este PR. Confirmá MERGED contra main con squash y fecha en GitHub y dejá la conciliación de T-071 conforme a merger.md, sin crear una tarea nueva ni escribir en la rama mergeada.
-
-El tramo termina en T-071. T-072 queda en pausa hasta pedido expreso. Conservá el STARTER de T-068 y el gate acumulado de I5 diferido. La clave de Render quedó guardada con Save only. El despliegue de activación requiere autorización expresa del dueño sobre SHA exacto y ventana.
+Conservá el STARTER de T-068 y el gate acumulado de I5 diferido. La clave de Render quedó guardada con Save only. Para activar OCR en Render, exigí autorización expresa del dueño sobre SHA exacto y ventana.
 ```
