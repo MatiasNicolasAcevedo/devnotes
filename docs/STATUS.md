@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-071](tasks/T-071-ocr-first-real-test.md) · Primera prueba real de OCR en local ([S-112](specs/S-112-screenshot-ocr.md)) |
-| Estado | `in_progress` |
-| Acción actual | El dueño aceptó cerrar el ensayo con sus limitaciones. Frontera publica la evidencia para revisión independiente. |
-| Rama / PR | `codex/t-071-ocr-first-real-test` · pendiente |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente del cierre documental. El dueño aceptó las limitaciones del ensayo. |
+| Rama / PR | `codex/t-071-ocr-first-real-test` · [PR74](https://github.com/MatiasNicolasAcevedo/devnotes/pull/74) |
 
 [T-070](tasks/T-070-ocr-journey.md#conciliación) conciliada como `done` tras PR73 MERGED.
 
@@ -135,11 +135,11 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá DevNotes como Frontera implementer de T-071 en el checkout .orchestrator/t071-ocr-real. Leé AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/agents/implementer.md, docs/tasks/T-071-ocr-first-real-test.md y docs/specs/S-112-screenshot-ocr.md en ese checkout. Verificá en GitHub que PR73 sigue MERGED contra main con squash ec216bb5714ed4bd73403fb894cb2ee38ac1826b y cotejá el HEAD técnico local. T-070 ya quedó conciliada en el avance local de T-071.
+Retomá DevNotes como Frontera reviewer independiente de T-071 en sesión nueva. Consultá PR74 en GitHub, confirmá que está OPEN y listo contra main, y revisá su HEAD publicado en un checkout aislado. Leé AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/agents/reviewer.md, docs/agents/merger.md, docs/tasks/T-071-ocr-first-real-test.md y las referencias concretas del diff. Cotejá la base y el SHA técnico ec216bb5714ed4bd73403fb894cb2ee38ac1826b, squash de PR73 MERGED.
 
-El dueño aceptó cerrar el ensayo con sus limitaciones y dejar el ajuste pendiente. T-071 registra las métricas, la comprobación de copia inconclusa en navegador y el cleanup por label exacto. BACKLOG recoge los pendientes y DEPLOYMENT contiene las variables y la receta de restauración privada. Las tres solicitudes autorizadas ya se ejecutaron.
+Revisá el gate DOCS_ONLY, la evidencia saneada de las tres muestras y del cleanup, el veredicto del dueño sobre precisión, y que la guía Excel y Render distinga pruebas con fixtures de restauraciones reales. Las tres solicitudes autorizadas ya se ejecutaron. Publicá el veredicto independiente ligado al HEAD final y a la base, con verify-required verde y conforme a AUTONOMY.
 
-Validá el gate documental y pasá el PR a revisión independiente según POR_SESION. El mensaje de squash debe incluir [skip render] para omitir el auto-deploy de la entrega documental. T-071 se concilia únicamente al confirmar su MERGED.
+Si el merge es elegible, usá squash ligado al HEAD revisado y poné literalmente [skip render] en el mensaje de squash para omitir el auto-deploy de este PR. Confirmá MERGED contra main con squash y fecha en GitHub y dejá la conciliación de T-071 conforme a merger.md, sin crear una tarea nueva ni escribir en la rama mergeada.
 
 El tramo termina en T-071. T-072 queda en pausa hasta pedido expreso. Conservá el STARTER de T-068 y el gate acumulado de I5 diferido. La clave de Render quedó guardada con Save only. El despliegue de activación requiere autorización expresa del dueño sobre SHA exacto y ventana.
 ```

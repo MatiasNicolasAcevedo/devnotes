@@ -1,6 +1,6 @@
 ---
 id: T-071
-status: in_progress
+status: in_review
 priority: P1
 size: S
 milestone: M6
@@ -9,7 +9,7 @@ depends_on: [T-070]
 branch: codex/t-071-ocr-first-real-test
 role: implementer
 executor: frontier
-pr: null
+pr: 74
 ---
 
 # T-071 · Primera prueba real de OCR.space en local
@@ -116,4 +116,4 @@ Evidencia saneada local, fuera del PR: `.orchestrator/ocr-t071-results.json` y c
 
 **Veredicto del dueño, 2026-11-16.** Acepta cerrar T-071 con la evidencia obtenida y registrar las pérdidas de precisión y la comprobación de copia inconclusa en el navegador. La evaluación de mejoras queda [pendiente en BACKLOG](../BACKLOG.md#pendientes-tras-t-071). La aceptación corresponde al ensayo local y permite revisar el PR documental. Conciliar T-071 al confirmar `MERGED` en GitHub.
 
-Gate de entrega `DOCS_ONLY / DOCUMENTATION`. El cambio conserva las fuentes del squash `ec216bb5714ed4bd73403fb894cb2ee38ac1826b`, el STARTER de T-068 y el gate acumulado de I5 diferido. [T-072](T-072-writing-provider-evaluation.md) queda en pausa por el dueño. La [activación de OCR en Render](../DEPLOYMENT.md#preparación-de-ocr-en-render) espera SHA y ventana autorizados. El squash documental debe incluir `[skip render]` en su mensaje para que el auto-deploy de `main` no lo publique.
+Entrega en [PR74](https://github.com/MatiasNicolasAcevedo/devnotes/pull/74), base `main` en `ec216bb5714ed4bd73403fb894cb2ee38ac1826b`. `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` verifican el gate `DOCS_ONLY / DOCUMENTATION`. El cambio conserva las fuentes del squash del ensayo, el STARTER de T-068 y el gate acumulado de I5 diferido. [T-072](T-072-writing-provider-evaluation.md) queda en pausa por el dueño. La [activación de OCR en Render](../DEPLOYMENT.md#preparación-de-ocr-en-render) espera SHA y ventana autorizados. El squash documental debe incluir `[skip render]` en su mensaje para que el auto-deploy de `main` no lo publique.
