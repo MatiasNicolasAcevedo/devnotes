@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-070](tasks/T-070-ocr-journey.md) · Recorrido OCR en Chromium ([S-112](specs/S-112-screenshot-ocr.md)) |
-| Estado | `in_progress` |
-| Acción actual | Frontera implementer prepara el doble privado, el recorrido de escritorio y móvil y el gate de cierre. |
-| Rama / PR | `codex/t-070-ocr-journey` · PR pendiente |
+| Estado | `in_review` |
+| Acción actual | Frontera reviewer, en sesión nueva, revisa PR73 y la evidencia dirigida autorizada por el dueño. |
+| Rama / PR | `codex/t-070-ocr-journey` · [PR73](https://github.com/MatiasNicolasAcevedo/devnotes/pull/73) |
 
 [T-069](tasks/T-069-ocr-workspace.md#conciliación) conciliada como `done` tras PR72 MERGED.
 
@@ -133,9 +133,9 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá DevNotes como Frontera implementer de T-070 en la rama codex/t-070-ocr-journey. Leé AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/agents/implementer.md, docs/tasks/T-070-ocr-journey.md y docs/specs/S-112-screenshot-ocr.md. Verificá HEAD/base y el estado remoto. Continuá desde el checkpoint de T-070, acreditá el recorrido OCR en Chromium con API propia real, PostgreSQL 18, OIDC ficticio y doble privado de OCR.space y publicá para revisión independiente con el gate de cierre, evidencia saneada y cleanup.
+Retomá DevNotes como Frontera reviewer de T-070 en una sesión independiente. Leé AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/agents/reviewer.md, docs/tasks/T-070-ocr-journey.md y docs/specs/S-112-screenshot-ocr.md. Confirmá en GitHub que PR73 está OPEN contra main desde codex/t-070-ocr-journey y cotejá HEAD/base y verify-required. Usá un checkout aislado. Revisá el diff, la separación de perfiles, el doble privado de OCR.space y la evidencia de Chromium dirigido en escritorio y móvil con API propia real, PostgreSQL 18 y OIDC ficticio. Cotejá unitarias, JUnit saneados y cleanup. Para esta revisión usá la evidencia dirigida según la decisión del dueño del 2026-11-16. La matriz completa y STARTER quedan fuera de esta entrega. Registrá el veredicto independiente ligado al HEAD/base y la siguiente acción según el protocolo.
 
-Tras el MERGED de T-070, T-071 usa OCR_SPACE_API_KEY en el backend local aislado con muestras ficticias autorizadas. Cerrá el tramo al validar y conciliar T-071 según su contrato. T-072 queda en pausa hasta pedido expreso del dueño. Conservá el STARTER de T-068 y el gate acumulado de I5 diferido.
+Tras el MERGED confirmado de T-070, T-071 usa OCR_SPACE_API_KEY en el backend local aislado con muestras ficticias autorizadas por el dueño. El tramo termina al validar y conciliar T-071. T-072 queda en pausa hasta pedido expreso del dueño. Conservá el STARTER de T-068 y el gate acumulado de I5 diferido.
 
 El dueño ya guardó OCR_SPACE_API_KEY en Render con Save only. Render incorpora la variable al entorno de ese servicio en su próximo deploy. La activación de OCR requiere además DEVNOTES_OCR_ENABLED=true y los espacios aprobados en DEVNOTES_OCR_ALLOWED_SPACES. El despliegue de activación en Render conserva la autorización expresa sobre SHA y ventana.
 ```
