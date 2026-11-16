@@ -37,6 +37,15 @@ La ruta I5 está conciliada. [Control final](tasks/T-067-copy-previous-client.md
 
 La cola activa de [S-112](specs/S-112-screenshot-ocr.md) termina al cerrar T-071. [T-072 · Evaluar Redactar y proveedores](tasks/T-072-writing-provider-evaluation.md) queda en pausa como trabajo futuro hasta que el dueño decida retomarla. Las [siete ideas ya seleccionadas](FUTURE-FEATURES.md) conservan su lugar de candidatas posteriores. El seguimiento de Render es un pendiente operativo de I5. Si el dueño elige una ventana fija, Frontera prepara su contrato propio antes de activar un disparador.
 
+### Pendientes tras T-071
+
+| Pendiente | Retoma |
+|---|---|
+| Precisión de OCR y recorrido físico | El dueño acepta cerrar el ensayo inicial con las limitaciones registradas. Cuando lo pida, evaluar un ajuste para capturas de letra chica y tokens técnicos, con las mismas muestras y cuota aprobada para el nuevo ensayo. `scale=true` es candidata. Completar la comprobación de copia de la muestra de navegador y el recorrido físico de Android en sus respectivas validaciones. [Resultado real](tasks/T-071-ocr-first-real-test.md#resultado-real-del-2026-11-16). |
+| Restauración del respaldo de Render | El dueño prueba en privado su exportación de producción en una cuenta local vacía antes de reemplazar PostgreSQL. La restauración en Render queda sin acreditar hasta completar importación y cotejo sobre la nueva base. [Procedimiento](DEPLOYMENT.md#respaldo-y-reemplazo-de-postgresql-free). |
+| Activación de OCR en Render | Clave guardada con **Save only**. Habilitar con los flags de los espacios aprobados cuando el dueño autorice SHA y ventana. [Variables](DEPLOYMENT.md#preparación-de-ocr-en-render). |
+| Redactar e integraciones de IA | [T-072](tasks/T-072-writing-provider-evaluation.md) queda en pausa hasta pedido expreso del dueño. |
+
 ## Siguientes · plan del dueño del 2026-11-10, ajustado el 2026-11-11
 
 Del plan original quedan hechos la activación de Groq y la portabilidad `.xlsx` (ver [Hechas · I3](#hechas--i3--m3-portabilidad-xlsx)). El 2026-11-11 el dueño antepuso al despliegue una única tarea de ajustes de UI. Contratos: [S-108](specs/S-108-render-pilot.md), con la receta técnica en [DEPLOYMENT](DEPLOYMENT.md#piloto-de-devnotes-en-render-free). Una tarea y un PR por vez, con sesión nueva por tarea y por revisión; quien concilia un MERGED habilita la siguiente.

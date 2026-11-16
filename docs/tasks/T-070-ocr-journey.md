@@ -1,6 +1,6 @@
 ---
 id: T-070
-status: mergeable
+status: done
 priority: P1
 size: S
 milestone: M6
@@ -104,4 +104,8 @@ Revisión favorable sin bloqueantes dentro del alcance del 2026-11-16. La entreg
 
 ## Cierre y siguiente tarea
 
-Tras confirmar `MERGED` de PR73 con squash y fecha en GitHub, una sesión nueva de Frontera implementer concilia T-070 y prepara [T-071](T-071-ocr-first-real-test.md) sobre el SHA confirmado. El ensayo local aislado usa `OCR_SPACE_API_KEY` cargada por el dueño y muestras ficticias autorizadas. El tramo termina al validar y conciliar T-071. T-072 sigue en pausa y la activación en Render espera autorización expresa sobre SHA y ventana.
+[T-071](T-071-ocr-first-real-test.md) usa el squash confirmado para el ensayo local aislado con muestras ficticias. El tramo termina al validar y conciliar T-071. T-072 sigue en pausa y la activación en Render espera autorización expresa sobre SHA y ventana.
+
+## Conciliación
+
+`gh pr view 73 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` devolvió exit 0, [PR73](https://github.com/MatiasNicolasAcevedo/devnotes/pull/73) `MERGED` contra `main`, HEAD `86f13b2d04a3f0cf65b244c0629072809a66a7f3`, squash `ec216bb5714ed4bd73403fb894cb2ee38ac1826b` y `mergedAt=2026-11-16T20:28:24Z`. T-070 queda conciliada en el primer avance de T-071.
