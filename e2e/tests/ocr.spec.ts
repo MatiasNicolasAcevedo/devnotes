@@ -91,13 +91,13 @@ async function captureLayout(dialog: Locator, width: number, height: number, mob
   await expect.poll(() => dialog.evaluate(element => {
     const body = element.querySelector('.ocr-dialog-content')!;
     const bounds = element.getBoundingClientRect();
-    return document.documentElement.clientWidth === innerWidth &&
+    return document.documentElement.scrollWidth <= innerWidth &&
       bounds.left >= 0 && bounds.right <= innerWidth &&
       bounds.top >= 0 && bounds.bottom <= innerHeight &&
       body.scrollWidth <= body.clientWidth;
   })).toBe(true);
   const bounds = (await dialog.boundingBox())!;
-  const capture = (await dialog.getByRole('heading', { name: 'Captura' }).boundingBox())!;
+  const capture = (await dialog.getByRole('heading', { name: 'Captura', exact: true }).boundingBox())!;
   const text = (await field.boundingBox())!;
   expect(bounds.width).toBe(mobile ? width : Math.min(1120, width - 24));
   if (mobile) expect(bounds.height).toBe(height);
@@ -247,6 +247,12 @@ async function mobileJourney(page: Page, context: BrowserContext, identity: stri
   await dialog.getByRole('button', { name: 'Ocultar captura', exact: true }).tap();
   await expect(dialog.getByAltText('Vista previa de la captura')).toBeHidden();
   await page.setViewportSize({ width: 640, height: 280 });
+  const cdp = await context.newCDPSession(page);
+  const insets = { top: 12, right: 24, bottom: 16, left: 24 };
+  await cdp.send('Emulation.setSafeAreaInsetsOverride', { insets });
+  for (const [edge, pixels] of Object.entries(insets)) {
+    await expect(dialog).toHaveCSS(`padding-${edge}`, `${pixels}px`);
+  }
   await field.tap();
   await expect(field).toBeFocused();
   await expect(field).toBeInViewport();
@@ -259,7 +265,11 @@ async function mobileJourney(page: Page, context: BrowserContext, identity: stri
   await captureLayout(dialog, 640, 280, true, 'mobile-640x280');
   const close = dialog.getByRole('button', { name: 'Cerrar', exact: true });
   await expect(close).toBeInViewport();
+  const closeBounds = (await close.boundingBox())!;
+  expect(closeBounds.y).toBeGreaterThanOrEqual(insets.top);
+  expect(closeBounds.x + closeBounds.width).toBeLessThanOrEqual(640 - insets.right);
   await close.tap();
+  await cdp.detach();
   await expect(dialog).toHaveCount(0);
   await expect(page.getByRole('textbox', { name: 'Editor de nota diaria' })).toHaveText(note);
   expect(traffic.writes).toEqual([]);
