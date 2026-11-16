@@ -98,7 +98,7 @@ async function captureLayout(dialog: Locator, width: number, height: number, mob
   })).toBe(true);
   const bounds = (await dialog.boundingBox())!;
   const capture = (await dialog.getByRole('heading', { name: 'Captura', exact: true }).boundingBox())!;
-  const text = (await field.boundingBox())!;
+  const textHeading = (await dialog.getByText('Texto extraído', { exact: true }).boundingBox())!;
   expect(bounds.width).toBe(mobile ? width : Math.min(1120, width - 24));
   if (mobile) expect(bounds.height).toBe(height);
   expect((await close.boundingBox())!.height).toBeGreaterThanOrEqual(mobile ? 48 : 44);
@@ -106,13 +106,13 @@ async function captureLayout(dialog: Locator, width: number, height: number, mob
   await expect(field).toHaveCSS('font-size', '16px');
   if (wide) {
     await expect(preview).toBeVisible();
-    expect(text.x).toBeGreaterThan(capture.x);
-    expect(text.width).toBeGreaterThanOrEqual(400);
-    expect(Math.abs(text.y - capture.y)).toBeLessThan(70);
+    expect(textHeading.x).toBeGreaterThan(capture.x);
+    expect((await field.boundingBox())!.width).toBeGreaterThanOrEqual(400);
+    expect(textHeading.y).toBeCloseTo(capture.y);
   } else {
     await expect(preview).toBeHidden();
-    expect(text.x).toBeLessThan(capture.x + 10);
-    expect(text.y).toBeGreaterThan(capture.y);
+    expect(textHeading.x).toBeCloseTo(capture.x);
+    expect(textHeading.y).toBeGreaterThan(capture.y);
   }
   // Only the known dialog is captured. Its contents are the synthetic image and text.
   await dialog.screenshot({ path: `/artifacts/ocr-layout/${name}.png`, animations: 'disabled' });
