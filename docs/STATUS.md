@@ -2,16 +2,18 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-070](tasks/T-070-ocr-journey.md) · Recorrido OCR en Chromium ([S-112](specs/S-112-screenshot-ocr.md)) |
-| Estado | `mergeable` |
-| Acción actual | Confirmar el cierre de PR73 según el protocolo de merge. Consultar la [revisión independiente R1](tasks/T-070-ocr-journey.md#revisión-independiente-r1) y el veredicto en GitHub ligado al HEAD/base final. |
-| Rama / PR | `codex/t-070-ocr-journey` · [PR73](https://github.com/MatiasNicolasAcevedo/devnotes/pull/73) |
+| Tarea y contrato | [T-071](tasks/T-071-ocr-first-real-test.md) · Primera prueba real de OCR en local ([S-112](specs/S-112-screenshot-ocr.md)) |
+| Estado | `in_progress` |
+| Acción actual | El dueño aceptó cerrar el ensayo con sus limitaciones. Frontera publica la evidencia para revisión independiente. |
+| Rama / PR | `codex/t-071-ocr-first-real-test` · pendiente |
+
+[T-070](tasks/T-070-ocr-journey.md#conciliación) conciliada como `done` tras PR73 MERGED.
 
 [T-069](tasks/T-069-ocr-workspace.md#conciliación) conciliada como `done` tras PR72 MERGED.
 
 [T-068](tasks/T-068-ocr-api.md#conciliación) conciliada como `done` tras PR71 MERGED, con su evidencia de STARTER conservada.
 
-El corte acordado el 2026-11-16 es el cierre de [T-071](tasks/T-071-ocr-first-real-test.md#cierre-del-tramo-ocr), con recorrido y precisión de OCR verificados. [T-072 · Redactar y evaluación de modelos](tasks/T-072-writing-provider-evaluation.md) queda en pausa hasta una decisión expresa del dueño.
+El corte acordado el 2026-11-16 es el cierre de [T-071](tasks/T-071-ocr-first-real-test.md#cierre-del-tramo-ocr) con la precisión medida y las limitaciones aceptadas por el dueño. [Pendientes tras T-071](BACKLOG.md#pendientes-tras-t-071): mejorar precisión y completar las comprobaciones de OCR, ensayar la restauración del respaldo de Render, y activar OCR con SHA y ventana aprobados. [T-072 · Redactar y evaluación de modelos](tasks/T-072-writing-provider-evaluation.md) queda en pausa hasta pedido expreso.
 
 [T-067](tasks/T-067-copy-previous-client.md#conciliación) conciliada como `done`. [Control de I5](tasks/T-067-copy-previous-client.md#control-de-avance-de-i5--t-063-a-t-067) completo. **FULL/STARTER de I5 diferidos por el dueño.** SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño.
 
@@ -19,8 +21,8 @@ El corte acordado el 2026-11-16 es el cierre de [T-071](tasks/T-071-ocr-first-re
 
 | Hito | Variable y lugar |
 |---|---|
-| [T-071](tasks/T-071-ocr-first-real-test.md#alcance-e-intervención-del-dueño) · Primer ensayo real de OCR, tras T-070 | Cuando Frontera confirme el SHA y el stack ficticio esté preparado, autorizar las muestras y cargar `OCR_SPACE_API_KEY` en el entorno privado que inicia el servicio backend local aislado. Avisar «cargada» basta. T-070 usa un doble. [Alta de clave Free](https://ocr.space/ocrapi/freekey). |
-| Render · Clave guardada, activación pendiente | El dueño informó que guardó `OCR_SPACE_API_KEY` con **Save only** en Render. Render incorpora la variable al entorno del servicio en su próximo deploy. La activación de OCR requiere además `DEVNOTES_OCR_ENABLED=true` y los espacios aprobados en `DEVNOTES_OCR_ALLOWED_SPACES`. El despliegue de activación conserva su autorización sobre SHA y ventana. [Variables de entorno en Render](https://render.com/docs/configure-environment-variables#in-the-render-dashboard). |
+| Render · Clave OCR guardada, activación pendiente | `OCR_SPACE_API_KEY` quedó con **Save only**. Mantener OCR deshabilitado hasta autorizar SHA y ventana porque el próximo deploy aplica los valores guardados. [Variables y activación](DEPLOYMENT.md#preparación-de-ocr-en-render). |
+| Render · Restauración y recambio de PostgreSQL | El dueño restaura en local un `.xlsx` de producción en una cuenta vacía y coteja ambos espacios antes de eliminar la base anterior. El FULL del 2026-11-15 acreditó el recorrido con fixtures. La restauración real en Render sigue pendiente. [Procedimiento y evidencia](DEPLOYMENT.md#respaldo-y-reemplazo-de-postgresql-free). |
 
 **Render, disponibilidad.** Auto-Deploy quedó en **On Commit** para main. El 2026-11-14 a las 18:16:26 de Buenos Aires, Render confirmó `405e7e5` **Live** y readiness devolvió HTTP 200 `UP`. La activación o prueba de la sonda y la futura configuración de claves en Render conservan su autorización separada sobre SHA y ventana. [Observación y confirmación](tasks/T-056-service-activity-journey.md#observación-del-piloto-del-2026-11-14).
 
@@ -133,9 +135,11 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá DevNotes como Frontera implementer de T-071 en una sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/agents/implementer.md, docs/agents/merger.md, docs/tasks/T-070-ocr-journey.md, docs/tasks/T-071-ocr-first-real-test.md y docs/specs/S-112-screenshot-ocr.md. Confirmá con GitHub que PR73 está MERGED contra main y registrá el squash y mergedAt. Si sigue abierto, dejá la retoma de T-070 con HEAD/base, veredicto y verify-required vigentes. Con MERGED confirmado, conciliá T-070 en el primer avance de T-071 y prepará el checkout aislado para el ensayo local sobre el squash confirmado.
+Retomá DevNotes como Frontera implementer de T-071 en el checkout .orchestrator/t071-ocr-real. Leé AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/agents/implementer.md, docs/tasks/T-071-ocr-first-real-test.md y docs/specs/S-112-screenshot-ocr.md en ese checkout. Verificá en GitHub que PR73 sigue MERGED contra main con squash ec216bb5714ed4bd73403fb894cb2ee38ac1826b y cotejá el HEAD técnico local. T-070 ya quedó conciliada en el avance local de T-071.
 
-Avisale al dueño cuando el SHA y el stack ficticio estén preparados. El ensayo requiere OCR_SPACE_API_KEY en el entorno privado del backend local aislado, DEVNOTES_OCR_ENABLED=true y DEVNOTES_OCR_ALLOWED_SPACES con el espacio aprobado. Confirmá autorización de las muestras y cuota disponible según T-071. Registrá precisión, latencia, recorrido y cleanup. El tramo termina al validar y conciliar T-071. T-072 queda en pausa hasta pedido expreso del dueño. Conservá el STARTER de T-068 y el gate acumulado de I5 diferido.
+El dueño aceptó cerrar el ensayo con sus limitaciones y dejar el ajuste pendiente. T-071 registra las métricas, la comprobación de copia inconclusa en navegador y el cleanup por label exacto. BACKLOG recoge los pendientes y DEPLOYMENT contiene las variables y la receta de restauración privada. Las tres solicitudes autorizadas ya se ejecutaron.
 
-El dueño ya guardó OCR_SPACE_API_KEY en Render con Save only. Render incorpora la variable al entorno de ese servicio en su próximo deploy. La activación de OCR requiere además DEVNOTES_OCR_ENABLED=true y los espacios aprobados en DEVNOTES_OCR_ALLOWED_SPACES. El despliegue de activación en Render conserva la autorización expresa sobre SHA y ventana.
+Validá el gate documental y pasá el PR a revisión independiente según POR_SESION. El mensaje de squash debe incluir [skip render] para omitir el auto-deploy de la entrega documental. T-071 se concilia únicamente al confirmar su MERGED.
+
+El tramo termina en T-071. T-072 queda en pausa hasta pedido expreso. Conservá el STARTER de T-068 y el gate acumulado de I5 diferido. La clave de Render quedó guardada con Save only. El despliegue de activación requiere autorización expresa del dueño sobre SHA exacto y ventana.
 ```

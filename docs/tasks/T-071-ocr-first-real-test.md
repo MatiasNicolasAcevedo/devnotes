@@ -1,6 +1,6 @@
 ---
 id: T-071
-status: draft
+status: in_progress
 priority: P1
 size: S
 milestone: M6
@@ -64,8 +64,56 @@ Como validación de UX separada, revisar Android físico con selector, perspecti
 
 ## Checkpoint vigente
 
-Draft por T-070. Primera prueba local y Render tienen configuraciones y permisos separados. STATUS debe señalar al dueño cuando el siguiente paso dependa de su carga privada. La prueba real, el acceso al panel y un despliegue siguen pendientes.
+Frontera implementer en Codex, con PowerShell, Git/gh, Docker Compose, Git Bash y Node 24.21.0. Variante de modelo y esfuerzo sin dato expuesto. La entrega mide el flujo existente y registra evidencia documental. El ensayo usa una base PostgreSQL ficticia y envía únicamente las muestras autorizadas a OCR.space.
+
+[T-070 conciliada](T-070-ocr-journey.md#conciliación). Checkout `.orchestrator/t071-ocr-real`, rama `codex/t-071-ocr-first-real-test`, HEAD/base `ec216bb5714ed4bd73403fb894cb2ee38ac1826b`. Preflight de Docker Desktop 28.5.1/Compose v2.40.2-desktop.1: 0 contenedores, 0 redes, 0 volúmenes con el label exacto `com.docker.compose.project=starter-dev-ocr-real-071`; puertos 15175, 15176 y 18090 libres. Compose local configura Spring `test`, OIDC ficticio y PostgreSQL 18.6. El adaptador selecciona `https://api.ocr.space/parse/image` en ese perfil. La ruta al doble es exclusiva de `e2e`.
+
+`dev.sh up`, `check` y `down` salieron 0 con OCR desactivado. La sonda verificó API, DB y OIDC. Dentro del stack se confirmó Spring `test`, PostgreSQL 18.6 e imagen del OIDC ficticio `ghcr.io/navikt/mock-oauth2-server:3.0.3`. El `down` retiró contenedores y red. Quedó el volumen ficticio `starter-dev-ocr-real-071_db-data` con label de origen del checkout para el arranque privado. Log saneado: `.orchestrator/ocr-t071-preflight.log` dentro del checkout.
+
+Corpus ficticio generado y cotejado visualmente en `.orchestrator/ocr-t071-samples/`. Las líneas siguen el orden de la tabla. Adaptador con motor 2, idioma automático y el parámetro `scale` omitido, que usa `false` por defecto. `scale=true` queda como candidata fuera de este SHA. El proveedor publica 500 solicitudes diarias por IP, 25.000 mensuales y 1 MB por archivo en Free. Declara que elimina imágenes tras procesarlas y conserva la IP un mes. [Documentación de OCR.space](https://ocr.space/ocrapi) · [Privacidad](https://ocr.space/privacypolicy).
+
+| Archivo | Dimensiones y tamaño | SHA-256 |
+|---|---|---|
+| `navegador.png` | 840 × 256, 6.908 bytes | `5d84b5e1f2cde4c2928573bc5856e78ec8b4764e7229df42c7105612b2c41eee` |
+| `terminal.png` | 620 × 132, 2.136 bytes, Consolas 13 px | `411edc331b36317ffbeb1d19c73a4ec1c25fd174f87da29b3c79f9aba0de15be` |
+| `ide.jpg` | 770 × 205, 10.918 bytes | `3c013ec2531f72ca2d9f2cbe405779ec4236d28fa5238fe39d07531f28bca19f` |
+
+Retoma del 2026-11-16. El dueño autorizó los tres archivos y confirmó cuota Free y un único espacio aprobado. Los tres SHA-256 locales coinciden con la tabla. GitHub devolvió [PR73](https://github.com/MatiasNicolasAcevedo/devnotes/pull/73) `MERGED` contra `main`, con squash `ec216bb5714ed4bd73403fb894cb2ee38ac1826b`, igual a `HEAD` y `origin/main` locales. El filtro por label exacto mostró 0 contenedores, 0 redes y solo el volumen ficticio `starter-dev-ocr-real-071_db-data`. `docker volume inspect` con formato limitado verificó los labels `io.starter.local.owner=v1`, `io.starter.local.source` del checkout, proyecto exacto y volumen `db-data`. Las sondas de `GET http://127.0.0.1:15175/login` devolvieron `ECONNREFUSED` desde el host. Pendiente el arranque desde el Git Bash privado del dueño y confirmar si el espacio habilitado es `work` o `personal`. Hasta este checkpoint hubo 0 solicitudes a OCR.space.
+
+Recomprobación de esta sesión del 2026-11-16: `gh pr view 73 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` salió 0: `MERGED`, base `main`, HEAD publicado `86f13b2d04a3f0cf65b244c0629072809a66a7f3`, squash `ec216bb5714ed4bd73403fb894cb2ee38ac1826b`, `mergedAt=2026-11-16T20:28:24Z`. `gh api repos/MatiasNicolasAcevedo/devnotes/git/ref/heads/main` confirmó ese squash como punta remota y `gh pr checks 73` informó `verify-required` pass. Coinciden HEAD y `origin/main` locales. La consulta Docker por label exacto volvió a mostrar 0 contenedores, 0 redes y solo el volumen ficticio con los labels de propietario/origen esperados. Se preservaron los tres cambios documentales previos. El dueño consultó cómo arrancar y qué claves cargar: se indicó el checkout y proyecto aislados, solo `OCR_SPACE_API_KEY` mediante entrada oculta en su Git Bash privado, flags y un único espacio; Groq no interviene en este ensayo. Sigue pendiente la confirmación declarativa de arranque y espacio, con 0 solicitudes al proveedor.
+
+Con el stack listo, ejecutar `node .orchestrator/ocr-t071-run.mjs capability <espacio>` y luego `node .orchestrator/ocr-t071-run.mjs extract <espacio>` si la capacidad autenticada coincide con el espacio autorizado. El controlador local ignorado pasó `node --check`; la extracción conserva el resultado local en `.orchestrator/ocr-t071-results.json` y capturas saneadas del diálogo antes de editar y tras copiar. HTTP y latencia corresponden al POST de DevNotes observado en el navegador. La tasa usa distancia de Levenshtein por caracteres Unicode, saltos CRLF/CR normalizados a LF, NFC y exclusión de un salto final; conserva también texto original y esperado. Recursos propios para cleanup: proyecto exacto `starter-dev-ocr-real-071`, volumen `starter-dev-ocr-real-071_db-data`, fuente `/c/D/matias/proyectos-ia/devnotes/.orchestrator/t071-ocr-real`; `dev.sh down` conserva el volumen y su eliminación exige recotejar labels antes. `node scripts/docs-check.mjs` y `git diff --check` pasaron en este checkpoint. Sin cambios en fuentes técnicas, STARTER de T-068 conservado y gate acumulado de I5 diferido.
+
+Arranque informado por el dueño. `docker ps -a`, `docker network ls` y `docker volume ls` con el label exacto del ensayo mostraron cuatro contenedores activos (`client`, `server` y `db` sanos; `oidc` activo), una red y el volumen ficticio esperado. `GET http://127.0.0.1:15175/login` devolvió HTTP 200. Se entregó al dueño el comando de [Edge con perfil separado](../SETUP.md#prueba-manual-en-windows) adaptado al puerto 15175 para usar el login ficticio. HTTP 200 solo acredita la pantalla de login. Falta la confirmación del espacio habilitado antes de la capacidad autenticada y el POST; 0 solicitudes a OCR.space.
+
+El dueño aclaró que arrancó sin configurar `DEVNOTES_OCR_ALLOWED_SPACES`. Se comprobó que `dev.sh up` reutiliza los contenedores activos. Para aplicar los flags y la clave, el dueño hará `down`, `up` y `check` del proyecto aislado desde su Git Bash privado, con los mismos parámetros. `down` preserva el volumen ficticio. Falta confirmar el reinicio y el único espacio habilitado. El primer POST sigue pendiente.
+
+El dueño confirmó el reinicio privado con `work`. El inventario del label exacto encontró los cuatro servicios activos, la red y el volumen ficticio previstos. HEAD y `origin/main` siguen en `ec216bb5714ed4bd73403fb894cb2ee38ac1826b`. `node .orchestrator/ocr-t071-run.mjs capability work` salió 0 mediante OIDC ficticio. Ambos GET devolvieron HTTP 200, `available=true` para Trabajo y `available=false` para Personal, con 0 POST. Siguiente paso: `node .orchestrator/ocr-t071-run.mjs extract work` para las tres muestras, con evidencia saneada en `.orchestrator/ocr-t071-results.json` y capturas locales del diálogo. Al terminar se verificará el retiro del stack y del volumen ficticio por los labels del checkpoint.
+
+`node .orchestrator/ocr-t071-run.mjs extract work` salió 1 en verificación de edición/copia, tras un solo POST y 0 escrituras a notas. Se preservó la primera medición en el JSON local. El controlador local quedó preparado para `node .orchestrator/ocr-t071-run.mjs resume work`: valida SHA, espacio y muestra ya enviada, omite esa muestra, registra cada fase de edición y copia, y tolera solo la representación CRLF de saltos del portapapeles de Windows. El SHA técnico y los recursos para cleanup siguen iguales.
+
+El recorrido real y el cleanup terminaron. El dueño aceptó el cierre con las limitaciones medidas y pidió dejar el ajuste de precisión pendiente. La entrega documental pasa a revisión independiente.
+
+## Resultado real del 2026-11-16
+
+SHA de ejecución `ec216bb5714ed4bd73403fb894cb2ee38ac1826b`, Chrome 157.0.8103.52 sobre Windows, escritorio 1280 × 800, Trabajo y OIDC ficticio. `resume work` salió 0 después de las dos muestras pendientes. Total: **3 POST a DevNotes con OCR.space Free**, uno por archivo. Las tres respuestas tuvieron `Cache-Control: no-store`. Se verificaron la vista previa y el aviso de envío completo en cada caso. La latencia corresponde al request completo en el navegador hasta el final de la respuesta de DevNotes.
+
+| Archivo | HTTP | Latencia | Error de caracteres | Tokens exactos antes de editar | Divergencias y edición necesaria | Edición y copia en UI |
+|---|---|---:|---:|---|---|---|
+| `navegador.png` | 200 | 1.499 ms | 2/66 (3,03 %) | URL completa `https://devnotes.example.test/tickets/T-055` | Corregir `T-O55` a `T-055` y `conexion` a `conexión`. | Resultado cotejado con el campo editable. La comprobación de edición y copia quedó inconclusa al detenerse el controlador. |
+| `terminal.png` | 200 | 1.178 ms | 2/40 (5,00 %) | `/src/api/foo-bar.ts` | Unir `ERR_` y `_CONNECTION_RESET` y quitar el guion bajo duplicado para recuperar `ERR_CONNECTION_RESET`. | Corrección, texto copiado y lectura del portapapeles verificados. |
+| `ide.jpg` | 200 | 604 ms | 0/58 (0,00 %) | `T-055`, `handleRetry()`, `/src/api/foo-bar.ts` | Ninguna corrección de OCR. Se añadió una línea ficticia para demostrar la edición. | Edición, texto copiado y lectura del portapapeles verificados. |
+
+El total fue de 4 ediciones sobre 164 caracteres esperados (2,44 %). Dos de las tres muestras perdieron un token crítico exacto. El resultado incumple el criterio propuesto de conservación de tokens. El recorrido de terminal e IDE comprobó que el botón copia el texto editado, devuelve el foco a Herramientas al cerrar y conserva la nota sin escrituras. Android físico queda como validación separada. `scale=true` sigue como candidata y no se envió una cuarta solicitud.
+
+Bitácora: el primer proceso registró el punto de fallo como `edicion-y-copia-navegador.png` y finalizó después de guardar HTTP, latencia, resultado y captura. La fase combinaba acciones y aserciones, por lo que no permite identificar el paso exacto que falló. Para las muestras restantes se separaron etapas y se normalizó CRLF del portapapeles a LF antes de la comparación exacta. El portapapeles devolvió CRLF en las dos y la verificación pasó. Ese resultado explica el ajuste del controlador local, sin atribuirle una causa comprobada al fallo inicial. Las tres muestras se enviaron una sola vez y no se modificaron fuentes de la app.
+
+Evidencia saneada local, fuera del PR: `.orchestrator/ocr-t071-results.json` y cinco capturas `ocr-t071-*-raw.png` / `ocr-t071-*-copied.png` dentro del checkout. Se retuvo solo contenido del corpus ficticio y el diálogo.
+
+**Cleanup.** `bash scripts/dev.sh down --mode local --proxy nginx --project starter-dev-ocr-real-071 --env-file .orchestrator/ocr-t071.local` salió 0. Se cotejaron nombre, proyecto, volumen, `owner=v1`, origen del checkout, modo, proxy, origen HTTP y puerto OIDC del volumen antes y después de `down`. Quedaron 0 contenedores y 0 redes por label, y únicamente `starter-dev-ocr-real-071_db-data`. `docker volume rm starter-dev-ocr-real-071_db-data` salió 0 con esa huella comprobada. Inventario final por `com.docker.compose.project=starter-dev-ocr-real-071`: **0 contenedores, 0 redes y 0 volúmenes**.
 
 ## Cierre del tramo OCR
 
-Evidencia técnica y veredicto de precisión en esta tarea. Si el resultado cumple o el dueño acepta la limitación, llevar la evidencia documental a revisión y conciliar el MERGED. El dueño decidió el 2026-11-16 detener el trabajo al cerrar T-071 y registrar el resultado del recorrido y del ensayo real. [T-072](T-072-writing-provider-evaluation.md) queda en pausa hasta una decisión expresa del dueño. Render espera SHA y ventana expresamente autorizados.
+**Veredicto del dueño, 2026-11-16.** Acepta cerrar T-071 con la evidencia obtenida y registrar las pérdidas de precisión y la comprobación de copia inconclusa en el navegador. La evaluación de mejoras queda [pendiente en BACKLOG](../BACKLOG.md#pendientes-tras-t-071). La aceptación corresponde al ensayo local y permite revisar el PR documental. Conciliar T-071 al confirmar `MERGED` en GitHub.
+
+Gate de entrega `DOCS_ONLY / DOCUMENTATION`. El cambio conserva las fuentes del squash `ec216bb5714ed4bd73403fb894cb2ee38ac1826b`, el STARTER de T-068 y el gate acumulado de I5 diferido. [T-072](T-072-writing-provider-evaluation.md) queda en pausa por el dueño. La [activación de OCR en Render](../DEPLOYMENT.md#preparación-de-ocr-en-render) espera SHA y ventana autorizados. El squash documental debe incluir `[skip render]` en su mensaje para que el auto-deploy de `main` no lo publique.
