@@ -1,5 +1,5 @@
-import type { BrowserContext, Locator, Page } from '@playwright/test';
-import { readFile } from 'node:fs/promises';
+import type { BrowserContext, CDPSession, Locator, Page } from '@playwright/test';
+import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { writeWork } from './daily-helpers';
 import { expect, keyboardActivate, login, savedIndicator, test } from './fixtures';
@@ -82,7 +82,9 @@ async function expectExtracted(response: Awaited<ReturnType<typeof extractionRes
   await expect(result(dialog)).toHaveValue(fixtureText);
 }
 
-async function captureLayout(dialog: Locator, width: number, height: number, mobile: boolean, name: string) {
+async function captureLayout(
+  dialog: Locator, width: number, height: number, mobile: boolean, name: string, cdp?: CDPSession,
+) {
   const wide = width === 1280;
   const field = result(dialog);
   const preview = dialog.getByAltText('Vista previa de la captura');
@@ -115,7 +117,16 @@ async function captureLayout(dialog: Locator, width: number, height: number, mob
     expect(textHeading.y).toBeGreaterThan(capture.y);
   }
   // Only the known dialog is captured. Its contents are the synthetic image and text.
-  await dialog.screenshot({ path: `/artifacts/ocr-layout/${name}.png`, animations: 'disabled' });
+  const path = `/artifacts/ocr-layout/${name}.png`;
+  if (cdp) {
+    // The Playwright screenshot helper can restore its own viewport during a CDP metrics override.
+    const { data } = await cdp.send('Page.captureScreenshot', {
+      format: 'png', clip: { ...bounds, scale: 1 },
+    });
+    await writeFile(path, Buffer.from(data, 'base64'));
+  } else {
+    await dialog.screenshot({ path, animations: 'disabled' });
+  }
 }
 
 async function desktopJourney(page: Page, context: BrowserContext, identity: string) {
@@ -180,12 +191,13 @@ async function desktopJourney(page: Page, context: BrowserContext, identity: str
     await page.setViewportSize({ width, height: 768 });
     await captureLayout(dialog, width, 768, false, `desktop-${width}`);
   }
+  await page.setViewportSize({ width: 640, height: 384 });
   const cdp = await context.newCDPSession(page);
   await cdp.send('Emulation.setDeviceMetricsOverride', {
     width: 640, height: 384, deviceScaleFactor: 2, mobile: false,
   });
   await expect.poll(() => page.evaluate(() => [innerWidth, innerHeight, devicePixelRatio])).toEqual([640, 384, 2]);
-  await captureLayout(dialog, 640, 384, false, 'desktop-zoom-200-simulado');
+  await captureLayout(dialog, 640, 384, false, 'desktop-zoom-200-simulado', cdp);
   await cdp.send('Emulation.clearDeviceMetricsOverride');
   await cdp.detach();
   await page.setViewportSize({ width: 1280, height: 800 });
