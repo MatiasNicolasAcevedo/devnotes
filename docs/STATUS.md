@@ -2,12 +2,16 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-069](tasks/T-069-ocr-workspace.md) · Copiar texto de una captura desde Notas ([S-112](specs/S-112-screenshot-ocr.md)) |
-| Estado | `mergeable` |
-| Acción actual | Confirmar el cierre de PR72 según el protocolo de merge y verificar MERGED antes de habilitar T-070. Consultar la [revisión independiente](tasks/T-069-ocr-workspace.md#revisión-independiente-r1) y el veredicto ligado al HEAD/base en GitHub. |
-| Rama / PR | `codex/t-069-ocr-workspace` · [PR72](https://github.com/MatiasNicolasAcevedo/devnotes/pull/72) |
+| Tarea y contrato | [T-070](tasks/T-070-ocr-journey.md) · Recorrido OCR en Chromium ([S-112](specs/S-112-screenshot-ocr.md)) |
+| Estado | `in_progress` |
+| Acción actual | Frontera implementer prepara el doble privado, el recorrido de escritorio y móvil y el gate de cierre. |
+| Rama / PR | `codex/t-070-ocr-journey` · PR pendiente |
+
+[T-069](tasks/T-069-ocr-workspace.md#conciliación) conciliada como `done` tras PR72 MERGED.
 
 [T-068](tasks/T-068-ocr-api.md#conciliación) conciliada como `done` tras PR71 MERGED, con su evidencia de STARTER conservada.
+
+El corte acordado el 2026-11-16 es el cierre de [T-071](tasks/T-071-ocr-first-real-test.md#cierre-del-tramo-ocr), con recorrido y precisión de OCR verificados. [T-072 · Redactar y evaluación de modelos](tasks/T-072-writing-provider-evaluation.md) queda en pausa hasta una decisión expresa del dueño.
 
 [T-067](tasks/T-067-copy-previous-client.md#conciliación) conciliada como `done`. [Control de I5](tasks/T-067-copy-previous-client.md#control-de-avance-de-i5--t-063-a-t-067) completo. **FULL/STARTER de I5 diferidos por el dueño.** SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño.
 
@@ -15,9 +19,8 @@
 
 | Hito | Variable y lugar |
 |---|---|
-| [T-071](tasks/T-071-ocr-first-real-test.md#alcance-e-intervención-del-dueño) · Primer ensayo real de OCR, tras T-070 | Cuando Frontera confirme el SHA y el stack ficticio esté preparado, autorizar las muestras y cargar `OCR_SPACE_API_KEY` en el entorno privado que inicia el servicio backend local aislado. Avisar «cargada» basta. T-068 a T-070 usan un doble. |
-| [T-072](tasks/T-072-writing-provider-evaluation.md#decisiones-y-primera-prueba-real) · Experimento local posterior a OCR | Tras el veredicto de OCR y al autorizar el experimento, cargar para cada configuración que se pruebe `GROQ_API_KEY`, `CLOUDFLARE_API_TOKEN` con `CLOUDFLARE_ACCOUNT_ID`, o `GEMINI_API_KEY` en el entorno privado del backend local aislado. |
-| Render · Activación posterior | El dueño configura la variable del proveedor elegido en **Render Dashboard → devnotes-pilot → Environment**, solo con autorización expresa sobre SHA y ventana. Guardar con **Save only** antes del deploy por SHA autorizado. Frontera avisa cuando el siguiente paso dependa de la carga privada. |
+| [T-071](tasks/T-071-ocr-first-real-test.md#alcance-e-intervención-del-dueño) · Primer ensayo real de OCR, tras T-070 | Cuando Frontera confirme el SHA y el stack ficticio esté preparado, autorizar las muestras y cargar `OCR_SPACE_API_KEY` en el entorno privado que inicia el servicio backend local aislado. Avisar «cargada» basta. T-070 usa un doble. [Alta de clave Free](https://ocr.space/ocrapi/freekey). |
+| Render · Clave guardada, activación pendiente | El dueño informó que guardó `OCR_SPACE_API_KEY` con **Save only** en Render. Render incorpora la variable al entorno del servicio en su próximo deploy. La activación de OCR requiere además `DEVNOTES_OCR_ENABLED=true` y los espacios aprobados en `DEVNOTES_OCR_ALLOWED_SPACES`. El despliegue de activación conserva su autorización sobre SHA y ventana. [Variables de entorno en Render](https://render.com/docs/configure-environment-variables#in-the-render-dashboard). |
 
 **Render, disponibilidad.** Auto-Deploy quedó en **On Commit** para main. El 2026-11-14 a las 18:16:26 de Buenos Aires, Render confirmó `405e7e5` **Live** y readiness devolvió HTTP 200 `UP`. La activación o prueba de la sonda y la futura configuración de claves en Render conservan su autorización separada sobre SHA y ventana. [Observación y confirmación](tasks/T-056-service-activity-journey.md#observación-del-piloto-del-2026-11-14).
 
@@ -130,5 +133,9 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera implementer de T-070 en sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/tasks/T-069-ocr-workspace.md, docs/tasks/T-070-ocr-journey.md y docs/specs/S-112-screenshot-ocr.md. Antes de abrir la rama codex/t-070-ocr-journey, confirmá en GitHub PR72 MERGED contra main con merge SHA y mergedAt según el protocolo. Si sigue abierto, conservá T-070 en draft y dejá la retoma de merge de T-069 con HEAD/base, veredicto y CI vigentes. Con MERGED confirmado, conciliá T-069 en el primer avance de T-070. Acreditá el recorrido OCR en Chromium con API propia real, PostgreSQL 18, OIDC ficticio y el doble privado de OCR.space. Conservá el STARTER de T-068 y el gate acumulado de I5 diferido. La clave real corresponde a T-071 y Render conserva su autorización separada. Publicá T-070 para revisión independiente con el gate de cierre, evidencia saneada y cleanup.
+Retomá DevNotes como Frontera implementer de T-070 en la rama codex/t-070-ocr-journey. Leé AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/agents/implementer.md, docs/tasks/T-070-ocr-journey.md y docs/specs/S-112-screenshot-ocr.md. Verificá HEAD/base y el estado remoto. Continuá desde el checkpoint de T-070, acreditá el recorrido OCR en Chromium con API propia real, PostgreSQL 18, OIDC ficticio y doble privado de OCR.space y publicá para revisión independiente con el gate de cierre, evidencia saneada y cleanup.
+
+Tras el MERGED de T-070, T-071 usa OCR_SPACE_API_KEY en el backend local aislado con muestras ficticias autorizadas. Cerrá el tramo al validar y conciliar T-071 según su contrato. T-072 queda en pausa hasta pedido expreso del dueño. Conservá el STARTER de T-068 y el gate acumulado de I5 diferido.
+
+El dueño ya guardó OCR_SPACE_API_KEY en Render con Save only. Render incorpora la variable al entorno de ese servicio en su próximo deploy. La activación de OCR requiere además DEVNOTES_OCR_ENABLED=true y los espacios aprobados en DEVNOTES_OCR_ALLOWED_SPACES. El despliegue de activación en Render conserva la autorización expresa sobre SHA y ventana.
 ```

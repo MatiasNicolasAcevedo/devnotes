@@ -1,6 +1,6 @@
 ---
 id: T-070
-status: draft
+status: in_progress
 priority: P1
 size: S
 milestone: M6
@@ -53,7 +53,7 @@ Ejecutar en serie. Si un namespace está ocupado, elegir otro propio. Aplicar [T
 
 ## Checkpoint vigente
 
-Draft por dependencia T-069. Pruebas pendientes de la implementación. El teclado físico y zoom nativo de SP-06 siguen en el pendiente de I5.
+2026-11-16 (Buenos Aires). Frontera implementer en Codex Desktop, GPT-6 con variante y esfuerzo sin dato expuesto, PowerShell, Git/gh, Node 24.21.0, Git Bash y Docker Desktop Linux. [T-069 conciliada](T-069-ocr-workspace.md#conciliación). Base remota verificada `4f212efd4fe295290ddefb785b8d8edaf0b2b5ae`. El cambio cubre el transporte OCR del perfil E2E y el recorrido de navegador. Conserva la API, permisos, persistencia y UI de aplicación de T-068/T-069. Las capturas y el texto son ficticios. Pruebas pendientes de implementación. El teclado físico y zoom nativo siguen pendientes.
 
 ## Cierre y siguiente tarea
 

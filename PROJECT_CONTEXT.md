@@ -51,7 +51,7 @@ El dueño autorizó una rama y PR **solo documental** para [T-052](docs/tasks/T-
 
 ## Después de I5 · Herramientas de texto seleccionadas el 2026-11-14
 
-Primero [copiar texto de una captura](docs/specs/S-112-screenshot-ocr.md), con OCR.space, captura local PNG/JPG, vista previa, extracción deliberada, resultado editable y copia. El dueño usa DevNotes en una ventana de escritorio de aproximadamente un cuarto de monitor y en móvil. El contrato propone una columna en ventana angosta, cotejo lado a lado cuando entra, y selector táctil en Android. El dueño autorizó el envío de la captura completa desde Trabajo y Personal con aviso antes de cada envío. Después de OCR, [evaluar Redactar](docs/tasks/T-072-writing-provider-evaluation.md) con GroqCloud y alternativas, con texto ficticio y sin dar por decidida su implementación.
+Primero [copiar texto de una captura](docs/specs/S-112-screenshot-ocr.md), con OCR.space, captura local PNG/JPG, vista previa, extracción deliberada, resultado editable y copia. El dueño usa DevNotes en una ventana de escritorio de aproximadamente un cuarto de monitor y en móvil. El contrato propone una columna en ventana angosta, cotejo lado a lado cuando entra, y selector táctil en Android. El dueño autorizó el envío de la captura completa desde Trabajo y Personal con aviso antes de cada envío. El 2026-11-16 el dueño fijó el corte al validar el recorrido y la precisión real de OCR en [T-071](docs/tasks/T-071-ocr-first-real-test.md). La [evaluación de Redactar y nuevos modelos](docs/tasks/T-072-writing-provider-evaluation.md) queda en pausa hasta que el dueño decida retomarla.
 
 ## Datos vigentes, reglas y permisos
 
