@@ -1,6 +1,6 @@
 ---
 id: T-069
-status: in_progress
+status: in_review
 priority: P1
 size: M
 milestone: M6
@@ -9,7 +9,7 @@ depends_on: [T-068]
 branch: codex/t-069-ocr-workspace
 role: implementer
 executor: frontier
-pr: null
+pr: 72
 ---
 
 # T-069 · Copiar texto de una captura desde Notas
@@ -57,14 +57,21 @@ Desde raíz, `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/c
 
 2026-11-15 (Buenos Aires). Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Node 24.21.0 y skill `frontend-design`. Base remota `b8ba81f950dd190851b9b5430e479691e19361df`. [T-068 conciliada](T-068-ocr-api.md#conciliación) con STARTER conservado. El cambio afecta la UI de Notas y consume la API OCR existente; los archivos y el texto OCR son transitorios. El gate acumulado de I5 sigue diferido y la clave real corresponde a T-071.
 
-Candidato `0f1b5a13e6d7ca64bd4e4369511977cbe357dc4e`, árbol `83db926a324b1fa7bc2d4006eafd262f721f4748`, checkout limpio `.orchestrator/t069-full-n1115-a8d3`. `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` salieron 0 allí. `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` dio `FULL/APPLICATION` (8 rutas técnicas de 11). Se usa el checkout aislado para dejar intacto el directorio `trailer/` preexistente y ajeno a la tarea, cuyo `CLAUDE.md` interfiere con la comprobación del árbol local original.
+Implementación publicada en [PR72](https://github.com/MatiasNicolasAcevedo/devnotes/pull/72) contra `main`. [FULL de cierre en verde](#evidencia-del-full-de-cierre) sobre `398801f76835e61b56f3ee840ec0faeee5cc4b30`. El traspaso agrega solo Markdown sobre esa base y fuentes. Siguiente acción: revisión independiente sobre el HEAD/base publicados y `verify-required` vigente.
 
-El primer FULL de aplicación salió 1 en E2E tras pasar docs, backend y cliente. El rojo fue SP-06/SP-07 móvil, que capturó una petición privada donde esperaba cero al comprobar un espacio inválido. El reporte y cleanup quedan en [la bitácora de la corrección](#correcciones-de-implementación). Se aísla la observación del tramo anterior de historial y se conserva la aserción original. Retoma: comprobar SP-06/SP-07 dirigido en ambos proyectos y cerrar las fuentes corregidas con FULL/APPLICATION antes de publicar.
+## Evidencia del FULL de cierre
+
+Candidato `398801f76835e61b56f3ee840ec0faeee5cc4b30`, árbol `237272abebb8c5d4297a6c718489df786400bc11`, base `b8ba81f950dd190851b9b5430e479691e19361df`. En el checkout limpio `.orchestrator/t069-full-corrected-n1115-697e` pasaron `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD`. `node scripts/ci/classify-diff.mjs --base origin/main --head HEAD --phase FULL` dio `FULL/APPLICATION`, 9 rutas técnicas de 12. Se aisló el checkout para preservar el directorio preexistente `trailer/`, cuyo `CLAUDE.md` interfiere con docs-check en el árbol local original.
+
+El 2026-11-15 a las 20:19 de Buenos Aires, Git Bash explícito, Node 24 y Docker Desktop Linux ejecutaron `COMPOSE_ENV_FILES=.env.example STARTER_SERVER_TESTS=container COMPOSE_PROJECT_NAME=starter-verify-t069-full-corrected-n1115-697e STARTER_E2E_PROJECT=starter-e2e-t069-full-corrected-n1115-697e bash scripts/verify.sh` con fixtures ficticias. **`verify=0 cleanup=0`**. Docs en verde, 629 Surefire y 308 Failsafe con PostgreSQL 18.6, Spotless y JaCoCo. Cliente con typecheck, lint, formato, cobertura, build y 827 pruebas. Playwright 77/77 (39 escritorio, 38 móvil) con cero fallos, errores u omitidos en el JUnit saneado, incluido SP-06/SP-07 móvil.
+
+El lanzador `.orchestrator/t069-full-corrected-n1115-697e.ps1` cotejó SHA, árbol y base antes y después. Ambos proyectos quedaron en `0/0/0` contenedores, redes y volúmenes y ninguno de los 34 IDs propios de Testcontainers seguía presente. Logs y exit en `.orchestrator/t069-full-corrected-n1115-697e{,-cleanup}.log` y `.orchestrator/t069-full-corrected-n1115-697e.exit`. JUnit en `e2e/artifacts/starter-e2e-t069-full-corrected-n1115-697e/sanitized/junit.xml` dentro del checkout. Antes de publicar, GitHub reconfirmó PR71 MERGED y `main` en la base probada.
 
 ## Verificación dirigida
 
 - Los seis archivos indicados en el contrato dieron 90/90, incluido el POST explícito con CSRF, cancelación/validación, aborto y descarte al cambiar de imagen, fecha, espacio o cuenta, cierre de sesión, cuota, timeout, edición y portapapeles. `npm run typecheck`, `npm run lint`, `npm run format:check` y `npm run build` salieron 0. El build avisó por tamaño del chunk principal. Log de Vitest en `.orchestrator/t069-directed.log`.
 - Chromium con una captura y resultado ficticios en un render local aislado. El selector nativo entregó el PNG completo y el ensayo de disposición hizo cero peticiones a la API. Escritorio 400/480/640 en una columna y 1280 en dos, con 496 px útiles de texto. Táctil 360/375/390 y horizontal 640×280 en pantalla completa, con campo de 16 px, controles de 48 px y sin desborde horizontal. A 1280 se conservaron nodo editable, borrador, posición del cursor y undo, con foco de vuelta en Herramientas. Script y registro en `.orchestrator/t069-layout.mjs` y `.orchestrator/t069-layout.log`. El recorrido con backend real corresponde a T-070.
+- `bash scripts/e2e.sh --grep 'SP-06/SP-07' --project desktop` y el mismo filtro con `--project mobile` dieron 1/1 y exit 0 sobre `398801f`. Logs y exits en `.orchestrator/t069-sp0607-{desktop,mobile}-n1115-697e.*` y cleanup `0/0/0` de ambos proyectos en `.orchestrator/t069-sp0607-n1115-697e-cleanup.log`.
 
 ## Correcciones de implementación
 
