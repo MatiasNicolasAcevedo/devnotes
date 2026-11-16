@@ -1,13 +1,13 @@
 ---
 id: T-069
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M6
 spec: S-112
 depends_on: [T-068]
 branch: codex/t-069-ocr-workspace
-role: implementer
+role: merger
 executor: frontier
 pr: 72
 ---
@@ -57,7 +57,7 @@ Desde raíz, `node scripts/docs-check.mjs`, `git diff --check` y `node scripts/c
 
 2026-11-15 (Buenos Aires). Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Node 24.21.0 y skill `frontend-design`. Base remota `b8ba81f950dd190851b9b5430e479691e19361df`. [T-068 conciliada](T-068-ocr-api.md#conciliación) con STARTER conservado. El cambio afecta la UI de Notas y consume la API OCR existente; los archivos y el texto OCR son transitorios. El gate acumulado de I5 sigue diferido y la clave real corresponde a T-071.
 
-Implementación publicada en [PR72](https://github.com/MatiasNicolasAcevedo/devnotes/pull/72) contra `main`. [FULL de cierre en verde](#evidencia-del-full-de-cierre) sobre `398801f76835e61b56f3ee840ec0faeee5cc4b30`. El traspaso agrega solo Markdown sobre esa base y fuentes. Siguiente acción: revisión independiente sobre el HEAD/base publicados y `verify-required` vigente.
+[Revisión independiente R1 favorable](#revisión-independiente-r1). El veredicto canónico queda en [PR72](https://github.com/MatiasNicolasAcevedo/devnotes/pull/72), asociado al HEAD documental final, la base y su `verify-required`. La confirmación de MERGED habilita T-070.
 
 ## Evidencia del FULL de cierre
 
@@ -80,6 +80,17 @@ El lanzador `.orchestrator/t069-full-corrected-n1115-697e.ps1` cotejó SHA, árb
 | El diálogo incluía «Cerrar» en el nombre accesible porque el botón estaba dentro del título. | El cierre queda junto al encabezado, con nombre propio. Vitest encuentra el diálogo por su título y comprueba el retorno de foco a Herramientas. |
 | El tope de ancho predeterminado de MUI dejaba 32 px de margen a cada lado en escritorio angosto. El evento nativo `cancel` del selector tampoco llegaba al manejador React del input. | El papel usa el ancho previsto con margen de 12 px y se escucha `cancel` en el input. Chromium midió 376 px de diálogo a 400 px de ventana. Vitest comprueba el aviso y que se conserva la captura anterior. |
 | SP-06/SP-07 registró 1 petición privada donde esperaba 0 en `spaces.spec.ts:425`. Al armar el listener en la misma pestaña recién restaurada por `goForward`, la ventana de observación incluía tráfico posible de la nota válida. | Cada URL inválida se visita directamente en una pestaña nueva de la misma sesión, con listener propio antes de navegar. Se conservan la pantalla esperada y la aserción de cero peticiones para ambos casos, sin cambios en plazos ni retries. Se conserva el rojo del FULL sobre `0f1b5a1` en `.orchestrator/t069-full-n1115-a8d3.log` y el JUnit saneado del proyecto E2E. Cleanup `0/0/0` en ambos proyectos y 0 de 34 IDs propios de Testcontainers. |
+
+## Revisión independiente R1
+
+2026-11-15 (Buenos Aires). Frontera reviewer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Node 24.21.0 y Chromium. Checkout propio `.orchestrator/t069-review-r1-codex`. GitHub confirmó [PR72](https://github.com/MatiasNicolasAcevedo/devnotes/pull/72) OPEN contra `main`, HEAD de entrada `6eda796fba579afa96b0d39ca1e062f0b7e5712e`, base `b8ba81f950dd190851b9b5430e479691e19361df`, [`verify-required` SUCCESS sobre ese HEAD](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43778413393/job/133009886620) y cero hilos de revisión. La UI consume la API y los permisos de T-068 y mantiene captura y resultado en memoria transitoria.
+
+- Cotejé el [FULL de cierre](#evidencia-del-full-de-cierre), su árbol, base y salida `verify=0 cleanup=0`. El JUnit saneado contiene 77 casos, 39 escritorio y 38 móvil, con cero fallos, errores u omisiones. Los logs confirman 629 Surefire, 308 Failsafe y 827 pruebas de cliente. Los proyectos quedaron en 0/0/0 y sobrevivieron 0 de 34 IDs propios de Testcontainers. Con `node scripts/ci/classify-diff.mjs --base b8ba81f --head 6eda796 --phase FULL` se conservan las 9 rutas técnicas de 12 y `FULL/APPLICATION`. El delta `398801f..6eda796` es `DOCS_ONLY/DOCUMENTATION` y modifica únicamente STATUS y T-069. Coinciden todas las fuentes y la base del FULL.
+- Repetí en el checkout del HEAD publicado los seis archivos de Vitest del contrato. Pasaron **90/90**. El POST exige acción explícita y CSRF, con un solo campo `file`. Revisé disponibilidad por cuenta y espacio, limpieza y aborto por generación, desmontaje al cambiar fecha, espacio o cuenta y al terminar sesión, y rechazo de respuestas tardías. Invalidar o cancelar la selección conserva la captura anterior. Se confirma el descarte de ediciones y se conserva el resultado si falla el portapapeles.
+- Repetí el render aislado de Chromium con fixtures y cero llamadas a la API. Escritorio 400/480/640 en una columna y 1280 en dos con 496 px de texto. Táctil 360/375/390 y 640×280 en pantalla completa, sin desborde horizontal y con campo de 16 px y cierre de 48 px. En 1280 verifiqué Escape con texto editado, confirmación de descarte, foco devuelto a Herramientas y conservación del nodo, borrador, selección, scroll y undo del editor. Registro en `.orchestrator/t069-review-r1-browser.log`. T-070 comprueba el recorrido con API propia real y doble externo.
+- En SP-06/SP-07 se mantienen historial, pestañas y logout. Las dos visitas inválidas conservan el mismo contexto de sesión y comprueban el aviso y cero peticiones privadas, cada una con listener propio antes de navegar. El rojo anterior registró una petición privada en una ventana de observación que también incluía la pestaña con la ruta válida restaurada. Cotejé los dos dirigidos verdes y los dos casos verdes del FULL en el JUnit. La comprobación física de SP-06 con teclado y zoom sigue pendiente del dueño.
+
+Revisión favorable, sin bloqueantes. Se conserva el [STARTER de T-068](T-068-ocr-api.md#evidencia-de-starter-de-b-2-y-traspaso-a-r3) y el gate acumulado de I5 sigue diferido. La clave real corresponde a T-071 y la activación en Render requiere su autorización separada.
 
 ## Cierre y siguiente tarea
 

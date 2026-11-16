@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-069](tasks/T-069-ocr-workspace.md) · Copiar texto de una captura desde Notas ([S-112](specs/S-112-screenshot-ocr.md)) |
-| Estado | `in_review` |
-| Acción actual | Revisar T-069 en sesión independiente sobre HEAD/base vigentes y cotejar la [evidencia del FULL de cierre](tasks/T-069-ocr-workspace.md#evidencia-del-full-de-cierre). |
+| Estado | `mergeable` |
+| Acción actual | Confirmar el cierre de PR72 según el protocolo de merge y verificar MERGED antes de habilitar T-070. Consultar la [revisión independiente](tasks/T-069-ocr-workspace.md#revisión-independiente-r1) y el veredicto ligado al HEAD/base en GitHub. |
 | Rama / PR | `codex/t-069-ocr-workspace` · [PR72](https://github.com/MatiasNicolasAcevedo/devnotes/pull/72) |
 
 [T-068](tasks/T-068-ocr-api.md#conciliación) conciliada como `done` tras PR71 MERGED, con su evidencia de STARTER conservada.
@@ -130,5 +130,5 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como Frontera reviewer independiente para T-069, PR72 de MatiasNicolasAcevedo/devnotes. Leé AGENTS.md, docs/STATUS.md, docs/tasks/T-069-ocr-workspace.md, docs/specs/S-112-screenshot-ocr.md, client/AGENTS.md, docs/agents/reviewer.md y docs/AUTONOMY.md. Confirmá en GitHub PR72 OPEN contra main, HEAD/base vigentes y verify-required SUCCESS del HEAD final. Cotejá el FULL/APPLICATION de 398801f sobre la base b8ba81f y que el traspaso conserva las fuentes probadas. Revisá el contrato del diálogo, el aislamiento del contexto, el recorrido SP-06/SP-07 y la evidencia de navegador. Dejá el veredicto ligado al HEAD/base y el único prompt de continuidad según el protocolo. T-070 espera PR72 MERGED. Conservá el STARTER de T-068 y el gate acumulado de I5 diferido. La clave real corresponde a T-071 y Render conserva su autorización separada.
+Actuá como Frontera implementer de T-070 en sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/tasks/T-069-ocr-workspace.md, docs/tasks/T-070-ocr-journey.md y docs/specs/S-112-screenshot-ocr.md. Antes de abrir la rama codex/t-070-ocr-journey, confirmá en GitHub PR72 MERGED contra main con merge SHA y mergedAt según el protocolo. Si sigue abierto, conservá T-070 en draft y dejá la retoma de merge de T-069 con HEAD/base, veredicto y CI vigentes. Con MERGED confirmado, conciliá T-069 en el primer avance de T-070. Acreditá el recorrido OCR en Chromium con API propia real, PostgreSQL 18, OIDC ficticio y el doble privado de OCR.space. Conservá el STARTER de T-068 y el gate acumulado de I5 diferido. La clave real corresponde a T-071 y Render conserva su autorización separada. Publicá T-070 para revisión independiente con el gate de cierre, evidencia saneada y cleanup.
 ```
