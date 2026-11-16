@@ -1,13 +1,13 @@
 ---
 id: T-070
-status: in_review
+status: mergeable
 priority: P1
 size: S
 milestone: M6
 spec: S-112
 depends_on: [T-069]
 branch: codex/t-070-ocr-journey
-role: implementer
+role: merger
 executor: frontier
 pr: 73
 ---
@@ -91,6 +91,17 @@ Log, exit y cleanup en `.orchestrator/t070-ocr-n1116-c3d1-c3dh-starter.*`. La ve
 | El PNG de zoom de `2a9fd3a` incluyó parte de la pantalla de Notas porque el capturador del locator cambió el viewport durante el override de CDP. | Ajustar el viewport de Playwright a las mismas dimensiones y capturar por CDP con clip de la caja del diálogo en `52065ed`. La captura de zoom anterior queda fuera de la evidencia. |
 | `dev.sh --mode local` heredaba `e2e` de `compose.auth-test.yml` y habría fijado OCR al doble durante el ensayo local de T-071. El assert de configuración efectiva dio rojo. | `compose.local.yml` fija el perfil `test`, que conserva OIDC ficticio y selecciona el endpoint OCR ordinario en `5cc203a`. El assert pasó y el overlay de navegador conserva `e2e`. Se canceló STARTER `c3dg` durante backend (exit 143 de esa etapa), antes de cliente, tooling y Playwright. Cleanup final 0/0/0 de proyectos y 0 de 27 IDs propios de Testcontainers tras esperar a Ryuk. |
 
+## Revisión independiente R1
+
+2026-11-16 (Buenos Aires). Frontera reviewer en Codex Desktop, PowerShell, Git/gh, Docker Compose y Node 24.21.0. Variante de modelo y esfuerzo sin dato expuesto. Checkout aislado `.orchestrator/t070-review-r1-codex`. `gh pr view 73` y `git ls-remote` confirmaron PR73 `OPEN` desde `codex/t-070-ocr-journey` (`6ae799d2d88377733727968ec7dddf3f36822025`) contra `main` (`4f212efd4fe295290ddefb785b8d8edaf0b2b5ae`). [El run 43934359118](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43934359118) confirmó `verify-required` SUCCESS en ese HEAD.
+
+- Separación verificada con `docker compose config --format json` y aserciones sobre fixtures. El modo local usa Spring `test`, OIDC ficticio y el endpoint HTTPS fijo de OCR.space. El stack Chromium usa Spring `e2e`, PostgreSQL 18.6 y OIDC ficticio. Fija la clave ficticia aunque herede otra del entorno y usa el doble sin puertos publicados. `OcrSpaceClient` rechaza otras claves en E2E, sin redirecciones ni fallback. El doble exige los campos, el nombre neutro, el tipo y los bytes exactos antes de devolver texto ficticio o cuota. El diff conserva el contrato HTTP, la autorización por espacio, la persistencia y la UI de aplicación.
+- `node --test e2e/fixtures/voice-provider.test.mjs` repetido en el checkout aislado, 9/9. Se cotejó el log del candidato `5cc203aa952426d7c4e7a3b079397ae0970f2593`: 25/25 unitarias OCR, 4/4 de `OcrExtractionApiIT` en PostgreSQL y 21/21 del diálogo, incluido el negativo de portapapeles. `node scripts/docs-check.mjs` y `git diff --check` verdes. La clasificación conservadora del PR es `FULL/STARTER`.
+- Se cotejaron los JUnit saneados `c3d4` de Chromium, un caso verde por proyecto, y los nueve PNG recortados al diálogo registrados por el ensayo. Readiness verificó HTTP, emisor y JWKS privados. Los casos pasan por el proxy y la API propia real, observan solicitudes sin interceptarlas y verifican que extraer y copiar preservan la nota persistida. Móvil usa emulación de Chromium. El selector, teclado y zoom de Android físico quedan fuera de esa evidencia. El único cambio técnico desde el SHA probado por Chromium (`52065eddaa03d09c21f7f857032bd83599f7f70b`) está en `compose.local.yml`, fuera del harness y cotejado por separado. Desde el candidato `5cc203a` solo hay Markdown.
+- Ambos ensayos dieron `verify=0 cleanup=0` y 0/0/0 contenedores, redes y volúmenes antes y después. La consulta independiente por labels exactos confirmó 0/0/0 en ambos proyectos y en los proyectos E2E y verify de la matriz interrumpida. La evidencia del cleanup interrumpido registra 0 de 68 IDs propios de Testcontainers.
+
+Revisión favorable sin bloqueantes dentro del alcance del 2026-11-16. La entrega usa los dirigidos autorizados. La matriz completa y STARTER de T-070 quedan fuera de esta entrega. El fallo de copia anterior de la matriz interrumpida queda registrado arriba. Se conserva el STARTER de T-068 y el gate acumulado de I5 sigue diferido. El veredicto canónico se publica en PR73 al confirmar `verify-required` SUCCESS sobre el HEAD documental final y la misma base.
+
 ## Cierre y siguiente tarea
 
-Tras MERGED, declarar el recorrido con doble acreditado y pasar a [T-071](T-071-ocr-first-real-test.md). Actualizar STATUS para avisar al dueño en cuanto la prueba de precisión dependa de su autorización y configuración privada.
+Tras confirmar `MERGED` de PR73 con squash y fecha en GitHub, una sesión nueva de Frontera implementer concilia T-070 y prepara [T-071](T-071-ocr-first-real-test.md) sobre el SHA confirmado. El ensayo local aislado usa `OCR_SPACE_API_KEY` cargada por el dueño y muestras ficticias autorizadas. El tramo termina al validar y conciliar T-071. T-072 sigue en pausa y la activación en Render espera autorización expresa sobre SHA y ventana.
