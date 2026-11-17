@@ -35,15 +35,33 @@ La ruta I5 está conciliada. [Control final](tasks/T-067-copy-previous-client.md
 | 3 | [T-070](tasks/T-070-ocr-journey.md) · Recorrido de teclado, táctil y proxy con doble externo | T-069 |
 | 4 | [T-071](tasks/T-071-ocr-first-real-test.md) · Primera precisión real en local | T-070 y autorización/carga privada de OCR.space |
 
-La primera entrega de [S-112](specs/S-112-screenshot-ocr.md) terminó en T-071. [T-072 · Evaluar Redactar y proveedores](tasks/T-072-writing-provider-evaluation.md) queda en pausa como trabajo futuro hasta que el dueño decida retomarla. Las [siete ideas ya seleccionadas](FUTURE-FEATURES.md) conservan su lugar de candidatas posteriores. El seguimiento de Render es un pendiente operativo de I5. Si el dueño elige una ventana fija, Frontera prepara su contrato propio antes de activar un disparador.
+La primera entrega de [S-112](specs/S-112-screenshot-ocr.md) terminó en T-071. El seguimiento convive con los pendientes operativos que ya estaban registrados. [T-072](tasks/T-072-writing-provider-evaluation.md) aporta el banco de pruebas al contrato de IA global.
 
-### Seguimiento de Imagen
+### Lote Imagen, Libres e IA
 
-| Orden | Tarea / resultado | Dependencia |
+[T-092](tasks/T-092-writing-workspaces-plan.md) se publica como PR documental previo. T-073 espera su MERGED. Después, cada fila concilia el MERGED anterior y hace una entrega independiente. Ver [objetivos de salida](ROADMAP.md#i6i8--lote-imagen-libres-e-ia) y [aplazamiento de FULL/STARTER](TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16).
+
+| Orden | Tarea / resultado | Espera |
 |---|---|---|
-| 1 | [T-073](tasks/T-073-ocr-windows-paste.md) · Pegar capturas de Recortes de Windows | T-071 conciliada |
-| 2 | [T-074](tasks/T-074-image-navigation.md) · Imagen como destino principal | T-073 |
-| 3 | [T-075](tasks/T-075-image-text-library.md) · Guardar y borrar texto como en Voz | T-074 y contrato de persistencia y recuperación |
+| 1 | [T-073](tasks/T-073-ocr-windows-paste.md) · Pegado real de Windows y caja vacía | T-092 |
+| 2 | [T-074](tasks/T-074-image-navigation.md) · Imagen en navegación, selector y arrastre | T-073 |
+| 3 | [T-075](tasks/T-075-image-text-library.md) · Servicio privado de textos de Imagen | T-074 |
+| 4 | [T-076](tasks/T-076-image-text-xlsx.md) · Recuperar textos de Imagen en XLSX v3 | T-075 |
+| 5 | [T-077](tasks/T-077-image-text-library-ui.md) · Guardar, abrir y borrar textos de Imagen | T-076 |
+| 6 | [T-078](tasks/T-078-free-notes-storage.md) · Persistencia privada para notas libres | T-077 |
+| 7 | [T-079](tasks/T-079-free-notes-xlsx.md) · Recuperar notas libres en XLSX v4 | T-078 |
+| 8 | [T-080](tasks/T-080-free-notes-workspace.md) · Libres desde Notas | T-079 |
+| 9 | [T-081](tasks/T-081-compact-daily-notes.md) · Acercar el diario al comienzo de la ventana | T-080 |
+| 10 | [T-082](tasks/T-082-free-notes-lists.md) · Insertar listas simples en Libres | T-081 |
+| 11 | [T-083](tasks/T-083-free-notes-code-blocks.md) · Bloques de código discretos para Libres | T-082 |
+| 12 | [T-084](tasks/T-084-free-notes-headings.md) · Tres niveles de título y negrita en Libres | T-083 |
+| 13 | [T-085](tasks/T-085-side-reading.md) · Leer una nota al lado mientras se escribe | T-084 |
+| 14 | [T-086](tasks/T-086-ai-groq-api.md) · API de IA con GroqCloud y cuota reciente | T-085 |
+| 15 | [T-087](tasks/T-087-ai-global-workspace.md) · Destino global IA en el shell | T-086 |
+| 16 | [T-088](tasks/T-088-ai-workers-provider.md) · Cloudflare Workers AI en el selector | T-087 |
+| 17 | [T-089](tasks/T-089-ai-gemini-provider.md) · Gemini Flash en el selector | T-088 |
+| 18 | [T-090](tasks/T-090-ai-openrouter-catalog.md) · Elegir un modelo gratuito de OpenRouter | T-089 |
+| 19 | [T-091](tasks/T-091-ai-note-context.md) · Previsualizar un fragmento de notas en IA | T-090 |
 
 ### Pendientes tras T-071
 
@@ -51,7 +69,7 @@ La primera entrega de [S-112](specs/S-112-screenshot-ocr.md) terminó en T-071. 
 |---|---|
 | Precisión de OCR y recorrido físico | El dueño acepta cerrar el ensayo inicial con las limitaciones registradas. Cuando lo pida, evaluar un ajuste para capturas de letra chica y tokens técnicos, con las mismas muestras y cuota aprobada para el nuevo ensayo. `scale=true` es candidata. Completar la comprobación de copia de la muestra de navegador y el recorrido físico de Android en sus respectivas validaciones. [Resultado real](tasks/T-071-ocr-first-real-test.md#resultado-real-del-2026-11-16). |
 | Restauración del respaldo de Render | El dueño prueba en privado su exportación de producción en una cuenta local vacía antes de reemplazar PostgreSQL. La restauración en Render queda sin acreditar hasta completar importación y cotejo sobre la nueva base. [Procedimiento](DEPLOYMENT.md#respaldo-y-reemplazo-de-postgresql-free). |
-| Redactar e integraciones de IA | [T-072](tasks/T-072-writing-provider-evaluation.md) queda en pausa hasta pedido expreso del dueño. |
+| Integraciones de IA después del lote | Acciones contextuales y preferencia de modelo en perfil, después de validar el destino global. [S-116](specs/S-116-ai-workspace.md). |
 
 ## Siguientes · plan del dueño del 2026-11-10, ajustado el 2026-11-11
 

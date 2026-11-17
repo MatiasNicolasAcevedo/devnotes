@@ -14,7 +14,7 @@ pr: null
 
 # T-072 · Evaluar Redactar después de OCR
 
-**En pausa por decisión del dueño del 2026-11-16.** El tramo actual termina con el cierre de [T-071](T-071-ocr-first-real-test.md). La investigación queda como referencia futura. Retomar la evaluación de Redactar y de los modelos candidatos solo cuando el dueño lo pida expresamente.
+**Investigación histórica del 2026-11-16.** El dueño retomó los proveedores y reemplazó el flujo Redactar por el [destino global IA](../specs/S-116-ai-workspace.md). Conservar las muestras del experimento. Los modelos, la configuración activa y el recorrido se rigen por S-116.
 
 ## Objetivo y primer recorrido
 
@@ -83,4 +83,4 @@ Registrar hora, entorno/versión del ensayo, modelo pedido y servido, estado, la
 
 ## Checkpoint vigente
 
-En pausa sin rama activa ni PR. Para retomar se requiere el cierre de T-071 y una decisión expresa del dueño. Si la retoma se autoriza, Frontera revalida las fuentes y acuerda el alcance del ensayo autenticado antes de solicitar claves o probar proveedores.
+La propuesta original de Redactar como entrega separada queda archivada, sin PR ni paso de implementación. Continuar en el orden de [S-116](../specs/S-116-ai-workspace.md). Sus tareas reutilizan las muestras ficticias; un ensayo autenticado en Render requiere la habilitación del dueño según el contrato vigente.

@@ -7,25 +7,27 @@ milestone: M6
 spec: S-112
 depends_on: [T-074]
 branch: codex/t-075-image-text-library
-role: planner
+role: implementer
 executor: frontier
 pr: null
 ---
 
-# T-075 · Guardar y borrar textos de Imagen
+# T-075 · Persistencia privada para los textos de Imagen
 
 ## Objetivo
 
-En **Imagen**, guardar el resultado editado, reencontrarlo en una lista y borrarlo cómodamente cuando ya no haga falta.
+Guardar, consultar y eliminar texto editado en un servicio privado de Imagen. El flujo visible llega en T-077, después de agregar respaldo en T-076.
 
-## Alcance acordado
+## Alcance
 
-El dueño eligió guardar como en Voz, con una colección propia de **Textos guardados**. Guardar exige un gesto explícito y conserva texto, fecha y espacio. La captura, su nombre y el contexto del editor quedan fuera del registro. Cada fila muestra extracto, fecha, acceso para abrir y acción de borrar. Usar confirmación y recuperación de foco como en Voz. El borrado debe reflejarse en la lista tras la respuesta del servidor. Abrir, copiar, guardar y borrar operan sobre el texto y no consumen cuota del proveedor.
+El patrón de Voz guía listado y borrado. Implementar migración, repositorio y servicio en PostgreSQL 18.6 con los límites, recibos de creación y criterios de S-112. La imagen y nombre de archivo quedan fuera de la entidad. Compartir el lock de cuenta con importación. Mantener el servicio interno hasta que exista recuperación por XLSX. [S-112](../specs/S-112-screenshot-ocr.md#biblioteca-de-imagen) · [Voz](../specs/S-105-voice-notes.md).
 
-## Aceptación a refinar
+## Aceptación y pruebas
 
-El dueño ve sus textos guardados tras recargar, separados entre Trabajo y Personal y protegidos de otras cuentas. Puede copiar un texto guardado y borrar uno sin tocar los demás. Guardar y borrar fallidos muestran un error y conservan el estado previo. Una captura elegida o extraída sin guardar sigue siendo transitoria.
+- Migración sobre base poblada conserva datos previos. Crear copia de texto editado, consultar en orden descendente, borrar uno de dos y repetir operación tras respuesta perdida. Otro espacio y otro propietario reciben respuesta equivalente a ausente. Cuerpo vacío/excesivo y UUID inválidos no mutan datos. El servicio no se conecta a OCR.space.
+- Desde `server/` con Git Bash y JDK 21, `./mvnw -q verify -Dtest=ImageTextServiceTest -Dit.test=ImageTextServiceIT,ImageTextMigrationIT -Djacoco.skip=true` con PostgreSQL Testcontainers. Registrar exit, cantidades y limpieza. La selección de casos no acredita cobertura global.
+- [Gate dirigido](../TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16).
 
 ## Checkpoint vigente
 
-Draft por T-074 y diseño pendiente de persistencia y recuperación. Antes de implementación, separar contratos pequeños de API, interfaz y portabilidad según el impacto. Revisar [Voz](../specs/S-105-voice-notes.md), autorización por owner/space y [XLSX v2](../specs/S-109-private-spaces.md#portabilidad-xlsx-v2). La guía de respaldo debe explicar si incluye los resultados guardados y cómo se restauran. Conservar lectura de libros existentes. Diseñar fixture de otra cuenta/espacio y criterios de creación, consulta y borrado antes de habilitar la persistencia. T-072 sigue en pausa.
+Draft por T-074. [T-076](T-076-image-text-xlsx.md) agrega respaldo y [T-077](T-077-image-text-library-ui.md) habilita el recorrido visible con API.

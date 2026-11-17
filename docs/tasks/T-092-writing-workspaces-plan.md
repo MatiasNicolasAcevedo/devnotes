@@ -1,0 +1,42 @@
+---
+id: T-092
+status: in_review
+priority: P1
+size: M
+milestone: M6
+spec: null
+depends_on: [T-071]
+branch: codex/t-092-writing-workspaces-plan
+role: planner
+executor: frontier
+pr: null
+counts_for_cycle: false
+---
+
+# T-092 · Plan de Imagen, Libres e IA global
+
+## Objetivo
+
+Entregar un PR documental con el diseño, la secuencia y los contratos de implementación de T-073 a T-091. Objetivos de salida por tramo en [ROADMAP](../ROADMAP.md), dependencias en [BACKLOG](../BACKLOG.md#lote-imagen-libres-e-ia) y especificación visual en [diseño](../design/WRITING-WORKSPACES.md).
+
+## Alcance e inventario
+
+- Base GitHub confirmada el 2026-11-16, `main` `7aa8946e727cfadbd2552588eef31cbe07594f00`, PR #74 MERGED sobre ese squash y cero PR activos antes de crear la rama. Conservar conciliación y hechos de T-071.
+- Recuperar del checkout de T-073 el commit local `2a2fc56`, el diagnóstico sintético, evidencia de boceto de cinco destinos, soporte de placeholder y los cuatro archivos modificados. Rama documental parte de ese commit y se verificó la copia de esos archivos por SHA-256 antes de editar. La rama y checkout original siguen preservados.
+- Convertir ideas 2, 16, 21, 22 y 24 a ejecución, incorporar compacidad del diario y retirar su lista inferior. Ideas 9 y 34 salen de la cola. T-072 queda como fuente del banco de pruebas, con alcance de producto supersedido por S-116.
+- Implementación y pruebas de producto corresponden a las siguientes sesiones. Impacto de este PR solo documental. Los contratos futuros afectan comportamiento y UI, persistencia y respaldo PostgreSQL/XLSX y salida deliberada a proveedores IA con política cerrada por defecto. Las decisiones técnicas que añaden alcance se acotan en las specs, con fixtures para toda prueba de este lote.
+- Frontera planner en Codex Desktop. Modelo/esfuerzo específicos sin metadato expuesto. Herramientas usadas PowerShell, Git/gh, fuentes web oficiales y Chromium/Playwright local. Diseño con frontend-design.
+
+## Aceptación y revisión
+
+- `bash scripts/verify.sh --policy origin/main` → DOCS_ONLY, vía Git Bash. `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` sobre el commit publicado. Corroborar solo altas o modificaciones Markdown y `verify-required` verde sobre el HEAD exacto.
+- Sesión revisora independiente identifica el único PR por rama `codex/t-092-writing-workspaces-plan` y base `main`, revisa decisiones, contratos, grafo, diseño y alcance documental; puede hacer squash si elegible según AUTONOMY. La evidencia remota se registra con su URL y SHA exactos.
+- El [primer prompt de implementación](../STATUS.md#prompt-de-la-siguiente-sesión) exige T-092 MERGED. Reanudar luego en una sesión implementer. Permiso previo para cualquier FULL/STARTER, incluyendo el integrado del lote. [Aplazamiento](../TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16).
+
+## Previsualización
+
+Boceto navegable local con ocho vistas (Diario, directorio y editor de Libres, Imagen vacía y con captura, consulta al lado, IA directa y OpenRouter). Chromium 153 midió 106 CSS px hasta la primera línea a 768×559 en el boceto. Las ocho vistas refluían a 320, 375, 480, 768 y 1.280 CSS px, sin scroll horizontal de página. Se comprobó el indicador no seleccionable de Imagen, cinco celdas móviles y el umbral del lector. Contrato visual y wireframes versionados en la [guía de diseño](../design/WRITING-WORKSPACES.md). El boceto y sus PNG usan texto ficticio y se entregan por fuera del diff DOCS_ONLY. Las mediciones finales y Recortes real se acreditan en las tareas de implementación.
+
+## Checkpoint vigente
+
+Plan listo para revisión independiente. Validar el HEAD publicado y su base. Tras el squash, el siguiente implementer registra PR, veredicto, CI y squash reales al conciliar y habilitar T-073. El checkout de planificación de OCR continúa siendo evidencia local. Auto-Deploy On Commit sigue siendo el modo operativo.

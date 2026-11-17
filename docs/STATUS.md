@@ -2,10 +2,10 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-073](tasks/T-073-ocr-windows-paste.md) · Pegar recortes de Windows en OCR ([S-112](specs/S-112-screenshot-ocr.md)) |
-| Estado | `ready` |
-| Acción actual | Frontera implementer reproduce el pegado de Recortes y corrige el caso en un stack ficticio. |
-| Rama / PR | `codex/t-073-ocr-windows-paste` · PR pendiente |
+| Tarea y contrato | [T-092](tasks/T-092-writing-workspaces-plan.md) · Plan de Imagen, Libres e IA |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente del PR documental. Implementación de T-073 solo después de confirmar su MERGED. |
+| Rama / PR | `codex/t-092-writing-workspaces-plan` contra `main` |
 
 [T-071](tasks/T-071-ocr-first-real-test.md#conciliación-y-observación-posterior-en-render) conciliada como `done` tras PR74 MERGED. El dueño confirmó la extracción con **Elegir imagen** en Render y reportó el pegado de Recortes sin respuesta.
 
@@ -15,7 +15,7 @@
 
 [T-068](tasks/T-068-ocr-api.md#conciliación) conciliada como `done` tras PR71 MERGED, con su evidencia de STARTER conservada.
 
-Tras cerrar la etapa inicial de OCR, el dueño pidió corregir el pegado y sumar Imagen a la navegación con guardado y borrado tipo Voz. La [ruta de seguimiento](BACKLOG.md#seguimiento-de-imagen) conserva el orden de trabajo. [T-072 · Redactar y evaluación de modelos](tasks/T-072-writing-provider-evaluation.md) sigue en pausa.
+El [lote acordado](BACKLOG.md#lote-imagen-libres-e-ia) encadena Imagen, Libres y Diario compacto, formato, consulta e IA global. [Gate dirigido y aplazamiento de FULL/STARTER](TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16).
 
 [T-067](tasks/T-067-copy-previous-client.md#conciliación) conciliada como `done`. [Control de I5](tasks/T-067-copy-previous-client.md#control-de-avance-de-i5--t-063-a-t-067) completo. **FULL/STARTER de I5 diferidos por el dueño.** SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño.
 
@@ -136,7 +136,11 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Retomá DevNotes como Frontera implementer de T-073 en sesión nueva. Leé AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/tasks/T-073-ocr-windows-paste.md y sus referencias. Retomá el checkout aislado de la rama codex/t-073-ocr-windows-paste con la conciliación y el contrato preparados. Confirmá GitHub y main antes de avanzar.
+Retomá DevNotes en sesión nueva como Frontera implementer de T-073, después del MERGED de T-092. Leé AGENTS.md, client/AGENTS.md, STATUS, el protocolo de implementer, T-073, S-112 y la referencia de diseño de Imagen. Usá frontend-design para cotejar el diálogo en escritorio y móvil.
 
-Reproducí el pegado real de Recortes de Windows con imagen ficticia y el fallo dirigido antes de corregir. Conservá el pegado del editor fuera de OCR, la selección anterior ante error y el envío solo al pulsar Extraer texto. Usá la API propia y doble de OCR en pruebas. Ejecutá el gate de T-073, publicá su único PR y dejá revisión independiente. El dueño quiere Auto-Deploy On Commit para todos los merges a main. T-074 espera T-073 MERGED, T-072 sigue en pausa, STARTER de T-068 se conserva e I5 acumulado sigue diferido.
+Confirmá en GitHub el PR de la rama codex/t-092-writing-workspaces-plan contra main. Exigí state MERGED, mergedAt y mergeCommit.oid, y verificá main actualizado y sin otro PR activo. Si falta MERGED, esperá y dejá el paso en revisión. Concilia T-092 y prepará desde main un checkout nuevo con la rama exacta codex/t-073-ocr-windows-paste-fix. Preservá el checkout local .orchestrator/t073-ocr-windows-paste, su commit 2a2fc56 y sus cambios.
+
+Reproducí en Windows con Recortes y PNG ficticio antes de corregir. Registrá foco y tipos, el rojo dirigido y después la vista previa real. Implementá el pegado y la indicación visual no seleccionable de T-073. Conservá la edición de texto, archivos inválidos, selección previa y envío solo al elegir Extraer texto. Corré pruebas dirigidas, el E2E filtrado con API propia y doble externo, docs-check y diff-check. Pedí permiso expreso antes de correr FULL/STARTER en cualquier caso.
+
+Publicá el único PR T-073, con evidencia HEAD/base, perfil y cierre dirigido. Conservá Auto-Deploy On Commit. La revisión en sesión independiente puede hacer squash sobre HEAD aprobado y verify-required verde. Confirmá MERGED antes de habilitar T-074, con el proceso del lote en AUTONOMY.
 ```
