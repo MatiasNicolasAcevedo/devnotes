@@ -160,16 +160,29 @@ async function desktopJourney(page: Page, context: BrowserContext, identity: str
   await expect(dialog.getByRole('button', { name: 'Cerrar', exact: true })).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(paste).toBeFocused();
+  const hint = paste.getByText('Pegá tu imagen acá', { exact: true });
+  await expect(hint).toBeVisible();
+  await expect(result(dialog)).toHaveCount(0);
+  const bounds = (await hint.boundingBox())!;
+  const middle = bounds.y + bounds.height / 2;
+  await page.mouse.move(bounds.x + 1, middle);
+  await page.mouse.down();
+  await page.mouse.move(bounds.x + bounds.width - 1, middle, { steps: 8 });
+  await page.mouse.up();
+  expect(await page.evaluate(() => getSelection()?.toString())).toBe('');
+  await expect(paste).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(choose).toBeFocused();
   // Chromium can re-encode OS clipboard images. Deliver the exact fixture at the browser paste boundary.
-  await paste.evaluate((node, bytes) => {
+  await choose.evaluate((node, bytes) => {
     const clipboardData = new DataTransfer();
-    clipboardData.items.add(new File([new Uint8Array(bytes)], 'terminal.png', { type: 'image/png' }));
+    clipboardData.items.add(new File([new Uint8Array(bytes)], 'image', { type: 'image/png' }));
     node.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData }));
   }, [...await readFile(fixture('terminal.png'))]);
   await expectPreview(dialog);
+  await expect(hint).toHaveCount(0);
   expect(traffic.extractions).toEqual([]);
   const extract = dialog.getByRole('button', { name: 'Extraer texto', exact: true });
-  await page.keyboard.press('Tab');
   await expect(choose).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(extract).toBeFocused();

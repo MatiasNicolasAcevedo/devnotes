@@ -3,15 +3,13 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-073](tasks/T-073-ocr-windows-paste.md) · Pegar recortes de Windows en OCR · [S-112](specs/S-112-screenshot-ocr.md) |
-| Estado | `ready` |
-| Acción actual | Frontera implementa T-073 en sesión nueva |
-| Rama / PR | `codex/t-073-ocr-windows-paste-fix`, por crear desde `main` · sin PR |
+| Estado | `mergeable` |
+| Acción actual | Frontera reviewer verifica la transición documental y cierra el PR #76 |
+| Rama / PR | `codex/t-073-ocr-windows-paste-fix` · [PR76](https://github.com/MatiasNicolasAcevedo/devnotes/pull/76) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
-[T-092](tasks/T-092-writing-workspaces-plan.md#conciliación) conciliada `done` (PR75 MERGED, `77cb710`). El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. El historial de tareas anteriores vive en cada tarea, en los PR y en Git.
-
-El checkout local `.orchestrator/t073-ocr-windows-paste` (commit `2a2fc56`, con cambios) es la fuente del diagnóstico de T-073: preservarlo.
+El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-074 espera la confirmación del merge de T-073.
 
 ## Pendientes del dueño
 
@@ -36,11 +34,11 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de T-073 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
+Actuá como frontera implementer de T-074 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/WORKFLOW.md, docs/tasks/T-073-ocr-windows-paste.md, docs/specs/S-112-screenshot-ocr.md y la sección Imagen de docs/design/WRITING-WORKSPACES.md. Usá frontend-design para cotejar el diálogo en escritorio y móvil.
-PRECONDICIÓN: main local igual a origin/main y sin PR abiertos (gh pr list --repo MatiasNicolasAcevedo/devnotes --state open). T-092 ya está conciliada done. Si hay un PR abierto o main difiere, informar el estado real y entregar el prompt corregido.
-ACCIÓN: 1) Checkout nuevo desde main con la rama exacta codex/t-073-ocr-windows-paste-fix; T-073 in_progress en tarea y STATUS. Preservar el checkout local .orchestrator/t073-ocr-windows-paste, su commit 2a2fc56 y sus cambios. 2) Reproducir en Windows con Recortes y un PNG ficticio antes de corregir; registrar foco y tipos, y el rojo dirigido. 3) Implementar el pegado y la indicación visual no seleccionable; conservar edición de texto, archivos inválidos, selección previa y envío solo al elegir Extraer texto. 4) Correr las pruebas de componente del contrato, el E2E filtrado «screenshot OCR:» en desktop con API propia y doble externo, docs-check y git diff --check. 5) Publicar el único PR de T-073 con evidencia de HEAD/base y perfil del diff.
+LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/tasks/T-073-ocr-windows-paste.md, docs/tasks/T-074-image-navigation.md, docs/specs/S-112-screenshot-ocr.md y la sección Imagen de docs/design/WRITING-WORKSPACES.md. Usá frontend-design para cotejar el shell real.
+PRECONDICIÓN: gh pr view 76 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName debe confirmar MERGED contra main, con mergedAt y mergeCommit.oid válidos. Actualizá la referencia origin/main y comprobá que contiene ese squash y que no hay otro PR abierto. Si no se cumple, informá el estado real sin iniciar T-074.
+ACCIÓN: 1) Desde origin/main actualizado, creá el checkout nuevo de codex/t-074-image-navigation. En el primer commit conciliá T-073 a done con el squash confirmado y avanzá T-074 a in_progress. 2) Mové OCR a /image, incorporá Imagen a la navegación y agregá pegado por gesto y arrastre local; conservá borrador de Notas, espacio activo y envío solo al elegir Extraer texto. 3) Corré las pruebas de componente y typecheck del contrato, los E2E filtrados «screenshot OCR:» con --project desktop y --project mobile en proyectos propios separados, los ensayos de arrastre y Recortes reales en Windows con datos ficticios, docs-check y diff-check. 4) Publicá solo el PR de T-074 con evidencia vinculada a HEAD y base.
 GATE: diario. FULL y STARTER están diferidos: no ejecutarlos sin orden expresa del dueño.
-SALIDA: PR de T-073 publicado, tarea in_review, Auto-Deploy On Commit sin cambios. Terminar con el prompt de frontera reviewer de ese PR, con número y SHA, en STATUS y completo en la respuesta final; ese reviewer mergea si aprueba y deja el prompt de T-074.
+SALIDA: T-073 conciliada, T-074 in_review y prompt de frontera reviewer del PR de T-074 con HEAD y base exactos en STATUS y al final de la respuesta. Conservá Render Auto-Deploy On Commit.
 ```
