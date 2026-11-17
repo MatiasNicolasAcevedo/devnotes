@@ -1,6 +1,6 @@
 ---
 id: T-073
-status: draft
+status: ready
 priority: P1
 size: S
 milestone: M6
@@ -49,4 +49,4 @@ En Chromium 157, reproduje el manejador publicado con un evento sintético y el 
 
 El dueño mostró que «Pegá una captura (Ctrl+V)» y el límite de archivo son texto seleccionable dentro de la caja. En el código, ambos son nodos de texto renderizados por `Typography`. Pidió el estado vacío descrito en S-112 tanto para este diálogo como para Imagen.
 
-La primera implementación espera [T-092](T-092-writing-workspaces-plan.md) MERGED. La fuente original de esta planificación es el checkout local con 2a2fc56 y cuatro archivos modificados. Reproducir en la revisión actual de main con evidencia Windows antes de corregir.
+[T-092](T-092-writing-workspaces-plan.md) quedó MERGED el 2026-11-16 (PR75, `77cb710`); esta tarea está `ready`. Cierre con el gate diario de [TESTING](../TESTING.md#gate-diario); FULL/STARTER: DIFERIDO POR EL DUEÑO. La fuente original de esta planificación es el checkout local con 2a2fc56 y cuatro archivos modificados. Reproducir en la revisión actual de main con evidencia Windows antes de corregir.

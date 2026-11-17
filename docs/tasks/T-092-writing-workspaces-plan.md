@@ -1,6 +1,6 @@
 ---
 id: T-092
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M6
@@ -42,3 +42,7 @@ Boceto navegable local con ocho vistas (Diario, directorio y editor de Libres, I
 Revisión documental independiente favorable en Codex Desktop, Frontera reviewer y merger, con PowerShell, Git Bash, Node y GitHub CLI. Modelo GPT-6 según la identificación de la sesión, sin variante ni esfuerzo expuestos. [PR75](https://github.com/MatiasNicolasAcevedo/devnotes/pull/75) es el único PR abierto, de `codex/t-092-writing-workspaces-plan` a `main`. En checkout aislado, HEAD de planificación `451ad57e0bbd4619b84f04664edade4547ec7d9c` y base `7aa8946e727cfadbd2552588eef31cbe07594f00` dieron `bash scripts/verify.sh --policy 7aa8946e727cfadbd2552588eef31cbe07594f00` → `DOCS_ONLY`, `node scripts/docs-check.mjs` → OK y `git diff --check 7aa8946e727cfadbd2552588eef31cbe07594f00 HEAD` → OK. [CI de ese HEAD](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/43995050572/job/133744922712) en `SUCCESS`.
 
 Verificados el orden T-073…T-091, la espera de T-073 por T-092 MERGED, los dos respaldos XLSX previos al guardado y el permiso expreso para FULL/STARTER incluso al cierre del lote. Esta transición actualiza solo task y STATUS. Revalidar el gate documental y `verify-required` sobre el nuevo HEAD antes del veredicto canónico en PR75. Tras el squash, el siguiente implementer concilia PR, veredicto, CI y squash al habilitar T-073. Conservar el checkout original de OCR y Auto-Deploy On Commit.
+
+## Conciliación
+
+[PR75](https://github.com/MatiasNicolasAcevedo/devnotes/pull/75) MERGED, confirmado en GitHub el 2026-11-16 con `gh pr view 75 --repo MatiasNicolasAcevedo/devnotes`: squash `77cb710313e02c8fdd4afd1eea27020bd6e98a0c`, mergedAt `2026-11-17T01:42:51Z` (2026-11-16 en Buenos Aires). Conciliada como `done` junto con la adopción del [flujo de trabajo](../WORKFLOW.md); T-073 queda `ready`.

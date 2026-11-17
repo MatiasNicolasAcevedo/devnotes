@@ -39,7 +39,7 @@ La primera entrega de [S-112](specs/S-112-screenshot-ocr.md) terminó en T-071. 
 
 ### Lote Imagen, Libres e IA
 
-[T-092](tasks/T-092-writing-workspaces-plan.md) se publica como PR documental previo. T-073 espera su MERGED. Después, cada fila concilia el MERGED anterior y hace una entrega independiente. Ver [objetivos de salida](ROADMAP.md#i6i8--lote-imagen-libres-e-ia) y [aplazamiento de FULL/STARTER](TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16).
+[T-092](tasks/T-092-writing-workspaces-plan.md) quedó MERGED (PR75, `77cb710`) y T-073 está lista. Después, cada fila concilia el MERGED anterior y hace una entrega independiente. Ver [objetivos de salida](ROADMAP.md#i6i8--lote-imagen-libres-e-ia) y [aplazamiento de FULL/STARTER](TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16).
 
 | Orden | Tarea / resultado | Espera |
 |---|---|---|

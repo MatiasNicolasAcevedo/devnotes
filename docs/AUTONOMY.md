@@ -6,42 +6,36 @@ Decisión propia del dueño, **2026-10-20**, respuesta «Apruebo la política pr
 
 `MatiasNicolasAcevedo/devnotes`, privado, MIT, titular Matias Nicolas Acevedo, base `main`. Remoto `https://github.com/MatiasNicolasAcevedo/devnotes.git`. Sin cambios de visibilidad/licencia/plan/settings/protecciones autorizados. Rama T-000 existente: `chore/t-000-adoption`; siguientes ramas exactas en tareas, prefijo `codex/`.
 
-Frontera y Junie pueden leer Git/PR/CI, crear ramas, editar dentro del contrato, hacer staging explícito, commits, push normal y abrir/actualizar **un PR por tarea** en este repo, o un PR por spec cuando el dueño lo decide (hoy solo [S-107](specs/S-107-xlsx-portability.md#tareas-y-dependencias)). Pueden ejecutar pruebas y stacks Docker propios con datos ficticios y cleanup por labels exactos. Sin push directo a main, force push, bypass, `--admin`, cambios de protecciones ni recursos ajenos. Kit `plantilla/` nunca se versiona, publica, exporta ni borra.
+Frontera y Junie pueden leer Git/PR/CI, crear ramas, editar dentro del contrato, hacer staging explícito, commits, push normal y abrir/actualizar **un PR por tarea** en este repo, o un PR por spec cuando el dueño lo decide. Pueden ejecutar pruebas y stacks Docker propios con datos ficticios y cleanup por labels exactos. Sin push directo a main, force push, bypass, `--admin`, cambios de protecciones ni recursos ajenos. Kit `plantilla/` nunca se versiona, publica, exporta ni borra.
 
-## Ejecutores y continuidad
+## Modo y decisiones vigentes
 
-### Excepción documental I5 del 2026-11-12
+**Modo de trabajo: `FRONTERA_CONTINUA`** desde el 2026-11-13. Frontera planifica, implementa y revisa, siempre en sesiones separadas; Junie queda en pausa. «Frontera» es el modelo de máxima capacidad que el dueño abra en la sesión (Codex, Claude Code u otra superficie), sin marca ni versión fijas; se registra el realmente expuesto. Proceso en [WORKFLOW](WORKFLOW.md).
 
-El dueño autorizó expresamente [T-052](tasks/T-052-scope-expansion-plan.md), rama `codex/t-052-scope-expansion-plan` y un PR de planificación contra main aunque PR54 de T-051 siga abierto. Esta excepción prevalece sobre WIP1 y sobre la regla de no abrir un PR separado de planificación, solo para la coexistencia de **PR54 + PR documental T-052**. No habilita dos implementaciones, ramas compartidas futuras ni revisar/mergear trabajo propio. Los estados de las tareas son los de cada rama: T-051 conserva en esta base el contrato draft de main; su ejecución actual sigue en PR54 y debe conciliarse antes de implementar I5. No modificar el validador para esta excepción.
+Único lugar para decisiones operativas con fecha. Al caducar se borran de aquí; Git conserva el historial.
 
-El dueño difirió FULL/STARTER hasta pedirlos expresamente durante esta serie; rige [TESTING](TESTING.md#excepción-i5-del-2026-11-12). Conservar CI liviana, pruebas dirigidas y revisión independiente. Crear contratos no autoriza deploys, planes pagos, herramientas globales ni recursos externos.
-
-### Continuidad con Frontera desde el 2026-11-13
-
-Por decisión del dueño, Frontera termina T-055 y continúa las tareas pendientes del [backlog](BACKLOG.md), incluidas las [ideas de nuevas funcionalidades](FUTURE-FEATURES.md) cuando tengan contrato. Junie queda en pausa para esta serie. El dueño elige Codex o Claude Code al abrir cada sesión según su disponibilidad. El prompt de STATUS se dirige a Frontera y especifica el rol de esa sesión. Las nuevas funcionalidades se orientan principalmente a frontend, con los cambios de otras capas que requiera cada contrato. Rigen una tarea y un PR en curso, la revisión en una sesión independiente y los permisos ya acordados.
-
-### Lote Imagen, Libres e IA del 2026-11-16
-
-El dueño autorizó el PR documental [T-092](tasks/T-092-writing-workspaces-plan.md) contra main antes de comenzar producto. Una tarea y un PR activos, con la [secuencia fijada](BACKLOG.md#lote-imagen-libres-e-ia); T-073 espera su MERGED. Frontera implementa por sesión nueva. La revisión en sesión independiente puede hacer squash elegible y confirmar MERGED según las reglas de abajo; las correcciones van al mismo PR, en sesión de implementer, y la revisión se liga al HEAD/base finales. El siguiente implementer concilia lo mergeado antes de avanzar.
-
-Para T-073…T-091 el gate local válido para publicación y merge es el [cierre dirigido de TESTING](TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16). El dueño exige permiso previo expreso para cualquier FULL/STARTER, incluido el cierre acumulado. La revisión independiente y `verify-required` verde siguen siendo requisitos. Conservar Render Auto-Deploy **On Commit** para main. El plan y los merges no otorgan autorización para enviar datos reales, configurar proveedores/secretos, cambiar planes ni disparar deploys manuales.
+| Fecha | Decisión | Vigencia |
+|---|---|---|
+| 2026-11-16 | Flujo de tres roles: planner, implementer y reviewer que mergea. Correcciones en sesión implementer nueva sobre el mismo PR | Hasta nueva decisión |
+| 2026-11-16 | Gate diario con pruebas unitarias y E2E dirigidas. FULL, suite Playwright completa, STARTER, tooling, workflow remoto y cualquier corrida de más de 20–30 minutos quedan diferidos: permiso previo expreso del dueño en la sesión, también en hitos, cierres de lote y revisiones. Los agentes pueden recomendarlos, no iniciarlos ([TESTING](TESTING.md#gates-diferidos)) | Hasta nueva decisión |
+| 2026-11-16 | Toda sesión termina con el prompt de la siguiente en STATUS y completo en la respuesta final | Permanente |
+| 2026-11-16 | Lote Imagen, Libres e IA: T-073 a T-091 en la [secuencia fijada](BACKLOG.md#lote-imagen-libres-e-ia), una tarea y un PR por vez, cada implementer concilia lo mergeado antes de avanzar | Hasta T-091 MERGED |
+| 2026-11-16 | Render Auto-Deploy **On Commit** para `main`, incluidos los merges documentales. Los merges no autorizan enviar datos reales, configurar proveedores o secretos, cambiar planes ni disparar deploys manuales | Hasta nueva decisión |
+| 2026-11-16 | El plan de un lote se publica en un PR solo documental; el planner lo mergea con la conformidad expresa del dueño en la sesión | Hasta nueva decisión |
 
 ### Política general
 
-- Frontera define producto, arquitectura, contratos y adopción M0. Modelo/herramienta/esfuerzo solo según lo realmente expuesto, sin inventar versión.
-- Junie implementa tareas predefinidas de las iteraciones acordadas. La planificación I2 solicitada por el dueño el 2026-10-31 concreta T-017 y T-027…T-037 en S-105 v2, con la misma política operativa; no habilita activación externa, pagos ni audio personal. Otra **sesión nueva** de Junie revisa y puede hacer merge elegible; la sesión autora no revisa ni mergea su trabajo. Excepción inicial confirmada expresamente por el dueño en la sesión de adopción: **la primera revisión de T-000 será de frontera en sesión nueva**, con la misma política de merge elegible y sin aprobar su implementación propia. Capacidades Junie sin comprobar continúan pendientes, no se acreditan por esa revisión.
-- `POR_SESION`: el dueño abre cada sesión con el único prompt de STATUS. Sin dispatcher, instalación, autenticación, delegación o lanzamiento automático de otro agente. Cada tarea y revisión usa sesión nueva; correcciones vuelven al implementer en otra sesión.
-- Una tarea/PR en vuelo; máximo cinco ready. Draft solo por dependencia se habilita al comprobar MERGED y conciliar la anterior; dentro de la rama compartida de S-107, al cerrar la anterior en la rama. No comenzar otra implementación en la sesión que cierra la anterior.
-- Junie controla avance cada cinco tareas de producto mergeadas; en S-107 hay un único control sobre sus seis tareas, antes de la revisión del PR único ([regla](specs/S-107-xlsx-portability.md#tareas-y-dependencias)). I1 conservó T-005/T-009/T-014 (5/10/15); S-106 cumplió su control de cinco. En I2 los controles son tras T-030/T-035 (5/10) y frontera vuelve al objetivo M2-RC1/T-037, nueva intención o decisión/bloqueo fuera del contrato. El proveedor real conserva la habilitación específica de VOICE-RELEASE; no hay permisos operativos nuevos por planificarlo.
-- Máximo dos rondas de revisión y tres correcciones distintas por bloqueo; después checkpoint al dueño/frontera. Herramienta no expuesta: alternativa local autorizada si demuestra lo mismo; si es indispensable, bloquear sin instalar/autenticar.
+- Frontera define producto, arquitectura y contratos. Modelo, herramienta y esfuerzo se registran según lo realmente expuesto, sin inventar versión.
+- `POR_SESION`: el dueño abre cada sesión con el único prompt de STATUS. Sin dispatcher, instalación, autenticación, delegación ni lanzamiento automático de otro agente. Cada tarea y cada revisión usan sesión nueva; las correcciones vuelven a un implementer en otra sesión.
+- Una tarea y un PR en vuelo; máximo cinco ready. Una tarea draft solo por dependencia se habilita al comprobar MERGED y conciliar la anterior. No comenzar otra implementación en la sesión que cierra la anterior.
+- Máximo dos rondas de revisión y tres correcciones distintas por bloqueo; después, checkpoint al dueño. Herramienta no expuesta: alternativa local autorizada si demuestra lo mismo; si es indispensable, bloquear sin instalar ni autenticar.
+- Si el dueño vuelve a `LOTES_JUNIE`, se registra aquí con fecha y rige el ciclo de lote de WORKFLOW. El proveedor real de voz conserva la habilitación específica de [VOICE-RELEASE](VOICE-RELEASE.md).
 
 ## Revisión y merge
 
-`AUTOMATICO_ELEGIBLE`: sesión revisora independiente, nunca autora. Exige PR contra main, diff conforme, HEAD/base publicados, veredicto `APROBADO` ligado a ambos SHA, docs-check, CI `verify-required` success del HEAD vigente, gate local válido para mismas fuentes/base y conversaciones bloqueantes resueltas. Ausente/pending/cancelled/skipped no son verde. FULL remoto manual no se requiere por rutina ni está autorizado lanzarlo automáticamente.
+`AUTOMATICO_ELEGIBLE`: sesión revisora independiente, nunca autora. Exige PR contra main, diff conforme, HEAD/base publicados, veredicto `APROBADO` ligado a ambos SHA, docs-check, CI `verify-required` success del HEAD vigente, [gate diario](TESTING.md#gate-diario) válido para las mismas fuentes/base y conversaciones bloqueantes resueltas. Ausente/pending/cancelled/skipped no son verde. FULL remoto manual no se requiere por rutina ni está autorizado lanzarlo automáticamente.
 
-Para el requisito de gate local en la secuencia hasta T-044 inclusive, el dueño autorizó el [cierre temporal definido en TESTING](TESTING.md#aplazamiento-de-full-hasta-t-044). El FULL integrado se ejecuta sobre el HEAD final del PR único de S-107, antes de su revisión.
-
-Squash ligado al SHA revisado; borrar solo la rama de tarea mergeada. Confirmar `MERGED`, merge SHA y fecha antes de habilitar la siguiente. Cambiar HEAD/base invalida aprobación. Reviewer publica transición documental, espera CI del nuevo HEAD y después comenta veredicto; no commitea tras aprobar. El siguiente implementer concilia done en su rama nueva. Detalle: [reviewer](agents/reviewer.md), [merger](agents/merger.md) y [TESTING](TESTING.md).
+Squash ligado al SHA revisado; borrar solo la rama de tarea mergeada. Confirmar `MERGED`, merge SHA y fecha antes de habilitar la siguiente. Cambiar HEAD/base invalida aprobación. Reviewer publica transición documental, espera CI del nuevo HEAD, comenta el veredicto y hace el squash en la misma sesión; no commitea tras aprobar. El siguiente implementer concilia done en su rama nueva. Detalle: [reviewer](agents/reviewer.md), [merger](agents/merger.md) y [TESTING](TESTING.md).
 
 ## Configuración efectiva y límites
 

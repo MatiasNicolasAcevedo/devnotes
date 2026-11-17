@@ -1,45 +1,15 @@
-# Prompt template para tareas con E2E
+# E2E durante el desarrollo
 
-## Advertencia crítica — tiempos de E2E
-
-**La suite E2E completa tarda >100 minutos.**
-
-Ejecuta 9 specs × 2 proyectos (desktop + mobile) = ~18 tests en serie con `workers: 1`.
-
-### Durante iteración de desarrollo
-
-**NUNCA** ejecutes la suite FULL E2E mientras desarrollas. Usa siempre `--grep` para ejecutar solo el test afectado:
+La suite E2E completa supera los 100 minutos y es un [gate diferido](TESTING.md#gates-diferidos): solo se corre cuando el dueño lo ordena. El trabajo diario usa el E2E dirigido del [gate diario](TESTING.md#gate-diario).
 
 ```bash
-# Ejemplo: solo el test de reference-preview, solo desktop
-docker compose -p starter-e2e-xxx -f docker-compose.yml -f compose.auth-test.yml -f docker-compose.e2e.yml \
-  --profile oidc --profile e2e run --rm --no-deps e2e npx playwright test \
-  --grep "reference preview:" --project=desktop
+# Raíz del repo, Git Bash. Solo los casos que coinciden, en un proyecto.
+STARTER_E2E_PROJECT=starter-e2e-xxx bash scripts/e2e.sh --grep "reference preview:" --project desktop
 ```
 
-O con `run-e2e.mjs` (soporta `--grep`):
+- Usar siempre `scripts/e2e.sh`: arma el stack, espera readiness, exporta los artefactos y limpia su proyecto. No invocar `node scripts/run-e2e.mjs` ni `docker compose … playwright test` a mano.
+- Un patrón por flujo afectado; `--project mobile` solo si la tarea lo pide.
+- Si un caso queda colgado (timeout de 120 s por test), acotar el patrón y revisar `docker compose -p starter-e2e-xxx logs e2e`.
+- La revisión repite el dirigido solo si el riesgo lo pide; no corre la suite completa.
 
-```bash
-node scripts/run-e2e.mjs compose --env-file scripts/fixtures/e2e.env.example -p starter-e2e-xxx \
-  -f docker-compose.yml -f compose.auth-test.yml -f docker-compose.e2e.yml \
-  --profile oidc --profile e2e --grep "reference preview:"
-```
-
-### Regla de oro
-
-1. **Desarrollo:** `--grep "patrón"` + `--project=desktop` → solo el test afectado
-2. **Cierre de tarea:** Suite FULL una vez, con stack limpio y sin editar fuentes durante la corrida
-3. **Revisión:** No repitas FULL por rutina — la revisión es independiente
-
-### Si la suite FULL tarda demasiado
-
-- Verifica que no haya tests colgados (timeout 120s por test)
-- Usa `--grep` para identificar qué test específico está fallando
-- Limpia el stack anterior: `docker compose -p starter-e2e-xxx down -v`
-- Revisa logs del contenedor e2e: `docker compose -p starter-e2e-xxx logs e2e`
-
-### Referencia
-
-- [TESTING.md — Tiempos de E2E](TESTING.md#tiempos-de-e2e---advertencia-critica)
-- [AGENTS.md — Pruebas y entrega](../AGENTS.md#pruebas-y-entrega)
-- [Implementer protocol — E2E](agents/implementer.md#4)
+Detalle en [TESTING](TESTING.md#tiempos-de-e2e) y en [WORKFLOW](WORKFLOW.md#gates).

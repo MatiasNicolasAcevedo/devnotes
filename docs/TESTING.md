@@ -2,8 +2,58 @@
 
 **Fase actual: `FULL`** de aplicación. Mantener suites, negativos, assertions, cobertura, aislamiento, retries y deadlines. Un check de herramientas verde no acredita tests de aplicación ni despliegue.
 
+El trabajo de todos los días cierra con el [gate diario](#gate-diario): pruebas unitarias y E2E dirigidas, en unos 20 minutos. FULL, la suite E2E completa, STARTER y tooling son [gates diferidos](#gates-diferidos): existen, se conservan intactos y **solo se ejecutan cuando el dueño lo ordena en la sesión**. Proceso completo en [WORKFLOW](WORKFLOW.md#gates).
+
+## Gate diario
+Lo corre el implementer al cerrar la tarea, sobre el HEAD que publica. Los comandos exactos están en la tarea.
+
+| Paso | Cuándo aplica | Comando de referencia |
+|---|---|---|
+| Unitarias y de componente de lo tocado | Siempre que cambie código | Backend: `./mvnw -q test -Dtest=NombreTest` en server/. Client: `npx vitest run ruta/al/archivo.test.tsx` en client/ |
+| IT dirigido con PostgreSQL | Cambia persistencia, consulta, constraint o permiso | `./mvnw -q verify -Dit.test=NombreIT -Djacoco.skip=true` en server/. `-Djacoco.skip` evita presentar cobertura parcial como gate global; no cambia umbrales |
+| Typecheck del cliente | Cambia client/ | `npx tsc -b` en client/ |
+| E2E dirigido | Cambia un flujo de usuario, el proxy o la sesión | `bash scripts/e2e.sh --grep "patrón" --project desktop` con `STARTER_E2E_PROJECT` propio. API, base y OIDC reales; un solo proyecto salvo que la tarea pida móvil |
+| Documentos | Siempre | `node scripts/docs-check.mjs` y `git diff --check` |
+| Perfil del diff | Siempre, solo informativo | `bash scripts/verify.sh --policy origin/main`; anotar el perfil y `FULL/STARTER: DIFERIDO POR EL DUEÑO` |
+| CI | Siempre | `verify-required` verde sobre el HEAD publicado |
+
+`scripts/e2e.sh` construye, espera readiness, exporta `STARTER_E2E_ARTIFACTS` (trace y captura en `e2e/artifacts/<proyecto>/`) y limpia solo su proyecto. Usar `--project mobile` cuando la tarea pida móvil. Variables de voz, OCR o Compose según la tarea. No invocar `node scripts/run-e2e.mjs` ni `docker compose … playwright test` a mano: sin el entorno que arma `e2e.sh` fallan o pierden el cleanup.
+
+Presupuesto orientativo: 20 minutos de pared para todo el gate. Si una corrida lo supera, detenerla, registrar comando y duración, acotar el filtro y continuar. No subir timeouts ni retries para que entre.
+
+## Tiempos de E2E
+La suite E2E completa corre todos los specs en dos proyectos (desktop y mobile) en serie, con `workers: 1`, y supera los **100 minutos**. Por eso es un gate diferido y nunca se ejecuta durante el desarrollo ni al cerrar una tarea. El trabajo diario usa siempre el filtro:
+
+```bash
+# Raíz del repo, Git Bash. Solo los casos de reference-preview, solo desktop.
+STARTER_E2E_PROJECT=starter-e2e-xxx bash scripts/e2e.sh --grep "reference preview:" --project desktop
+```
+
+Si un caso dirigido queda colgado, el timeout es de 120 s por test: acotar el patrón, revisar `docker compose -p starter-e2e-xxx logs e2e` y limpiar solo ese proyecto.
+
+## Gates diferidos
+| Gate | Comando | Qué agrega |
+|---|---|---|
+| FULL de aplicación | `bash scripts/verify.sh` | Backend completo con IT y cobertura, cliente completo y toda la suite Playwright |
+| Suite E2E completa | `bash scripts/verify.sh --e2e` | Todos los specs en escritorio y móvil; crece con el producto y puede pasar la hora |
+| STARTER | `bash scripts/verify.sh --starter` | FULL más la matriz de herramientas |
+| Tooling | `bash scripts/verify.sh --tooling` | Inicializador, copia compilable, CLI, proxies, fallos y señales |
+| FULL remoto | workflow manual [full.yml](../.github/workflows/full.yml) | Lo mismo en GitHub Actions |
+
+- Ningún agente los inicia por su cuenta: ni al cerrar una tarea, ni al revisar, ni al terminar un lote, ni porque `--policy` informe `FULL` o `STARTER`. Hace falta la orden expresa del dueño en esa sesión.
+- La tarea registra `FULL/STARTER: DIFERIDO POR EL DUEÑO`. No se escribe aprobado, satisfecho ni no aplica.
+- El agente puede **recomendar** el integrado, en una línea del cierre y en el registro «Gates diferidos» de STATUS, cuando: se cerró un lote o se mergearon unas diez tareas desde el último integrado; se acerca un deploy a producción; el diff tocó dependencias, lockfiles, Docker/Compose, workflows, autenticación o migraciones; o hay una regresión que los dirigidos no explican.
+- Cuando el dueño lo ordena: fuentes congeladas, checkpoint previo con SHA/base, comando, namespaces y cleanup; una sola corrida sobre el diff acumulado desde el último integrado; evidencia en la tarea y registro de STATUS actualizado con el SHA nuevo. Un corte anterior acredita solo lo que contiene.
+- Las pruebas dirigidas y la CI liviana no acreditan el integrado. La deuda queda visible en STATUS; no bloquea el merge diario.
+
+### Lote Imagen, Libres e IA del 2026-11-16
+Las tareas T-073 a T-091 cierran con el [gate diario](#gate-diario) de arriba; sus contratos enlazan esta sección. Además de los pasos generales, cada una aplica los ensayos manuales de Windows y las vistas responsivas que exija su contrato, usa API propia, proxy y sesión reales en E2E con dobles solo para proveedores externos, y conserva las regresiones de compatibilidad, permisos y flujos existentes que toque. FULL, suite Playwright completa, STARTER, tooling y el workflow remoto quedan diferidos también en hitos, cierre del lote o revisión.
+
+### Corte acumulado vigente
+El integrado pendiente se mide desde `7aa8946e727cfadbd2552588eef31cbe07594f00` hasta el HEAD de `main` que indique el dueño. El diferimiento de I5 partía de `00407ef4a637369d3078d19aceab123be3b13521`; el FULL local del 2026-11-15 sobre `398801f76835e61b56f3ee840ec0faeee5cc4b30` ([T-069](tasks/T-069-ocr-workspace.md#evidencia-del-full-de-cierre)) cubrió hasta ese candidato. Si la base cambia con otras tareas, reconciliar su alcance antes de clasificar. El registro al día está en [STATUS](STATUS.md#gates-diferidos).
+
 ## Comandos
-Desde la raíz con Git Bash, Docker Desktop Linux y Node >=24. En Windows/PowerShell, usar el verificador canónico de [SETUP](SETUP.md) con la ruta explícita de Git Bash y el Node existente; conservar el código de salida. Usar `.env.example` y proyectos Compose nuevos propios; comprobar labels ausentes antes de empezar y limpiar solo esos recursos.
+Desde la raíz con Git Bash, Docker Desktop Linux y Node >=24. PowerShell puede invocar el mismo gate: [entrada y diagnóstico Windows](SETUP.md#verificación-desde-powershell). Comprobar Bash/Node/PATH en la superficie propia; conservar exit y cleanup. Una receta manual de E2E no sustituye FULL. Usar `.env.example` y proyectos Compose nuevos propios; comprobar labels ausentes antes de empezar y limpiar solo esos recursos.
 
 | Comando | Alcance |
 |---|---|
@@ -12,7 +62,7 @@ Desde la raíz con Git Bash, Docker Desktop Linux y Node >=24. En Windows/PowerS
 | `bash scripts/verify.sh --server` | Maven `clean verify`: Spotless, unitarios/slices Surefire, integración PostgreSQL Failsafe, JaCoCo |
 | `bash scripts/verify.sh --client` | Typecheck, lint, formato, Vitest/cobertura y build; reconstruye la imagen verify |
 | `bash scripts/verify.sh --e2e` | Solo Playwright contra API/DB/OIDC reales, saneador y cleanup |
-| `bash scripts/e2e.sh --grep "patrón" --project desktop` | Iteración con los tests E2E que coincidan con el patrón. Usa `--project mobile` para el proyecto móvil |
+| `bash scripts/e2e.sh --grep "patrón" --project desktop` | E2E dirigido: solo los casos que coinciden, en un proyecto. Es el del gate diario |
 | `bash scripts/verify.sh --tooling` | Inicializador, copia compilable, CLI persistente, proxies/fallos/señales; no duplica Playwright final |
 | `bash scripts/verify.sh --starter` | FULL de aplicación + tooling, para mantenimiento de starter/entorno |
 | `bash scripts/verify.sh --fast` | Iteración parcial sin E2E; no acredita FULL |
@@ -23,23 +73,6 @@ Ejemplo FULL con namespaces propios nuevos:
 ```bash
 COMPOSE_ENV_FILES=.env.example COMPOSE_PROJECT_NAME=starter-verify-mi-cambio STARTER_E2E_PROJECT=starter-e2e-mi-cambio STARTER_SERVER_TESTS=container bash scripts/verify.sh
 ```
-
-## Tiempos de E2E — advertencia crítica
-La suite E2E completa ejecuta **9 specs × 2 proyectos** (desktop + mobile) = ~18 tests en serie con `workers: 1`. Esto tarda **>100 minutos** en total.
-
-**Nunca ejecutes la suite FULL E2E durante iteración de desarrollo.** Usa siempre `--grep` para ejecutar solo el test afectado:
-
-```bash
-# Iteración rápida — solo el test de reference-preview, solo desktop (raíz, Git Bash)
-STARTER_E2E_PROJECT=starter-e2e-xxx bash scripts/e2e.sh --grep "reference preview:" --project desktop
-
-# Mismo filtro en mobile
-STARTER_E2E_PROJECT=starter-e2e-xxx bash scripts/e2e.sh --grep "reference preview:" --project mobile
-```
-
-`scripts/e2e.sh` construye, espera readiness, exporta `STARTER_E2E_ARTIFACTS` (trace/captura en `e2e/artifacts/<proyecto>/`) y limpia solo su proyecto. No invocar `node scripts/run-e2e.mjs` ni `docker compose … playwright test` a mano: sin ese entorno falla con `required variable STARTER_E2E_ARTIFACTS is missing` o pierde el controlador de identidades. Variables de voz/Compose según la tarea.
-
-**Regla:** Durante desarrollo, ejecuta solo el test específico con `bash scripts/e2e.sh --grep "…" --project desktop`. La suite FULL solo se ejecuta una vez al cerrar la tarea, con stack limpio y sin editar fuentes durante la corrida.
 
 ## Elegir pruebas para una tarea pequeña
 Frontera especifica la capa mínima que demuestra el riesgo y el comando exacto, sin dejar nombres ficticios por resolver a Junie. Bugfix: rojo antes del arreglo. Mantener regresiones útiles; no duplicar casos en todas las capas ni añadir E2E por costumbre.
@@ -55,16 +88,14 @@ Frontera especifica la capa mínima que demuestra el riesgo y el comando exacto,
 
 Backend: `*Test`/`*Tests` usa Surefire, `*IT` Failsafe. `mvnw test` no acredita IT. Client: `tsc -b` explícito; Vite build no basta. Vitest usa cuatro workers para limitar arranques jsdom/MUI; no aumentar timeouts/retries para ocultar fallos. Playwright conserva desktop 1280 y móvil 375, datos ficticios por caso, retries 0 y export saneado fail-closed. Los tests de protocolo no imprimen tokens/claims/cookies; el fixture HTTP negativo no sustituye el login real.
 
-## Frecuencia y alcance del gate
-Para la secuencia hasta T-044 inclusive, aplicar el [aplazamiento temporal acordado por el dueño](#aplazamiento-de-full-hasta-t-044).
+## Perfil del diff y alcance del integrado
+Dirigidos durante cada ajuste; el gate diario al cerrar las fuentes técnicas de la tarea, no en cada commit. Frontera deja el comando concreto. `bash scripts/verify.sh --policy origin/main` clasifica los commits finales; revisar también el diff sin commit antes de publicar. El perfil indica qué gate integrado correspondería a ese diff **cuando el dueño lo ordene**; no dispara nada.
 
-Dirigidos durante cada ajuste; un gate al cerrar las fuentes técnicas de la tarea, no en cada commit. Frontera deja el comando concreto; Junie no vuelve a correr la matriz del starter por una función de negocio. Ejecutar `bash scripts/verify.sh --policy origin/main` sobre commits finales y revisar también el diff sin commit antes de publicar.
-
-| Perfil del diff | Gate de cierre |
-|---|---|
-| DOCUMENTATION / DOCS_ONLY | docs-check; conservar evidencia técnica válida según reglas siguientes |
-| APPLICATION | FULL sin opciones: backend con IT PostgreSQL, frontend y Playwright real |
-| STARTER | FULL + `--tooling` sobre las mismas fuentes/base, o una ejecución `--starter` |
+| Perfil del diff | Gate diario | Integrado que correspondería (diferido) |
+|---|---|---|
+| DOCUMENTATION / DOCS_ONLY | docs-check y `git diff --check` | Ninguno |
+| APPLICATION | Dirigidos de la tarea | FULL sin opciones |
+| STARTER | Dirigidos de la tarea más los tests Node de la herramienta tocada (`node --test "scripts/ci/*.test.mjs"`, `node --test scripts/test-init-project.mjs`) | FULL + `--tooling`, o `--starter` |
 
 APPLICATION solo permite archivos regulares de código/tests bajo server/src, client/src o e2e/tests y e2e/fixtures, además de documentación permitida. Migraciones bajo server/src siguen exigiendo IT y Playwright reales. Scripts, Docker/Compose, dependencias/locks, workflows, otras configuraciones, rutas desconocidas, modos especiales y errores de clasificación exigen STARTER. No basta que una tarea se llame de producto; manda el diff completo. Copias de aplicación conservan la misma regla si modifican el tooling; no existe crédito heredado de la plantilla.
 
@@ -80,39 +111,13 @@ APPLICATION solo permite archivos regulares de código/tests bajo server/src, cl
 
 Los ensayos de herramientas se conservan fuera del gate cotidiano. Tiempos medidos y evidencia de cada cambio viven en su tarea. No ejecutar por calendario ni por cada PR de aplicación. Los tests de selección usan runners ficticios; no sustituir la API propia ni PostgreSQL en E2E, ni convertir esos resultados en aceptación de permisos/datos.
 
-### Aplazamiento de FULL hasta T-044
-
-Decisión del dueño del 2026-11-10 para avanzar hacia el piloto de despliegue. En la secuencia T-048 → T-049 → T-040 → T-041 → T-042 → T-043 → T-044, el cierre por PR (o por tarea dentro de la rama compartida de S-107) usa las pruebas dirigidas y negativas del contrato según el riesgo, `node scripts/docs-check.mjs`, clasificación del diff y evidencia ligada al HEAD/base. Con esos resultados se publica para revisión independiente. Para merge siguen siendo obligatorios `verify-required` verde sobre el HEAD final, veredicto independiente y los demás requisitos de AUTONOMY. Registrar FULL como diferido incluso si la clasificación informa `FULL`. Esta regla temporal prevalece sobre los comandos FULL de cierre por tarea en esa secuencia.
-
-Desde la decisión del dueño de entregar S-107 en una rama y un PR, el FULL integrado ya no espera a T-044 `MERGED`: se ejecuta una vez sobre el HEAD final de `codex/s-107-xlsx-portability`, al cerrar T-045 y antes de pedir la revisión. Clasificar el diff acumulado desde `c5e37cc4b73ad038ac35edf29c66131416bb4a34`, ejecutar el FULL local con fixtures ficticias y añadir tooling si el perfil acumulado es STARTER. Revisar esa evidencia en el control de avance de T-040…T-045 y exigir el gate verde antes de la revisión independiente. Tras el MERGED de ese PR rige nuevamente el cierre ordinario por alcance. El reensayo externo del dueño sigue el contrato de T-049.
-
-## Cuándo ejecutar FULL
-
-### Excepción I5 del 2026-11-12
-
-Instrucción expresa del dueño durante [T-052](tasks/T-052-scope-expansion-plan.md): para la planificación y la serie de mejoras definida allí, **no ejecutar FULL de aplicación, FULL E2E, STARTER ni tooling completo hasta que el dueño lo solicite expresamente**. No arrancarlos al cerrar cada tarea, al revisar ni por el resultado conservador de `--policy`. El diferimiento incluye T-051 pendiente y las tareas de I5 que concrete T-052; no modifica los gates de otras iniciativas futuras.
-
-Cada PR técnico de esa serie conserva pruebas dirigidas según riesgo, negativos de reglas críticas, bugfix primero rojo, `node scripts/docs-check.mjs`, `git diff --check` y clasificación del diff contra la base publicada. Los tests E2E dirigidos usan `--grep` y proyecto explícito, API propia real, PostgreSQL/OIDC ficticios y cleanup del harness. Conservar assertions, cobertura configurada, retries y deadlines; un IT dirigido usa `-Djacoco.skip=true` para no presentar cobertura parcial como gate global, sin cambiar umbrales del proyecto.
-
-Con esa evidencia se puede publicar y pasar a revisión/merge independiente bajo AUTONOMY, registrando **FULL/STARTER DIFERIDO POR EL DUEÑO**, nunca aprobado ni implícitamente satisfecho. CI `verify-required` sobre HEAD final sigue obligatoria y solo acredita su alcance liviano. T-052 es DOCS_ONLY: checks documentales, sin stacks ni pruebas de aplicación.
-
-Cuando el dueño pida el integrado, usar el diff acumulado desde `00407ef4a637369d3078d19aceab123be3b13521`, incluyendo los cambios posteriores de T-051 y esta serie. Si la base cambia con otras tareas, reconciliar su alcance antes de clasificar. Ejecutar una vez sobre fuentes congeladas el gate que corresponda al perfil acumulado, con checkpoint, SHA/base, recursos propios, logs saneados y cleanup. No programar ni lanzar ese gate ahora. La excepción no es autorización de despliegue.
-
-### Lote Imagen, Libres e IA del 2026-11-16
-
-El dueño autorizó un único PR de planificación [T-092](tasks/T-092-writing-workspaces-plan.md) contra main, DOCS_ONLY. Para el lote de implementación **T-073 a T-091 inclusive**, registrar **FULL/STARTER DIFERIDO POR EL DUEÑO**. Pedir permiso y recibir confirmación expresa antes de iniciar FULL, suite Playwright completa, STARTER, tooling completo o el workflow remoto integrado, incluso en un hito, caso especial, cierre de lote o revisión. La clasificación conservadora se informa, también al cambiar lockfiles o tooling. T-068 mantiene su STARTER y la excepción de I5 sigue separada.
-
-Cada tarea registra SHA/base, clasificación, comandos, cobertura de criterios afectados y negativos, resultados, logs saneados y cleanup exacto. Bugfix con rojo dirigido previo. Usar Vitest/unitarios, IT PostgreSQL dirigido donde se modifiquen persistencia o autorización, typecheck en cliente y Playwright con `--grep` y proyecto según contrato. API propia, proxy y sesión reales en E2E; solo dobles externos. Compatibilidad, permisos y flujos existentes tocados conservan sus regresiones. Aplicar también los ensayos manuales de Windows y las vistas responsivas que exige cada tarea. Antes de publicar, `node scripts/docs-check.mjs`, `git diff --check` y comprobación contra base. El cierre dirigido válido sobre las mismas fuentes/base permite revisión independiente y squash, con `verify-required` verde sobre el HEAD final y [AUTONOMY](AUTONOMY.md#lote-imagen-libres-e-ia-del-2026-11-16).
-
-Gate acumulado pendiente desde `7aa8946e727cfadbd2552588eef31cbe07594f00` hasta el HEAD de `main` que contiene T-091 MERGED, o el corte que indique el dueño. Al concluir el lote, presentar SHAs, perfil de `--policy`, pruebas acumuladas, riesgo y duración estimada, y pedir aprobación antes de correrlo. Con aprobación, congelar fuentes/base y ejecutar FULL para perfil APPLICATION o STARTER si el diff acumulado lo exige; registrar SHA, evidencia y cleanup. Un corte anterior autorizado acredita solo lo contenido en ese corte. Las pruebas dirigidas y CI no acreditan el gate integrado.
-
-### Regla general fuera de las excepciones
-Dirigidos mientras se implementa. Un FULL de aplicación válido al cerrar fuentes técnicas y tooling si STARTER, con SHA/base, huella antes/después, comandos, logs saneados y cleanup en la tarea. No editar fuentes durante la corrida. Una transición solo Markdown conserva esa evidencia si base/fuentes técnicas coinciden; ejecutar docs-check y los checks afectados. Cambios de fuentes/base, falta de evidencia o riesgo concreto requieren revalidar lo afectado. La revisión es independiente y no repite FULL por rutina.
+## Cómo se ejecuta un integrado ordenado por el dueño
+Con SHA/base, huella antes/después, comandos, logs saneados y cleanup en la tarea. No editar fuentes durante la corrida. Una transición solo Markdown conserva esa evidencia si base y fuentes técnicas coinciden. La revisión es independiente y no lo repite.
 
 DOCS_ONLY acepta solo archivos regulares A/M de Markdown raíz/docs, AGENTS/CLAUDE conocidos y LICENSE. Código/scripts/workflows/locks, Markdown técnico, renombres/borrados, modos especiales, diff vacío o error exigen FULL. El clasificador conservador no sustituye comprobar las fuentes probadas.
 
 ## CI y merge
-CI automática [ci.yml](../.github/workflows/ci.yml): solo PR, un job `verify-required`, matrices Node de herramientas/docs/clasificación, sin Docker ni dependencias de aplicación. HEAD real, concurrencia con cancelación y timeout 5 minutos. Puede ser verde en draft; no acredita FULL. Antes de merge: CI propia del HEAD/base exactos, gate local por alcance válido para fuentes/base, veredicto independiente y AUTONOMY. No cambiar protecciones para destrabar.
+CI automática [ci.yml](../.github/workflows/ci.yml): solo PR, un job `verify-required`, matrices Node de herramientas/docs/clasificación, sin Docker ni dependencias de aplicación. HEAD real, concurrencia con cancelación y timeout 5 minutos. Puede ser verde en draft; no acredita FULL. Antes de merge: CI propia del HEAD/base exactos, gate diario válido para esas fuentes/base, veredicto independiente y AUTONOMY. No cambiar protecciones para destrabar.
 
 FULL remoto [full.yml](../.github/workflows/full.yml): exclusivamente manual `workflow_dispatch`, no push/PR/calendario. El perfil calculado agrega tooling dentro del job E2E solo si STARTER; en APPLICATION corre solo Playwright real. Conserva backend/client/E2E y agregado estricto `full-result`: FULL exige todas sus suites success; DOCS_ONLY requiere las técnicas skipped. Fallo, ausencia, cancelación o pendiente de una suite exigida nunca cuenta como éxito.
 
