@@ -79,6 +79,8 @@ Quince tareas de producto. Frontera cerró el [control final tras T-067](tasks/T
 
 Salida de [S-112 · Copiar texto de una captura](specs/S-112-screenshot-ocr.md): captura PNG/JPG a texto editable/copiar, con borrador intacto y UX verificada en escritorio al 25 %, escritorio amplio y Android emulado. Secuencia de entorno local: T-068 API con doble → T-069 diálogo → T-070 navegador/API real con doble externo → T-071 precisión con capturas ficticias y autorización del dueño. El dueño autorizó Trabajo y Personal con aviso antes de cada envío. La clave real se usa en T-071. El corte acordado el 2026-11-16 se alcanza al cerrar T-071 con el recorrido y el veredicto de precisión registrados. El despliegue conserva su autorización separada sobre SHA y ventana.
 
+Seguimiento solicitado después de la entrega: [Imagen](specs/S-112-screenshot-ocr.md#seguimiento--imagen-como-destino-principal). Objetivo de salida: pegar un recorte real de Windows, extraer texto en un destino principal de escritorio y móvil, y guardar o borrar los resultados desde Imagen.
+
 ## Objetivos futuros sin contrato de ejecución
 
 [T-072 · Evaluar Redactar y proveedores](tasks/T-072-writing-provider-evaluation.md) conserva la investigación y los modelos candidatos. Su evaluación queda en pausa hasta una decisión expresa del dueño.

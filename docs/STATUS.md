@@ -2,10 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-071](tasks/T-071-ocr-first-real-test.md) · Primera prueba real de OCR en local ([S-112](specs/S-112-screenshot-ocr.md)) |
-| Estado | `mergeable` |
-| Acción actual | Confirmar el cierre de PR74 según el protocolo de merge. La [revisión documental R1](tasks/T-071-ocr-first-real-test.md#revisión-independiente-r1) es favorable. Para hacer squash con `[skip render]`, exigir veredicto `APROBADO` y `verify-required` verde sobre el HEAD final y la base revisada. |
-| Rama / PR | `codex/t-071-ocr-first-real-test` · [PR74](https://github.com/MatiasNicolasAcevedo/devnotes/pull/74) |
+| Tarea y contrato | [T-073](tasks/T-073-ocr-windows-paste.md) · Pegar recortes de Windows en OCR ([S-112](specs/S-112-screenshot-ocr.md)) |
+| Estado | `ready` |
+| Acción actual | Frontera implementer reproduce el pegado de Recortes y corrige el caso en un stack ficticio. |
+| Rama / PR | `codex/t-073-ocr-windows-paste` · PR pendiente |
+
+[T-071](tasks/T-071-ocr-first-real-test.md#conciliación-y-observación-posterior-en-render) conciliada como `done` tras PR74 MERGED. El dueño confirmó la extracción con **Elegir imagen** en Render y reportó el pegado de Recortes sin respuesta.
 
 [T-070](tasks/T-070-ocr-journey.md#conciliación) conciliada como `done` tras PR73 MERGED.
 
@@ -13,7 +15,7 @@
 
 [T-068](tasks/T-068-ocr-api.md#conciliación) conciliada como `done` tras PR71 MERGED, con su evidencia de STARTER conservada.
 
-El corte acordado el 2026-11-16 es el cierre de [T-071](tasks/T-071-ocr-first-real-test.md#cierre-del-tramo-ocr) con la precisión medida y las limitaciones aceptadas por el dueño. [Pendientes tras T-071](BACKLOG.md#pendientes-tras-t-071): mejorar precisión y completar las comprobaciones de OCR, ensayar la restauración del respaldo de Render, y activar OCR con SHA y ventana aprobados. [T-072 · Redactar y evaluación de modelos](tasks/T-072-writing-provider-evaluation.md) queda en pausa hasta pedido expreso.
+Tras cerrar la etapa inicial de OCR, el dueño pidió corregir el pegado y sumar Imagen a la navegación con guardado y borrado tipo Voz. La [ruta de seguimiento](BACKLOG.md#seguimiento-de-imagen) conserva el orden de trabajo. [T-072 · Redactar y evaluación de modelos](tasks/T-072-writing-provider-evaluation.md) sigue en pausa.
 
 [T-067](tasks/T-067-copy-previous-client.md#conciliación) conciliada como `done`. [Control de I5](tasks/T-067-copy-previous-client.md#control-de-avance-de-i5--t-063-a-t-067) completo. **FULL/STARTER de I5 diferidos por el dueño.** SP-06 en Android físico con teclado real y zoom nativo sigue pendiente del dueño.
 
@@ -21,10 +23,9 @@ El corte acordado el 2026-11-16 es el cierre de [T-071](tasks/T-071-ocr-first-re
 
 | Hito | Variable y lugar |
 |---|---|
-| Render · Clave OCR guardada, activación pendiente | `OCR_SPACE_API_KEY` quedó con **Save only**. Mantener OCR deshabilitado hasta autorizar SHA y ventana porque el próximo deploy aplica los valores guardados. [Variables y activación](DEPLOYMENT.md#preparación-de-ocr-en-render). |
 | Render · Restauración y recambio de PostgreSQL | El dueño restaura en local un `.xlsx` de producción en una cuenta vacía y coteja ambos espacios antes de eliminar la base anterior. El FULL del 2026-11-15 acreditó el recorrido con fixtures. La restauración real en Render sigue pendiente. [Procedimiento y evidencia](DEPLOYMENT.md#respaldo-y-reemplazo-de-postgresql-free). |
 
-**Render, disponibilidad.** Auto-Deploy quedó en **On Commit** para main. El 2026-11-14 a las 18:16:26 de Buenos Aires, Render confirmó `405e7e5` **Live** y readiness devolvió HTTP 200 `UP`. La activación o prueba de la sonda y la futura configuración de claves en Render conservan su autorización separada sobre SHA y ventana. [Observación y confirmación](tasks/T-056-service-activity-journey.md#observación-del-piloto-del-2026-11-14).
+**Render, disponibilidad.** Auto-Deploy quedó en **On Commit** para `main`, como pidió el dueño para todos los merges. El [deploy de PR74](tasks/T-071-ocr-first-real-test.md#conciliación-y-observación-posterior-en-render) quedó **Live** y readiness devolvió HTTP 200 `UP`. La prueba de la sonda conserva su autorización separada sobre SHA y ventana. [Observación de la sonda](tasks/T-056-service-activity-journey.md#observación-del-piloto-del-2026-11-14).
 
 [T-066](tasks/T-066-copy-previous-api.md#conciliación) conciliada como `done` tras PR69 MERGED.
 
@@ -135,9 +136,7 @@ T-007: conciliada como MERGED (1702fd9). Junie reviewer + merger, Qwen3.6-27B-FP
 ### Prompt de la siguiente sesión
 
 ```text
-Solo ante un nuevo pedido expreso del dueño, retomá DevNotes en sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/agents/merger.md y docs/tasks/T-071-ocr-first-real-test.md. Consultá PR74 en GitHub antes de actuar. Si sigue OPEN, retomá únicamente su cierre: exigí veredicto APROBADO y verify-required verde sobre el HEAD/base vigentes y usá squash ligado a ese HEAD con [skip render]. Si cambió HEAD o base, devolvé a revisión.
+Retomá DevNotes como Frontera implementer de T-073 en sesión nueva. Leé AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/tasks/T-073-ocr-windows-paste.md y sus referencias. Retomá el checkout aislado de la rama codex/t-073-ocr-windows-paste con la conciliación y el contrato preparados. Confirmá GitHub y main antes de avanzar.
 
-Si GitHub confirma PR74 MERGED contra main con squash y fecha, usá el comentario de cierre para conciliar T-071 como done y actualizar STATUS en el primer avance de la próxima rama autorizada. No escribas en la rama mergeada ni abras una rama o tarea solo para conciliar. El tramo OCR termina en T-071 y T-072 sigue en pausa hasta pedido expreso.
-
-Conservá el STARTER de T-068 y el gate acumulado de I5 diferido. La clave de Render quedó guardada con Save only. Para activar OCR en Render, exigí autorización expresa del dueño sobre SHA exacto y ventana.
+Reproducí el pegado real de Recortes de Windows con imagen ficticia y el fallo dirigido antes de corregir. Conservá el pegado del editor fuera de OCR, la selección anterior ante error y el envío solo al pulsar Extraer texto. Usá la API propia y doble de OCR en pruebas. Ejecutá el gate de T-073, publicá su único PR y dejá revisión independiente. El dueño quiere Auto-Deploy On Commit para todos los merges a main. T-074 espera T-073 MERGED, T-072 sigue en pausa, STARTER de T-068 se conserva e I5 acumulado sigue diferido.
 ```

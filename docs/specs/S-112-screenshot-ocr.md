@@ -3,7 +3,7 @@ id: S-112
 status: draft
 version: 1
 milestone: M6
-tasks: [T-068, T-069, T-070, T-071]
+tasks: [T-068, T-069, T-070, T-071, T-073, T-074, T-075]
 ---
 
 # S-112 · Copiar texto de una captura
@@ -23,6 +23,8 @@ Empezar con `OCREngine=2` y `language=auto`. La documentación lo describe como 
 El proveedor declara que elimina los archivos después de procesarlos y conserva por un mes la IP de cada llamada. Su OCR web dice que también descarta el texto al terminar. El PDF buscable es una opción distinta y conserva el archivo descargable 60 minutos. La confirmación de borrado y el plazo son declaraciones del proveedor. [Política de privacidad](https://ocr.space/privacypolicy) · [OCR web](https://ocr.space/).
 
 ## Entrada, diseño y comportamiento
+
+Este apartado describe la primera entrega. La [entrada Imagen y guardado solicitados después de T-071](#seguimiento--imagen-como-destino-principal) sustituyen el punto de entrada a partir de T-074.
 
 En **Notas**, sumar un único botón **Herramientas** al extremo de acciones de la barra del editor. Su menú contiene **Copiar texto de una captura**. Es una utilidad puntual al redactar y queda a un gesto de la nota en curso. Conserva los cuatro destinos del shell y los accesos directos de copiar nota y guardar versión. En anchos estrechos el disparador ocupa una fila accesible del área de acciones si la barra no admite otro control. La herramienta abre un diálogo sobre el mismo editor, con título, cierre visible y un único cuerpo desplazable. La nota queda montada con su fecha, espacio, selección/cursor, historial de undo y coordenada de scroll. Restaurar foco al disparador de Herramientas al cerrar. Se puede volver al punto de edición con el foco de la nota y pegar a decisión del usuario.
 
@@ -81,3 +83,13 @@ Texto extraído
 ## Ruta y objetivo de salida
 
 [T-068](../tasks/T-068-ocr-api.md) (contrato HTTP y adaptador con doble) → [T-069](../tasks/T-069-ocr-workspace.md) (diálogo y estados) → [T-070](../tasks/T-070-ocr-journey.md) (navegador real, doble de OCR.space) → [T-071](../tasks/T-071-ocr-first-real-test.md) (primera precisión real autorizada, local). El recorrido técnico queda demostrable con fixtures antes de que el dueño tenga que cargar una clave. El cierre de la capacidad acredita el recorrido técnico y registra el veredicto de precisión local con capturas ficticias. Ante un fallo de precisión, Frontera documenta la causa y decide el ajuste con el dueño. Render es una operación posterior separada. El corte de trabajo acordado el 2026-11-16 es el cierre de T-071. La [evaluación de Redactar](../tasks/T-072-writing-provider-evaluation.md) queda en pausa.
+
+## Seguimiento · Imagen como destino principal
+
+Pedido del dueño del 2026-11-16 después del cierre inicial. **Imagen** abre una pantalla propia con título **Imagen a texto**. En escritorio, Voz · Notas · Referencias · Imagen · Historial. En móvil, Notas · Voz · Referencias · Imagen · Historial, con icono de imagen, texto visible en cada destino y cinco celdas de igual ancho. Conservar el tema de DevNotes, foco visible, selección ámbar, 48 CSS px mínimos de alto táctil y áreas seguras. Al mover OCR a Imagen, retirar el acceso en Herramientas y preservar el borrador de Notas al navegar.
+
+La caja de captura recibe `Ctrl+V` y permite abrir el selector local con **Elegir imagen**. **Pegar** lee imágenes del portapapeles por gesto explícito cuando el navegador lo permite. Ante permiso denegado o API ausente, orientar a `Ctrl+V` en la caja o al selector. Pegado y selección muestran la vista previa. **Extraer texto** inicia el envío tras mostrar el aviso de OCR.space. La caja de resultado conserva edición de texto normal y **Copiar texto**. Apertura, pegado, vista previa, copia, selección y guardado no envían una nueva captura.
+
+**Guardar** conserva el texto editado en una lista de **Textos guardados** dentro de Imagen, con fecha, extracto, apertura y eliminación cómoda, siguiendo la interacción de Voz. Colección privada por cuenta y espacio. La captura permanece transitoria. El dueño puede volver a consultar y eliminar cada texto cuando deje de necesitarlo. La decisión de persistencia no cambia el contrato de extracción. Definir recuperación y portabilidad antes de publicar el guardado.
+
+Secuencia: [T-073](../tasks/T-073-ocr-windows-paste.md) corrige el pegado. [T-074](../tasks/T-074-image-navigation.md) mueve el flujo a Imagen. [T-075](../tasks/T-075-image-text-library.md) prepara el contrato de guardado y eliminación. El objetivo de salida es poder pegar un recorte de Windows, extraerlo, guardarlo y borrarlo desde un acceso directo.

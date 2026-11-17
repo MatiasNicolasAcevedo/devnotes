@@ -35,7 +35,15 @@ La ruta I5 está conciliada. [Control final](tasks/T-067-copy-previous-client.md
 | 3 | [T-070](tasks/T-070-ocr-journey.md) · Recorrido de teclado, táctil y proxy con doble externo | T-069 |
 | 4 | [T-071](tasks/T-071-ocr-first-real-test.md) · Primera precisión real en local | T-070 y autorización/carga privada de OCR.space |
 
-La cola activa de [S-112](specs/S-112-screenshot-ocr.md) termina al cerrar T-071. [T-072 · Evaluar Redactar y proveedores](tasks/T-072-writing-provider-evaluation.md) queda en pausa como trabajo futuro hasta que el dueño decida retomarla. Las [siete ideas ya seleccionadas](FUTURE-FEATURES.md) conservan su lugar de candidatas posteriores. El seguimiento de Render es un pendiente operativo de I5. Si el dueño elige una ventana fija, Frontera prepara su contrato propio antes de activar un disparador.
+La primera entrega de [S-112](specs/S-112-screenshot-ocr.md) terminó en T-071. [T-072 · Evaluar Redactar y proveedores](tasks/T-072-writing-provider-evaluation.md) queda en pausa como trabajo futuro hasta que el dueño decida retomarla. Las [siete ideas ya seleccionadas](FUTURE-FEATURES.md) conservan su lugar de candidatas posteriores. El seguimiento de Render es un pendiente operativo de I5. Si el dueño elige una ventana fija, Frontera prepara su contrato propio antes de activar un disparador.
+
+### Seguimiento de Imagen
+
+| Orden | Tarea / resultado | Dependencia |
+|---|---|---|
+| 1 | [T-073](tasks/T-073-ocr-windows-paste.md) · Pegar capturas de Recortes de Windows | T-071 conciliada |
+| 2 | [T-074](tasks/T-074-image-navigation.md) · Imagen como destino principal | T-073 |
+| 3 | [T-075](tasks/T-075-image-text-library.md) · Guardar y borrar texto como en Voz | T-074 y contrato de persistencia y recuperación |
 
 ### Pendientes tras T-071
 
@@ -43,7 +51,6 @@ La cola activa de [S-112](specs/S-112-screenshot-ocr.md) termina al cerrar T-071
 |---|---|
 | Precisión de OCR y recorrido físico | El dueño acepta cerrar el ensayo inicial con las limitaciones registradas. Cuando lo pida, evaluar un ajuste para capturas de letra chica y tokens técnicos, con las mismas muestras y cuota aprobada para el nuevo ensayo. `scale=true` es candidata. Completar la comprobación de copia de la muestra de navegador y el recorrido físico de Android en sus respectivas validaciones. [Resultado real](tasks/T-071-ocr-first-real-test.md#resultado-real-del-2026-11-16). |
 | Restauración del respaldo de Render | El dueño prueba en privado su exportación de producción en una cuenta local vacía antes de reemplazar PostgreSQL. La restauración en Render queda sin acreditar hasta completar importación y cotejo sobre la nueva base. [Procedimiento](DEPLOYMENT.md#respaldo-y-reemplazo-de-postgresql-free). |
-| Activación de OCR en Render | Clave guardada con **Save only**. Habilitar con los flags de los espacios aprobados cuando el dueño autorice SHA y ventana. [Variables](DEPLOYMENT.md#preparación-de-ocr-en-render). |
 | Redactar e integraciones de IA | [T-072](tasks/T-072-writing-provider-evaluation.md) queda en pausa hasta pedido expreso del dueño. |
 
 ## Siguientes · plan del dueño del 2026-11-10, ajustado el 2026-11-11
