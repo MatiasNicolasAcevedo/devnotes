@@ -1,6 +1,6 @@
 ---
 id: T-073
-status: in_progress
+status: in_review
 priority: P1
 size: S
 milestone: M6
@@ -9,7 +9,7 @@ depends_on: [T-071, T-092]
 branch: codex/t-073-ocr-windows-paste-fix
 role: implementer
 executor: frontier
-pr: null
+pr: 76
 ---
 
 # T-073 · Pegar recortes de Windows en OCR
@@ -53,6 +53,12 @@ Gate dirigido según [TESTING](../TESTING.md#lote-imagen-libres-e-ia-del-2026-11
 |---|---|---|
 | Recortes de Windows sobre el PNG ficticio con ayuda del dueño, Chrome 157.0.8103.79. Con Ctrl+V, tanto `files` como `items (kind=file)` entregaron `image/png`, 28.349 bytes. En base, foco en Elegir imagen (`target=BUTTON`) o clic en el texto dentro de la caja (`focus=DIV[role=group], target=P`): sin vista previa. | Escucha acotada al diálogo, excluye edición; resuelve imagen por archivo o elemento y normaliza nombres sin extensión. Reutiliza validación y descarte. | Mismo recorte con clic en la caja y tras recuperar el foco de Elegir imagen: vista previa decodificada de 450 × 202 en ambos intentos; sin POST. |
 | El texto de ayuda era seleccionable y no desaparecía al elegir la captura. | Indicación vacía no seleccionable, nombre accesible y ayuda separada. La vista previa ocupa la caja y conserva foco visible. | Cotejo con frontend-design y referencia Imagen sobre diálogo real: escritorio 400 × 768 y móvil emulado 375 × 812, vacíos y con vista previa, una columna sin desborde; botón de 44/48 px. El móvil no enfoca al abrir. |
-| Primera corrida E2E (exit 1) canceló la transferencia del contexto del cliente antes de arrancar el stack; el perfil aislado de Chrome todavía estaba debajo de `client/`. | Cerrar ese Chrome y mover la fixture fuera del contexto del cliente. | Repetición dirigida en curso. |
+| Primera corrida E2E (exit 1) canceló la transferencia del contexto del cliente antes de arrancar el stack; el perfil aislado de Chrome todavía estaba debajo de `client/`. | Cerrar ese Chrome y mover la fixture fuera del contexto del cliente. | Repetición dirigida verde y cleanup verificado. |
+
+[PR76](https://github.com/MatiasNicolasAcevedo/devnotes/pull/76) contra `main` en `b6728d0669008e550fada544f474c7ac8315e1d6`. SHA de las fuentes probadas: `2ebaac0a1f1dd7a70db4a6baf90b0061330af2be`; el cierre posterior cambia solo documentación.
+
+- `STARTER_E2E_PROJECT=starter-e2e-t073-ocr-paste bash scripts/e2e.sh --grep 'screenshot OCR:' --project desktop`: exit 0, 1 caso, 0 fallos. Chromium verificó que arrastrar sobre la indicación no selecciona texto y que el PNG sin extensión pegado desde Elegir imagen reemplaza la indicación sin POST. La extracción y la copia editada pasan por el proxy, API propia, PostgreSQL 18 y sesión OIDC local con doble externo OCR; se conserva el caso 429. Saneado aprobado; inventario por label (0): 0 contenedores, redes y volúmenes.
+- `node scripts/docs-check.mjs` y `git diff --check`: exit 0. `bash scripts/verify.sh --policy origin/main`: exit 0, perfil `APPLICATION`, política informativa `FULL` (4 rutas técnicas).
+- Pendiente: revisión independiente del HEAD publicado y squash solo con las condiciones de AUTONOMY, incluido `verify-required` verde sobre el HEAD aprobado. T-074 sigue en `draft` hasta consultar y confirmar `MERGED`. Render Auto-Deploy On Commit permanece vigente.
 
 FULL/STARTER: DIFERIDO POR EL DUEÑO.
