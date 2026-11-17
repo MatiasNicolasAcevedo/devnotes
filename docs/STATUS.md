@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-073](tasks/T-073-ocr-windows-paste.md) · Pegar recortes de Windows en OCR · [S-112](specs/S-112-screenshot-ocr.md) |
-| Estado | `in_review` |
-| Acción actual | Frontera revisa T-073 en sesión independiente |
+| Estado | `mergeable` |
+| Acción actual | Frontera reviewer verifica la transición documental y cierra el PR #76 |
 | Rama / PR | `codex/t-073-ocr-windows-paste-fix` · [PR76](https://github.com/MatiasNicolasAcevedo/devnotes/pull/76) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,11 +34,11 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer de T-073 (PR #76) en MatiasNicolasAcevedo/devnotes. Sesión nueva e independiente.
+Actuá como frontera implementer de T-074 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/agents/merger.md, docs/AUTONOMY.md, docs/tasks/T-073-ocr-windows-paste.md, docs/specs/S-112-screenshot-ocr.md y la sección Imagen de docs/design/WRITING-WORKSPACES.md.
-PRECONDICIÓN: gh pr view 76 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,baseRefName,statusCheckRollup debe mostrar OPEN, listo para revisión, base main b6728d0669008e550fada544f474c7ac8315e1d6 y el HEAD publicado indicado en la descripción del PR. Verificá que ese HEAD no cambia client/ ni e2e/ respecto del SHA técnico 2ebaac0a1f1dd7a70db4a6baf90b0061330af2be. Si cambió HEAD o base, cotejá el diff y revalidá el gate que corresponda.
-ACCIÓN: 1) Revisá el diff publicado en checkout nuevo, los criterios de S-112 y la evidencia dirigida, incluido el recorte real de Windows. 2) Si hay hallazgos, dejá changes_requested y el prompt de corrección para el mismo PR. Si aprobás, publicá la transición documental a mergeable; comprobá el nuevo HEAD, base, docs-check y verify-required verde antes de emitir APROBADO y hacer squash con --match-head-commit, según AUTONOMY. 3) Confirmá state MERGED, mergedAt y mergeCommit.oid con gh pr view 76 --repo MatiasNicolasAcevedo/devnotes antes de habilitar T-074.
+LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/tasks/T-073-ocr-windows-paste.md, docs/tasks/T-074-image-navigation.md, docs/specs/S-112-screenshot-ocr.md y la sección Imagen de docs/design/WRITING-WORKSPACES.md. Usá frontend-design para cotejar el shell real.
+PRECONDICIÓN: gh pr view 76 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName debe confirmar MERGED contra main, con mergedAt y mergeCommit.oid válidos. Actualizá la referencia origin/main y comprobá que contiene ese squash y que no hay otro PR abierto. Si no se cumple, informá el estado real sin iniciar T-074.
+ACCIÓN: 1) Desde origin/main actualizado, creá el checkout nuevo de codex/t-074-image-navigation. En el primer commit conciliá T-073 a done con el squash confirmado y avanzá T-074 a in_progress. 2) Mové OCR a /image, incorporá Imagen a la navegación y agregá pegado por gesto y arrastre local; conservá borrador de Notas, espacio activo y envío solo al elegir Extraer texto. 3) Corré las pruebas de componente y typecheck del contrato, los E2E filtrados «screenshot OCR:» con --project desktop y --project mobile en proyectos propios separados, los ensayos de arrastre y Recortes reales en Windows con datos ficticios, docs-check y diff-check. 4) Publicá solo el PR de T-074 con evidencia vinculada a HEAD y base.
 GATE: diario. FULL y STARTER están diferidos: no ejecutarlos sin orden expresa del dueño.
-SALIDA: veredicto independiente sobre HEAD y base exactos y, solo tras confirmar MERGED, prompt para que la nueva sesión de T-074 concilie T-073 y avance el lote. Conservá Render Auto-Deploy On Commit.
+SALIDA: T-073 conciliada, T-074 in_review y prompt de frontera reviewer del PR de T-074 con HEAD y base exactos en STATUS y al final de la respuesta. Conservá Render Auto-Deploy On Commit.
 ```
