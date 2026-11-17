@@ -79,12 +79,16 @@ Quince tareas de producto. Frontera cerró el [control final tras T-067](tasks/T
 
 Salida de [S-112 · Copiar texto de una captura](specs/S-112-screenshot-ocr.md): captura PNG/JPG a texto editable/copiar, con borrador intacto y UX verificada en escritorio al 25 %, escritorio amplio y Android emulado. Secuencia de entorno local: T-068 API con doble → T-069 diálogo → T-070 navegador/API real con doble externo → T-071 precisión con capturas ficticias y autorización del dueño. El dueño autorizó Trabajo y Personal con aviso antes de cada envío. La clave real se usa en T-071. El corte acordado el 2026-11-16 se alcanza al cerrar T-071 con el recorrido y el veredicto de precisión registrados. El despliegue conserva su autorización separada sobre SHA y ventana.
 
+### I6–I8 · Lote Imagen, Libres e IA
+
+| Tramo | Resultado para el dueño | Specs y tareas |
+|---|---|---|
+| I6 / M6 · Imagen | Recorte real de Windows, selector y arrastre local, extracción explícita y biblioteca privada de texto. XLSX recupera textos sin incluir las imágenes. | [S-112](specs/S-112-screenshot-ocr.md#seguimiento--imagen-como-destino-principal), T-073…T-077 |
+| I7 / M7 · Escritura y consulta | Entrar a Libres desde Notas, guardar notas tituladas con portabilidad, empezar a escribir antes en el diario, usar listas/código/títulos y consultar en paralelo en escritorio ancho. | [S-113](specs/S-113-free-notes.md) · [S-114](specs/S-114-writing-editor.md) · [S-115](specs/S-115-side-reading.md), T-078…T-085 |
+| I8 / M8 · IA | Desde cualquier pantalla, enviar un mensaje, elegir proveedor Free, cambiar de opción si una falla y copiar. Fragmentos deliberados con política por proveedor/origen y piloto ficticio. | [S-116](specs/S-116-ai-workspace.md), T-086…T-091 |
+
+[Orden por PR](BACKLOG.md#lote-imagen-libres-e-ia) y [guía visual transversal](design/WRITING-WORKSPACES.md). El control acumulado compila lo verificado al terminar T-091 y pide permiso antes de cualquier FULL/STARTER. Retomar Frontera planner ante una decisión fuera de los contratos o al terminar el lote. Acciones de IA desde otras vistas y preferencia de perfil se evalúan después de validar IA global.
+
 ## Objetivos futuros sin contrato de ejecución
 
-[T-072 · Evaluar Redactar y proveedores](tasks/T-072-writing-provider-evaluation.md) conserva la investigación y los modelos candidatos. Su evaluación queda en pausa hasta una decisión expresa del dueño.
-
-Restauración/comparación/múltiples revisiones por día, búsquedas, plantillas de enlaces y personalización son opciones del contexto, no tareas ready ni dependencias. La exportación/importación y el piloto de despliegue tienen contrato en S-107/S-108; producción en VPS sigue como propuesta de DEPLOYMENT. No instalar infraestructura para ellas. Google real, servicios pagos y datos reales reservados al dueño.
-
-## Después de I5 · Ideas seleccionadas pendientes
-
-El dueño seleccionó las ideas 2, 9, 16, 21, 22, 24 y 34 para ampliar el producto al terminar lo ya definido. [Resúmenes y dirección de UX](FUTURE-FEATURES.md): notas libres, listas, formato compacto, código, búsqueda unificada, consulta en paralelo y reutilización de voz. Conservarlas como candidatas para definir contratos y prioridad con el dueño tras la ampliación de herramientas de texto.
+Restauración/comparación/múltiples revisiones por día, plantillas de enlaces y personalización siguen como opciones. [Selección y retiros de la cola](FUTURE-FEATURES.md). Producción en VPS queda como propuesta de DEPLOYMENT. Google real, servicios pagos y datos reales reservados al dueño.

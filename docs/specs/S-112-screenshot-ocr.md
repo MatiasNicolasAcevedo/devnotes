@@ -3,7 +3,7 @@ id: S-112
 status: draft
 version: 1
 milestone: M6
-tasks: [T-068, T-069, T-070, T-071]
+tasks: [T-068, T-069, T-070, T-071, T-073, T-074, T-075]
 ---
 
 # S-112 · Copiar texto de una captura
@@ -23,6 +23,8 @@ Empezar con `OCREngine=2` y `language=auto`. La documentación lo describe como 
 El proveedor declara que elimina los archivos después de procesarlos y conserva por un mes la IP de cada llamada. Su OCR web dice que también descarta el texto al terminar. El PDF buscable es una opción distinta y conserva el archivo descargable 60 minutos. La confirmación de borrado y el plazo son declaraciones del proveedor. [Política de privacidad](https://ocr.space/privacypolicy) · [OCR web](https://ocr.space/).
 
 ## Entrada, diseño y comportamiento
+
+Este apartado describe la primera entrega. La [entrada Imagen y guardado solicitados después de T-071](#seguimiento--imagen-como-destino-principal) sustituyen el punto de entrada a partir de T-074.
 
 En **Notas**, sumar un único botón **Herramientas** al extremo de acciones de la barra del editor. Su menú contiene **Copiar texto de una captura**. Es una utilidad puntual al redactar y queda a un gesto de la nota en curso. Conserva los cuatro destinos del shell y los accesos directos de copiar nota y guardar versión. En anchos estrechos el disparador ocupa una fila accesible del área de acciones si la barra no admite otro control. La herramienta abre un diálogo sobre el mismo editor, con título, cierre visible y un único cuerpo desplazable. La nota queda montada con su fecha, espacio, selección/cursor, historial de undo y coordenada de scroll. Restaurar foco al disparador de Herramientas al cerrar. Se puede volver al punto de edición con el foco de la nota y pegar a decisión del usuario.
 
@@ -80,4 +82,34 @@ Texto extraído
 
 ## Ruta y objetivo de salida
 
-[T-068](../tasks/T-068-ocr-api.md) (contrato HTTP y adaptador con doble) → [T-069](../tasks/T-069-ocr-workspace.md) (diálogo y estados) → [T-070](../tasks/T-070-ocr-journey.md) (navegador real, doble de OCR.space) → [T-071](../tasks/T-071-ocr-first-real-test.md) (primera precisión real autorizada, local). El recorrido técnico queda demostrable con fixtures antes de que el dueño tenga que cargar una clave. El cierre de la capacidad acredita el recorrido técnico y registra el veredicto de precisión local con capturas ficticias. Ante un fallo de precisión, Frontera documenta la causa y decide el ajuste con el dueño. Render es una operación posterior separada. El corte de trabajo acordado el 2026-11-16 es el cierre de T-071. La [evaluación de Redactar](../tasks/T-072-writing-provider-evaluation.md) queda en pausa.
+[T-068](../tasks/T-068-ocr-api.md) (contrato HTTP y adaptador con doble) → [T-069](../tasks/T-069-ocr-workspace.md) (diálogo y estados) → [T-070](../tasks/T-070-ocr-journey.md) (navegador real, doble de OCR.space) → [T-071](../tasks/T-071-ocr-first-real-test.md) (primera precisión real autorizada, local). El recorrido técnico queda demostrable con fixtures antes de que el dueño tenga que cargar una clave. El cierre de la capacidad acredita el recorrido técnico y registra el veredicto de precisión local con capturas ficticias. Ante un fallo de precisión, Frontera documenta la causa y decide el ajuste con el dueño. Render es una operación posterior separada. El corte de trabajo acordado el 2026-11-16 es el cierre de T-071. El [estudio de Redactar](../tasks/T-072-writing-provider-evaluation.md) se postergó en ese corte; hoy aporta sus muestras al [destino global IA](S-116-ai-workspace.md).
+
+## Seguimiento · Imagen como destino principal
+
+Pedido del dueño del 2026-11-16 después del cierre inicial. **Imagen** abre una pantalla propia con título **Imagen a texto**. En escritorio, Voz · Notas · Referencias · Imagen · Historial. En móvil, Notas · Voz · Referencias · Imagen · Historial, con icono de imagen, texto visible en cada destino y cinco celdas de igual ancho. Conservar el tema de DevNotes, foco visible, selección ámbar, 48 CSS px mínimos de alto táctil y áreas seguras. Al mover OCR a Imagen, retirar el acceso en Herramientas y preservar el borrador de Notas al navegar.
+
+La caja de captura recibe `Ctrl+V` y permite abrir el selector local con **Elegir imagen**. **Pegar** lee imágenes del portapapeles por gesto explícito cuando el navegador lo permite. Ante permiso denegado o API ausente, orientar a `Ctrl+V` en la caja o al selector. Pegado y selección muestran la vista previa. **Extraer texto** inicia el envío tras mostrar el aviso de OCR.space. La caja de resultado conserva edición de texto normal y **Copiar texto**. Apertura, pegado, vista previa, copia, selección y guardado no envían una nueva captura.
+
+**Estado vacío de la caja.** Mostrar **«Pegá tu imagen acá»** como indicación visual tenue, sin texto seleccionable ni valor que pueda copiarse desde la caja. Al hacer clic o llegar por teclado, mostrar el foco y recibir `Ctrl+V`. Quitar la indicación solo cuando haya una captura válida y restaurarla al quedar vacía. Mantener nombre accesible para la caja y presentar «PNG o JPG, hasta 1 MB» como ayuda separada. En el estado inicial tampoco hay texto extraído y las acciones que requieren imagen o resultado se habilitan al tener ese contenido.
+
+**Guardar** conserva el texto editado en una lista de **Textos guardados** dentro de Imagen, con fecha, extracto, apertura y eliminación cómoda, siguiendo la interacción de Voz. Colección privada por cuenta y espacio. La captura permanece transitoria. El dueño puede volver a consultar y eliminar cada texto cuando deje de necesitarlo. La decisión de persistencia no cambia el contrato de extracción. Definir recuperación y portabilidad antes de publicar el guardado.
+
+[T-073](../tasks/T-073-ocr-windows-paste.md) corrige el pegado desde Recortes. [T-074](../tasks/T-074-image-navigation.md) mueve el flujo a Imagen y agrega arrastre local.
+
+**Arrastre en escritorio.** Soltar un único archivo PNG/JPEG desde el explorador sobre Captura sigue la misma validación que Elegir imagen. Señalar el objetivo al arrastrar un archivo. Rechazar varios archivos, texto, enlaces, formato inválido o más de 1 MB y conservar la selección. Evitar navegación al archivo dentro de esa zona. Pegar y Elegir imagen siguen disponibles por teclado y en pantallas táctiles. La vista previa solo sube al pulsar Extraer texto. [DataTransfer.files](https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/files).
+
+### Biblioteca de Imagen
+
+[T-075](../tasks/T-075-image-text-library.md) prepara almacenamiento, [T-076](../tasks/T-076-image-text-xlsx.md) recuperación y [T-077](../tasks/T-077-image-text-library-ui.md) API e interfaz. La escritura HTTP se habilita después de XLSX.
+
+- Texto editable de 1 a 60.000 puntos de código, whitespace solo inválido; preservar saltos, espacios y Unicode del valor válido. UUID v7, propietario autenticado, espacio de ruta y fecha UTC de creación. Guardar crea una copia deliberada, sin reemplazar la anterior. Una misma operación con UUID v7 de intento y mismo cuerpo devuelve el mismo resultado por 24 h, incluso tras respuesta perdida; ID de intento con otro cuerpo devuelve 409. Si ya se borró, un recibo mínimo impide recrearla dentro de la ventana. Reutilizar lock de cuenta para importación. No guardar imagen, nombre, mime ni fuente.
+- Rutas `/api/spaces/{space}/image-texts`, GET lista (20, cursor estable por creado/ID descendente), POST crea, GET y DELETE por UUID. Autorización por cuenta/espacio, CSRF en mutations, 404 uniforme para ausente o ajeno. Datos nuevos solo se persisten por guardado explícito.
+- La lista **Textos guardados** muestra extracto, fecha y acción de borrar con confirmación tipo Voz. Abrir presenta texto guardado para consulta y copia sin reemplazar la edición OCR en curso. Luego de borrar, llevar foco a la fila vecina o al encabezado de la colección al quedar vacía; si falla conservar la fila y permitir reintento. El guardado conserva el texto activo y muestra estado. En cambios de espacio o cuenta invalidar consultas y respuestas tardías. No extraer de nuevo al abrir, copiar o guardar.
+
+### Portabilidad incremental de Imagen y Libres
+
+Conservar las convenciones de [S-107](S-107-xlsx-portability.md) y [S-109](S-109-private-spaces.md#portabilidad-xlsx-v2) para formato `devnotes-xlsx`, fragmentos, orden de hojas actuales, columnas, límites, validación y single transaction. v3 suma hoja `imagen_textos` con clave UUID local y JSON `{space, text, createdAt}`. v4 suma hoja `notas_libres` con clave UUID local y JSON `{space, title, document, createdAt, updatedAt}`. Cada hoja nueva usa cabecera exacta. `imagen_textos`: `clave, parte, partes, dato_json, texto, creada_utc, espacio`. `notas_libres`: `clave, parte, partes, dato_json, titulo, texto, creada_utc, actualizada_utc, espacio`. Agregar conteos de las hojas nuevas al manifiesto de su versión. Las columnas legibles siguen las reglas de fragmentación de S-107 y van en parte 1. Ordenar las filas por `createdAt, id` al exportar. El JSON es la autoridad. Hojas existentes siguen idénticas al v2 y las hojas nuevas se agregan al final en ese orden. v1 conserva su semántica de Trabajo, v2 no trae colecciones nuevas, v3 no trae Libres y v4 contempla ambas. Regenerar IDs y reiniciar revisión donde corresponda. No incluir imágenes, recibos de idempotencia ni datos de IA.
+
+Extender vista previa/import/export a v3/v4. Agregar `imageTexts` y, en v4, `freeNotes` en sus versiones a los conteos total y por espacio. Leer libros anteriores con cero para colecciones ausentes en las capacidades que conoce el servidor; `version` sigue identificando el libro leído. Cuentas con cualquiera de las nuevas colecciones cuentan como ocupadas. Aplicar formato estricto por versión, sin ignorar hojas/JSON desconocidos; falla completa ante duplicados, mezcla de espacios inválida, documento no admitido o exceso de límites. Previsualización nunca escribe. Mantener exclusión con escrituras concurrentes de ambas colecciones. Un libro nuevo requiere una versión de DevNotes compatible para restaurar; explicar esta compatibilidad en la UI/guía.
+
+[Referencia visual](../design/WRITING-WORKSPACES.md#imagen). El objetivo de salida es pegar un recorte real de Windows, extraerlo desde Imagen y guardar, recuperar y borrar el resultado como texto.

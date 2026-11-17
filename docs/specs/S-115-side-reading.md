@@ -1,0 +1,9 @@
+# S-115 · Consulta en paralelo
+
+En escritorio amplio, el dueño puede leer otro documento del espacio activo mientras escribe. **Abrir al lado** vive en Herramientas de Diario y Libres y aparece desde 1.100 CSS px de ancho útil, con un mínimo de 440 px para escribir y 320 px para leer. Un único shell, divisor fijo, proporción 60/40 y scroll independiente. El panel muestra título/fecha, **Cambiar** y **Cerrar**. [Diseño](../design/WRITING-WORKSPACES.md#consulta-al-lado).
+
+En la primera versión se eligen versiones manuales desde Historial y notas libres del espacio activo. El selector muestra dos grupos y reutiliza sus listas, sin añadir búsqueda global. El panel renderiza solo lectura según el formato de origen. Permite copiar texto. No modifica borradores ni dispara autosave del editor principal. Al cerrar, conservar selección, scroll y borrador del editor. Al cambiar la selección de consulta, llevar el foco al encabezado del panel y permitir volver a escribir sin atravesar los controles del lector. Escape cierra el selector; el botón Cerrar devuelve el foco al disparador o a Herramientas.
+
+Al reducir el ancho, suspender panel en memoria de esa cuenta y espacio; mostrar **Ver consulta** en Herramientas si había un documento, con navegación habitual y guardia de cambios. Al ampliar, recuperar la lectura si sigue siendo accesible. En teléfono no se ofrecen dos columnas. Logout y cambio de espacio invalidan datos y solicitudes en vuelo; 404 o borrado ofrece elegir otra nota. Reapertura del panel y cambios de anchura nunca cambian el documento editable. Dos cuentas y espacios se prueban con API real.
+
+T-085 implementa vista, elección y reflujo. Voz, Referencias e Imagen podrán ser fuentes posteriores. Para buscar o abrir otros tipos se usan sus destinos existentes. Historial permanece en su destino habitual.

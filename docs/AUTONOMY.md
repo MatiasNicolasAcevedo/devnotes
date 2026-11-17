@@ -20,6 +20,12 @@ El dueño difirió FULL/STARTER hasta pedirlos expresamente durante esta serie; 
 
 Por decisión del dueño, Frontera termina T-055 y continúa las tareas pendientes del [backlog](BACKLOG.md), incluidas las [ideas de nuevas funcionalidades](FUTURE-FEATURES.md) cuando tengan contrato. Junie queda en pausa para esta serie. El dueño elige Codex o Claude Code al abrir cada sesión según su disponibilidad. El prompt de STATUS se dirige a Frontera y especifica el rol de esa sesión. Las nuevas funcionalidades se orientan principalmente a frontend, con los cambios de otras capas que requiera cada contrato. Rigen una tarea y un PR en curso, la revisión en una sesión independiente y los permisos ya acordados.
 
+### Lote Imagen, Libres e IA del 2026-11-16
+
+El dueño autorizó el PR documental [T-092](tasks/T-092-writing-workspaces-plan.md) contra main antes de comenzar producto. Una tarea y un PR activos, con la [secuencia fijada](BACKLOG.md#lote-imagen-libres-e-ia); T-073 espera su MERGED. Frontera implementa por sesión nueva. La revisión en sesión independiente puede hacer squash elegible y confirmar MERGED según las reglas de abajo; las correcciones van al mismo PR, en sesión de implementer, y la revisión se liga al HEAD/base finales. El siguiente implementer concilia lo mergeado antes de avanzar.
+
+Para T-073…T-091 el gate local válido para publicación y merge es el [cierre dirigido de TESTING](TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16). El dueño exige permiso previo expreso para cualquier FULL/STARTER, incluido el cierre acumulado. La revisión independiente y `verify-required` verde siguen siendo requisitos. Conservar Render Auto-Deploy **On Commit** para main. El plan y los merges no otorgan autorización para enviar datos reales, configurar proveedores/secretos, cambiar planes ni disparar deploys manuales.
+
 ### Política general
 
 - Frontera define producto, arquitectura, contratos y adopción M0. Modelo/herramienta/esfuerzo solo según lo realmente expuesto, sin inventar versión.

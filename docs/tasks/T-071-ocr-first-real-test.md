@@ -1,6 +1,6 @@
 ---
 id: T-071
-status: mergeable
+status: done
 priority: P1
 size: S
 milestone: M6
@@ -127,3 +127,9 @@ Entrega en [PR74](https://github.com/MatiasNicolasAcevedo/devnotes/pull/74), bas
 - Cotejé la guía Excel con S-107/S-109, los seis casos pertinentes del JUnit saneado de T-069 (escritorio y móvil) y la restauración local v1 de T-045. La guía mantiene aparte la importación real en Render, omitida en RP-04, y exige que el dueño verifique en privado el respaldo antes de retirar la base. La activación de OCR conserva el permiso separado sobre SHA exacto y ventana; la clave está guardada con **Save only** según el dueño.
 
 Revisión favorable sin bloqueantes. Se conservan el STARTER de T-068 y el gate acumulado de I5 diferido. El veredicto canónico se publica en PR74 tras comprobar el gate documental y `verify-required` sobre el HEAD definitivo. Tras confirmar `MERGED`, registrar la evidencia de cierre en PR74 y conciliar la tarea en el primer avance de una próxima rama autorizada, según [merger](../agents/merger.md). T-072 continúa en pausa.
+
+## Conciliación y observación posterior en Render
+
+`gh pr view 74 --repo MatiasNicolasAcevedo/devnotes --json number,url,state,mergedAt,mergeCommit,headRefOid,baseRefName` salió 0. [PR74](https://github.com/MatiasNicolasAcevedo/devnotes/pull/74) `MERGED` en `main`, `mergedAt=2026-11-16T23:32:06Z`, squash `7aa8946e727cfadbd2552588eef31cbe07594f00` y HEAD revisado `0fec6f9fe292cb37a0697f2985055d4b3e2f98fc`. [Veredicto](https://github.com/MatiasNicolasAcevedo/devnotes/pull/74#issuecomment-6932597293) · [Cierre](https://github.com/MatiasNicolasAcevedo/devnotes/pull/74#issuecomment-6932631469).
+
+El 2026-11-16 a las 20:45:37 de Buenos Aires, el [deploy manual solicitado por el dueño](https://dashboard.render.com/web/srv-dbqhfqei0phs73cmkbs0/deploys/dep-dbtpagrm8hqs73d5eju0) quedó Live con ese squash y readiness público HTTP 200, `UP`. El dueño confirmó por separado que pudo extraer texto con **Elegir imagen** en Render. Reportó que **Ctrl+V** de varias capturas de Recortes de Windows no mostró vista previa. La confirmación del selector no acredita el pegado ni mide de nuevo precisión o latencias. Seguimiento en [T-073](T-073-ocr-windows-paste.md).
