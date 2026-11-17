@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-092](tasks/T-092-writing-workspaces-plan.md) · Plan de Imagen, Libres e IA |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente del PR documental. Implementación de T-073 solo después de confirmar su MERGED. |
-| Rama / PR | `codex/t-092-writing-workspaces-plan` contra `main` |
+| Estado | `mergeable` |
+| Acción actual | Confirmar gate documental, `verify-required` verde y veredicto `APROBADO` sobre HEAD/base finales antes del squash. Implementación de T-073 después de confirmar `MERGED`. |
+| Rama / PR | `codex/t-092-writing-workspaces-plan` contra `main` · [PR75](https://github.com/MatiasNicolasAcevedo/devnotes/pull/75) |
 
 [T-071](tasks/T-071-ocr-first-real-test.md#conciliación-y-observación-posterior-en-render) conciliada como `done` tras PR74 MERGED. El dueño confirmó la extracción con **Elegir imagen** en Render y reportó el pegado de Recortes sin respuesta.
 
