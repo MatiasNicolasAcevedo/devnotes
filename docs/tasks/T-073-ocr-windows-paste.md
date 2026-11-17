@@ -1,6 +1,6 @@
 ---
 id: T-073
-status: ready
+status: in_progress
 priority: P1
 size: S
 milestone: M6
@@ -37,16 +37,22 @@ Al volver al navegador tras usar Recortes de Windows, pegar una captura ficticia
 | Al abrir no hay captura ni resultado. La indicación de pegado no se puede seleccionar o copiar como contenido de la caja. Clic y teclado mantienen el foco de pegado, y una imagen válida reemplaza la indicación. | Estado y foco en pruebas dirigidas. Selección con ratón y cambio de estado en Chromium con fixture. |
 | Pegar texto en el resultado funciona normalmente, imagen inválida deja visible el motivo y preserva la selección, pegar fuera de OCR queda intacto y pegar nunca llama al proveedor. | Negativos en la misma prueba de componente. Conservar la prueba de elección de archivo. |
 | Chrome o Brave en Windows muestra un recorte real del portapapeles. | Recorte rectangular de texto ficticio con PrtSc si abre Recortes, o Win+Shift+S. Probar con clic en la caja y tras recuperar foco. Basta vista previa, sin POST. Registrar navegador, tamaños, foco y tipos solamente. Un evento sintético no sustituye este paso. |
-| Extraer y copiar siguen funcionando por la API propia. | Desde raíz con Git Bash, stack efímero propio y doble externo: `STARTER_E2E_PROJECT=starter-e2e-t073-ocr-paste bash scripts/e2e.sh --grep 'screenshot OCR:' --project=desktop`. Verificar cleanup por label. |
+| Extraer y copiar siguen funcionando por la API propia. | Desde raíz con Git Bash, stack efímero propio y doble externo: `STARTER_E2E_PROJECT=starter-e2e-t073-ocr-paste bash scripts/e2e.sh --grep 'screenshot OCR:' --project desktop`. Verificar cleanup por label. |
 
 Gate dirigido según [TESTING](../TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16), con docs-check y diff-check. Ver el [diseño de Imagen](../design/WRITING-WORKSPACES.md#imagen); validar primero el diálogo actual con su placeholder. Conservar STARTER de T-068 y el diferimiento separado de I5.
 
 ## Checkpoint vigente
 
-2026-11-16. Frontera planner en Codex Desktop, GPT-6, PowerShell, Git/gh y Chromium headless. Variante y esfuerzo sin dato expuesto. Base remota `7aa8946e727cfadbd2552588eef31cbe07594f00` y sin PR abierto. Conciliación de T-071 en el checkout aislado de esta rama. Diagnóstico sin cambios de aplicación, API, permisos ni datos.
+2026-11-17. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Node 24.21 y Chrome para Windows. Alcance: pegado y estado vacío del diálogo, sin cambios de API, permisos, persistencia, shell ni despliegue.
 
-En Chromium 157, reproduje el manejador publicado con un evento sintético y el PNG ficticio de terminal. Seleccionó imagen cuando el evento apuntó al grupo. Ignoró el mismo evento cuando apuntó al texto hijo, al botón de selector o al campo de resultado. El último caso debe seguir sin capturar imagen. El código vincula `onPaste` solo al grupo y exige identidad entre destino y grupo. La prueba E2E publicada construye `DataTransfer` y dispara el evento directamente sobre el grupo. El síntoma del dueño concuerda con el carácter silencioso de esos caminos. Falta medir el foco y la representación del portapapeles en Recortes real.
+`gh pr view codex/t-092-writing-workspaces-plan --repo MatiasNicolasAcevedo/devnotes` (0) confirmó [PR75](https://github.com/MatiasNicolasAcevedo/devnotes/pull/75) `MERGED` contra `main`, `mergedAt=2026-11-17T01:42:51Z`, squash `77cb710313e02c8fdd4afd1eea27020bd6e98a0c`. Ya conciliada `done` en main. `gh pr list --state open` (0) devolvió cero PR y `git ls-remote` (0) confirmó que main local y remoto coinciden en `b6728d0669008e550fada544f474c7ac8315e1d6`. Checkout nuevo; el anterior conserva `2a2fc56` y cuatro archivos modificados.
 
-El dueño mostró que «Pegá una captura (Ctrl+V)» y el límite de archivo son texto seleccionable dentro de la caja. En el código, ambos son nodos de texto renderizados por `Typography`. Pidió el estado vacío descrito en S-112 tanto para este diálogo como para Imagen.
+`npm test -- --run src/features/ocr/OcrDialog.test.tsx`: rojo sobre la base (exit 1, 21 pasan, fallan las vistas previas desde hijo y botón y falta el aviso sin imagen) y verde tras corregir (exit 0, 24 pasan). Typecheck y ESLint dirigido: exit 0.
 
-[T-092](T-092-writing-workspaces-plan.md) quedó MERGED el 2026-11-16 (PR75, `77cb710`); esta tarea está `ready`. Cierre con el gate diario de [TESTING](../TESTING.md#gate-diario); FULL/STARTER: DIFERIDO POR EL DUEÑO. La fuente original de esta planificación es el checkout local con 2a2fc56 y cuatro archivos modificados. Reproducir en la revisión actual de main con evidencia Windows antes de corregir.
+| Causa o evidencia | Ajuste | Comprobación |
+|---|---|---|
+| Recortes de Windows sobre el PNG ficticio con ayuda del dueño, Chrome 157.0.8103.79. Con Ctrl+V, tanto `files` como `items (kind=file)` entregaron `image/png`, 28.349 bytes. En base, foco en Elegir imagen (`target=BUTTON`) o clic en el texto dentro de la caja (`focus=DIV[role=group], target=P`): sin vista previa. | Escucha acotada al diálogo, excluye edición; resuelve imagen por archivo o elemento y normaliza nombres sin extensión. Reutiliza validación y descarte. | Mismo recorte con clic en la caja y tras recuperar el foco de Elegir imagen: vista previa decodificada de 450 × 202 en ambos intentos; sin POST. |
+| El texto de ayuda era seleccionable y no desaparecía al elegir la captura. | Indicación vacía no seleccionable, nombre accesible y ayuda separada. La vista previa ocupa la caja y conserva foco visible. | Cotejo con frontend-design y referencia Imagen sobre diálogo real: escritorio 400 × 768 y móvil emulado 375 × 812, vacíos y con vista previa, una columna sin desborde; botón de 44/48 px. El móvil no enfoca al abrir. |
+| Primera corrida E2E (exit 1) canceló la transferencia del contexto del cliente antes de arrancar el stack; el perfil aislado de Chrome todavía estaba debajo de `client/`. | Cerrar ese Chrome y mover la fixture fuera del contexto del cliente. | Repetición dirigida en curso. |
+
+FULL/STARTER: DIFERIDO POR EL DUEÑO.

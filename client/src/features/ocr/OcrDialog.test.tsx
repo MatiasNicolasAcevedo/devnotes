@@ -138,6 +138,76 @@ describe('Notas · diálogo de captura', () => {
     expect(post).not.toHaveBeenCalled()
   })
 
+  it.each(['hijo', 'botón'] as const)(
+    'previsualiza una captura pegada desde un %s y mantiene la extracción deliberada',
+    async (target) => {
+      const post = vi.fn(() => HttpResponse.json({ text: TEXT }))
+      server.use(mock.post(EXTRACTIONS, post))
+      const view = await notes()
+      const dialog = await openDialog(view)
+      const zone = within(dialog).getByRole('group', { name: 'Zona para pegar una captura' })
+      expect(zone).toHaveFocus()
+      expect(screen.queryByAltText('Vista previa de la captura')).not.toBeInTheDocument()
+      expect(screen.queryByRole('textbox', { name: 'Texto extraído' })).not.toBeInTheDocument()
+      expect(extractButton()).toBeDisabled()
+
+      const hint = within(zone).getByText('Pegá tu imagen acá')
+      await view.user.click(hint)
+      expect(zone).toHaveFocus()
+      const close = within(dialog).getByRole('button', { name: 'Cerrar' })
+      if (target === 'botón') {
+        await view.user.tab({ shift: true })
+        expect(close).toHaveFocus()
+      }
+
+      const unnamed = new File([png], 'image', { type: png.type })
+      fireEvent.paste(target === 'hijo' ? hint : close, {
+        clipboardData: {
+          files: [],
+          items: [
+            { kind: 'string', type: 'text/plain', getAsFile: () => null },
+            { kind: 'file', type: png.type, getAsFile: () => unnamed },
+          ],
+        },
+      })
+      const preview = screen.getByAltText('Vista previa de la captura')
+      expect(preview).toHaveAttribute('src', 'blob:captura')
+      expect(hint).not.toBeInTheDocument()
+      expect(createUrl).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({
+          name: 'captura.png',
+          type: png.type,
+          size: png.size,
+        }),
+      )
+      expect(extractButton()).toBeEnabled()
+      expect(post).not.toHaveBeenCalled()
+    },
+  )
+
+  it('explica el pegado sin imagen o inválido sin reemplazar la captura ni interceptar fuera de OCR', async () => {
+    const view = await notes()
+    const dialog = await openDialog(view)
+    chooseFile(png)
+    const preview = screen.getByAltText('Vista previa de la captura')
+    const choose = within(dialog).getByRole('button', { name: 'Elegir otra imagen' })
+    const paste = (files: File[], types: string[] = []) =>
+      fireEvent.paste(choose, { clipboardData: { files, items: [], types } })
+    paste([], ['text/plain'])
+    expect(screen.getByRole('alert')).toHaveTextContent(/no hay una imagen/i)
+    paste([])
+    expect(screen.getByRole('alert')).toHaveTextContent(/no hay una imagen/i)
+    paste([new File(['fixture'], 'captura.gif', { type: 'image/gif' })])
+    expect(screen.getByRole('alert')).toHaveTextContent(/PNG o JPG/)
+    paste([new File([new Uint8Array(1_000_001)], 'image', { type: 'image/png' })])
+    expect(screen.getByRole('alert')).toHaveTextContent(/hasta 1 MB/)
+    expect(fireEvent.paste(view.trigger, { clipboardData: { files: [jpeg], items: [] } })).toBe(
+      true,
+    )
+    expect(preview).toHaveAttribute('src', 'blob:captura')
+    expect(createUrl).toHaveBeenCalledTimes(1)
+  })
+
   it('enfoca el resultado en escritorio, admite pegar texto y conserva la edición si falla copiar', async () => {
     server.use(mock.post(EXTRACTIONS, () => HttpResponse.json({ text: TEXT })))
     const view = await notes()
@@ -151,6 +221,8 @@ describe('Notas · diálogo de captura', () => {
     result.setSelectionRange(TEXT.length, TEXT.length)
     await view.user.paste('\nNotas de diagnóstico')
     const edited = `${TEXT}\nNotas de diagnóstico`
+    expect(result).toHaveValue(edited)
+    expect(fireEvent.paste(result, { clipboardData: { files: [jpeg], items: [] } })).toBe(true)
     expect(result).toHaveValue(edited)
     expect(createUrl).toHaveBeenCalledTimes(1)
 

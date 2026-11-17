@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-073](tasks/T-073-ocr-windows-paste.md) · Pegar recortes de Windows en OCR · [S-112](specs/S-112-screenshot-ocr.md) |
-| Estado | `ready` |
-| Acción actual | Frontera implementa T-073 en sesión nueva |
-| Rama / PR | `codex/t-073-ocr-windows-paste-fix`, por crear desde `main` · sin PR |
+| Estado | `in_progress` |
+| Acción actual | Frontera implementa y verifica T-073 |
+| Rama / PR | `codex/t-073-ocr-windows-paste-fix` · sin PR |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 

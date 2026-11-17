@@ -29,6 +29,33 @@ interface Result {
 type Discard = { kind: 'close' } | { kind: 'replace'; file: File }
 type SelectionFeedback = { kind: 'error' | 'notice'; message: string }
 
+function clipboardScreenshot(data: DataTransfer | null): File | undefined {
+  if (!data) return undefined
+  const files = Array.from(data.files)
+  let fallback: File | undefined
+  function supported(file: File) {
+    const extension = file.type === 'image/png' ? 'png' : file.type === 'image/jpeg' ? 'jpg' : null
+    if (!extension) {
+      fallback ??= file
+      return undefined
+    }
+    if (/\.[^.]+$/.test(file.name)) return file
+    return new File([file], `captura.${extension}`, { type: file.type })
+  }
+  for (const file of files) {
+    const image = supported(file)
+    if (image) return image
+  }
+  for (const item of Array.from(data.items ?? [])) {
+    const file = item.kind === 'file' ? item.getAsFile() : null
+    if (file) {
+      const image = supported(file)
+      if (image) return image
+    }
+  }
+  return fallback
+}
+
 export function OcrDialog({
   space,
   csrfReady,
@@ -41,6 +68,7 @@ export function OcrDialog({
   const mobile = useMediaQuery('(pointer: coarse)', { noSsr: true })
   const titleId = useId()
   const previewId = useId()
+  const pasteHelpId = useId()
   const discardId = useId()
   const warningId = useId()
   const resultId = useId()
@@ -136,13 +164,25 @@ export function OcrDialog({
   )
 
   function paste(event: ClipboardEvent<HTMLDivElement>) {
-    if (event.target !== event.currentTarget) return
-    const file = Array.from(event.clipboardData.files).find((item) =>
-      item.type.startsWith('image/'),
-    )
+    const { target, currentTarget } = event
+    if (
+      event.defaultPrevented ||
+      !(target instanceof Element) ||
+      !currentTarget.contains(target) ||
+      target.closest('textarea, input') ||
+      (target instanceof HTMLElement && target.isContentEditable)
+    ) {
+      return
+    }
+    event.preventDefault()
+    const file = clipboardScreenshot(event.clipboardData)
     if (file) {
-      event.preventDefault()
       choose(file)
+    } else {
+      setSelectionFeedback({
+        kind: 'error',
+        message: 'No hay una imagen en el portapapeles. Copiá la captura o usá Elegir imagen.',
+      })
     }
   }
 
@@ -206,6 +246,7 @@ export function OcrDialog({
         maxWidth={false}
         slotProps={{
           paper: {
+            onPaste: paste,
             sx: {
               width: mobile ? '100%' : 'min(1120px, calc(100% - 24px))',
               maxWidth: 'none',
@@ -248,16 +289,16 @@ export function OcrDialog({
                 className="ocr-paste-zone"
                 role="group"
                 aria-label="Zona para pegar una captura"
+                aria-describedby={pasteHelpId}
                 tabIndex={0}
-                onPaste={paste}
+                onClick={(event) => event.currentTarget.focus({ preventScroll: true })}
                 ref={focusPasteZone}
+                data-collapsed={hasResult && !previewExpanded ? 'true' : undefined}
                 sx={{
                   bgcolor: 'background.default',
-                  border: '1px dashed',
+                  border: screenshot ? '1px solid' : '1px dashed',
                   borderColor: 'divider',
                   borderRadius: 1,
-                  px: 1.5,
-                  py: 1,
                   '&:focus': {
                     outline: '2px solid',
                     outlineColor: 'primary.main',
@@ -265,26 +306,22 @@ export function OcrDialog({
                   },
                 }}
               >
-                {!mobile && <Typography variant="body2">Pegá una captura (Ctrl+V)</Typography>}
-                <Typography color="text.secondary" variant="body2">
-                  PNG o JPG, hasta 1 MB
-                </Typography>
+                {screenshot ? (
+                  <div id={previewId} className="ocr-preview">
+                    <img src={screenshot.url} alt="Vista previa de la captura" />
+                  </div>
+                ) : (
+                  <Typography
+                    aria-hidden="true"
+                    className="ocr-paste-hint"
+                    color="text.secondary"
+                    variant="body2"
+                    sx={{ px: 1.5, py: 1 }}
+                  >
+                    Pegá tu imagen acá
+                  </Typography>
+                )}
               </Box>
-              {screenshot && (
-                <Box
-                  id={previewId}
-                  className="ocr-preview"
-                  data-collapsed={hasResult && !previewExpanded ? 'true' : undefined}
-                  sx={{
-                    bgcolor: 'background.default',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    borderRadius: 1,
-                  }}
-                >
-                  <img src={screenshot.url} alt="Vista previa de la captura" />
-                </Box>
-              )}
               <div className="ocr-image-actions">
                 {hasResult && (
                   <Button
@@ -318,6 +355,9 @@ export function OcrDialog({
                   }}
                 />
               </div>
+              <Typography id={pasteHelpId} color="text.secondary" variant="body2">
+                PNG o JPG, hasta 1 MB{!mobile && ' · Ctrl+V para pegar'}
+              </Typography>
               {selectionFeedback?.kind === 'error' && (
                 <Alert severity="error">{selectionFeedback.message}</Alert>
               )}

@@ -18,13 +18,20 @@
 }
 
 .ocr-result[data-empty='true'],
-.ocr-preview[data-collapsed='true'] {
+.ocr-paste-zone[data-collapsed='true'] {
   display: none;
 }
 
-.ocr-paste-zone,
-.ocr-preview {
+.ocr-paste-zone {
   width: 100%;
+}
+
+.ocr-paste-hint {
+  display: grid;
+  align-content: center;
+  justify-items: start;
+  min-height: 64px;
+  user-select: none;
 }
 
 .ocr-preview img {
@@ -75,7 +82,7 @@
     display: grid;
   }
 
-  .ocr-preview[data-collapsed='true'] {
+  .ocr-paste-zone[data-collapsed='true'] {
     display: block;
   }
 
