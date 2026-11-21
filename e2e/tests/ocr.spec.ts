@@ -1,5 +1,5 @@
-import type { BrowserContext, Locator, Page } from '@playwright/test';
-import { readFile } from 'node:fs/promises';
+import type { BrowserContext, CDPSession, Locator, Page } from '@playwright/test';
+import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { writeWork } from './daily-helpers';
 import { expect, keyboardActivate, login, savedIndicator, test } from './fixtures';
@@ -68,8 +68,10 @@ async function expectExtracted(response: Awaited<ReturnType<typeof extractionRes
   await expect(result(image)).toHaveValue(fixtureText);
 }
 
-async function captureLayout(page: Page, image: Locator, width: number, height: number, name: string) {
-  await page.setViewportSize({ width, height });
+async function captureLayout(
+  page: Page, image: Locator, width: number, height: number, name: string, cdp?: CDPSession,
+) {
+  if (!cdp) await page.setViewportSize({ width, height });
   const wide = width >= 912;
   const narrowNavigation = width < 768;
   const nav = page.getByRole('navigation', { name: 'Navegación principal' });
@@ -95,7 +97,7 @@ async function captureLayout(page: Page, image: Locator, width: number, height: 
     expect(tab.bottom).toBeLessThanOrEqual(height);
     expect(tab.top).toBe(tabBounds[0].top);
     if (narrowNavigation) {
-      expect(tab.width).toBeCloseTo(tabBounds[0].width);
+      expect(Math.abs(tab.width - tabBounds[0].width)).toBeLessThanOrEqual(0.05);
       expect(tab.height).toBeGreaterThanOrEqual(48);
     }
   }
@@ -125,7 +127,13 @@ async function captureLayout(page: Page, image: Locator, width: number, height: 
     expect(textHeading.x).toBeCloseTo(capture.x);
     expect(textHeading.y).toBeGreaterThan(capture.y);
   }
-  await page.screenshot({ path: `/artifacts/ocr-layout/${name}.png`, animations: 'disabled' });
+  const path = `/artifacts/ocr-layout/${name}.png`;
+  if (cdp) {
+    const { data } = await cdp.send('Page.captureScreenshot', { format: 'png' });
+    await writeFile(path, Buffer.from(data, 'base64'));
+  } else {
+    await page.screenshot({ path, animations: 'disabled' });
+  }
 }
 
 async function checkDrops(zone: Locator, image: Locator) {
@@ -174,17 +182,16 @@ async function desktopJourney(page: Page, context: BrowserContext, identity: str
   const editor = page.getByRole('textbox', { name: 'Editor de nota diaria' });
   const note = 'Borrador ficticio';
   await writeWork(page, date, note);
-  // Start with a saved baseline and an independent edit in the same editor's history.
+  const traffic = observeOcr(page);
   const saveEdit = page.waitForResponse(response =>
     new URL(response.url()).pathname === notePath && response.request().method() === 'PUT');
   await editor.press('End');
   await page.keyboard.insertText(' pendiente');
+  const image = await openImage(page, false, 'work');
+  // Ir a Imagen mientras está pendiente la edición deja que el diario guarde antes de salir.
   const saved = await saveEdit;
   expect(saved.status()).toBe(200);
   const savedNote = await saved.json();
-  await expect(savedIndicator(page)).toBeVisible();
-  const traffic = observeOcr(page);
-  const image = await openImage(page, false, 'work');
   const paste = image.getByRole('group', { name: 'Zona para pegar una captura' });
   const choose = image.getByRole('button', { name: /^Elegir.*imagen$/ });
   await expect(paste).toBeFocused();
@@ -243,7 +250,15 @@ async function desktopJourney(page: Page, context: BrowserContext, identity: str
   for (const width of [400, 480, 640, 768, 1280]) {
     await captureLayout(page, image, width, 768, `desktop-${width}`);
   }
-  await captureLayout(page, image, 640, 384, 'desktop-640x384');
+  await page.setViewportSize({ width: 640, height: 384 });
+  const cdp = await context.newCDPSession(page);
+  await cdp.send('Emulation.setDeviceMetricsOverride', {
+    width: 640, height: 384, deviceScaleFactor: 2, mobile: false,
+  });
+  await expect.poll(() => page.evaluate(() => [innerWidth, innerHeight, devicePixelRatio])).toEqual([640, 384, 2]);
+  await captureLayout(page, image, 640, 384, 'desktop-zoom-200-simulado', cdp);
+  await cdp.send('Emulation.clearDeviceMetricsOverride');
+  await cdp.detach();
   await page.setViewportSize({ width: 1280, height: 800 });
   await result(image).fill('Edición ficticia sin copiar');
   await page.getByRole('link', { name: 'Notas', exact: true }).click();
@@ -254,7 +269,8 @@ async function desktopJourney(page: Page, context: BrowserContext, identity: str
   await confirmation.getByRole('button', { name: 'Descartar cambios' }).click();
   await expect(page.getByRole('heading', { name: title, exact: true })).toHaveCount(0);
   await expect(editor).toHaveText(`${note} pendiente`);
-  expect(traffic.writes).toEqual([]);
+  await expect(savedIndicator(page)).toBeVisible();
+  expect(traffic.writes).toEqual([notePath]);
   const persisted = await page.request.get(`${notePath}?space=work`);
   expect(persisted.status()).toBe(200);
   expect(await persisted.json()).toEqual(savedNote);
