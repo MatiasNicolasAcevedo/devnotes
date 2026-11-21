@@ -9,7 +9,7 @@ depends_on: [T-073]
 branch: codex/t-074-image-navigation
 role: implementer
 executor: frontier
-pr: null
+pr: 77
 ---
 
 # T-074 · Imagen en la navegación principal
@@ -34,10 +34,25 @@ Entrar a **Imagen** directamente desde la barra, pegar o elegir y extraer texto 
 
 ## Checkpoint vigente
 
-2026-11-21. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell y Git/gh. Alcance: ruta privada, navegación y captura local; API, permisos y persistencia conservan su contrato.
+2026-11-21. Frontera implementer en Codex Desktop, GPT-6.2 Sol con esfuerzo alto, PowerShell, Git/gh, Git Bash, Node 24.21 y Docker Desktop. Impacto: ruta privada `/image`, cinco destinos principales, selección y previsualización local con teclado, portapapeles y arrastre. Se reutilizaron la sesión, el espacio, el guardado de Notas y la API de OCR. La extracción inicia al pulsar **Extraer texto**. No se incorpora almacenamiento de capturas o resultados.
 
-`gh pr view 76 --repo MatiasNicolasAcevedo/devnotes`, `git fetch origin main`, `git merge-base --is-ancestor 74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30 origin/main` y `gh pr list --repo MatiasNicolasAcevedo/devnotes --state open`: exit 0. Base `74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30`, PR #76 mergeado y cero PR abiertos.
+[PR #77](https://github.com/MatiasNicolasAcevedo/devnotes/pull/77) contra `main@74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30`. Fuentes probadas: `3fbf34989ac9f3259751f23ef16db733791d3aa4`. `gh pr view 77 --repo MatiasNicolasAcevedo/devnotes` (0) confirmó ese HEAD y [verify-required](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/44955832058/job/137003605434) verde. `gh pr view 76 --repo MatiasNicolasAcevedo/devnotes`, `git fetch origin main`, `git merge-base --is-ancestor 74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30 origin/main` y `gh pr list --repo MatiasNicolasAcevedo/devnotes --state open`: exit 0. PR #76 mergeado contra `main` y cero PR abiertos al partir. Primer commit de la rama `7e65e77`: T-073 en `done`, T-074 en `in_progress`.
 
-Boceto del 2026-11-16 verificado en Chromium 157, cinco destinos en una sola fila a 320, 360, 375 y 390 CSS px, con 64, 72, 75 y 78 CSS px por destino respectivamente y 48 CSS px de alto. «Referencias» se mantuvo en una línea y no hubo scroll horizontal. Cotejo de escritorio del boceto a 768 y 1280 CSS px. Es evidencia de diseño estático. Validar el shell real con selector de espacio, estado, cuenta, fuentes y áreas seguras antes del cierre.
+- Cliente: `npm test -- --run src/app/AppShell.test.tsx src/app/AppRoutes.test.tsx src/features/ocr/OcrDialog.test.tsx` (0, 52/52), `npm run typecheck` y ESLint dirigido (0). Se conservan los casos de pegado sin extensión, validación, foco, texto editable, cuota e invalidación de solicitudes tardías. Se añadieron permisos denegados de Pegar y confirmación de salida, cambio de espacio y cierre voluntario de sesión.
+- `STARTER_E2E_PROJECT=starter-e2e-t074-desktop bash scripts/e2e.sh --grep 'screenshot OCR:' --project desktop` (0, 1/1). Chromium prueba Pegar por gesto, Ctrl+V desde un botón, arrastre válido, múltiples archivos, URL, texto, formato y tamaño inválidos. El aviso precede al POST. Cubre extracción real a través del proxy, API propia, PostgreSQL 18 y OIDC local con doble externo OCR, copia editada, 429, vuelta a Notas y guardado del borrador en Trabajo.
+- `STARTER_E2E_PROJECT=starter-e2e-t074-mobile bash scripts/e2e.sh --grep 'screenshot OCR:' --project mobile` (0, 1/1). Selector JPEG, extracción deliberada y edición/copia en Personal. Cotejo de la barra y áreas seguras con 320/360/375/390 CSS px y 640 × 280 CSS px. Se verificaron cinco celdas de igual ancho, objetivo táctil de 48 CSS px, selección ámbar y ausencia de desborde horizontal.
+- Cotejo frontend-design en el shell ejecutado con fixtures: vacía y enfocada en Chrome Windows 158.0.8127.36, compacta a 768 CSS px y dos columnas a 1280 CSS px en Chromium, más los anchos móviles y zoom 200 % simulado de escritorio. Se verificaron selector de espacio, estado, cuenta y foco. Los E2E aprobaron readiness, saneado y comprobación posterior de 0 contenedores, redes y volúmenes por cada label.
+- `node scripts/docs-check.mjs` y `git diff --check origin/main HEAD` (0). `bash scripts/verify.sh --policy origin/main` (0): `APPLICATION / FULL`, clasificación informativa.
+
+| Causa o evidencia | Ajuste | Comprobación |
+|---|---|---|
+| Primer build (exit 2) y ambos scripts E2E (exit 1) rechazaron `exact` de Playwright en consultas de Testing Library. ESLint marcó un parámetro sin uso en el contexto de edición. | Consultas de rol con el matcher de Testing Library y firma tipada del contexto. | Typecheck, ESLint y build de los proyectos efímeros (0). |
+| Primer E2E móvil con stack (exit 1) detectó redondeo subpíxel entre celdas con insets, tras pasar los cuatro anchos móviles. | Tolerancia de 0,05 CSS px para comparar el ancho y conservar la verificación de 48 CSS px de alto. | Proyecto móvil (0); escritorio repetido (0), incluye guardado al navegar y zoom simulado. |
+
+**Pendiente de aceptación**: probar un archivo soltado desde Explorador y un recorte real de Windows al volver a Chrome. El stack propio `starter-e2e-t074-windows` arrancó con cuenta y proveedor ficticios, y la pantalla vacía se comprobó en Chrome. La skill de control de Windows limita el arrastre a una ventana y no expuso la superposición de selección de Recortes. La interacción de Windows se detuvo con Escape antes de observar cualquiera de los dos gestos. Los eventos de arrastre/pegado de Playwright se verificaron por separado. El cleanup del proyecto Windows (exit 0) dejó 0 contenedores, redes y volúmenes por label.
+
+Retoma local desde este worktree: `& .orchestrator/t074-windows/stack.ps1 up` y `node .orchestrator/t074-windows/check.mjs`. Usar el PNG ficticio local `.orchestrator/t074-windows/T074-captura-ficticia.png`. El ensayo solo registra metadatos de drop/paste, dimensiones de vista previa y conteo de POST. Cerrar el Chrome aislado al terminar y limpiar con `& .orchestrator/t074-windows/stack.ps1 down`; comprobar labels exactos. Estos archivos de trabajo son locales e ignorados.
+
+FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente.
 
 La [biblioteca de Imagen](T-075-image-text-library.md) añade guardado y borrado más adelante.
