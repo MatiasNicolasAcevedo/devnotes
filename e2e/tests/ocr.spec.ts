@@ -136,6 +136,28 @@ async function captureLayout(
   }
 }
 
+async function dispatchDrop(
+  zone: Locator, kind: string, bytes: number[], extra?: { type: string; value: string },
+) {
+  return zone.evaluate((node, { kind, bytes, extra }) => {
+    const dataTransfer = new DataTransfer();
+    if (kind === 'url') dataTransfer.setData('text/uri-list', 'https://fixture.invalid/demo.png');
+    else if (kind === 'text') dataTransfer.setData('text/plain', 'Texto ficticio');
+    else if (kind === 'invalid') dataTransfer.items.add(new File(['fixture'], 'captura.gif', { type: 'image/gif' }));
+    else if (kind === 'large') dataTransfer.items.add(new File([new Uint8Array(1_000_001)], 'grande.png', { type: 'image/png' }));
+    else {
+      dataTransfer.items.add(new File([new Uint8Array(bytes)], 'terminal.png', { type: 'image/png' }));
+      if (kind === 'multiple') dataTransfer.items.add(new File(['fixture'], 'otra.png', { type: 'image/png' }));
+    }
+    if (extra) dataTransfer.items.add(extra.value, extra.type);
+    const dragover = new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer });
+    node.dispatchEvent(dragover);
+    const drop = new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer });
+    node.dispatchEvent(drop);
+    return dragover.defaultPrevented && drop.defaultPrevented;
+  }, { kind, bytes, extra });
+}
+
 async function checkDrops(zone: Locator, image: Locator) {
   const bytes = [...await readFile(fixture('terminal.png'))];
   const original = image.getByAltText('Vista previa de la captura');
@@ -148,22 +170,7 @@ async function checkDrops(zone: Locator, image: Locator) {
     ['large', 'Elegí una imagen de hasta 1 MB.'],
     ['valid', null],
   ] as const) {
-    const prevented = await zone.evaluate((node, { kind, bytes }) => {
-      const dataTransfer = new DataTransfer();
-      if (kind === 'url') dataTransfer.setData('text/uri-list', 'https://fixture.invalid/demo.png');
-      else if (kind === 'text') dataTransfer.setData('text/plain', 'Texto ficticio');
-      else if (kind === 'invalid') dataTransfer.items.add(new File(['fixture'], 'captura.gif', { type: 'image/gif' }));
-      else if (kind === 'large') dataTransfer.items.add(new File([new Uint8Array(1_000_001)], 'grande.png', { type: 'image/png' }));
-      else {
-        dataTransfer.items.add(new File([new Uint8Array(bytes)], 'terminal.png', { type: 'image/png' }));
-        if (kind === 'multiple') dataTransfer.items.add(new File(['fixture'], 'otra.png', { type: 'image/png' }));
-      }
-      const enter = new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer });
-      node.dispatchEvent(enter);
-      const drop = new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer });
-      node.dispatchEvent(drop);
-      return enter.defaultPrevented && drop.defaultPrevented;
-    }, { kind, bytes });
+    const prevented = await dispatchDrop(zone, kind, bytes);
     expect(prevented).toBe(true);
     if (message) {
       await expect(image.getByRole('alert')).toHaveText(message);
@@ -351,3 +358,36 @@ test('screenshot OCR: extract through the proxy, edit and return to the daily no
 }) => {
   await (isMobile ? mobileJourney : desktopJourney)(page, context, identity);
 });
+
+for (const extra of [
+  { type: 'text/uri-list', value: 'https://fixture.invalid/demo.png' },
+  { type: 'text/plain', value: 'Texto ficticio' },
+]) {
+  test(`screenshot OCR: reject a mixed PNG drop with ${extra.type}`, async ({
+    page, identity, isMobile,
+  }) => {
+    test.skip(isMobile, 'Desktop file drag and drop');
+    await login(page, identity);
+    const image = await openImage(page, false, 'work');
+    await image.getByLabel('Archivo de la captura').setInputFiles(fixture('terminal.jpg'));
+    await expectPreview(image);
+
+    const extraction = extractionResponse(page, 'work');
+    await image.getByRole('button', { name: 'Extraer texto', exact: true }).click();
+    await expectExtracted(await extraction, image);
+
+    const traffic = observeOcr(page);
+    const previousLocation = page.url();
+    const preview = image.getByRole('img', { name: 'Vista previa de la captura' });
+    const previousSource = await preview.evaluate((element: HTMLImageElement) => element.src);
+    const zone = image.getByRole('group', { name: 'Zona para pegar una captura' });
+    const bytes = [...await readFile(fixture('terminal.png'))];
+
+    expect(await dispatchDrop(zone, 'valid', bytes, extra)).toBe(true);
+    await expect(image.getByRole('alert')).toHaveText('Soltá un solo archivo PNG o JPG.');
+    await expect(preview).toHaveAttribute('src', previousSource);
+    await expect(result(image)).toHaveValue(fixtureText);
+    await expect(page).toHaveURL(previousLocation);
+    expect(traffic.extractions).toEqual([]);
+  });
+}

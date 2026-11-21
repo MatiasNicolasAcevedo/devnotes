@@ -253,8 +253,10 @@ export function ImageWorkspace({ space, canExtract }: { space: Space; canExtract
     event.preventDefault()
     setDragging(false)
     clipboardRead.current += 1
-    const [file, extra] = Array.from(event.dataTransfer.files)
-    if (!file || extra) {
+    const { files, items } = event.dataTransfer
+    const [file, extra] = Array.from(files)
+    const hasStringItem = Array.from(items).some((item) => item.kind === 'string')
+    if (!file || extra || hasStringItem) {
       setSelectionFeedback({ kind: 'error', message: 'Soltá un solo archivo PNG o JPG.' })
       return
     }
