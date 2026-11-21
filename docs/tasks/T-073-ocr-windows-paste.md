@@ -27,7 +27,7 @@ Al volver al navegador tras usar Recortes de Windows, pegar una captura ficticia
 
 ## Leer antes
 
-[Observación de T-071](T-071-ocr-first-real-test.md#conciliación-y-observación-posterior-en-render) · [S-112](../specs/S-112-screenshot-ocr.md#seguimiento--imagen-como-destino-principal) · [OcrDialog](../../client/src/features/ocr/OcrDialog.tsx) · [Prueba Chromium](../../e2e/tests/ocr.spec.ts) · [Recortes de Windows](https://support.microsoft.com/en-us/windows/apps/use-snipping-tool-to-capture-screenshots).
+[Observación de T-071](T-071-ocr-first-real-test.md#conciliación-y-observación-posterior-en-render) · [S-112](../specs/S-112-screenshot-ocr.md#seguimiento--imagen-como-destino-principal) · [OcrDialog](https://github.com/MatiasNicolasAcevedo/devnotes/blob/74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30/client/src/features/ocr/OcrDialog.tsx) · [Prueba Chromium](../../e2e/tests/ocr.spec.ts) · [Recortes de Windows](https://support.microsoft.com/en-us/windows/apps/use-snipping-tool-to-capture-screenshots).
 
 ## Aceptación y pruebas
 

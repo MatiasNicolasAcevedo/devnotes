@@ -1,6 +1,6 @@
-.ocr-dialog-content {
+.ocr-workspace {
   container-type: inline-size;
-  min-height: 0;
+  min-width: 0;
 }
 
 .ocr-panes,
@@ -17,20 +17,23 @@
   justify-items: start;
 }
 
-.ocr-result[data-empty='true'],
 .ocr-paste-zone[data-collapsed='true'] {
   display: none;
 }
 
-.ocr-paste-zone {
+.ocr-paste-zone,
+.ocr-result-placeholder {
   width: 100%;
 }
 
-.ocr-paste-hint {
+.ocr-paste-hint,
+.ocr-result-placeholder {
   display: grid;
-  align-content: center;
-  justify-items: start;
-  min-height: 64px;
+  place-content: center;
+  min-height: 136px;
+}
+
+.ocr-paste-hint {
   user-select: none;
 }
 
@@ -47,39 +50,10 @@
   gap: 8px;
 }
 
-.ocr-feedback {
-  display: grid;
-  gap: 8px;
-}
-
-.ocr-feedback:not(:has(:not(:empty))) {
-  display: none;
-}
-
-.ocr-feedback,
-.ocr-actions {
-  margin-top: 16px;
-}
-
-.ocr-actions.MuiDialogActions-root {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px 16px;
-}
-
-.ocr-actions p {
-  flex: 1 1 20rem;
-}
-
 @container (min-width: 880px) {
   .ocr-panes {
-    grid-template-columns: minmax(0, 1fr) minmax(400px, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 24px;
-  }
-
-  .ocr-result[data-empty='true'] {
-    display: grid;
   }
 
   .ocr-paste-zone[data-collapsed='true'] {

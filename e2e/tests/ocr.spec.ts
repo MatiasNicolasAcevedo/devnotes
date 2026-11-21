@@ -1,10 +1,10 @@
-import type { BrowserContext, CDPSession, Locator, Page } from '@playwright/test';
-import { readFile, writeFile } from 'node:fs/promises';
+import type { BrowserContext, Locator, Page } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { writeWork } from './daily-helpers';
 import { expect, keyboardActivate, login, savedIndicator, test } from './fixtures';
 
-const title = 'Copiar texto de una captura';
+const title = 'Imagen a texto';
 const fixtureText = 'T-070\nERR_CONNECTION_RESET\n/src/api/fixture.ts';
 const correctedText = 'T-070 corregida\nERR_CONNECTION_RESET\n/src/api/fixture.ts';
 const date = '2026-11-18';
@@ -15,34 +15,20 @@ function fixture(name: string) {
   return fileURLToPath(new URL(`../fixtures/ocr/${name}`, import.meta.url));
 }
 
-function tools(page: Page) {
-  return page.getByRole('button', { name: 'Herramientas', exact: true });
+function result(image: Locator) {
+  return image.getByRole('textbox', { name: 'Texto extraído' });
 }
 
-function result(dialog: Locator) {
-  return dialog.getByRole('textbox', { name: 'Texto extraído' });
-}
-
-async function openOcr(page: Page, mobile: boolean) {
-  if (mobile) {
-    await tools(page).tap();
-  } else {
-    await keyboardActivate(page, 'button', 'Herramientas');
-  }
-  const item = page.getByRole('menuitem', { name: title, exact: true });
-  await expect(item).toBeEnabled();
-  if (mobile) {
-    await item.tap();
-  } else {
-    if (!await item.evaluate(node => node === document.activeElement)) {
-      await page.keyboard.press('ArrowDown');
-    }
-    await expect(item).toBeFocused();
-    await page.keyboard.press('Enter');
-  }
-  const dialog = page.getByRole('dialog', { name: title, exact: true });
-  await expect(dialog).toBeVisible();
-  return dialog;
+async function openImage(page: Page, mobile: boolean, space: string) {
+  await expect(page.getByRole('button', { name: 'Herramientas', exact: true })).toHaveCount(0);
+  const link = page.getByRole('link', { name: 'Imagen', exact: true });
+  await expect(link).toHaveAttribute('href', `/image?space=${space}`);
+  if (mobile) await link.tap();
+  else await keyboardActivate(page, 'link', 'Imagen');
+  await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
+  await expect(link).toHaveAttribute('aria-current', 'page');
+  await expect(page.getByRole('button', { name: `Espacio: ${space === 'work' ? 'Trabajo' : 'Personal'}` })).toBeVisible();
+  return page.getByRole('main');
 }
 
 function observeOcr(page: Page) {
@@ -61,11 +47,11 @@ function observeOcr(page: Page) {
   return { extractions, writes };
 }
 
-async function expectPreview(dialog: Locator) {
-  const preview = dialog.getByRole('img', { name: 'Vista previa de la captura' });
+async function expectPreview(image: Locator) {
+  const preview = image.getByRole('img', { name: 'Vista previa de la captura' });
   await expect(preview).toBeVisible();
   await expect.poll(() => preview.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBe(440);
-  await expect(dialog.getByText('Se enviará la imagen completa a OCR.space.')).toBeVisible();
+  await expect(image.getByText('Se enviará la imagen completa a OCR.space.')).toBeVisible();
 }
 
 function extractionResponse(page: Page, space: string) {
@@ -76,36 +62,59 @@ function extractionResponse(page: Page, space: string) {
   });
 }
 
-async function expectExtracted(response: Awaited<ReturnType<typeof extractionResponse>>, dialog: Locator) {
+async function expectExtracted(response: Awaited<ReturnType<typeof extractionResponse>>, image: Locator) {
   expect(response.status()).toBe(200);
   expect(await response.json()).toEqual({ text: fixtureText });
-  await expect(result(dialog)).toHaveValue(fixtureText);
+  await expect(result(image)).toHaveValue(fixtureText);
 }
 
-async function captureLayout(
-  dialog: Locator, width: number, height: number, mobile: boolean, name: string, cdp?: CDPSession,
-) {
-  const wide = width === 1280;
-  const field = result(dialog);
-  const preview = dialog.getByAltText('Vista previa de la captura');
-  const close = dialog.getByRole('button', { name: 'Cerrar', exact: true });
-  const copy = dialog.getByRole('button', { name: 'Copiar texto', exact: true });
-  await expect.poll(() => dialog.evaluate(element => {
-    const body = element.querySelector('.ocr-dialog-content')!;
-    const bounds = element.getBoundingClientRect();
+async function captureLayout(page: Page, image: Locator, width: number, height: number, name: string) {
+  await page.setViewportSize({ width, height });
+  const wide = width >= 912;
+  const narrowNavigation = width < 768;
+  const nav = page.getByRole('navigation', { name: 'Navegación principal' });
+  const links = nav.getByRole('link');
+  await expect(links).toHaveText([
+    ...(narrowNavigation ? ['Notas', 'Voz'] : ['Voz', 'Notas']),
+    'Referencias', 'Imagen', 'Historial',
+  ]);
+  await expect(page.getByRole('link', { name: 'Imagen', exact: true })).toHaveCSS('color', 'rgb(255, 183, 77)');
+  await expect.poll(() => page.evaluate(() => {
+    const main = document.querySelector('main')!;
+    const banner = document.querySelector('header')!;
     return document.documentElement.scrollWidth <= innerWidth &&
-      bounds.left >= 0 && bounds.right <= innerWidth &&
-      bounds.top >= 0 && bounds.bottom <= innerHeight &&
-      body.scrollWidth <= body.clientWidth;
+      main.scrollWidth <= main.clientWidth && banner.scrollWidth <= banner.clientWidth;
   })).toBe(true);
-  const bounds = (await dialog.boundingBox())!;
-  const capture = (await dialog.getByRole('heading', { name: 'Captura', exact: true }).boundingBox())!;
-  const textHeading = (await dialog.getByText('Texto extraído', { exact: true }).boundingBox())!;
-  expect(bounds.width).toBe(mobile ? width : Math.min(1120, width - 24));
-  if (mobile) expect(bounds.height).toBe(height);
-  expect((await close.boundingBox())!.height).toBeGreaterThanOrEqual(mobile ? 48 : 44);
-  expect((await copy.boundingBox())!.height).toBeGreaterThanOrEqual(mobile ? 48 : 44);
+  const tabBounds = await links.evaluateAll(elements => elements.map(element => {
+    const { width, height, top, bottom, left, right } = element.getBoundingClientRect();
+    return { width, height, top, bottom, left, right };
+  }));
+  for (const tab of tabBounds) {
+    expect(tab.left).toBeGreaterThanOrEqual(0);
+    expect(tab.right).toBeLessThanOrEqual(width);
+    expect(tab.bottom).toBeLessThanOrEqual(height);
+    expect(tab.top).toBe(tabBounds[0].top);
+    if (narrowNavigation) {
+      expect(tab.width).toBeCloseTo(tabBounds[0].width);
+      expect(tab.height).toBeGreaterThanOrEqual(48);
+    }
+  }
+  if (narrowNavigation) {
+    const reference = links.filter({ hasText: 'Referencias' });
+    expect(await reference.evaluate(element => {
+      const label = [...element.childNodes].find(node => node.nodeType === Node.TEXT_NODE)!;
+      const range = document.createRange();
+      range.selectNodeContents(label);
+      return range.getClientRects().length;
+    })).toBe(1);
+  }
+  const field = result(image);
+  const preview = image.getByAltText('Vista previa de la captura');
+  const copy = image.getByRole('button', { name: 'Copiar texto', exact: true });
+  expect((await copy.boundingBox())!.height).toBeGreaterThanOrEqual(width < 768 ? 48 : 44);
   await expect(field).toHaveCSS('font-size', '16px');
+  const capture = (await image.getByRole('heading', { name: 'Captura', exact: true }).boundingBox())!;
+  const textHeading = (await image.getByText('Texto extraído', { exact: true }).boundingBox())!;
   if (wide) {
     await expect(preview).toBeVisible();
     expect(textHeading.x).toBeGreaterThan(capture.x);
@@ -116,17 +125,45 @@ async function captureLayout(
     expect(textHeading.x).toBeCloseTo(capture.x);
     expect(textHeading.y).toBeGreaterThan(capture.y);
   }
-  // Only the known dialog is captured. Its contents are the synthetic image and text.
-  const path = `/artifacts/ocr-layout/${name}.png`;
-  if (cdp) {
-    // The Playwright screenshot helper can restore its own viewport during a CDP metrics override.
-    const { data } = await cdp.send('Page.captureScreenshot', {
-      format: 'png', clip: { ...bounds, scale: 1 },
-    });
-    await writeFile(path, Buffer.from(data, 'base64'));
-  } else {
-    await dialog.screenshot({ path, animations: 'disabled' });
+  await page.screenshot({ path: `/artifacts/ocr-layout/${name}.png`, animations: 'disabled' });
+}
+
+async function checkDrops(zone: Locator, image: Locator) {
+  const bytes = [...await readFile(fixture('terminal.png'))];
+  const original = image.getByAltText('Vista previa de la captura');
+  const previousUrl = await original.getAttribute('src');
+  for (const [kind, message] of [
+    ['multiple', 'Soltá un solo archivo PNG o JPG.'],
+    ['url', 'Soltá un solo archivo PNG o JPG.'],
+    ['text', 'Soltá un solo archivo PNG o JPG.'],
+    ['invalid', 'Elegí una imagen PNG o JPG.'],
+    ['large', 'Elegí una imagen de hasta 1 MB.'],
+    ['valid', null],
+  ] as const) {
+    const prevented = await zone.evaluate((node, { kind, bytes }) => {
+      const dataTransfer = new DataTransfer();
+      if (kind === 'url') dataTransfer.setData('text/uri-list', 'https://fixture.invalid/demo.png');
+      else if (kind === 'text') dataTransfer.setData('text/plain', 'Texto ficticio');
+      else if (kind === 'invalid') dataTransfer.items.add(new File(['fixture'], 'captura.gif', { type: 'image/gif' }));
+      else if (kind === 'large') dataTransfer.items.add(new File([new Uint8Array(1_000_001)], 'grande.png', { type: 'image/png' }));
+      else {
+        dataTransfer.items.add(new File([new Uint8Array(bytes)], 'terminal.png', { type: 'image/png' }));
+        if (kind === 'multiple') dataTransfer.items.add(new File(['fixture'], 'otra.png', { type: 'image/png' }));
+      }
+      const enter = new DragEvent('dragover', { bubbles: true, cancelable: true, dataTransfer });
+      node.dispatchEvent(enter);
+      const drop = new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer });
+      node.dispatchEvent(drop);
+      return enter.defaultPrevented && drop.defaultPrevented;
+    }, { kind, bytes });
+    expect(prevented).toBe(true);
+    if (message) {
+      await expect(image.getByRole('alert')).toHaveText(message);
+      await expect(original).toHaveAttribute('src', previousUrl!);
+    }
   }
+  await expect(original).not.toHaveAttribute('src', previousUrl!);
+  await expect(image.getByRole('alert')).toHaveCount(0);
 }
 
 async function desktopJourney(page: Page, context: BrowserContext, identity: string) {
@@ -146,23 +183,14 @@ async function desktopJourney(page: Page, context: BrowserContext, identity: str
   expect(saved.status()).toBe(200);
   const savedNote = await saved.json();
   await expect(savedIndicator(page)).toBeVisible();
-  await editor.press('ArrowLeft');
-  const originalEditor = await editor.elementHandle();
-  const cursor = await editor.evaluate(node => node.ownerDocument.getSelection()?.anchorOffset);
-  expect(cursor).toBe(`${note} pendiente`.length - 1);
-
   const traffic = observeOcr(page);
-  const dialog = await openOcr(page, false);
-  const paste = dialog.getByRole('group', { name: 'Zona para pegar una captura' });
-  const choose = dialog.getByRole('button', { name: /^Elegir.*imagen$/ });
-  await expect(paste).toBeFocused();
-  await page.keyboard.press('Shift+Tab');
-  await expect(dialog.getByRole('button', { name: 'Cerrar', exact: true })).toBeFocused();
-  await page.keyboard.press('Tab');
+  const image = await openImage(page, false, 'work');
+  const paste = image.getByRole('group', { name: 'Zona para pegar una captura' });
+  const choose = image.getByRole('button', { name: /^Elegir.*imagen$/ });
   await expect(paste).toBeFocused();
   const hint = paste.getByText('Pegá tu imagen acá', { exact: true });
   await expect(hint).toBeVisible();
-  await expect(result(dialog)).toHaveCount(0);
+  await expect(result(image)).toHaveCount(0);
   const bounds = (await hint.boundingBox())!;
   const middle = bounds.y + bounds.height / 2;
   await page.mouse.move(bounds.x + 1, middle);
@@ -172,6 +200,16 @@ async function desktopJourney(page: Page, context: BrowserContext, identity: str
   expect(await page.evaluate(() => getSelection()?.toString())).toBe('');
   await expect(paste).toBeFocused();
   await page.keyboard.press('Tab');
+  const pasteButton = image.getByRole('button', { name: 'Pegar', exact: true });
+  await expect(pasteButton).toBeFocused();
+  const fixtureBytes = [...await readFile(fixture('terminal.png'))];
+  await page.evaluate(async bytes => {
+    const blob = new Blob([new Uint8Array(bytes)], { type: 'image/png' });
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+  }, fixtureBytes);
+  await page.keyboard.press('Enter');
+  await expectPreview(image);
+  await page.keyboard.press('Tab');
   await expect(choose).toBeFocused();
   // Chromium can re-encode OS clipboard images. Deliver the exact fixture at the browser paste boundary.
   await choose.evaluate((node, bytes) => {
@@ -179,67 +217,59 @@ async function desktopJourney(page: Page, context: BrowserContext, identity: str
     clipboardData.items.add(new File([new Uint8Array(bytes)], 'image', { type: 'image/png' }));
     node.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData }));
   }, [...await readFile(fixture('terminal.png'))]);
-  await expectPreview(dialog);
+  await expectPreview(image);
   await expect(hint).toHaveCount(0);
+  await checkDrops(paste, image);
+  await expectPreview(image);
   expect(traffic.extractions).toEqual([]);
-  const extract = dialog.getByRole('button', { name: 'Extraer texto', exact: true });
+  const extract = image.getByRole('button', { name: 'Extraer texto', exact: true });
   await expect(choose).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(extract).toBeFocused();
   const extraction = extractionResponse(page, 'work');
   await page.keyboard.press('Enter');
-  await expectExtracted(await extraction, dialog);
-  await expect(result(dialog)).toBeFocused();
+  await expectExtracted(await extraction, image);
+  await expect(result(image)).toBeFocused();
   expect(traffic.extractions).toEqual(['work']);
 
-  await result(dialog).fill(correctedText);
+  await result(image).fill(correctedText);
   await page.keyboard.press('Tab');
-  const copy = dialog.getByRole('button', { name: 'Copiar texto', exact: true });
+  const copy = image.getByRole('button', { name: 'Copiar texto', exact: true });
   await expect(copy).toBeFocused();
   await page.keyboard.press('Enter');
-  await expect(dialog.getByRole('status').filter({ hasText: 'Texto copiado' })).toBeVisible();
+  await expect(image.getByRole('status').filter({ hasText: 'Texto copiado' })).toBeVisible();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(correctedText);
 
-  for (const width of [400, 480, 640, 1280]) {
-    await page.setViewportSize({ width, height: 768 });
-    await captureLayout(dialog, width, 768, false, `desktop-${width}`);
+  for (const width of [400, 480, 640, 768, 1280]) {
+    await captureLayout(page, image, width, 768, `desktop-${width}`);
   }
-  await page.setViewportSize({ width: 640, height: 384 });
-  const cdp = await context.newCDPSession(page);
-  await cdp.send('Emulation.setDeviceMetricsOverride', {
-    width: 640, height: 384, deviceScaleFactor: 2, mobile: false,
-  });
-  await expect.poll(() => page.evaluate(() => [innerWidth, innerHeight, devicePixelRatio])).toEqual([640, 384, 2]);
-  await captureLayout(dialog, 640, 384, false, 'desktop-zoom-200-simulado', cdp);
-  await cdp.send('Emulation.clearDeviceMetricsOverride');
-  await cdp.detach();
+  await captureLayout(page, image, 640, 384, 'desktop-640x384');
   await page.setViewportSize({ width: 1280, height: 800 });
-  await page.keyboard.press('Escape');
-  await expect(dialog).toHaveCount(0);
-  await expect(tools(page)).toBeFocused();
+  await result(image).fill('Edición ficticia sin copiar');
+  await page.getByRole('link', { name: 'Notas', exact: true }).click();
+  const confirmation = page.getByRole('dialog', { name: '¿Descartar los cambios del texto?' });
+  await confirmation.getByRole('button', { name: 'Seguir editando' }).click();
+  await expect(result(image)).toHaveValue('Edición ficticia sin copiar');
+  await page.evaluate(() => history.back());
+  await confirmation.getByRole('button', { name: 'Descartar cambios' }).click();
+  await expect(page.getByRole('heading', { name: title, exact: true })).toHaveCount(0);
   await expect(editor).toHaveText(`${note} pendiente`);
-  await editor.focus();
-  expect(await editor.evaluate((node, before) => node === before, originalEditor)).toBe(true);
-  expect(await editor.evaluate(node => node.ownerDocument.getSelection()?.anchorOffset)).toBe(cursor);
   expect(traffic.writes).toEqual([]);
   const persisted = await page.request.get(`${notePath}?space=work`);
   expect(persisted.status()).toBe(200);
   expect(await persisted.json()).toEqual(savedNote);
-  await editor.press('Control+z');
-  await expect(editor).toHaveText(note);
-  await expect(savedIndicator(page)).toBeVisible();
 
-  const quotaDialog = await openOcr(page, false);
-  await quotaDialog.getByLabel('Archivo de la captura').setInputFiles(fixture('quota.png'));
-  await expectPreview(quotaDialog);
+  const quotaImage = await openImage(page, false, 'work');
+  await quotaImage.getByLabel('Archivo de la captura').setInputFiles(fixture('quota.png'));
+  await expectPreview(quotaImage);
   expect(traffic.extractions).toEqual(['work']);
   const quotaResponse = extractionResponse(page, 'work');
-  await quotaDialog.getByRole('button', { name: 'Extraer texto', exact: true }).click();
+  await quotaImage.getByRole('button', { name: 'Extraer texto', exact: true }).click();
   const quota = await quotaResponse;
   expect(quota.status()).toBe(429);
   expect(await quota.json()).toMatchObject({ code: 'OCR_QUOTA_EXHAUSTED' });
-  await expect(quotaDialog.getByRole('alert')).toHaveText('Se alcanzó el límite de OCR.space. Probá más tarde.');
-  await expect(result(quotaDialog)).toHaveCount(0);
+  await expect(quotaImage.getByRole('alert')).toHaveText('Se alcanzó el límite de OCR.space. Probá más tarde.');
+  await expect(result(quotaImage)).toHaveCount(0);
   expect(traffic.extractions).toEqual(['work', 'work']);
 }
 
@@ -250,52 +280,49 @@ async function mobileJourney(page: Page, context: BrowserContext, identity: stri
   const note = 'Borrador Personal ficticio';
   const savedNote = await writeWork(page, date, note);
   const traffic = observeOcr(page);
-  const dialog = await openOcr(page, true);
+  const image = await openImage(page, true, 'personal');
   const chooser = page.waitForEvent('filechooser');
-  await dialog.getByRole('button', { name: 'Elegir imagen', exact: true }).tap();
+  await image.getByRole('button', { name: 'Elegir imagen', exact: true }).tap();
   await (await chooser).setFiles(fixture('terminal.jpg'));
-  await expectPreview(dialog);
+  await expectPreview(image);
   expect(traffic.extractions).toEqual([]);
 
   const extraction = extractionResponse(page, 'personal');
-  await dialog.getByRole('button', { name: 'Extraer texto', exact: true }).tap();
-  await expectExtracted(await extraction, dialog);
-  const field = result(dialog);
+  await image.getByRole('button', { name: 'Extraer texto', exact: true }).tap();
+  await expectExtracted(await extraction, image);
+  const field = result(image);
   await expect(field).not.toBeFocused();
   expect(traffic.extractions).toEqual(['personal']);
-  for (const width of [360, 375, 390]) {
-    await page.setViewportSize({ width, height: 812 });
-    await captureLayout(dialog, width, 812, true, `mobile-${width}`);
+  for (const width of [320, 360, 375, 390]) {
+    await captureLayout(page, image, width, 812, `mobile-${width}`);
   }
-  await dialog.getByRole('button', { name: 'Ver captura', exact: true }).tap();
-  await expect(dialog.getByAltText('Vista previa de la captura')).toBeVisible();
-  await dialog.getByRole('button', { name: 'Ocultar captura', exact: true }).tap();
-  await expect(dialog.getByAltText('Vista previa de la captura')).toBeHidden();
+  await image.getByRole('button', { name: 'Ver captura', exact: true }).tap();
+  await expect(image.getByAltText('Vista previa de la captura')).toBeVisible();
+  await image.getByRole('button', { name: 'Ocultar captura', exact: true }).tap();
+  await expect(image.getByAltText('Vista previa de la captura')).toBeHidden();
   await page.setViewportSize({ width: 640, height: 280 });
   const cdp = await context.newCDPSession(page);
   const insets = { top: 12, right: 24, bottom: 16, left: 24 };
   await cdp.send('Emulation.setSafeAreaInsetsOverride', { insets });
-  for (const [edge, pixels] of Object.entries(insets)) {
-    await expect(dialog).toHaveCSS(`padding-${edge}`, `${pixels}px`);
+  const nav = page.getByRole('navigation', { name: 'Navegación principal' });
+  const banner = page.getByRole('banner');
+  await expect(banner).toHaveCSS('padding-top', '12px');
+  for (const edge of ['left', 'right', 'bottom'] as const) {
+    await expect(nav).toHaveCSS(`padding-${edge}`, `${insets[edge]}px`);
   }
   await field.tap();
   await expect(field).toBeFocused();
   await expect(field).toBeInViewport();
   await field.fill(correctedText);
-  const copy = dialog.getByRole('button', { name: 'Copiar texto', exact: true });
+  const copy = image.getByRole('button', { name: 'Copiar texto', exact: true });
   await copy.tap();
   await expect(copy).toBeInViewport();
-  await expect(dialog.getByRole('status').filter({ hasText: 'Texto copiado' })).toBeVisible();
+  await expect(image.getByRole('status').filter({ hasText: 'Texto copiado' })).toBeVisible();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(correctedText);
-  await captureLayout(dialog, 640, 280, true, 'mobile-640x280');
-  const close = dialog.getByRole('button', { name: 'Cerrar', exact: true });
-  await expect(close).toBeInViewport();
-  const closeBounds = (await close.boundingBox())!;
-  expect(closeBounds.y).toBeGreaterThanOrEqual(insets.top);
-  expect(closeBounds.x + closeBounds.width).toBeLessThanOrEqual(640 - insets.right);
-  await close.tap();
+  await captureLayout(page, image, 640, 280, 'mobile-640x280');
   await cdp.detach();
-  await expect(dialog).toHaveCount(0);
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: title, exact: true })).toHaveCount(0);
   await expect(page.getByRole('textbox', { name: 'Editor de nota diaria' })).toHaveText(note);
   expect(traffic.writes).toEqual([]);
   const persisted = await page.request.get(`${notePath}?space=personal`);

@@ -13,7 +13,7 @@ import { authQueryKeys } from '../auth/api'
 const CAPABILITIES = '/api/v1/ocr/capabilities'
 const EXTRACTIONS = '/api/v1/ocr/extractions'
 const DATE = '2026-11-15'
-const DIALOG = 'Copiar texto de una captura'
+const TITLE = 'Imagen a texto'
 const TEXT = 'T-055\nERR_CONNECTION_RESET\n/src/api/foo-bar.ts'
 const png = new File(['png ficticio'], 'captura.png', { type: 'image/png' })
 const jpeg = new File(['jpeg ficticio'], 'otra.jpeg', { type: 'image/jpeg' })
@@ -67,18 +67,19 @@ async function notes({ available = true, route = `/notes/${DATE}?space=work` } =
   const navigation = deferred<NavigateFunction>()
   const view = renderWithProviders(<Navigation onReady={navigation.resolve} />, { route })
   const navigate = await navigation.promise
-  const trigger = await screen.findByRole('button', { name: 'Herramientas' })
+  const trigger = await screen.findByRole('link', { name: 'Imagen' })
   const editor = await screen.findByLabelText('Editor de nota diaria')
   await waitFor(() => expect(editor).toHaveTextContent('Borrador'))
   return { ...view, auth, capability, navigate, trigger, editor }
 }
 
-async function openDialog(view: Awaited<ReturnType<typeof notes>>) {
+async function openImage(view: Awaited<ReturnType<typeof notes>>) {
   await view.user.click(view.trigger)
-  const option = await screen.findByRole('menuitem', { name: new RegExp(DIALOG) })
-  await waitFor(() => expect(option).not.toHaveAttribute('aria-disabled', 'true'))
-  await view.user.click(option)
-  return screen.findByRole('dialog', { name: DIALOG })
+  await screen.findByRole('heading', { name: TITLE })
+  await waitFor(() =>
+    expect(screen.queryByText('Comprobando disponibilidad…')).not.toBeInTheDocument(),
+  )
+  return screen.getByRole('main')
 }
 
 function chooseFile(file: File) {
@@ -90,28 +91,81 @@ function chooseFile(file: File) {
 const extractButton = () => screen.getByRole('button', { name: 'Extraer texto' })
 const extractedText = () => screen.findByRole('textbox', { name: 'Texto extraído' })
 
-describe('Notas · diálogo de captura', () => {
-  it('muestra la explicación de disponibilidad en el espacio sin abrir el diálogo ni enviar un POST', async () => {
+describe('Imagen a texto', () => {
+  it('muestra la disponibilidad en el espacio activo y no permite extraer cuando está deshabilitada', async () => {
     const post = vi.fn(() => HttpResponse.json({ text: TEXT }))
     server.use(mock.post(EXTRACTIONS, post))
     const view = await notes({ available: false, route: `/notes/${DATE}?space=personal` })
     expect(view.capability).not.toHaveBeenCalled()
-    await view.user.click(view.trigger)
-    await screen.findByText('La extracción no está habilitada en este espacio.')
-    const option = screen.getByRole('menuitem', { name: new RegExp(DIALOG) })
-    expect(option).toHaveAttribute('aria-disabled', 'true')
-    option.focus()
+    expect(screen.queryByRole('button', { name: 'Herramientas' })).not.toBeInTheDocument()
+    view.trigger.focus()
     await view.user.keyboard('{Enter}')
+    await screen.findByText('La extracción no está habilitada en este espacio.')
+    expect(view.trigger).toHaveAttribute('aria-current', 'page')
+    expect(view.trigger).toHaveAttribute('href', '/image?space=personal')
     expect(view.capability).toHaveBeenCalledExactlyOnceWith('?space=personal')
-    expect(screen.queryByRole('dialog', { name: DIALOG })).not.toBeInTheDocument()
+    chooseFile(png)
+    expect(extractButton()).toBeDisabled()
     expect(post).not.toHaveBeenCalled()
+  })
+
+  it('lee el portapapeles solo con Pegar y orienta a Ctrl+V con permiso denegado', async () => {
+    const view = await notes()
+    const blob = new Blob([png], { type: png.type })
+    const read = vi
+      .fn()
+      .mockRejectedValueOnce(new DOMException('fixture', 'NotAllowedError'))
+      .mockResolvedValueOnce([{ types: ['image/png'], getType: () => Promise.resolve(blob) }])
+    Object.defineProperty(navigator.clipboard, 'read', { configurable: true, value: read })
+    const image = await openImage(view)
+    const zone = within(image).getByRole('group', { name: 'Zona para pegar una captura' })
+    const button = within(image).getByRole('button', { name: 'Pegar' })
+    expect(read).not.toHaveBeenCalled()
+    await view.user.click(button)
+    expect(await screen.findByRole('alert')).toHaveTextContent(/Ctrl\+V/)
+    await waitFor(() => expect(zone).toHaveFocus())
+    await view.user.click(button)
+    expect(await screen.findByAltText('Vista previa de la captura')).toBeVisible()
+    expect(read).toHaveBeenCalledTimes(2)
+  })
+
+  it('protege la edición al cambiar de espacio y al cerrar sesión voluntariamente', async () => {
+    const view = await notes()
+    server.use(mock.post(EXTRACTIONS, () => HttpResponse.json({ text: TEXT })))
+    await openImage(view)
+    chooseFile(png)
+    await view.user.click(extractButton())
+    const result = await extractedText()
+    fireEvent.change(result, { target: { value: 'Texto editado' } })
+    await view.user.click(screen.getByRole('button', { name: 'Espacio: Trabajo' }))
+    await view.user.click(screen.getByRole('menuitemradio', { name: 'Personal' }))
+    const confirm = await screen.findByRole('dialog', { name: /descartar los cambios/i })
+    await view.user.click(within(confirm).getByRole('button', { name: 'Seguir editando' }))
+    expect(result).toHaveValue('Texto editado')
+    expect(view.trigger).toHaveAttribute('href', '/image?space=work')
+
+    await view.user.click(screen.getByRole('button', { name: /^Cuenta de / }))
+    await view.user.click(screen.getByRole('menuitem', { name: 'Cerrar sesión' }))
+    await view.user.click(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Seguir editando' }),
+    )
+    expect(result).toHaveValue('Texto editado')
+
+    await view.user.click(screen.getByRole('button', { name: 'Espacio: Trabajo' }))
+    await view.user.click(screen.getByRole('menuitemradio', { name: 'Personal' }))
+    await view.user.click(
+      within(await screen.findByRole('dialog')).getByRole('button', { name: 'Descartar cambios' }),
+    )
+    await waitFor(() => expect(view.trigger).toHaveAttribute('href', '/image?space=personal'))
+    expect(result).not.toBeInTheDocument()
+    expect(revokeUrl).toHaveBeenCalledExactlyOnceWith('blob:captura')
   })
 
   it('pega o elige una imagen y conserva la previa al cancelar o invalidar', async () => {
     const post = vi.fn(() => HttpResponse.json({ text: TEXT }))
     server.use(mock.post(EXTRACTIONS, post))
     const view = await notes()
-    await openDialog(view)
+    await openImage(view)
     const pasteZone = screen.getByRole('group', { name: 'Zona para pegar una captura' })
     expect(pasteZone).toHaveFocus()
     expect(extractButton()).toBeDisabled()
@@ -144,8 +198,8 @@ describe('Notas · diálogo de captura', () => {
       const post = vi.fn(() => HttpResponse.json({ text: TEXT }))
       server.use(mock.post(EXTRACTIONS, post))
       const view = await notes()
-      const dialog = await openDialog(view)
-      const zone = within(dialog).getByRole('group', { name: 'Zona para pegar una captura' })
+      const image = await openImage(view)
+      const zone = within(image).getByRole('group', { name: 'Zona para pegar una captura' })
       expect(zone).toHaveFocus()
       expect(screen.queryByAltText('Vista previa de la captura')).not.toBeInTheDocument()
       expect(screen.queryByRole('textbox', { name: 'Texto extraído' })).not.toBeInTheDocument()
@@ -154,14 +208,14 @@ describe('Notas · diálogo de captura', () => {
       const hint = within(zone).getByText('Pegá tu imagen acá')
       await view.user.click(hint)
       expect(zone).toHaveFocus()
-      const close = within(dialog).getByRole('button', { name: 'Cerrar' })
+      const pasteButton = within(image).getByRole('button', { name: 'Pegar' })
       if (target === 'botón') {
-        await view.user.tab({ shift: true })
-        expect(close).toHaveFocus()
+        await view.user.tab()
+        expect(pasteButton).toHaveFocus()
       }
 
       const unnamed = new File([png], 'image', { type: png.type })
-      fireEvent.paste(target === 'hijo' ? hint : close, {
+      fireEvent.paste(target === 'hijo' ? hint : pasteButton, {
         clipboardData: {
           files: [],
           items: [
@@ -187,10 +241,10 @@ describe('Notas · diálogo de captura', () => {
 
   it('explica el pegado sin imagen o inválido sin reemplazar la captura ni interceptar fuera de OCR', async () => {
     const view = await notes()
-    const dialog = await openDialog(view)
+    const image = await openImage(view)
     chooseFile(png)
     const preview = screen.getByAltText('Vista previa de la captura')
-    const choose = within(dialog).getByRole('button', { name: 'Elegir otra imagen' })
+    const choose = within(image).getByRole('button', { name: 'Elegir otra imagen' })
     const paste = (files: File[], types: string[] = []) =>
       fireEvent.paste(choose, { clipboardData: { files, items: [], types } })
     paste([], ['text/plain'])
@@ -211,7 +265,7 @@ describe('Notas · diálogo de captura', () => {
   it('enfoca el resultado en escritorio, admite pegar texto y conserva la edición si falla copiar', async () => {
     server.use(mock.post(EXTRACTIONS, () => HttpResponse.json({ text: TEXT })))
     const view = await notes()
-    await openDialog(view)
+    await openImage(view)
     chooseFile(png)
     await view.user.click(extractButton())
     const result = await extractedText()
@@ -236,25 +290,21 @@ describe('Notas · diálogo de captura', () => {
     await view.user.click(copy)
     expect(await screen.findByText('Texto copiado')).toBeVisible()
     expect(clipboard).toHaveBeenCalledTimes(2)
-    await view.user.keyboard('{Escape}')
-    await waitFor(() =>
-      expect(screen.queryByRole('dialog', { name: DIALOG })).not.toBeInTheDocument(),
-    )
-    expect(view.trigger).toHaveFocus()
-    expect(screen.getByLabelText('Editor de nota diaria')).toBe(view.editor)
-    expect(view.editor).toHaveTextContent('Borrador')
+    await act(() => view.navigate(-1))
+    expect(screen.queryByRole('heading', { name: TITLE })).not.toBeInTheDocument()
+    expect(await screen.findByLabelText('Editor de nota diaria')).toHaveTextContent('Borrador')
     expect(revokeUrl).toHaveBeenCalledExactlyOnceWith('blob:captura')
   })
 
   it('confirma el descarte del texto editado al cerrar o reemplazar una selección válida', async () => {
     server.use(mock.post(EXTRACTIONS, () => HttpResponse.json({ text: TEXT })))
     const view = await notes()
-    await openDialog(view)
+    await openImage(view)
     chooseFile(png)
     await view.user.click(extractButton())
     const result = await extractedText()
     fireEvent.change(result, { target: { value: 'Texto editado' } })
-    await view.user.keyboard('{Escape}')
+    await view.user.click(screen.getByRole('link', { name: 'Notas' }))
     const confirm = await screen.findByRole('dialog', { name: /descartar los cambios/i })
     await view.user.click(within(confirm).getByRole('button', { name: 'Seguir editando' }))
     expect(result).toHaveValue('Texto editado')
@@ -278,8 +328,7 @@ describe('Notas · diálogo de captura', () => {
     )
     server.use(mock.post(EXTRACTIONS, () => HttpResponse.json({ text: TEXT })))
     const view = await notes()
-    const dialog = await openDialog(view)
-    expect(dialog).toHaveClass('MuiDialog-paperFullScreen')
+    await openImage(view)
     chooseFile(png)
     await view.user.click(extractButton())
     const result = await extractedText()
@@ -305,21 +354,21 @@ describe('Notas · diálogo de captura', () => {
       mock.post(EXTRACTIONS, () => problemResponse(status, { code, detail: 'detalle oculto' })),
     )
     const view = await notes()
-    await openDialog(view)
+    await openImage(view)
     chooseFile(png)
     await view.user.click(extractButton())
     expect(await screen.findByRole('alert')).toHaveTextContent(message)
     expect(screen.queryByText('detalle oculto')).not.toBeInTheDocument()
     expect(screen.getByAltText('Vista previa de la captura')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Copiar texto' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Copiar texto' })).toBeDisabled()
   })
 
-  it.each(['imagen', 'cierre', 'fecha', 'espacio', 'identidad', 'sesión'] as const)(
+  it.each(['imagen', 'atrás', 'ruta', 'espacio', 'identidad', 'sesión'] as const)(
     'aborta e ignora la respuesta anterior al cambiar %s, con un POST pese al doble clic',
     async (change) => {
       const release = deferred<Response>()
       const view = await notes()
-      await openDialog(view)
+      await openImage(view)
       chooseFile(png)
       const fetchImpl = globalThis.fetch
       const post = vi
@@ -344,8 +393,8 @@ describe('Notas · diálogo de captura', () => {
         chooseFile(jpeg)
         await view.user.click(extractButton())
         expect(await extractedText()).toHaveValue('respuesta nueva')
-      } else if (change === 'cierre') {
-        await view.user.keyboard('{Escape}')
+      } else if (change === 'atrás') {
+        await act(() => view.navigate(-1))
       } else if (change === 'identidad' || change === 'sesión') {
         const user =
           change === 'identidad'
@@ -355,8 +404,7 @@ describe('Notas · diálogo de captura', () => {
         else view.auth.expireSession()
         act(() => view.queryClient.setQueryData(authQueryKeys.session, user))
       } else {
-        const path =
-          change === 'fecha' ? '/notes/2026-11-14?space=work' : `/notes/${DATE}?space=personal`
+        const path = change === 'ruta' ? '/notes/2026-11-14?space=work' : '/image?space=personal'
         await act(() => view.navigate(path))
       }
       try {
@@ -367,7 +415,7 @@ describe('Notas · diálogo de captura', () => {
           release.resolve(HttpResponse.json({ text: 'respuesta anterior' }))
         })
       }
-      if (change === 'cierre') await openDialog(view)
+      if (change === 'atrás') await openImage(view)
       expect(screen.queryByDisplayValue('respuesta anterior')).not.toBeInTheDocument()
       expect(post).toHaveBeenCalledTimes(change === 'imagen' ? 2 : 1)
     },
