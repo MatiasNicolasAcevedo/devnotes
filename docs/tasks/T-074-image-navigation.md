@@ -1,6 +1,6 @@
 ---
 id: T-074
-status: in_progress
+status: in_review
 priority: P1
 size: S
 milestone: M6
@@ -48,10 +48,24 @@ Entrar a **Imagen** directamente desde la barra, pegar o elegir y extraer texto 
 |---|---|---|
 | Primer build (exit 2) y ambos scripts E2E (exit 1) rechazaron `exact` de Playwright en consultas de Testing Library. ESLint marcó un parámetro sin uso en el contexto de edición. | Consultas de rol con el matcher de Testing Library y firma tipada del contexto. | Typecheck, ESLint y build de los proyectos efímeros (0). |
 | Primer E2E móvil con stack (exit 1) detectó redondeo subpíxel entre celdas con insets, tras pasar los cuatro anchos móviles. | Tolerancia de 0,05 CSS px para comparar el ancho y conservar la verificación de 48 CSS px de alto. | Proyecto móvil (0); escritorio repetido (0), incluye guardado al navegar y zoom simulado. |
+| Chrome devolvió «Se está abriendo en una sesión de navegador existente» al retomar el perfil anterior (exit 1). | Crear un perfil temporal nuevo para este ensayo. | Chrome 158.0.8127.36 abrió Imagen con el OIDC ficticio. La sonda terminó con exit 0 y se retiró su perfil. |
 
-**Pendiente de aceptación**: probar un archivo soltado desde Explorador y un recorte real de Windows al volver a Chrome. El stack propio `starter-e2e-t074-windows` arrancó con cuenta y proveedor ficticios, y la pantalla vacía se comprobó en Chrome. La skill de control de Windows limita el arrastre a una ventana y no expuso la superposición de selección de Recortes. La interacción de Windows se detuvo con Escape antes de observar cualquiera de los dos gestos. Los eventos de arrastre/pegado de Playwright se verificaron por separado. El cleanup del proyecto Windows (exit 0) dejó 0 contenedores, redes y volúmenes por label.
+### Ensayo nativo de Windows del PR #77
 
-Retoma local desde este worktree: `& .orchestrator/t074-windows/stack.ps1 up` y `node .orchestrator/t074-windows/check.mjs`. Usar el PNG ficticio local `.orchestrator/t074-windows/T074-captura-ficticia.png`. El ensayo solo registra metadatos de drop/paste, dimensiones de vista previa y conteo de POST. Cerrar el Chrome aislado al terminar y limpiar con `& .orchestrator/t074-windows/stack.ps1 down`; comprobar labels exactos. Estos archivos de trabajo son locales e ignorados.
+2026-11-21. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Playwright como sonda y control de aplicaciones Windows para observar y cerrar Chrome. El dueño realizó y confirmó ambos gestos. La prueba ejercitó la entrada y previsualización de la misma ruta Imagen, con cuenta y archivos ficticios, API y OIDC locales, PostgreSQL 18 y doble externo. Sin cambios de producto, API, permisos o datos en esta sesión.
+
+`gh pr view 77 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid` (0) confirmó el borrador `e1d517d5cf5feb702e061707e51103d4ecebd8d4` contra `main@74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30`. `git merge-base --is-ancestor 3fbf34989ac9f3259751f23ef16db733791d3aa4 e1d517d5cf5feb702e061707e51103d4ecebd8d4` (0) y `git diff --exit-code 3fbf34989ac9f3259751f23ef16db733791d3aa4 e1d517d5cf5feb702e061707e51103d4ecebd8d4 -- client/ e2e/` (0) ligan el ensayo a las fuentes del gate anterior. [verify-required de entrada](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/44956355893/job/137005232203) en SUCCESS.
+
+| Gesto del dueño | Evento y archivo en Chrome | Foco al gesto | Vista previa natural | POST de extracción |
+|---|---|---|---|---|
+| Soltar `T074-captura-ficticia.png` de Explorador sobre Captura | `drop` nativo (`isTrusted=true`), un ítem `file`, `image/png`, 3.738 bytes | Chrome activo, Zona para pegar una captura | 440 × 142 px | 0 |
+| Volver de Recortes y pulsar Ctrl+V en Captura | `paste` nativo (`isTrusted=true`), un ítem `file`, `image/png`, 13.704 bytes | Chrome activo, Zona para pegar una captura | 492 × 210 px, reemplazó la anterior | 0 |
+
+La caja arrancó enfocada y vacía. La sonda midió cada vista previa después de decodificar la URL nueva y registró cero `POST /api/v1/ocr/extractions` desde la apertura hasta el cierre. **Extraer texto** quedó disponible tras recibir la imagen. La extracción deliberada con el doble está cubierta por el E2E dirigido anterior.
+
+Retoma local desde este worktree: `& .orchestrator/t074-windows/stack.ps1 up` (0, readiness verde) y `node .orchestrator/t074-windows/check.mjs` (0 tras cerrar Chrome). PNG ficticio local en `.orchestrator/t074-windows/T074-captura-ficticia.png`. Cleanup con `& .orchestrator/t074-windows/stack.ps1 down` (0) y consultas Docker (0) por `com.docker.compose.project=starter-e2e-t074-windows`: 0 contenedores, 0 redes, 0 volúmenes. Se retiró el perfil creado para este ensayo. Los archivos de trabajo están ignorados.
+
+Gate diario de retoma: `node scripts/docs-check.mjs` (0), `git diff --check origin/main HEAD` (0) y `bash scripts/verify.sh --policy origin/main` (0, `APPLICATION / FULL` informativo). Siguiente paso: revisión independiente del PR #77.
 
 FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente.
 
