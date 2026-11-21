@@ -1,6 +1,6 @@
 ---
 id: T-073
-status: mergeable
+status: done
 priority: P1
 size: S
 milestone: M6
@@ -61,13 +61,6 @@ Gate dirigido según [TESTING](../TESTING.md#lote-imagen-libres-e-ia-del-2026-11
 - `node scripts/docs-check.mjs` y `git diff --check`: exit 0. `bash scripts/verify.sh --policy origin/main`: exit 0, perfil `APPLICATION`, política informativa `FULL` (4 rutas técnicas).
 ## Checkpoint vigente
 
-2026-11-17. Frontera reviewer en sesión independiente, Codex Desktop (GPT-6; variante y esfuerzo no expuestos), PowerShell, Git/gh, Node 24.21, Git Bash y Docker. El cambio técnico afecta el pegado, el foco y el estado vacío del diálogo. API, permisos y datos conservan su contrato.
-
-- `gh pr view 76 --repo MatiasNicolasAcevedo/devnotes` (0): abierto, listo para revisión, HEAD publicado `378df6cf3294f29a59b74370fd93df8b3e275b40`, base `main@b6728d0669008e550fada544f474c7ac8315e1d6`. La consulta de hilos devolvió cero; `gh run view 44014417130 --repo MatiasNicolasAcevedo/devnotes` (0) vinculó `verify-required` exitoso a ese HEAD.
-- Checkout aislado. `git diff --exit-code 2ebaac0a1f1dd7a70db4a6baf90b0061330af2be 378df6cf3294f29a59b74370fd93df8b3e275b40 -- client/ e2e/` (0), sin diferencias. Cotejo del diff con S-112 y del ensayo nativo documentado: PNG ficticio de 28.349 bytes en Chrome, vista previa de 450 × 202 desde la caja y al recuperar foco en Elegir imagen, sin POST. El ensayo nativo pertenece al implementer; se repitió por separado el E2E con fixture.
-- `npm ci --no-audit --no-fund`, `npm test -- --run src/features/ocr/OcrDialog.test.tsx` (24/24), `npm run typecheck` y ESLint dirigido: exit 0 desde `client/`. Los negativos cubren pegado sin imagen, tipo y tamaño inválidos, selección anterior, campo de resultado y fuera del diálogo.
-- `STARTER_E2E_PROJECT=starter-e2e-t073-review-pr76 bash scripts/e2e.sh --grep 'screenshot OCR:' --project desktop` (0): 1/1, con API propia, proxy, sesión local y doble OCR. Comprueba indicación no seleccionable, pegado sin POST, extracción deliberada, copia editada y cuota. Saneado aprobado; inventario por label (0): 0 contenedores, redes y volúmenes.
-- `node scripts/docs-check.mjs` y `git diff --check b6728d0 HEAD` (0). `bash scripts/verify.sh --policy origin/main` (0) informó `APPLICATION / FULL`, solo clasificación.
-- Revisión técnica sin hallazgos bloqueantes. Esta transición es solo documental. Pendiente: comprobar el nuevo HEAD y su base, docs-check y `verify-required` verde; luego publicar el veredicto sobre esos SHA y confirmar el squash en GitHub. T-074 espera `MERGED`. Render Auto-Deploy On Commit sigue vigente.
+El PR #76 quedó `MERGED` contra `main` el 2026-11-17 a las 04:11:27 UTC. Squash `74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30`; confirmado por `gh pr view 76 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName` (exit 0) y comprobado en `origin/main` al iniciar T-074.
 
 FULL/STARTER: DIFERIDO POR EL DUEÑO.

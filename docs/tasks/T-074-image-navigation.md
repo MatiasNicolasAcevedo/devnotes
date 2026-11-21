@@ -1,6 +1,6 @@
 ---
 id: T-074
-status: draft
+status: in_progress
 priority: P1
 size: S
 milestone: M6
@@ -34,6 +34,10 @@ Entrar a **Imagen** directamente desde la barra, pegar o elegir y extraer texto 
 
 ## Checkpoint vigente
 
-Draft por T-073. Boceto del 2026-11-16 verificado en Chromium 157, cinco destinos en una sola fila a 320, 360, 375 y 390 CSS px, con 64, 72, 75 y 78 CSS px por destino respectivamente y 48 CSS px de alto. «Referencias» se mantuvo en una línea y no hubo scroll horizontal. Cotejo de escritorio del boceto a 768 y 1280 CSS px. Es evidencia de diseño estático. Validar el shell real con selector de espacio, estado, cuenta, fuentes y áreas seguras antes del cierre.
+2026-11-21. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell y Git/gh. Alcance: ruta privada, navegación y captura local; API, permisos y persistencia conservan su contrato.
+
+`gh pr view 76 --repo MatiasNicolasAcevedo/devnotes`, `git fetch origin main`, `git merge-base --is-ancestor 74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30 origin/main` y `gh pr list --repo MatiasNicolasAcevedo/devnotes --state open`: exit 0. Base `74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30`, PR #76 mergeado y cero PR abiertos.
+
+Boceto del 2026-11-16 verificado en Chromium 157, cinco destinos en una sola fila a 320, 360, 375 y 390 CSS px, con 64, 72, 75 y 78 CSS px por destino respectivamente y 48 CSS px de alto. «Referencias» se mantuvo en una línea y no hubo scroll horizontal. Cotejo de escritorio del boceto a 768 y 1280 CSS px. Es evidencia de diseño estático. Validar el shell real con selector de espacio, estado, cuenta, fuentes y áreas seguras antes del cierre.
 
 La [biblioteca de Imagen](T-075-image-text-library.md) añade guardado y borrado más adelante.

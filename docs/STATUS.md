@@ -2,14 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-073](tasks/T-073-ocr-windows-paste.md) · Pegar recortes de Windows en OCR · [S-112](specs/S-112-screenshot-ocr.md) |
-| Estado | `mergeable` |
-| Acción actual | Frontera reviewer verifica la transición documental y cierra el PR #76 |
-| Rama / PR | `codex/t-073-ocr-windows-paste-fix` · [PR76](https://github.com/MatiasNicolasAcevedo/devnotes/pull/76) |
+| Tarea y contrato | [T-074](tasks/T-074-image-navigation.md) · Imagen en la navegación principal · [S-112](specs/S-112-screenshot-ocr.md) |
+| Estado | `in_progress` |
+| Acción actual | Frontera implementer mueve OCR a Imagen y valida el gate dirigido |
+| Rama / PR | `codex/t-074-image-navigation` |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
-El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-074 espera la confirmación del merge de T-073.
+El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-073 quedó mergeada y conciliada.
 
 ## Pendientes del dueño
 
