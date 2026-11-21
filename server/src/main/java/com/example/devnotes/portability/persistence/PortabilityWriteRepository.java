@@ -1,5 +1,6 @@
 package com.example.devnotes.portability.persistence;
 
+import com.example.devnotes.identity.AccountWriteLock;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyNoteRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyVersionRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ReferenceRecord;
@@ -26,15 +27,16 @@ import org.springframework.stereotype.Repository;
 public class PortabilityWriteRepository {
 
     private final JdbcTemplate jdbc;
+    private final AccountWriteLock accountWriteLock;
 
-    public PortabilityWriteRepository(DataSource dataSource) {
+    public PortabilityWriteRepository(DataSource dataSource, AccountWriteLock accountWriteLock) {
         this.jdbc = new JdbcTemplate(dataSource);
+        this.accountWriteLock = accountWriteLock;
     }
 
     /** Row lock on the owner until the transaction ends; false when the user does not exist. */
     public boolean lockOwner(UUID ownerId) {
-        return !jdbc.queryForList("SELECT id FROM app_user WHERE id = ? FOR UPDATE", UUID.class, ownerId)
-                .isEmpty();
+        return accountWriteLock.acquire(ownerId);
     }
 
     /**
