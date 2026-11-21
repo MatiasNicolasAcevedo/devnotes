@@ -1,6 +1,6 @@
 ---
 id: T-076
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M6
@@ -32,4 +32,4 @@ Ida y vuelta v1/v2/v3, texto y fechas intactos, fragmentación y Unicode. Duplic
 
 ## Checkpoint vigente
 
-Habilitar en sesión nueva tras confirmar [T-075](T-075-image-text-library.md) MERGED y conciliarla. Registrar el SHA/base y la evidencia efectivamente ejecutada.
+2026-11-21. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto). PR #78 MERGED, gh pr list sin abiertos, fetch y verificación de ancestro (exit 0). Rama creada desde main@3318c1a05017e7faaea2294099274b8684a860c9. Pendientes implementación, gate diario y publicación. FULL/STARTER: DIFERIDO POR EL DUEÑO.
