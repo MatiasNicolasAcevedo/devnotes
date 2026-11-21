@@ -1,6 +1,6 @@
 ---
 id: T-074
-status: mergeable
+status: done
 priority: P1
 size: S
 milestone: M6
@@ -69,7 +69,7 @@ Gate diario de retoma: `node scripts/docs-check.mjs` (0), `git diff --check orig
 
 FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente.
 
-## Checkpoint vigente
+## Evidencia de revisión independiente
 
 2026-11-21. Frontera reviewer independiente R2 en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Node 24.21, Git Bash, Docker Desktop y Playwright Chromium. Revisé el diff completo de [PR #77](https://github.com/MatiasNicolasAcevedo/devnotes/pull/77) sobre `374ba4855febeb1200b3743d288c45b0b8da3d8e` contra `main@74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30`. El cambio mueve el flujo de captura a Imagen y conserva la autorización por cuenta y espacio y el envío deliberado. La transición de R2 es documental.
 
@@ -86,3 +86,9 @@ FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente
 R1-1 cerrado en revisión independiente. Pendiente comprobar en GitHub la transición documental, CI verde y el squash ligado al SHA de aprobación. FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente.
 
 La [biblioteca de Imagen](T-075-image-text-library.md) añade guardado y borrado más adelante.
+
+## Checkpoint vigente
+
+2026-11-21. Conciliado por frontera implementer de T-075. `gh pr view 77 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName` (0) confirmó [PR #77](https://github.com/MatiasNicolasAcevedo/devnotes/pull/77) `MERGED` contra `main`, el 2026-11-21 a las 23:23:40 UTC, con squash `da04b23f2c3bba0c45f29dfd8c51f2b6b0c1da92`. `git fetch origin main` y `git merge-base --is-ancestor da04b23f2c3bba0c45f29dfd8c51f2b6b0c1da92 origin/main` dieron exit 0. La evidencia de implementación y el ensayo nativo se conservan arriba. Gate de revisión y veredicto ligados al [PR #77](https://github.com/MatiasNicolasAcevedo/devnotes/pull/77).
+
+FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente. La [biblioteca de Imagen](T-075-image-text-library.md) continúa en T-075.

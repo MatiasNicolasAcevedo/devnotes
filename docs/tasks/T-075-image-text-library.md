@@ -1,6 +1,6 @@
 ---
 id: T-075
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M6
@@ -30,4 +30,4 @@ El patrón de Voz guía listado y borrado. Implementar migración, repositorio y
 
 ## Checkpoint vigente
 
-Draft por T-074. [T-076](T-076-image-text-xlsx.md) agrega respaldo y [T-077](T-077-image-text-library-ui.md) habilita el recorrido visible con API.
+2026-11-21. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell y Git/gh. Base `da04b23f2c3bba0c45f29dfd8c51f2b6b0c1da92`. El squash de T-074 se confirmó en GitHub y es ancestro de origin/main. `gh pr list --repo MatiasNicolasAcevedo/devnotes --state open --json number,headRefName` (0) devolvió cero PR abiertos. Pendientes: persistencia y gate diario. [T-076](T-076-image-text-xlsx.md) agrega respaldo y [T-077](T-077-image-text-library-ui.md) habilita el recorrido visible con API.
