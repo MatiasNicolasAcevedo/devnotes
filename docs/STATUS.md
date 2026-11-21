@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-074](tasks/T-074-image-navigation.md) · Imagen en la navegación principal · [S-112](specs/S-112-screenshot-ocr.md) |
-| Estado | `in_review` |
-| Acción actual | Frontera reviewer independiente R2 verifica el cierre de R1-1 y revisa el PR #77 |
+| Estado | `mergeable` |
+| Acción actual | Frontera reviewer R2 verifica CI de la transición y cierra el PR #77 |
 | Rama / PR | `codex/t-074-image-navigation` · [PR #77](https://github.com/MatiasNicolasAcevedo/devnotes/pull/77) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,11 +34,11 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer independiente R2 de T-074 en MatiasNicolasAcevedo/devnotes. Sesión nueva y mismo PR #77.
+Actuá como frontera implementer de T-075 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/tasks/T-074-image-navigation.md, S-112 (seguimiento Imagen), el comentario CAMBIOS REQUERIDOS de R1 y el diff completo del PR #77.
-PRECONDICIÓN: gh pr view 77 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, isDraft=false, base main@74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30 y verify-required en SUCCESS. Tras git fetch origin codex/t-074-image-navigation, verificá que headRefOid coincide con git rev-parse origin/codex/t-074-image-navigation y con git log -1 --format=%H origin/codex/t-074-image-navigation -- docs/STATUS.md. Verificá con git rev-parse origin/codex/t-074-image-navigation^ que su padre es 7fb517fe9660963c79a83e7c96c575cd2c09cf11 y que el diff desde ese padre solo contiene el checkpoint de T-074 y STATUS. Si difiere, informá el estado real y reevaluá la evidencia sobre HEAD y base publicados.
-ACCIÓN: 1) Revisá en un checkout aislado de ese HEAD. 2) Verificá el cierre de R1-1 en Chromium con PNG más text/uri-list y PNG más text/plain, error, vista previa y resultado conservados, evento cancelado, URL intacta y cero POST atribuibles al drop. Contrastá el positivo de archivo único, la extracción explícita y la evidencia nativa de Explorador y Recortes con las fuentes publicadas. 3) Comprobá el gate diario y emití el veredicto R2 ligado a HEAD/base. Si aprobás, seguí el protocolo de transición, CI y squash ligado al SHA, y confirmá MERGED con mergedAt y mergeCommit.oid mediante gh pr view 77 --repo MatiasNicolasAcevedo/devnotes. Si persiste un hallazgo, registralo y entregá la decisión al dueño o a frontera según el límite de dos rondas.
+LEER: AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/tasks/T-074-image-navigation.md, docs/tasks/T-075-image-text-library.md y la sección Biblioteca de Imagen de docs/specs/S-112-screenshot-ocr.md.
+PRECONDICIÓN: gh pr view 77 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName debe confirmar MERGED contra main, con mergedAt y mergeCommit.oid válidos. Actualizá origin/main y comprobá con git merge-base --is-ancestor que el SHA devuelto en mergeCommit.oid es ancestro de origin/main. Con gh pr list --repo MatiasNicolasAcevedo/devnotes --state open confirmá que no hay otro PR activo antes de iniciar T-075.
+ACCIÓN: 1) Creá el checkout nuevo de codex/t-075-image-text-library desde origin/main actualizado. En el primer commit conciliá T-074 a done con el squash confirmado y avanzá T-075 a in_progress. 2) Implementá la migración, el repositorio y el servicio interno de textos de Imagen en PostgreSQL 18.6 según S-112. Cubrí propietario y espacio, validación, recibos de creación y lock de cuenta para importación. 3) Ejecutá el comando dirigido de T-075 con Surefire y Failsafe contra PostgreSQL Testcontainers, docs-check, diff-check y la clasificación del diff. 4) Publicá solo el PR de T-075 y verificá verify-required en el HEAD publicado.
 GATE: diario. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-SALIDA: veredicto R2 y, si corresponde, merge confirmado y prompt de la siguiente sesión. Conservá Render Auto-Deploy On Commit.
+SALIDA: T-074 conciliada, T-075 in_review y prompt de frontera reviewer con PR, HEAD y base publicados. Conservá Render Auto-Deploy On Commit.
 ```
