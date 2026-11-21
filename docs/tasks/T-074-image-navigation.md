@@ -1,6 +1,6 @@
 ---
 id: T-074
-status: changes_requested
+status: in_review
 priority: P1
 size: S
 milestone: M6
@@ -71,17 +71,19 @@ FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente
 
 ## Checkpoint vigente
 
-2026-11-21. Frontera reviewer independiente en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Git Bash, Node 24.21 y Docker. Veredicto R1: **CAMBIOS REQUERIDOS** en [PR #77](https://github.com/MatiasNicolasAcevedo/devnotes/pull/77), HEAD `1b5f3f784e7a7f912ade408a1f37d600fd598475`, base `main@74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30`. Impacto del hallazgo: selección y vista previa de Imagen ante arrastre mixto. La revisión solo cambia la documentación.
+2026-11-21. Frontera implementer de corrección en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Git Bash, Node 24.21 y Docker Desktop. [PR #77](https://github.com/MatiasNicolasAcevedo/devnotes/pull/77), base `main@74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30`. Fuentes del gate y de la corrección `7fb517fe9660963c79a83e7c96c575cd2c09cf11`. El impacto se limita al comportamiento de Captura al soltar un archivo con texto adjunto. API, permisos y datos conservan el contrato de S-112.
 
-| Hallazgo | Evidencia en el HEAD revisado | Condición de cierre |
+| Hallazgo | Corrección | Evidencia |
 |---|---|---|
-| R1-1 · Un arrastre mixto admite texto o un enlace junto con el PNG. | En `ImageWorkspace.tsx`, `drop` evalúa solo `DataTransfer.files`. El E2E publicado prueba URL y texto sin archivos. Dos negativos independientes en `ImageWorkspace.review.test.tsx` (sonda temporal retirada, exit 1, 0/2) partieron de una vista previa y enviaron un PNG ficticio con un ítem `text/uri-list` o `text/plain`. En ambos, el evento quedó cancelado y la vista previa cambió de `blob:previa` a `blob:reemplazo`. S-112 exige rechazar texto y enlaces y conservar la selección. | En Chromium, soltar un PNG más texto o URL muestra error, conserva vista previa y resultado previos, evita navegación y deja cero POST de extracción. Un PNG/JPEG local como único archivo conserva su recorrido de vista previa. |
+| [R1-1](https://github.com/MatiasNicolasAcevedo/devnotes/pull/77#issuecomment-7070508900). Un PNG acompañado por `text/uri-list` o `text/plain` se admitía como captura. | Captura cancela el evento y rechaza la entrega si contiene algún ítem de texto, antes de seleccionar el archivo. | Dos negativos de Chromium parten de un JPEG seleccionado con resultado ya extraído. Ambos muestran «Soltá un solo archivo PNG o JPG.», conservan la URL de la vista previa y el resultado, mantienen la ruta y registran cero POST después de la extracción de preparación. El recorrido existente acepta un solo PNG y registra el primer POST al activar **Extraer texto**. |
 
-- `gh pr view 77 --repo MatiasNicolasAcevedo/devnotes` y `git fetch origin codex/t-074-image-navigation main` (0): `OPEN`, `isDraft=false`, HEAD igual al último commit que cambia STATUS. `git merge-base --is-ancestor e1d517d5cf5feb702e061707e51103d4ecebd8d4 HEAD` y `git diff --exit-code 3fbf34989ac9f3259751f23ef16db733791d3aa4 HEAD -- client/ e2e/` (0). Los dos gestos nativos documentados corresponden a fuentes idénticas. Drop desde Explorador y Ctrl+V desde Recortes, vista previa de ambos PNG, cero POST. `gh pr view 76 --repo MatiasNicolasAcevedo/devnotes` (0) confirmó el squash previo en la base.
-- `npm ci --offline --no-audit --no-fund`, `npm test -- --run src/app/AppShell.test.tsx src/app/AppRoutes.test.tsx src/features/ocr/OcrDialog.test.tsx src/features/spaces/SpaceNavigation.test.tsx` (0, 71/71) y `npm run typecheck` (0) desde cliente. Las guardias existentes y las pruebas de navegación, sesión e invalidación de OCR publicadas pasaron.
-- `STARTER_E2E_PROJECT=starter-e2e-t074-review-desktop bash scripts/e2e.sh --grep 'screenshot OCR:' --project desktop` y el mismo filtro con `STARTER_E2E_PROJECT=starter-e2e-t074-review-mobile` y `--project mobile` (0, 1/1 cada uno). Se usaron stacks propios, PostgreSQL 18, OIDC ficticio y doble externo. Readiness y saneado en verde. Inventario Docker posterior (0) por los labels exactos: 0 contenedores, redes y volúmenes en ambos proyectos.
-- `node scripts/docs-check.mjs`, `git diff --check 74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30 HEAD`, `bash scripts/verify.sh --policy 74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30` (0, `APPLICATION / FULL` informativo) y [verify-required](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/44958197522/job/137010901769) en SUCCESS sobre el HEAD revisado.
+- Entrada (exit 0): `gh pr view 77 --repo MatiasNicolasAcevedo/devnotes` confirmó `OPEN`, `isDraft=false` y la base exacta. `git fetch origin codex/t-074-image-navigation` y `git log -1 --format=%H origin/codex/t-074-image-navigation -- docs/STATUS.md` confirmaron el checkpoint publicado `fd37bff4c07ddc71622abab51d4c8089d8296550`, descendiente del HEAD revisado `1b5f3f784e7a7f912ade408a1f37d600fd598475`.
+- Rojo antes del cambio: `STARTER_E2E_PROJECT=starter-e2e-t074-r1-red bash scripts/e2e.sh --grep 'screenshot OCR: reject a mixed PNG drop' --project desktop` (1, 2 fallos). Ambas trazas llegan al drop cancelado y fallan al esperar el mensaje. Informe saneado local en `e2e/artifacts/starter-e2e-t074-r1-red/sanitized/`.
+- Cliente: `npm test -- --run src/app/AppShell.test.tsx src/app/AppRoutes.test.tsx src/features/ocr/OcrDialog.test.tsx src/features/spaces/SpaceNavigation.test.tsx` (0, 71/71), `npm run typecheck` (0) y ESLint y Prettier dirigidos a `ImageWorkspace.tsx` (0).
+- Gate E2E: `STARTER_E2E_PROJECT=starter-e2e-t074-r1-desktop bash scripts/e2e.sh --grep 'screenshot OCR:' --project desktop` (0, 3/3) y `STARTER_E2E_PROJECT=starter-e2e-t074-r1-mobile bash scripts/e2e.sh --grep 'screenshot OCR:' --project mobile` (0, recorrido móvil aprobado y dos casos de arrastre de escritorio omitidos por proyecto). Readiness, exportación saneada y cleanup por los labels exactos (0 contenedores, 0 redes y 0 volúmenes tras cada corrida). API, PostgreSQL y OIDC locales con doble externo de OCR.
+- Evidencia nativa: el ensayo de Explorador registró un único ítem `file`, que sigue la misma validación de PNG/JPEG. El ensayo de Recortes ejercitó `paste`, cuyo manejador conserva las mismas fuentes. Se cotejaron ambos gestos documentados con el diff. La prueba actual en Chromium ejercita `DataTransfer` y preserva las mediciones nativas del ensayo anterior.
+- `node scripts/docs-check.mjs` y `git diff --check 74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30 HEAD` (0). `bash scripts/verify.sh --policy origin/main` (0, `APPLICATION / FULL` informativo). `verify-required` corresponde al HEAD publicado que incorpora este checkpoint.
 
-Pendiente R1-1 en el mismo PR. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+Pendiente la revisión independiente R2. FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente.
 
 La [biblioteca de Imagen](T-075-image-text-library.md) añade guardado y borrado más adelante.
