@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-075](tasks/T-075-image-text-library.md) · Persistencia privada para los textos de Imagen · [S-112](specs/S-112-screenshot-ocr.md) |
-| Estado | `in_review` |
-| Acción actual | Frontera reviewer revisa el servicio interno y el gate dirigido |
+| Estado | `mergeable` |
+| Acción actual | Frontera reviewer verifica CI de la transición y cierra el PR #78 |
 | Rama / PR | `codex/t-075-image-text-library` · [PR #78](https://github.com/MatiasNicolasAcevedo/devnotes/pull/78) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,11 +34,11 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer independiente de T-075 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
+Actuá como frontera implementer de T-076 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/tasks/T-075-image-text-library.md y la sección Biblioteca de Imagen de docs/specs/S-112-screenshot-ocr.md.
-PRECONDICIÓN: gh pr view 78 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefName,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo para revisión, rama codex/t-075-image-text-library, base main@da04b23f2c3bba0c45f29dfd8c51f2b6b0c1da92 y verify-required en SUCCESS. Ejecutá git fetch origin main codex/t-075-image-text-library y comprobá que headRefOid coincida con git rev-parse origin/codex/t-075-image-text-library y con git log -1 --format=%H origin/codex/t-075-image-text-library -- docs/STATUS.md. El padre de ese HEAD debe ser 94651c83eef81c886ec6e7f811ab45d1761e797c, SHA del código probado. Si cambia HEAD o base, cotejá el estado real antes de emitir veredicto.
-ACCIÓN: 1) Revisá el diff completo del HEAD publicado en un checkout aislado. 2) Cotejá migración V7→V8 con datos existentes, límites Unicode, aislamiento por cuenta y espacio, cursor, recibos de 24 h, borrado y exclusión con el lock de importación. 3) Ejecutá el verify dirigido de la tarea con Surefire y Failsafe contra PostgreSQL 18.6, docs-check y diff-check. 4) Si hay hallazgos, registrá cambios requeridos en el mismo PR. Si aprobás, aplicá el protocolo de transición documental, verify-required del nuevo HEAD y squash ligado al SHA; confirmá MERGED por gh.
+LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/tasks/T-075-image-text-library.md, docs/tasks/T-076-image-text-xlsx.md y la sección Portabilidad incremental de Imagen y Libres de docs/specs/S-112-screenshot-ocr.md.
+PRECONDICIÓN: gh pr view 78 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName debe confirmar MERGED contra main, con mergedAt y mergeCommit.oid válidos. Actualizá origin/main y comprobá con git merge-base --is-ancestor, pasando mergeCommit.oid y origin/main en ese orden, que el squash está en la base. Con gh pr list --repo MatiasNicolasAcevedo/devnotes --state open confirmá que no hay otro PR activo.
+ACCIÓN: 1) Creá el checkout de codex/t-076-image-text-xlsx desde origin/main actualizado. En el primer commit conciliá T-075 a done con el SHA de squash confirmado y avanzá T-076 a in_progress. 2) Implementá codec XLSX v3, importación/exportación y conteos por espacio, exclusión con el lock de cuenta, cliente de respaldo y guía de recuperación conforme a T-076. Conservá lectura v1/v2 y verificá que una cuenta con solo textos de Imagen bloquee importación. 3) Corré los comandos backend y client de T-076 y el gate diario aplicable. 4) Publicá solo el PR de T-076 y comprobá verify-required en el HEAD publicado.
 GATE: diario. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-SALIDA: veredicto con evidencia sobre HEAD y base publicados, más el prompt del implementer de corrección o de T-076 si el squash queda confirmado. Conservá Render Auto-Deploy On Commit.
+SALIDA: T-075 conciliada, T-076 in_review, evidencia por HEAD y base publicados y prompt de frontera reviewer. Conservá Render Auto-Deploy On Commit.
 ```

@@ -1,6 +1,6 @@
 ---
 id: T-075
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M6
@@ -28,7 +28,7 @@ El patrón de Voz guía listado y borrado. Implementar migración, repositorio y
 - Desde `server/` con Git Bash y JDK 21, `./mvnw -q verify -Dtest=ImageTextServiceTest -Dit.test=ImageTextServiceIT,ImageTextMigrationIT -Djacoco.skip=true` con PostgreSQL Testcontainers. Registrar exit, cantidades y limpieza. La selección de casos no acredita cobertura global.
 - [Gate dirigido](../TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16).
 
-## Checkpoint vigente
+## Evidencia de implementación
 
 2026-11-21. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Git Bash, Corretto 21.0.9, Node 24.21.0 y Docker Desktop 28.5.1. Los commits usan la identidad Git configurada `Junie`. [PR #78](https://github.com/MatiasNicolasAcevedo/devnotes/pull/78) contra `main@da04b23f2c3bba0c45f29dfd8c51f2b6b0c1da92`. Fuentes probadas en `94651c83eef81c886ec6e7f811ab45d1761e797c`.
 
@@ -44,3 +44,14 @@ El patrón de Voz guía listado y borrado. Implementar migración, repositorio y
 | GitHub y MSYS fallaron en el sandbox heredado. | Consultar GitHub y usar la ruta explícita de Git Bash desde la superficie escalada. | Precondiciones y sonda de Java/Node/Docker (0). |
 
 Pendiente revisión independiente del PR #78. FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente.
+
+## Checkpoint vigente
+
+2026-11-21. Frontera reviewer independiente R1 en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Git Bash, Corretto 21.0.9, Node 24.21.0 y Docker Desktop 28.5.1. Identidad Git configurada: `Junie`. [PR #78](https://github.com/MatiasNicolasAcevedo/devnotes/pull/78), HEAD revisado `bdeaeb438e5c14871bdd62a6c1b686fc4f4d1640` contra `main@da04b23f2c3bba0c45f29dfd8c51f2b6b0c1da92`.
+
+- `gh pr view 78 --repo MatiasNicolasAcevedo/devnotes` (0) confirmó OPEN, listo, rama esperada y `verify-required` SUCCESS. `git fetch origin main codex/t-075-image-text-library` (0) y `git rev-parse` (0) confirmaron ambos SHA. El HEAD es el último commit de STATUS y su padre es `94651c83eef81c886ec6e7f811ab45d1761e797c`. `git diff --exit-code HEAD^ HEAD -- server` (0) confirmó fuentes idénticas. La consulta de conversaciones del PR (0) devolvió cero hilos.
+- Diff completo revisado en worktree aislado. V8 es aditiva y el upgrade en V7 poblada conserva las seis tablas existentes. El servicio interno conserva texto de hasta 60.000 puntos de código y rechaza blancos e identificadores inválidos. Las consultas acotan cuenta y espacio. El cursor por fecha/ID sigue funcionando después de borrar la fila del cursor. Crear y borrar comparten el lock transaccional requerido por importación. Los recibos conservan el resultado tras el borrado, rechazan un texto válido distinto y vencen a las 24 h. Cambia persistencia y operaciones internas; API HTTP, UI, permisos de usuario y formato XLSX conservan su comportamiento.
+- `./mvnw -q verify -Dtest=ImageTextServiceTest -Dit.test=ImageTextServiceIT,ImageTextMigrationIT -Djacoco.skip=true` desde `server/` en Git Bash (0): Surefire 12/12, Failsafe 7/7 sobre PostgreSQL 18.6, sin fallos, errores ni omitidos. Incluye V7→V8 con datos, restricciones, concurrencia con el lock de importación y rollback de copia y recibo. La primera invocación desde PowerShell (1) partió los argumentos Maven en los puntos; se repitió el comando intacto con Git Bash `-c`. Limpieza verificada por label `org.testcontainers.sessionId=e3d33b5e-f065-43bd-9e8a-3141e928ca14` e IDs de los dos PostgreSQL y Ryuk (consultas 0, sin resultados al finalizar).
+- `node scripts/docs-check.mjs`, `git diff --check origin/main HEAD` y `bash scripts/verify.sh --policy origin/main` (0). Perfil informativo `APPLICATION / FULL`. El cambio es interno y no agrega flujo para E2E.
+
+Sin cambios requeridos. Transición exclusivamente documental a `mergeable`. Pendiente verificar `verify-required` en el nuevo HEAD, vincular el veredicto a HEAD/base y confirmar el squash en GitHub. FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente.
