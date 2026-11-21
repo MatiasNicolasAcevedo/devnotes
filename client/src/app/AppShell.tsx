@@ -8,13 +8,14 @@ import { alpha } from '@mui/material/styles'
 import Toolbar from '@mui/material/Toolbar'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import Typography from '@mui/material/Typography'
-import { useRef, type ReactNode, type RefObject } from 'react'
+import { useRef, useState, type ReactNode, type RefObject } from 'react'
 import { Link as RouterLink, matchPath, useLocation } from 'react-router'
 import { SessionAlerts } from '../features/auth/SessionAlerts'
 import { SessionControls } from '../features/auth/SessionControls'
 import { useSession } from '../features/auth/sessionContext'
 import { DailyDraftWorkspace } from '../features/daily/DailyDraftNavigation'
 import { DailyCopyRecoveryProvider } from '../features/daily/DailyDraftProvider'
+import { ImageDraftContext } from '../features/ocr/imageDraftContext'
 import { SpaceNavigation } from '../features/spaces/SpaceNavigation'
 import { SpaceProvider } from '../features/spaces/SpaceProvider'
 import { SpaceSelector } from '../features/spaces/SpaceSelector'
@@ -22,7 +23,7 @@ import { useOptionalActiveSpace, useSpaceHref } from '../features/spaces/spaceCo
 import { ServerStatus } from '../features/system/ServerStatus'
 import { VoiceDraftNavigation } from '../features/voice/VoiceDraftNavigation'
 import { VoiceDraftProvider } from '../features/voice/VoiceDraftProvider'
-import { BookmarkIcon, HistoryIcon, MicIcon, NoteIcon } from '../shared/ui/icons'
+import { BookmarkIcon, HistoryIcon, ImageIcon, MicIcon, NoteIcon } from '../shared/ui/icons'
 import { AMBER } from './theme'
 
 /**
@@ -33,13 +34,16 @@ export function AppShell() {
   const { user } = useSession()
   const owner = user?.id ?? ''
   const navigationRoot = useRef<HTMLDivElement>(null)
+  const [imageEdited, setImageEdited] = useState(false)
   return (
     <SpaceProvider owner={owner}>
-      <AppShellContent navigationRoot={navigationRoot}>
-        <DailyCopyRecoveryProvider key={owner}>
-          <SpaceWorkspaces owner={owner} navigationRoot={navigationRoot} />
-        </DailyCopyRecoveryProvider>
-      </AppShellContent>
+      <ImageDraftContext.Provider value={{ imageEdited, setImageEdited }}>
+        <AppShellContent navigationRoot={navigationRoot}>
+          <DailyCopyRecoveryProvider key={owner}>
+            <SpaceWorkspaces owner={owner} navigationRoot={navigationRoot} />
+          </DailyCopyRecoveryProvider>
+        </AppShellContent>
+      </ImageDraftContext.Provider>
     </SpaceProvider>
   )
 }
@@ -79,6 +83,7 @@ const VOICE_TAB = { label: 'Voz', to: '/voice', Icon: MicIcon }
 const NOTES_TAB = { label: 'Notas', to: '/notes', Icon: NoteIcon }
 const OTHER_TABS = [
   { label: 'Referencias', to: '/reference', Icon: BookmarkIcon },
+  { label: 'Imagen', to: '/image', Icon: ImageIcon },
   { label: 'Historial', to: '/history', Icon: HistoryIcon },
 ]
 
@@ -97,7 +102,7 @@ function PrimaryNavigation({ mobile }: { mobile: boolean }) {
         mobile
           ? {
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+              gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
               flexShrink: 0,
               bgcolor: 'background.paper',
               borderTop: 1,
@@ -127,7 +132,7 @@ function PrimaryNavigation({ mobile }: { mobile: boolean }) {
             minHeight: mobile ? 48 : 44,
             px: mobile ? 0.25 : 1,
             borderRadius: '6px',
-            fontSize: mobile ? '0.75rem' : '0.9375rem',
+            fontSize: mobile ? '0.6875rem' : '0.9375rem',
             lineHeight: 1.25,
             overflowWrap: 'anywhere',
             '&:hover': { color: AMBER },

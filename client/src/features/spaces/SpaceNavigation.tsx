@@ -4,9 +4,19 @@ import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import {
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
+import {
+  matchPath,
   NavigationType,
+  type Location,
   useBlocker,
   useLocation,
   useNavigate,
@@ -14,6 +24,8 @@ import {
 } from 'react-router'
 import { useSession } from '../auth/sessionContext'
 import { useOptionalDailyDraftContext } from '../daily/DailyDraftProvider'
+import { DiscardImageChanges } from '../ocr/DiscardImageChanges'
+import { ImageDraftContext } from '../ocr/imageDraftContext'
 import { formatDateLocal } from '../daily/dateUtils'
 import { voiceNoteTextSchema, type SaveOutcome } from '../voice/useVoiceDraft'
 import { useVoiceDraftContext } from '../voice/voiceDraftContext'
@@ -51,12 +63,26 @@ export function SpaceNavigation({ children }: { children: ReactNode }) {
 
   const [blockedNotice, setBlockedNotice] = useState<string | null>(null)
   if (blockedNotice && !lockReason) setBlockedNotice(null)
+  const { imageEdited } = useContext(ImageDraftContext)
+  const leavesImageDraft = useCallback(
+    (next: Location) => {
+      if (!imageEdited || !ctx.owner) return false
+      const destination = readSpaceParam(next.search)
+      return (
+        !matchPath('/image', next.pathname) ||
+        destination.kind !== 'valid' ||
+        destination.space !== origin
+      )
+    },
+    [ctx.owner, imageEdited, origin],
+  )
   const shouldBlock = useCallback<BlockerFunction>(
     ({ currentLocation, nextLocation, historyAction }) => {
       if (ctx.owner && lockReason && currentLocation.pathname !== nextLocation.pathname) {
         setBlockedNotice(lockReason)
         return true
       }
+      if (leavesImageDraft(nextLocation)) return true
       return (
         ctx.owner !== '' &&
         origin !== null &&
@@ -64,11 +90,15 @@ export function SpaceNavigation({ children }: { children: ReactNode }) {
         nextLocation.state === SPACE_SELECTOR_INTENT
       )
     },
-    [ctx.owner, lockReason, origin],
+    [ctx.owner, leavesImageDraft, lockReason, origin],
   )
   const blocker = useBlocker(shouldBlock)
+  const confirmImageExit =
+    blocker.state === 'blocked' && !blockedNotice && leavesImageDraft(blocker.location)
   const selectorIntent =
-    blocker.state === 'blocked' && blocker.location.state === SPACE_SELECTOR_INTENT
+    blocker.state === 'blocked' &&
+    !confirmImageExit &&
+    blocker.location.state === SPACE_SELECTOR_INTENT
       ? readSpaceParam(blocker.location.search)
       : null
   const keepingOrigin = selectorIntent?.kind === 'valid' && !blockedNotice
@@ -148,6 +178,9 @@ export function SpaceNavigation({ children }: { children: ReactNode }) {
       {children}
     </>
   )
+  if (confirmImageExit && blocker.state === 'blocked')
+    return withOrigin(<DiscardImageChanges cancel={blocker.reset} discard={blocker.proceed} />)
+
   if ((!ctx.owner || requested === null) && !keepingOrigin)
     return withOrigin(blockedNotice ? <LockNotice reason={blockedNotice} /> : undefined)
 

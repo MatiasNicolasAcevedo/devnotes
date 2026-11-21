@@ -17,7 +17,7 @@ test('T-050: visitor navigation fits on one row while readiness is pending', asy
     const connecting = serverStatus(page, 'Conectando con el servidor');
     const login = banner.getByRole('link', { name: 'Ingresar', exact: true });
     const brand = banner.getByRole('link', { name: 'DevNotes', exact: true });
-    const tabs = ['Voz', 'Notas', 'Referencias', 'Historial'];
+    const tabs = ['Voz', 'Notas', 'Referencias', 'Imagen', 'Historial'];
 
     for (const width of [360, 375, 390, 767, 768, 1280]) {
       await test.step(`${width} px`, async () => {
@@ -27,7 +27,7 @@ test('T-050: visitor navigation fits on one row while readiness is pending', asy
         await expect(connecting).toHaveText(narrow ? '' : 'Conectando');
         const links = tabs.map(name => nav.getByRole('link', { name, exact: true }));
         const controls = [...(narrow ? [] : links), connecting, login];
-        const order = narrow ? ['Notas', 'Voz', 'Referencias', 'Historial'] : tabs;
+        const order = narrow ? ['Notas', 'Voz', 'Referencias', 'Imagen', 'Historial'] : tabs;
         await expect(nav.getByRole('link')).toHaveText(order);
         if (narrow) {
           const main = (await page.getByRole('main').boundingBox())!;

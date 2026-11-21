@@ -15,6 +15,7 @@ const TABS = [
   ['Voz', '/voice'],
   ['Notas', '/notes'],
   ['Referencias', '/reference'],
+  ['Imagen', '/image'],
   ['Historial', '/history'],
 ]
 
@@ -68,7 +69,7 @@ describe('AppRoutes', () => {
     expect(screen.getByLabelText('Fecha')).toHaveValue(todayLocal())
   })
 
-  it('la barra de escritorio ordena Voz, Notas, Referencias e Historial, sin «Inicio»', () => {
+  it('la barra de escritorio ordena Voz, Notas, Referencias, Imagen e Historial, sin «Inicio»', () => {
     installAuthBackend()
     renderWithProviders(<AppRoutes />, { route: '/login' })
 
@@ -86,6 +87,7 @@ describe('AppRoutes', () => {
     ['/history/2024-06-15', 'Historial'],
     ['/voice', 'Voz'],
     ['/reference', 'Referencias'],
+    ['/image', 'Imagen'],
   ])('en %s solo la pestaña «%s» lleva aria-current', async (route, active) => {
     installAuthBackend()
     installVisitorApis()

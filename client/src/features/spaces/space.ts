@@ -66,6 +66,7 @@ const SPACE_ROUTES = [
   '/history/:date',
   '/reference',
   '/voice',
+  '/image',
 ]
 
 export function isSpaceRoute(pathname: string): boolean {

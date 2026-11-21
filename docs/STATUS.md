@@ -2,14 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-073](tasks/T-073-ocr-windows-paste.md) · Pegar recortes de Windows en OCR · [S-112](specs/S-112-screenshot-ocr.md) |
+| Tarea y contrato | [T-074](tasks/T-074-image-navigation.md) · Imagen en la navegación principal · [S-112](specs/S-112-screenshot-ocr.md) |
 | Estado | `mergeable` |
-| Acción actual | Frontera reviewer verifica la transición documental y cierra el PR #76 |
-| Rama / PR | `codex/t-073-ocr-windows-paste-fix` · [PR76](https://github.com/MatiasNicolasAcevedo/devnotes/pull/76) |
+| Acción actual | Frontera reviewer R2 verifica CI de la transición y cierra el PR #77 |
+| Rama / PR | `codex/t-074-image-navigation` · [PR #77](https://github.com/MatiasNicolasAcevedo/devnotes/pull/77) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
-El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-074 espera la confirmación del merge de T-073.
+El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-073 quedó mergeada y conciliada.
 
 ## Pendientes del dueño
 
@@ -34,11 +34,11 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de T-074 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
+Actuá como frontera implementer de T-075 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/tasks/T-073-ocr-windows-paste.md, docs/tasks/T-074-image-navigation.md, docs/specs/S-112-screenshot-ocr.md y la sección Imagen de docs/design/WRITING-WORKSPACES.md. Usá frontend-design para cotejar el shell real.
-PRECONDICIÓN: gh pr view 76 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName debe confirmar MERGED contra main, con mergedAt y mergeCommit.oid válidos. Actualizá la referencia origin/main y comprobá que contiene ese squash y que no hay otro PR abierto. Si no se cumple, informá el estado real sin iniciar T-074.
-ACCIÓN: 1) Desde origin/main actualizado, creá el checkout nuevo de codex/t-074-image-navigation. En el primer commit conciliá T-073 a done con el squash confirmado y avanzá T-074 a in_progress. 2) Mové OCR a /image, incorporá Imagen a la navegación y agregá pegado por gesto y arrastre local; conservá borrador de Notas, espacio activo y envío solo al elegir Extraer texto. 3) Corré las pruebas de componente y typecheck del contrato, los E2E filtrados «screenshot OCR:» con --project desktop y --project mobile en proyectos propios separados, los ensayos de arrastre y Recortes reales en Windows con datos ficticios, docs-check y diff-check. 4) Publicá solo el PR de T-074 con evidencia vinculada a HEAD y base.
-GATE: diario. FULL y STARTER están diferidos: no ejecutarlos sin orden expresa del dueño.
-SALIDA: T-073 conciliada, T-074 in_review y prompt de frontera reviewer del PR de T-074 con HEAD y base exactos en STATUS y al final de la respuesta. Conservá Render Auto-Deploy On Commit.
+LEER: AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/tasks/T-074-image-navigation.md, docs/tasks/T-075-image-text-library.md y la sección Biblioteca de Imagen de docs/specs/S-112-screenshot-ocr.md.
+PRECONDICIÓN: gh pr view 77 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName debe confirmar MERGED contra main, con mergedAt y mergeCommit.oid válidos. Actualizá origin/main y comprobá con git merge-base --is-ancestor que el SHA devuelto en mergeCommit.oid es ancestro de origin/main. Con gh pr list --repo MatiasNicolasAcevedo/devnotes --state open confirmá que no hay otro PR activo antes de iniciar T-075.
+ACCIÓN: 1) Creá el checkout nuevo de codex/t-075-image-text-library desde origin/main actualizado. En el primer commit conciliá T-074 a done con el squash confirmado y avanzá T-075 a in_progress. 2) Implementá la migración, el repositorio y el servicio interno de textos de Imagen en PostgreSQL 18.6 según S-112. Cubrí propietario y espacio, validación, recibos de creación y lock de cuenta para importación. 3) Ejecutá el comando dirigido de T-075 con Surefire y Failsafe contra PostgreSQL Testcontainers, docs-check, diff-check y la clasificación del diff. 4) Publicá solo el PR de T-075 y verificá verify-required en el HEAD publicado.
+GATE: diario. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+SALIDA: T-074 conciliada, T-075 in_review y prompt de frontera reviewer con PR, HEAD y base publicados. Conservá Render Auto-Deploy On Commit.
 ```

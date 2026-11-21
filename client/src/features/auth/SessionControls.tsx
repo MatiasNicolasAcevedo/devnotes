@@ -2,7 +2,7 @@ import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { Link as RouterLink, useLocation } from 'react-router'
 import { DatabaseIcon, PersonIcon } from '../../shared/ui/icons'
 import { ServiceActivityDialog } from '../serviceActivity/ServiceActivityDialog'
@@ -11,6 +11,8 @@ import {
   useServiceActivityCapabilities,
 } from '../serviceActivity/useServiceActivity'
 import { texts as dataTexts } from '../portability/messages'
+import { DiscardImageChanges } from '../ocr/DiscardImageChanges'
+import { ImageDraftContext } from '../ocr/imageDraftContext'
 import { sessionLabel, useSession } from './sessionContext'
 
 /** Estado de sesión en la barra superior: menú de usuario con «Cerrar sesión» o acceso al ingreso. */
@@ -52,6 +54,8 @@ function AccountMenu({
   menuContainer?: () => HTMLElement | null
 }) {
   const { logout, logoutPending, csrfReady } = useSession()
+  const { imageEdited } = useContext(ImageDraftContext)
+  const [confirmLogout, setConfirmLogout] = useState(false)
   const location = useLocation()
   const [menu, setMenu] = useState<{ anchor: HTMLElement; location: string } | null>(null)
   if (menu && menu.location !== location.key) setMenu(null)
@@ -125,12 +129,22 @@ function AccountMenu({
           disabled={logoutPending || !csrfReady}
           onClick={() => {
             closeMenu()
-            logout()
+            if (imageEdited) setConfirmLogout(true)
+            else logout()
           }}
         >
           {logoutPending ? 'Cerrando sesión…' : 'Cerrar sesión'}
         </MenuItem>
       </Menu>
+      {confirmLogout && (
+        <DiscardImageChanges
+          cancel={() => setConfirmLogout(false)}
+          discard={() => {
+            setConfirmLogout(false)
+            logout()
+          }}
+        />
+      )}
       {available ? (
         <ServiceActivityDialog
           owner={owner}

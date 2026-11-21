@@ -54,7 +54,7 @@ export function extractionErrorMessage(error: unknown): string {
       case 401:
         return 'La sesión terminó. Volvé a iniciar sesión.'
       case 403:
-        return 'No se pudo autorizar la extracción. Volvé a abrir Herramientas.'
+        return 'No se pudo autorizar la extracción. Volvé a iniciar sesión y probá de nuevo.'
       case 413:
         return 'La imagen supera los límites de tamaño o dimensiones. Elegí una captura más chica.'
       case 415:
