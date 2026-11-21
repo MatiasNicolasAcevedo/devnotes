@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-074](tasks/T-074-image-navigation.md) · Imagen en la navegación principal · [S-112](specs/S-112-screenshot-ocr.md) |
-| Estado | `in_review` |
-| Acción actual | Frontera reviewer revisa el PR #77 con los dos gestos nativos registrados |
+| Estado | `changes_requested` |
+| Acción actual | Frontera implementer corrige R1-1, rechazo de arrastre mixto en Captura |
 | Rama / PR | `codex/t-074-image-navigation` · [PR #77](https://github.com/MatiasNicolasAcevedo/devnotes/pull/77) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,11 +34,11 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer de T-074 en MatiasNicolasAcevedo/devnotes. Sesión nueva e independiente.
+Actuá como frontera implementer de corrección de T-074 en MatiasNicolasAcevedo/devnotes. Sesión nueva y mismo PR #77.
 
-LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/tasks/T-074-image-navigation.md, docs/specs/S-112-screenshot-ocr.md y la sección Imagen de docs/design/WRITING-WORKSPACES.md.
-PRECONDICIÓN: gh pr view 77 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid debe confirmar OPEN, isDraft=false y base main@74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30. Tras git fetch origin codex/t-074-image-navigation, el HEAD publicado debe coincidir con git log -1 --format=%H origin/codex/t-074-image-navigation -- docs/STATUS.md, el commit que publica este prompt. Verificá que descienda de e1d517d5cf5feb702e061707e51103d4ecebd8d4 y que git diff --exit-code 3fbf34989ac9f3259751f23ef16db733791d3aa4 <HEAD> -- client/ e2e/ termine en 0. Si cambió el par HEAD/base, informá el estado real y reevaluá la evidencia aplicable.
-ACCIÓN: 1) Revisá el diff publicado contra la base exacta y cotejá S-112, las regresiones dirigidas y los dos gestos nativos documentados en T-074. 2) Corré las pruebas dirigidas que correspondan a los riesgos y verificá docs-check, diff-check y verify-required sobre los SHA vigentes. 3) Si hay hallazgos, publicá CAMBIOS REQUERIDOS con su condición de cierre. Si aprobás, seguí la transición a mergeable, verificá CI del nuevo HEAD, publicá el veredicto ligado a HEAD/base, hacé squash con el SHA aprobado y confirmá MERGED en el PR exacto.
+LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/tasks/T-074-image-navigation.md, S-112 (seguimiento Imagen) y el comentario CAMBIOS REQUERIDOS del PR #77.
+PRECONDICIÓN: gh pr view 77 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid debe confirmar OPEN, isDraft=false y base main@74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30. Tras git fetch origin codex/t-074-image-navigation, comprobá que headRefOid coincide con el HEAD remoto y con git log -1 --format=%H origin/codex/t-074-image-navigation -- docs/STATUS.md, y que desciende de 1b5f3f784e7a7f912ade408a1f37d600fd598475. Si difiere, informá el estado real y reevaluá el alcance del hallazgo.
+ACCIÓN: 1) En codex/t-074-image-navigation, agregá un negativo dirigido que reproduzca un PNG válido acompañado por text/uri-list y por text/plain. 2) Rechazá el drop mixto en Captura, mostrá el error y conservá la selección y el resultado anteriores; evitá la navegación nativa. Conservá el arrastre de un único PNG/JPEG local y la extracción por gesto explícito. 3) Verificá el negativo en Chromium con una selección previa, cero POST y el positivo de archivo único. Corré las pruebas dirigidas, typecheck, E2E filtrado, docs-check y diff-check. Contrastá los gestos nativos con la nueva validación y preservá su evidencia. 4) Publicá la corrección en el mismo PR y el prompt para frontera reviewer R2 ligado a HEAD/base.
 GATE: diario. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-SALIDA: veredicto ligado al HEAD y la base revisados, MERGED verificado si corresponde y prompt para la sesión siguiente. Conservá Render Auto-Deploy On Commit.
+SALIDA: PR #77 en in_review con cierre observable del hallazgo, verify-required verde y prompt completo para frontera reviewer R2. Conservá Render Auto-Deploy On Commit.
 ```

@@ -1,6 +1,6 @@
 ---
 id: T-074
-status: in_review
+status: changes_requested
 priority: P1
 size: S
 milestone: M6
@@ -32,7 +32,7 @@ Entrar a **Imagen** directamente desde la barra, pegar o elegir y extraer texto 
 - Desde `client/`: `npm test -- --run src/app/AppShell.test.tsx src/app/AppRoutes.test.tsx src/features/ocr/OcrDialog.test.tsx`. Adaptar las pruebas OCR a la pantalla nueva preservando regresiones. Cotejar orden, `aria-current`, espacio, salida con edición, permiso denegado de **Pegar** y navegación por teclado.
 - Actualizar el caso OCR de E2E. Pasar `bash scripts/e2e.sh --grep 'screenshot OCR:' --project=desktop` y el mismo filtro con `--project=mobile` en proyectos efímeros distintos y con doble externo. Verificar Notas al salir, amplitud a 320/360/375/390 CSS px y 768 en escritorio, sin scroll horizontal. Verificar en Windows dos caminos reales con datos ficticios, soltar un PNG del explorador y pegar tras volver de Recortes, sin llamada externa hasta extraer. Agregar en Chromium un drop válido y los negativos múltiple, URL y tipo inválido. Aplicar el [gate dirigido](../TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16) y cleanup. Usar STARTER_E2E_PROJECT=starter-e2e-t074-desktop o starter-e2e-t074-mobile según el proyecto.
 
-## Checkpoint vigente
+## Evidencia de implementación
 
 2026-11-21. Frontera implementer en Codex Desktop, GPT-6.2 Sol con esfuerzo alto, PowerShell, Git/gh, Git Bash, Node 24.21 y Docker Desktop. Impacto: ruta privada `/image`, cinco destinos principales, selección y previsualización local con teclado, portapapeles y arrastre. Se reutilizaron la sesión, el espacio, el guardado de Notas y la API de OCR. La extracción inicia al pulsar **Extraer texto**. No se incorpora almacenamiento de capturas o resultados.
 
@@ -68,5 +68,20 @@ Retoma local desde este worktree: `& .orchestrator/t074-windows/stack.ps1 up` (0
 Gate diario de retoma: `node scripts/docs-check.mjs` (0), `git diff --check origin/main HEAD` (0) y `bash scripts/verify.sh --policy origin/main` (0, `APPLICATION / FULL` informativo). Siguiente paso: revisión independiente del PR #77.
 
 FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente.
+
+## Checkpoint vigente
+
+2026-11-21. Frontera reviewer independiente en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Git Bash, Node 24.21 y Docker. Veredicto R1: **CAMBIOS REQUERIDOS** en [PR #77](https://github.com/MatiasNicolasAcevedo/devnotes/pull/77), HEAD `1b5f3f784e7a7f912ade408a1f37d600fd598475`, base `main@74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30`. Impacto del hallazgo: selección y vista previa de Imagen ante arrastre mixto. La revisión solo cambia la documentación.
+
+| Hallazgo | Evidencia en el HEAD revisado | Condición de cierre |
+|---|---|---|
+| R1-1 · Un arrastre mixto admite texto o un enlace junto con el PNG. | En `ImageWorkspace.tsx`, `drop` evalúa solo `DataTransfer.files`. El E2E publicado prueba URL y texto sin archivos. Dos negativos independientes en `ImageWorkspace.review.test.tsx` (sonda temporal retirada, exit 1, 0/2) partieron de una vista previa y enviaron un PNG ficticio con un ítem `text/uri-list` o `text/plain`. En ambos, el evento quedó cancelado y la vista previa cambió de `blob:previa` a `blob:reemplazo`. S-112 exige rechazar texto y enlaces y conservar la selección. | En Chromium, soltar un PNG más texto o URL muestra error, conserva vista previa y resultado previos, evita navegación y deja cero POST de extracción. Un PNG/JPEG local como único archivo conserva su recorrido de vista previa. |
+
+- `gh pr view 77 --repo MatiasNicolasAcevedo/devnotes` y `git fetch origin codex/t-074-image-navigation main` (0): `OPEN`, `isDraft=false`, HEAD igual al último commit que cambia STATUS. `git merge-base --is-ancestor e1d517d5cf5feb702e061707e51103d4ecebd8d4 HEAD` y `git diff --exit-code 3fbf34989ac9f3259751f23ef16db733791d3aa4 HEAD -- client/ e2e/` (0). Los dos gestos nativos documentados corresponden a fuentes idénticas. Drop desde Explorador y Ctrl+V desde Recortes, vista previa de ambos PNG, cero POST. `gh pr view 76 --repo MatiasNicolasAcevedo/devnotes` (0) confirmó el squash previo en la base.
+- `npm ci --offline --no-audit --no-fund`, `npm test -- --run src/app/AppShell.test.tsx src/app/AppRoutes.test.tsx src/features/ocr/OcrDialog.test.tsx src/features/spaces/SpaceNavigation.test.tsx` (0, 71/71) y `npm run typecheck` (0) desde cliente. Las guardias existentes y las pruebas de navegación, sesión e invalidación de OCR publicadas pasaron.
+- `STARTER_E2E_PROJECT=starter-e2e-t074-review-desktop bash scripts/e2e.sh --grep 'screenshot OCR:' --project desktop` y el mismo filtro con `STARTER_E2E_PROJECT=starter-e2e-t074-review-mobile` y `--project mobile` (0, 1/1 cada uno). Se usaron stacks propios, PostgreSQL 18, OIDC ficticio y doble externo. Readiness y saneado en verde. Inventario Docker posterior (0) por los labels exactos: 0 contenedores, redes y volúmenes en ambos proyectos.
+- `node scripts/docs-check.mjs`, `git diff --check 74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30 HEAD`, `bash scripts/verify.sh --policy 74d987d1cd7f1d4e0d1f2a8994fe7d656cc47e30` (0, `APPLICATION / FULL` informativo) y [verify-required](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/44958197522/job/137010901769) en SUCCESS sobre el HEAD revisado.
+
+Pendiente R1-1 en el mismo PR. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
 La [biblioteca de Imagen](T-075-image-text-library.md) añade guardado y borrado más adelante.
