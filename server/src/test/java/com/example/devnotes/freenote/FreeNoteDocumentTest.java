@@ -99,6 +99,38 @@ class FreeNoteDocumentTest {
         assertThatIllegalArgumentException().isThrownBy(() -> FreeNoteDocument.validate(document("\ud800")));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"json", "sql", "text"})
+    void preservesCodeExactlyAndRejectsItInDailyDocuments(String language) throws Exception {
+        var code = JSON.readTree("""
+                {"type":"doc","content":[{"type":"codeBlock","attrs":{"language":"%s"},
+                  "content":[{"type":"text","text":"\\n  incompleto\\t\\r\\n  "}]}]}
+                """.formatted(language));
+        assertThat(FreeNoteDocument.read(FreeNoteDocument.validate(code))).isEqualTo(code);
+        assertThatThrownBy(() -> DailyContent.validate(code)).isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"""
+        {"type":"codeBlock"}
+        """, """
+        {"type":"codeBlock","attrs":{"language":"javascript"}}
+        """, """
+        {"type":"codeBlock","attrs":{"language":null}}
+        """, """
+        {"type":"codeBlock","attrs":{"language":"text","extra":0}}
+        """, """
+        {"type":"codeBlock","attrs":{"language":"sql"},"content":[{"type":"paragraph"}]}
+        """, """
+        {"type":"codeBlock","attrs":{"language":"text"},"content":[{"type":"text","text":"hi","marks":[]}]}
+        """, """
+        {"type":"bulletList","content":[{"type":"listItem","content":[{"type":"codeBlock","attrs":{"language":"text"}}]}]}
+        """})
+    void rejectsMalformedCodeBlocks(String block) throws Exception {
+        var invalid = JSON.readTree("{\"type\":\"doc\",\"content\":[" + block + "]}");
+        assertThatIllegalArgumentException().isThrownBy(() -> FreeNoteDocument.validate(invalid));
+    }
+
     @Test
     void enforcesCompactUtf8ByteLimitIndependentlyOfTextLength() {
         String paragraph = "{\"type\":\"paragraph\"},";

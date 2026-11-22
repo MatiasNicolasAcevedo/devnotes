@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { http, type RequestOptions } from '../../services/http'
 import type { Space } from '../spaces/space'
+import { codeLanguages } from './codeLanguages'
 
 const storableText = z.string().refine((text) => {
   for (const character of text) {
@@ -9,12 +10,8 @@ const storableText = z.string().refine((text) => {
   }
   return true
 })
-const paragraph = z.strictObject({
-  type: z.literal('paragraph'),
-  content: z
-    .array(z.strictObject({ type: z.literal('text'), text: storableText.min(1) }))
-    .optional(),
-})
+const textContent = z.array(z.strictObject({ type: z.literal('text'), text: storableText.min(1) }))
+const paragraph = z.strictObject({ type: z.literal('paragraph'), content: textContent.optional() })
 const itemParagraph = z.tuple([paragraph])
 const listItem = z.strictObject({ type: z.literal('listItem'), content: itemParagraph })
 const taskItem = z.strictObject({
@@ -24,6 +21,11 @@ const taskItem = z.strictObject({
 })
 const block = z.discriminatedUnion('type', [
   paragraph,
+  z.strictObject({
+    type: z.literal('codeBlock'),
+    attrs: z.strictObject({ language: z.enum(codeLanguages) }),
+    content: textContent.optional(),
+  }),
   z.strictObject({ type: z.literal('bulletList'), content: z.array(listItem).min(1) }),
   z.strictObject({
     type: z.literal('orderedList'),
@@ -40,10 +42,12 @@ const documentSchema = z
   .refine((document) => {
     let length = 0
     for (const block of document.content) {
-      const paragraphs =
-        block.type === 'paragraph' ? [block] : block.content.map((item) => item.content[0])
-      for (const paragraph of paragraphs) {
-        for (const node of paragraph.content ?? []) length += Array.from(node.text).length
+      const textBlocks =
+        block.type === 'paragraph' || block.type === 'codeBlock'
+          ? [block]
+          : block.content.map((item) => item.content[0])
+      for (const textBlock of textBlocks) {
+        for (const node of textBlock.content ?? []) length += Array.from(node.text).length
       }
     }
     return (

@@ -1,6 +1,6 @@
 ---
 id: T-082
-status: mergeable
+status: done
 priority: P1
 size: S
 milestone: M7
@@ -34,7 +34,7 @@ Casilla por teclado/toque, conversión y deshacer. Enter continúa y vacío sale
 
 ## Checkpoint vigente
 
-2026-11-22. Frontera reviewer independiente en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0, JDK 21 y Docker Desktop. [PR #85](https://github.com/MatiasNicolasAcevedo/devnotes/pull/85). Base `main@9e545c63a52415568dde2a548c999e1b27bd80ad`, HEAD técnico probado `f82041276528bb555449886299191b02f2fca6cb` y entrega revisada `bd4c44541e42a00e14985c76ed75665faa10f4a4`. El commit hijo de transición cambia solo esta tarea y STATUS. Pendiente en esta transición: confirmar CI y HEAD/base publicados, emitir el veredicto por SHA y confirmar el squash en GitHub.
+2026-11-22. Frontera reviewer independiente en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0, JDK 21 y Docker Desktop. [PR #85](https://github.com/MatiasNicolasAcevedo/devnotes/pull/85). Base `main@9e545c63a52415568dde2a548c999e1b27bd80ad`, HEAD técnico probado `f82041276528bb555449886299191b02f2fca6cb` y entrega revisada `bd4c44541e42a00e14985c76ed75665faa10f4a4`. El commit hijo de transición cambia solo esta tarea y STATUS. Cierre conciliado en T-083. La consulta exacta a GitHub confirmó MERGED el 2026-11-22T16:32:13Z, squash `1b6ee91b2c5276e170da00aa0204d222892096c0`. Git fetch y merge-base confirmaron el squash en origin/main (exit 0).
 
 - Entrada. `gh pr view 85 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup` y `git fetch origin main codex/t-082-free-notes-lists` (exit 0). PR abierto y listo, HEAD remoto coincidente y `verify-required` exitoso para `bd4c445` en el run `45042859220`, posterior al run cancelado. Revisiones pendientes en la consulta de conversaciones: cero. `git diff --exit-code f82041276528bb555449886299191b02f2fca6cb HEAD -- client server e2e scripts` (exit 0) y revisión del diff completo en checkout aislado.
 - Impacto revisado. El esquema de Libres y los validadores admiten listas planas con un párrafo por ítem. El validador del servidor se reutiliza en API y XLSX v4. La revisión cubrió UI, teclado y toque, conversión parcial, deshacer, copia en texto y HTML, persistencia del orden/marcado y compatibilidad de documentos previos. El diff conserva el esquema del diario, rutas, permisos y almacenamiento JSONB. Una sonda independiente de TipTap verificó conversión de un rango de casillas a numerada, deshacer y pegado multilínea sin anidación (exit 0).

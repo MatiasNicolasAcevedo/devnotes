@@ -109,7 +109,7 @@ final class XlsxText {
             }
             first = false;
             switch (block.path("type").asText()) {
-                case "paragraph" -> appendParagraph(out, block);
+                case "paragraph", "codeBlock" -> appendTextBlock(out, block);
                 case "bulletList", "orderedList", "taskList" -> appendList(out, block);
                 default -> {}
             }
@@ -129,12 +129,12 @@ final class XlsxText {
                 case "taskList" -> out.append(item.path("attrs").path("checked").asBoolean() ? "[x] " : "[ ] ");
                 default -> throw new IllegalArgumentException("Unsupported list type");
             }
-            appendParagraph(out, item.path("content").path(0));
+            appendTextBlock(out, item.path("content").path(0));
         }
     }
 
-    private static void appendParagraph(StringBuilder out, JsonNode paragraph) {
-        for (JsonNode inline : paragraph.path("content")) {
+    private static void appendTextBlock(StringBuilder out, JsonNode block) {
+        for (JsonNode inline : block.path("content")) {
             if ("reference".equals(inline.path("type").asText())) {
                 out.append(UNRESOLVED_REFERENCE);
             } else {

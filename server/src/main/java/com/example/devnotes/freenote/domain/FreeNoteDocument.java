@@ -14,6 +14,7 @@ public final class FreeNoteDocument {
     private static final Set<String> BLOCK_FIELDS = Set.of("type", "content");
     private static final Set<String> ATTRIBUTED_BLOCK_FIELDS = Set.of("type", "content", "attrs");
     private static final Set<String> TEXT_FIELDS = Set.of("type", "text");
+    private static final Set<String> CODE_LANGUAGES = Set.of("json", "sql", "text");
     private static final JsonMapper MAPPER =
             JsonMapper.builder().enable(JsonNodeFeature.WRITE_PROPERTIES_SORTED).build();
 
@@ -27,6 +28,7 @@ public final class FreeNoteDocument {
                 case "bulletList" -> listPoints(block, "bulletList", "listItem");
                 case "orderedList" -> listPoints(block, "orderedList", "listItem");
                 case "taskList" -> listPoints(block, "taskList", "taskItem");
+                case "codeBlock" -> codePoints(block);
                 default -> paragraphPoints(block);
             };
             if (textPoints > MAX_TEXT_POINTS) {
@@ -71,12 +73,25 @@ public final class FreeNoteDocument {
 
     private static long paragraphPoints(JsonNode paragraph) {
         requireNode(paragraph, "paragraph", BLOCK_FIELDS);
-        JsonNode content = paragraph.get("content");
+        return textPoints(paragraph);
+    }
+
+    private static long codePoints(JsonNode block) {
+        requireNode(block, "codeBlock", ATTRIBUTED_BLOCK_FIELDS);
+        JsonNode language = requireAttribute(block, "language");
+        if (!language.isTextual() || !CODE_LANGUAGES.contains(language.textValue())) {
+            throw new IllegalArgumentException("Unsupported free note code block language");
+        }
+        return textPoints(block);
+    }
+
+    private static long textPoints(JsonNode block) {
+        JsonNode content = block.get("content");
         if (content == null) {
             return 0;
         }
         if (!content.isArray()) {
-            throw new IllegalArgumentException("Paragraph content must be an array");
+            throw new IllegalArgumentException("Text block content must be an array");
         }
         long points = 0;
         for (JsonNode node : content) {

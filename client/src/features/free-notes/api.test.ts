@@ -4,6 +4,11 @@ import { freeNoteInput } from './api'
 const paragraph = { type: 'paragraph', content: [{ type: 'text', text: 'Preparar' }] }
 const listItem = { type: 'listItem', content: [paragraph] }
 const taskItem = { type: 'taskItem', attrs: { checked: true }, content: [paragraph] }
+const codeBlock = {
+  type: 'codeBlock',
+  attrs: { language: 'json' },
+  content: [{ type: 'text', text: '\n  {"incompleto":\t\r\n' }],
+}
 
 function parse(...content: unknown[]) {
   return freeNoteInput.safeParse({ title: 'Listas', document: { type: 'doc', content } })
@@ -41,5 +46,31 @@ describe('free note document', () => {
     const list = { type: 'bulletList', content: [{ ...listItem, content: [longParagraph] }] }
     expect(parse(list).success).toBe(true)
     expect(parse(list, paragraph).success).toBe(false)
+  })
+
+  it.each(['json', 'sql', 'text'])('preserves code text and empty %s blocks', (language) => {
+    const attrs = { language }
+    const content = [
+      { ...codeBlock, attrs },
+      { type: 'codeBlock', attrs },
+    ]
+    expect(parse(...content)).toMatchObject({ success: true, data: { document: { content } } })
+  })
+
+  it.each([
+    { type: 'codeBlock' },
+    { ...codeBlock, attrs: { language: 'javascript' } },
+    { ...codeBlock, attrs: { language: 'sql', extra: true } },
+    { ...codeBlock, content: [paragraph] },
+    { ...codeBlock, content: [{ ...codeBlock.content[0], marks: [] }] },
+    { type: 'bulletList', content: [{ type: 'listItem', content: [codeBlock] }] },
+  ])('rejects invalid code structure: %j', (invalid) => {
+    expect(parse(invalid).success).toBe(false)
+  })
+
+  it('counts code text towards the shared limit', () => {
+    const atLimit = { ...codeBlock, content: [{ type: 'text', text: '🧪'.repeat(60_000) }] }
+    expect(parse(atLimit).success).toBe(true)
+    expect(parse(atLimit, paragraph).success).toBe(false)
   })
 })

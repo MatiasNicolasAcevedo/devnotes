@@ -1,5 +1,42 @@
 import { randomUUID } from 'node:crypto';
+import type { Browser, Page } from '@playwright/test';
 import { control, csrfHeaders, expect, login, readiness, test } from './fixtures';
+
+async function checkFreeNoteRestore(
+  page: Page, browser: Browser, sourceUser: string, title: string,
+  checkNote: (restored: Page) => Promise<void>,
+) {
+  const workbook = await page.request.get('/api/v1/portability/export');
+  expect(workbook.status()).toBe(200);
+  const restoreIdentity = randomUUID();
+  await control('identity', restoreIdentity);
+  const restore = await browser.newContext({ baseURL: 'http://localhost', viewport: page.viewportSize()! });
+  try {
+    const restored = await restore.newPage();
+    await readiness(restored);
+    expect(await login(restored, restoreIdentity)).not.toBe(sourceUser);
+    const file = {
+      name: 'notas-libres-v4.xlsx',
+      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      buffer: await workbook.body(),
+    };
+    const headers = await csrfHeaders(restored);
+    const preview = await restored.request.post('/api/v1/portability/import-preview', {
+      headers, multipart: { file },
+    });
+    expect(preview.status()).toBe(200);
+    expect(await preview.json()).toMatchObject({ version: 4, accountEmpty: true, counts: { freeNotes: 1 } });
+    const result = await restored.request.post('/api/v1/portability/imports', {
+      headers, multipart: { file },
+    });
+    expect(result.status()).toBe(201);
+    await restored.goto('/free-notes?space=work');
+    await restored.getByRole('link', { name: title }).click();
+    await checkNote(restored);
+  } finally {
+    await restore.close();
+  }
+}
 
 test('free-notes: lists support editing, clipboard, reload and XLSX v4 restore', async ({
   page, context, browser, identity, isMobile,
@@ -109,37 +146,124 @@ test('free-notes: lists support editing, clipboard, reload and XLSX v4 restore',
     },
   });
   expect(response.status()).toBe(400);
-  const workbook = await page.request.get('/api/v1/portability/export');
-  expect(workbook.status()).toBe(200);
-
-  const restoreIdentity = randomUUID();
-  await control('identity', restoreIdentity);
-  const restore = await browser.newContext({ baseURL: 'http://localhost', viewport: page.viewportSize()! });
-  try {
-    const restored = await restore.newPage();
-    await readiness(restored);
-    expect(await login(restored, restoreIdentity)).not.toBe(sourceUser);
-    const file = {
-      name: 'listas-v4.xlsx',
-      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      buffer: await workbook.body(),
-    };
-    const headers = await csrfHeaders(restored);
-    const preview = await restored.request.post('/api/v1/portability/import-preview', {
-      headers, multipart: { file },
-    });
-    expect(preview.status()).toBe(200);
-    expect(await preview.json()).toMatchObject({ version: 4, accountEmpty: true, counts: { freeNotes: 1 } });
-    const result = await restored.request.post('/api/v1/portability/imports', {
-      headers, multipart: { file },
-    });
-    expect(result.status()).toBe(201);
-    await restored.goto('/free-notes?space=work');
-    await restored.getByRole('link', { name: /T-082 listas ficticias/ }).click();
+  await checkFreeNoteRestore(page, browser, sourceUser, 'T-082 listas ficticias', async (restored) => {
     await expectLists(restored.getByRole('textbox', { name: 'Contenido' }));
-  } finally {
-    await restore.close();
-  }
+  });
+});
+
+test('free-notes: code blocks preserve clipboard, undo and XLSX v4', async ({
+  page, context, browser, identity, isMobile,
+}) => {
+  const width = isMobile ? 320 : 768;
+  await page.setViewportSize({ width, height: 700 });
+  const sourceUser = await login(page, identity);
+  await page.goto('/free-notes/new?space=work');
+  const title = 'T-083 código ficticio';
+  await page.getByRole('textbox', { name: 'Título' }).fill(title);
+  const editor = page.getByRole('textbox', { name: 'Contenido' });
+  const card = editor.locator('.free-note-code');
+  const code = card.locator('code');
+  const paragraph = editor.locator(':scope > p');
+  const exit = card.getByRole('button', { name: 'Salir del bloque' });
+  const choose = async (language: string) => {
+    await page.getByRole('button', { name: 'Herramientas' }).click();
+    await page.getByRole('menuitem', { name: 'Bloque de código' }).click();
+    await page.getByRole('menuitem', { name: language, exact: true }).click();
+    await expect(editor).toBeFocused();
+  };
+
+  await editor.click();
+  await choose('JSON');
+  await expect(card).toHaveAttribute('data-language', 'json');
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  const snippet = '\n  SELECT 1, "x" -- ' + 'dato'.repeat(120) + '\n\n\tfin ';
+  await page.evaluate((text) => navigator.clipboard.writeText(text), snippet);
+  await editor.press('Control+v');
+  const expectCode = (target: typeof code, expected: string) =>
+    expect.poll(() => target.textContent()).toBe(expected);
+  await expectCode(code, snippet);
+  await expect(code.locator('.code-string')).toHaveText('"x"');
+  await choose('SQL');
+  await expect(code.locator('.code-keyword')).toHaveText('SELECT');
+  await expect(code.locator('.code-comment')).toHaveCount(1);
+  await choose('TXT');
+  await expect(code.locator('[class^=code-]')).toHaveCount(0);
+  await expectCode(code, snippet);
+  await editor.press('Control+z');
+  await expect(card).toHaveAttribute('data-language', 'sql');
+  await expectCode(code, snippet);
+  await expect.poll(() => card.locator('.free-note-code-content').evaluate(
+    (element) => element.scrollWidth > element.clientWidth,
+  )).toBe(true);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+
+  await page.evaluate(() => navigator.clipboard.writeText('valor anterior'));
+  const copy = card.getByRole('button', { name: 'Copiar código' });
+  if (isMobile) await copy.tap();
+  else await copy.click();
+  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(snippet);
+  await editor.press('Control+a');
+  await editor.press('Control+c');
+  const clipboard = await page.evaluate(async () => {
+    const [item] = await navigator.clipboard.read();
+    const html = await (await item.getType('text/html')).text();
+    const pre = new DOMParser().parseFromString(html, 'text/html').querySelector('pre');
+    return { language: pre?.dataset.language, text: pre?.textContent };
+  });
+  expect(clipboard).toEqual({ language: 'sql', text: snippet });
+
+  const selectionIn = (target: typeof code) => target.evaluate((element) =>
+    element.contains(window.getSelection()?.anchorNode ?? null));
+  const codeOffset = () => code.evaluate((element) => {
+    const selection = window.getSelection();
+    if (!selection?.anchorNode || !element.contains(selection.anchorNode)) return -1;
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    range.setEnd(selection.anchorNode, selection.anchorOffset);
+    return range.toString().length;
+  });
+  const placeCodeCaret = async () => {
+    await code.locator('.code-keyword').click();
+    await expect.poll(codeOffset).toBeGreaterThan(0);
+    return codeOffset();
+  };
+  const originalOffset = await placeCodeCaret();
+  await exit.click();
+  await expect(paragraph).toHaveCount(1);
+  await expect.poll(() => selectionIn(paragraph)).toBe(true);
+  await editor.press('Control+z');
+  await expect(paragraph).toHaveCount(0);
+  await expect.poll(codeOffset).toBe(originalOffset);
+  await exit.click();
+  await editor.pressSequentially('Después');
+  const existingOffset = await placeCodeCaret();
+  await exit.click();
+  await expect(paragraph).toHaveText(['Después']);
+  await expect.poll(() => selectionIn(paragraph)).toBe(true);
+  await editor.press('Control+z');
+  await expect.poll(codeOffset).toBe(existingOffset);
+  await expect(paragraph).toHaveText(['Después']);
+
+  await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Editar nota' })).toBeVisible();
+  await page.reload();
+  await expect(card).toHaveAttribute('data-language', 'sql');
+  await expectCode(code, snippet);
+
+  const response = await page.request.post('/api/spaces/work/free-notes', {
+    headers: await csrfHeaders(page),
+    data: {
+      attemptId: '01918f5e-d001-7000-8000-000000000083',
+      title: 'Lenguaje ajeno',
+      document: { type: 'doc', content: [{ type: 'codeBlock', attrs: { language: 'javascript' } }] },
+    },
+  });
+  expect(response.status()).toBe(400);
+  await checkFreeNoteRestore(page, browser, sourceUser, title, async (restored) => {
+    const restoredCard = restored.locator('.free-note-code');
+    await expect(restoredCard).toHaveAttribute('data-language', 'sql');
+    await expectCode(restoredCard.locator('code'), snippet);
+  });
 });
 
 test('free-notes: lifecycle with draft guard, space and diary date', async ({ page, identity, isMobile }) => {
