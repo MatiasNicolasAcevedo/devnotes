@@ -11,6 +11,8 @@ import {
   useServiceActivityCapabilities,
 } from '../serviceActivity/useServiceActivity'
 import { texts as dataTexts } from '../portability/messages'
+import { FreeNoteExitDialog } from '../free-notes/FreeNoteExitDialog'
+import { useFreeNotesContext } from '../free-notes/freeNotesContext'
 import { DiscardImageChanges } from '../ocr/DiscardImageChanges'
 import { ImageDraftContext } from '../ocr/imageDraftContext'
 import { sessionLabel, useSession } from './sessionContext'
@@ -55,6 +57,7 @@ function AccountMenu({
 }) {
   const { logout, logoutPending, csrfReady } = useSession()
   const { imageEdited } = useContext(ImageDraftContext)
+  const freeDraft = useFreeNotesContext()?.draft
   const [confirmLogout, setConfirmLogout] = useState(false)
   const location = useLocation()
   const [menu, setMenu] = useState<{ anchor: HTMLElement; location: string } | null>(null)
@@ -126,17 +129,27 @@ function AccountMenu({
           </MenuItem>
         ) : null}
         <MenuItem
-          disabled={logoutPending || !csrfReady}
+          disabled={logoutPending || !csrfReady || freeDraft?.busy}
           onClick={() => {
             closeMenu()
-            if (imageEdited) setConfirmLogout(true)
+            if (imageEdited || freeDraft) setConfirmLogout(true)
             else logout()
           }}
         >
           {logoutPending ? 'Cerrando sesión…' : 'Cerrar sesión'}
         </MenuItem>
       </Menu>
-      {confirmLogout && (
+      {confirmLogout && freeDraft && (
+        <FreeNoteExitDialog
+          draft={freeDraft}
+          cancel={() => setConfirmLogout(false)}
+          proceed={() => {
+            setConfirmLogout(false)
+            logout()
+          }}
+        />
+      )}
+      {confirmLogout && !freeDraft && imageEdited && (
         <DiscardImageChanges
           cancel={() => setConfirmLogout(false)}
           discard={() => {

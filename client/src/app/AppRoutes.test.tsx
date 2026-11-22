@@ -83,6 +83,8 @@ describe('AppRoutes', () => {
   it.each([
     ['/notes', 'Notas'],
     ['/notes/2024-06-15', 'Notas'],
+    ['/free-notes', 'Notas'],
+    ['/free-notes/01900000-0000-7000-8000-000000000001', 'Notas'],
     ['/history', 'Historial'],
     ['/history/2024-06-15', 'Historial'],
     ['/voice', 'Voz'],

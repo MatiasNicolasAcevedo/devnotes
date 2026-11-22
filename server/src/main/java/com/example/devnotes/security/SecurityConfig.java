@@ -101,6 +101,17 @@ public class SecurityConfig {
                             .authenticated()
                             .requestMatchers(HttpMethod.DELETE, "/api/spaces/{space}/image-texts/{id}")
                             .authenticated()
+                            .requestMatchers(
+                                    HttpMethod.GET,
+                                    "/api/spaces/{space}/free-notes",
+                                    "/api/spaces/{space}/free-notes/{id}")
+                            .authenticated()
+                            .requestMatchers(HttpMethod.POST, "/api/spaces/{space}/free-notes")
+                            .authenticated()
+                            .requestMatchers(HttpMethod.PUT, "/api/spaces/{space}/free-notes/{id}")
+                            .authenticated()
+                            .requestMatchers(HttpMethod.DELETE, "/api/spaces/{space}/free-notes/{id}")
+                            .authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/v1/voice-notes")
                             .authenticated()
                             .requestMatchers(HttpMethod.POST, "/api/v1/voice-notes")
