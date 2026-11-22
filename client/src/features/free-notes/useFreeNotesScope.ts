@@ -25,8 +25,13 @@ export function useFreeNotesScope() {
     if (!sameAccount()) return
     void client.invalidateQueries({ queryKey: [...key, 'list'] })
     const detail = { queryKey: [...key, 'detail', id], exact: true }
-    if (deleted) client.removeQueries(detail)
-    else void client.invalidateQueries({ ...detail, refetchType: 'none' })
+    if (deleted) {
+      client.removeQueries(detail)
+    } else {
+      // A GET started before the save can still contain the previous revision.
+      void client.cancelQueries(detail)
+      void client.invalidateQueries({ ...detail, refetchType: 'none' })
+    }
   }
 
   async function mutate<T>(

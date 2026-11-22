@@ -2,12 +2,13 @@ import Alert from '@mui/material/Alert'
 import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
 import Stack from '@mui/material/Stack'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { useSession } from '../auth/sessionContext'
 import { useOptionalActiveSpace } from '../spaces/spaceContext'
 import { ApiError } from '../../services/http'
-import { fetchFreeNote } from './api'
+import { fetchFreeNote, type FreeNote } from './api'
 import { FreeNoteDirectory } from './FreeNoteDirectory'
 import { FreeNoteEditor } from './FreeNoteEditor'
 import { useFreeNotesLinks } from './freeNotesContext'
@@ -27,19 +28,28 @@ export function FreeNotesPage() {
 function ExistingNote({ id }: { id: string }) {
   const { space, key, isCurrent } = useFreeNotesScope()
   const { noteHref } = useFreeNotesLinks()
+  const client = useQueryClient()
+  const queryKey = [...key, 'detail', id] as const
   const query = useQuery({
-    queryKey: [...key, 'detail', id],
+    queryKey,
     queryFn: ({ signal }) => fetchFreeNote(space, id, { signal, sessionIsCurrent: isCurrent }),
   })
-  if (query.data) {
+  const [initialNote, setInitialNote] = useState<FreeNote>()
+  // After a save, wait for the invalidated detail to refresh before opening a new editor.
+  // Once opened, background requests must not replace the editor's draft or revision.
+  if (!initialNote && query.data && !client.getQueryState(queryKey)?.isInvalidated) {
+    setInitialNote(query.data)
+  }
+  if (initialNote) {
     return (
       <FreeNoteEditor
-        note={query.data}
+        note={initialNote}
         reload={async () => (await query.refetch({ throwOnError: true })).data}
       />
     )
   }
-  if (query.isPending) return <CircularProgress size={24} aria-label="Cargando nota libre" />
+  if (query.isPending || query.isFetching)
+    return <CircularProgress size={24} aria-label="Cargando nota libre" />
   const missing = query.error instanceof ApiError && query.error.status === 404
   return (
     <Stack spacing={1} sx={{ alignItems: 'flex-start' }}>

@@ -27,12 +27,25 @@ test('free-notes: lifecycle with draft guard, space and diary date', async ({ pa
 
   await page.getByRole('link', { name: /T-080 borrador/ }).click();
   await title.fill('T-080 renombrada');
+  await body.locator('p').last().click();
+  await body.press('End');
+  await body.pressSequentially(' guardado');
+  await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+  await expect(page.getByText('Guardada', { exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Libres', exact: true }).click();
+  await page.getByRole('link', { name: /T-080 renombrada/ }).click();
+  await expect(title).toHaveValue('T-080 renombrada');
+  await expect(body.locator('p')).toHaveText(['Primer parrafo', 'Segundo parrafo guardado']);
+  await title.fill('T-080 segunda edición');
+  await body.locator('p').last().click();
+  await body.press('End');
+  await body.pressSequentially(' otra vez');
   await page.getByRole('button', { name: 'Guardar', exact: true }).click();
   await expect(page.getByText('Guardada', { exact: true })).toBeVisible();
   const savedUrl = page.url();
   await page.reload();
-  await expect(title).toHaveValue('T-080 renombrada');
-  await expect(body.locator('p')).toHaveText(['Primer parrafo', 'Segundo parrafo']);
+  await expect(title).toHaveValue('T-080 segunda edición');
+  await expect(body.locator('p')).toHaveText(['Primer parrafo', 'Segundo parrafo guardado otra vez']);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(isMobile ? 320 : 768);
 
   await title.fill('Cambio que se descarta');
@@ -45,7 +58,7 @@ test('free-notes: lifecycle with draft guard, space and diary date', async ({ pa
   await page.goto(personalUrl.href);
   await expect(page.getByText('La nota libre no está disponible.')).toBeVisible();
   await page.goto(savedUrl);
-  await expect(title).toHaveValue('T-080 renombrada');
+  await expect(title).toHaveValue('T-080 segunda edición');
   await page.getByRole('link', { name: 'Libres', exact: true }).click();
 
   await fresh.click();
@@ -54,7 +67,7 @@ test('free-notes: lifecycle with draft guard, space and diary date', async ({ pa
   await expect(page.getByRole('heading', { name: 'Editar nota' })).toBeVisible();
   await page.getByRole('link', { name: 'Libres', exact: true }).click();
 
-  await page.getByRole('button', { name: 'Borrar T-080 renombrada' }).click();
+  await page.getByRole('button', { name: 'Borrar T-080 segunda edición' }).click();
   const deletion = page.getByRole('dialog', { name: '¿Borrar la nota libre?' });
   await deletion.getByRole('button', { name: 'Borrar', exact: true }).click();
   await expect(fresh).toBeFocused();
