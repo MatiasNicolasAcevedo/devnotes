@@ -2,14 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-078](tasks/T-078-free-notes-storage.md) · Persistencia privada para notas libres · [S-113](specs/S-113-free-notes.md) |
-| Estado | `mergeable` |
-| Acción actual | Revisión independiente sin hallazgos. Validar la transición, publicar el veredicto y confirmar el squash del PR 81 |
-| Rama / PR | `codex/t-078-free-notes-storage` · [PR #81](https://github.com/MatiasNicolasAcevedo/devnotes/pull/81) |
+| Tarea y contrato | [T-079](tasks/T-079-free-notes-xlsx.md) · Recuperar notas libres en XLSX v4 · [S-113](specs/S-113-free-notes.md) |
+| Estado | `in_progress` |
+| Acción actual | Implementar y verificar XLSX v4 |
+| Rama / PR | `codex/t-079-free-notes-xlsx` |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
-El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-077 quedó mergeada y conciliada.
+El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-078 quedó mergeada y conciliada.
 
 ## Pendientes del dueño
 

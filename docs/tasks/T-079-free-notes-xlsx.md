@@ -1,6 +1,6 @@
 ---
 id: T-079
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M7
@@ -33,4 +33,4 @@ Restaurar v1/v2/v3 sin inventar Libres. Ida y vuelta v4 conserva título, saltos
 
 ## Checkpoint vigente
 
-Habilitar en sesión nueva tras confirmar [T-078](T-078-free-notes-storage.md) MERGED y conciliarla. Registrar el SHA/base y la evidencia efectivamente ejecutada.
+2026-11-21. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto). Base `311e47c1ca6d64f81c3bc1950ec6687a3d418ea7`. T-078 conciliada. Pendientes implementación, gate dirigido y publicación. FULL/STARTER: DIFERIDO POR EL DUEÑO.
