@@ -20,7 +20,7 @@ async function openTools(page: Page, action: 'Abrir al lado' | 'Ver consulta') {
   await option.press('Enter');
 }
 
-async function seedSources(page: Page) {
+async function seedVersion(page: Page) {
   const headers = await csrfHeaders(page);
   const stored = await page.request.put(`/api/v1/daily-notes/${date}?space=work`, {
     headers, data: { expectedRevision: 0, content: document('Versión manual ficticia') },
@@ -31,8 +31,12 @@ async function seedSources(page: Page) {
     headers, data: { expectedRevision: revision },
   });
   expect(save.status()).toBe(200);
+}
+
+async function seedSources(page: Page) {
+  await seedVersion(page);
   const created = await page.request.post(freePath, {
-    headers,
+    headers: await csrfHeaders(page),
     data: {
       attemptId: randomUUID().replace(/^(.{14})./, (_, prefix: string) => `${prefix}7`),
       title,
@@ -127,9 +131,16 @@ test('side reading: preserves the editor, restores consultation on reflow and re
   const form = page.locator('form').filter({ has: editor });
   await form.evaluate(element => { element.scrollTop = 250; });
   await expect.poll(() => form.evaluate(element => element.scrollTop)).toBe(250);
+  const anchor = editor.getByText('Renglón ficticio 10', { exact: true });
+  const offsetInForm = () => anchor.evaluate(element =>
+    element.getBoundingClientRect().top - element.closest('form')!.getBoundingClientRect().top,
+  );
+  await expect(anchor).toBeInViewport();
+  const scrollAnchor = await offsetInForm();
   await page.setViewportSize({ width: isMobile ? viewport.width : 1120, height: viewport.height });
   await expect(savedReader).toHaveCount(0);
-  await expect.poll(() => form.evaluate(element => element.scrollTop)).toBe(250);
+  // The mobile toolbar can wrap. Keep the same part of the draft in view through the reflow.
+  await expect.poll(async () => Math.abs(await offsetInForm() - scrollAnchor)).toBeLessThanOrEqual(1);
   await openTools(page, 'Ver consulta');
   const guard = page.getByRole('dialog', { name: /Guardar los cambios/ });
   await guard.getByRole('button', { name: 'Seguir editando' }).click();
@@ -142,10 +153,10 @@ test('side reading: preserves the editor, restores consultation on reflow and re
   await expect(draft).toHaveValue('Borrador sin guardar');
 });
 
-test('side reading: a deleted source can be replaced and consultations never cross space or account', async ({
+test('side reading: a deleted source can be replaced and consultations never cross spaces', async ({
   page, identity,
 }) => {
-  const account = await login(page, identity);
+  await login(page, identity);
   const source = await seedSources(page);
   await page.setViewportSize({ width: 1280, height: 812 });
   await page.goto(`/notes/${writingDate}?space=work`);
@@ -185,8 +196,24 @@ test('side reading: a deleted source can be replaced and consultations never cro
   await openTools(page, 'Abrir al lado');
   await selector.getByRole('button', { name: 'Versión del 20/11/2026' }).click();
   await expect(savedReader).toBeVisible();
+});
 
+test('side reading: signing out discards the consultation before a second account signs in', async ({
+  page, identity,
+}) => {
+  const account = await login(page, identity);
+  await seedVersion(page);
+  await page.setViewportSize({ width: 1280, height: 812 });
+  await page.goto(`/notes/${writingDate}?space=work`);
+  const selector = page.getByRole('dialog', { name: 'Elegir una consulta' });
+  await openTools(page, 'Abrir al lado');
+  await selector.getByRole('button', { name: 'Versión del 20/11/2026' }).click();
+  const savedReader = page.getByRole('complementary', { name: 'Versión del 20/11/2026' });
+  await expect(savedReader.getByRole('textbox', { name: 'Versión en consulta' })).toHaveText('Versión manual ficticia');
   await logout(page);
+  await expect(page).toHaveURL('http://localhost/login');
+  await expect(savedReader).toHaveCount(0);
+  expect((await page.request.get(`/api/v1/daily-versions/${date}?space=work`)).status()).toBe(401);
   const secondIdentity = randomUUID();
   await control('identity', secondIdentity);
   expect(await login(page, secondIdentity)).not.toBe(account);
