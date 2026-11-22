@@ -33,6 +33,8 @@ import {
   type FreeNote,
   type FreeNoteInput,
 } from './api'
+import { codeLanguageLabels, codeLanguages } from './codeLanguages'
+import { freeNoteCodeBlock, setCodeLanguage } from './freeNoteCodeBlock'
 import { changeList, freeNoteLists, listOptions } from './freeNoteLists'
 import {
   FREE_NOTE_CREATED_INTENT,
@@ -42,7 +44,7 @@ import {
 import { useFreeNotesScope } from './useFreeNotesScope'
 
 const emptyDocument: JSONContent = { type: 'doc', content: [{ type: 'paragraph' }] }
-const extensions = [Document, Paragraph, Text, UndoRedo, ...freeNoteLists]
+const extensions = [Document, Paragraph, Text, UndoRedo, freeNoteCodeBlock, ...freeNoteLists]
 type Fields = { title: string; document: JSONContent }
 
 export function FreeNoteEditor({
@@ -60,6 +62,7 @@ export function FreeNoteEditor({
   const contentLabel = useId()
   const contentErrorId = useId()
   const listMenuId = useId()
+  const toolsMenuId = useId()
   const reloadTitle = useId()
   const stored = useRef(note ? { id: note.id, revision: note.revision } : null)
   const [busy, setBusy] = useState(false)
@@ -68,6 +71,8 @@ export function FreeNoteEditor({
   const [failure, setFailure] = useState<'conflict' | 'save' | 'reload' | null>(null)
   const [confirmReload, setConfirmReload] = useState(false)
   const [listAnchor, setListAnchor] = useState<HTMLElement | null>(null)
+  const [toolsAnchor, setToolsAnchor] = useState<HTMLElement | null>(null)
+  const [choosingLanguage, setChoosingLanguage] = useState(false)
   const inFlight = useRef(false)
   const attempt = useRef<{ id: string; input: FreeNoteInput; fingerprint: string } | null>(null)
   const {
@@ -95,7 +100,7 @@ export function FreeNoteEditor({
       clipboardTextSerializer(slice) {
         const lines: string[] = []
         slice.content.descendants((node) => {
-          if (node.type.name !== 'paragraph') return true
+          if (node.type.name !== 'paragraph' && node.type.name !== 'codeBlock') return true
           lines.push(node.textContent)
           return false
         })
@@ -106,7 +111,14 @@ export function FreeNoteEditor({
         if (!clipboard?.types.includes('text/plain')) return true
         const text = clipboard.getData('text/plain')
         if (!text) return true
-        const { schema } = view.state
+        const { schema, selection, tr } = view.state
+        if (
+          selection.$from.parent.type === schema.nodes.codeBlock &&
+          selection.$from.sameParent(selection.$to)
+        ) {
+          view.dispatch(tr.insertText(text).scrollIntoView())
+          return true
+        }
         const paragraphs = text
           .split(/\r\n|\r|\n/)
           .map((line) => schema.nodes.paragraph.create(null, line ? schema.text(line) : null))
@@ -293,6 +305,46 @@ export function FreeNoteEditor({
           ))}
         </Menu>
         <Button
+          aria-haspopup="menu"
+          aria-controls={toolsAnchor ? toolsMenuId : undefined}
+          aria-expanded={!!toolsAnchor}
+          disabled={!editor || !scope.canWrite || busy}
+          onClick={(event) => {
+            setChoosingLanguage(false)
+            setToolsAnchor(event.currentTarget)
+          }}
+        >
+          Herramientas
+        </Button>
+        <Menu
+          anchorEl={toolsAnchor}
+          open={!!toolsAnchor}
+          onClose={() => setToolsAnchor(null)}
+          slotProps={{
+            list: {
+              id: toolsMenuId,
+              'aria-label': choosingLanguage ? 'Bloque de código' : 'Herramientas',
+            },
+          }}
+        >
+          {choosingLanguage ? (
+            codeLanguages.map((language, index) => (
+              <MenuItem
+                key={language}
+                autoFocus={index === 0}
+                onClick={() => {
+                  setToolsAnchor(null)
+                  if (editor) setCodeLanguage(editor, language)
+                }}
+              >
+                {codeLanguageLabels[language]}
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem onClick={() => setChoosingLanguage(true)}>Bloque de código</MenuItem>
+          )}
+        </Menu>
+        <Button
           type="submit"
           variant="contained"
           disabled={!scope.canWrite || busy || (!!note && !isDirty)}
@@ -362,6 +414,29 @@ export function FreeNoteEditor({
               outline: 'none',
             },
             '& p': { my: 0, minHeight: '1.5em' },
+            '& .free-note-code': {
+              minWidth: 0,
+              maxWidth: '100%',
+              my: 0.75,
+              border: 1,
+              borderColor: 'divider',
+              borderRadius: 1,
+              bgcolor: 'action.hover',
+            },
+            '& .free-note-code-content': {
+              px: 1,
+              pb: 0.75,
+              overflowX: 'auto',
+              whiteSpace: 'pre',
+              overflowWrap: 'normal',
+              fontFamily: '"Roboto Mono", monospace',
+              fontSize: '0.875rem',
+              '& code': { font: 'inherit', display: 'block', minHeight: '1.5em' },
+              '& .code-keyword': { color: 'primary.light', fontWeight: 600 },
+              '& .code-string': { color: 'success.light' },
+              '& .code-number': { color: 'warning.light' },
+              '& .code-comment': { color: 'text.secondary', fontStyle: 'italic' },
+            },
             '& ul, & ol': { my: 0, paddingInlineStart: 3 },
             '& ul[data-type="taskList"]': { paddingInlineStart: 0, listStyle: 'none' },
             '& li[data-type="taskItem"]': {

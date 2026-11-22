@@ -105,6 +105,32 @@ class XlsxFreeNotesRoundTripTest {
     }
 
     @Test
+    void preservesCodeBlocksInV4AndShowsTheirText() throws Exception {
+        var document = new ObjectMapper().readTree("""
+                {"type":"doc","content":[
+                  {"type":"codeBlock","attrs":{"language":"json"},"content":[{"type":"text","text":"{\\n  \\"a\\":\\t"}]},
+                  {"type":"codeBlock","attrs":{"language":"sql"},"content":[{"type":"text","text":"  SELECT 1;\\n"}]},
+                  {"type":"codeBlock","attrs":{"language":"text"}}
+                ]}
+                """);
+        var note = new FreeNoteRecord(WORK, UUID.randomUUID(), "Código", document, CREATED, CREATED);
+        var records = new PortabilityRecords(List.of(), List.of(), List.of(), List.of(), List.of(), List.of(note));
+        var out = new ByteArrayOutputStream();
+        new XlsxWorkbookWriter().write(records, CREATED, out);
+        byte[] file = out.toByteArray();
+
+        assertThat(reader.read(file)).isEqualTo(new XlsxWorkbookContent(4, CREATED, records));
+        try (var workbook = new ReadableWorkbook(new ByteArrayInputStream(file));
+                var sheets = workbook.getSheets()) {
+            var rows = sheets.filter(sheet -> SHEET.equals(sheet.getName()))
+                    .findFirst()
+                    .orElseThrow()
+                    .read();
+            assertThat(rows.get(1).getCell(5).asString()).isEqualTo("{\n  \"a\":\t\n  SELECT 1;\n\n");
+        }
+    }
+
+    @Test
     void restoresListStructureAndShowsReadableListText() throws Exception {
         var document = new ObjectMapper().readTree("""
                 {"type":"doc","content":[

@@ -1,8 +1,8 @@
 import { Extension, Node, type Editor } from '@tiptap/core'
-import { closeHistory } from '@tiptap/pm/history'
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
-import { TextSelection, type Transaction } from '@tiptap/pm/state'
+import { TextSelection } from '@tiptap/pm/state'
 import { canSplit } from '@tiptap/pm/transform'
+import { dispatchFreeNoteChange } from './freeNoteHistory'
 
 export const listOptions = [
   ['bulletList', 'Viñetas'],
@@ -49,11 +49,6 @@ const listItem = Node.create({
 function checkboxLabel(item: ProseMirrorNode) {
   const text = item.textContent.trim()
   return text ? `Casilla: ${text}` : 'Casilla sin texto'
-}
-
-function dispatchListChange(editor: Editor, transaction: Transaction) {
-  editor.view.dispatch(closeHistory(transaction))
-  editor.view.dispatch(closeHistory(editor.state.tr))
 }
 
 const taskItem = Node.create({
@@ -111,7 +106,7 @@ const taskItem = Node.create({
           update(current)
           return
         }
-        dispatchListChange(
+        dispatchFreeNoteChange(
           editor,
           editor.state.tr.setNodeMarkup(position, undefined, { checked: checkbox.checked }),
         )
@@ -141,6 +136,15 @@ export function changeList(editor: Editor, target: BlockType) {
   if (!editor.isEditable) return
   const { doc, selection, schema, tr } = editor.state
   const { from, to, anchor, head } = selection
+  let includesCode = false
+  doc.nodesBetween(from, to, (node) => {
+    if (node.type === schema.nodes.codeBlock) includesCode = true
+    return !includesCode
+  })
+  if (includesCode || selection.$from.parent.type === schema.nodes.codeBlock) {
+    editor.commands.focus()
+    return
+  }
   const lines: Line[] = []
   let replaceFrom = -1
   let replaceTo = -1
@@ -207,7 +211,7 @@ export function changeList(editor: Editor, target: BlockType) {
   tr.setSelection(
     TextSelection.between(tr.doc.resolve(mapPosition(anchor)), tr.doc.resolve(mapPosition(head))),
   )
-  dispatchListChange(editor, tr.scrollIntoView())
+  dispatchFreeNoteChange(editor, tr.scrollIntoView())
 }
 
 const listKeyboard = Extension.create({
