@@ -2,14 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-077](tasks/T-077-image-text-library-ui.md) · Guardar, abrir y borrar textos de Imagen · [S-112](specs/S-112-screenshot-ocr.md) |
+| Tarea y contrato | [T-078](tasks/T-078-free-notes-storage.md) · Persistencia privada para notas libres · [S-113](specs/S-113-free-notes.md) |
 | Estado | `mergeable` |
-| Acción actual | Ronda 2 APROBADA (H1 y H2 cerrados); el reviewer espera `verify-required` del commit de transición y hace el squash. Siguiente: [T-078](tasks/T-078-free-notes-storage.md) |
-| Rama / PR | `codex/t-077-image-text-library-ui` · [PR #80](https://github.com/MatiasNicolasAcevedo/devnotes/pull/80) |
+| Acción actual | Revisión independiente sin hallazgos. Validar la transición, publicar el veredicto y confirmar el squash del PR 81 |
+| Rama / PR | `codex/t-078-free-notes-storage` · [PR #81](https://github.com/MatiasNicolasAcevedo/devnotes/pull/81) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
-El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-076 quedó mergeada y conciliada.
+El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-077 quedó mergeada y conciliada.
 
 ## Pendientes del dueño
 
@@ -29,16 +29,16 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 | Último integrado válido | FULL local del 2026-11-15 sobre `398801f` ([T-069](tasks/T-069-ocr-workspace.md#evidencia-del-full-de-cierre)); STARTER de T-068 conservado |
 | Mergeado desde entonces | T-070 (recorrido E2E de OCR), T-074 (navegación de Imagen), T-071 y T-092 (documentales) y la adopción documental del flujo |
 | Corte acumulado | Desde `7aa8946` hasta el HEAD de `main` que indique el dueño ([TESTING](TESTING.md#corte-acumulado-vigente)). El FULL/STARTER de I5 sigue diferido |
-| Recomendación | T-077 cierra Imagen y suma reglas nuevas en `SecurityConfig`: recomendable el integrado del corte acumulado (migración V8 incluida) cuando el dueño lo ordene |
+| Recomendación | Ejecutar el integrado del corte acumulado con V8 y V9 cuando el dueño lo ordene |
 
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de T-078 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
+Actuá como frontera implementer de T-079 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-077-image-text-library-ui.md, docs/tasks/T-078-free-notes-storage.md y docs/specs/S-113-free-notes.md con lo pertinente de S-114.
-PRECONDICIÓN: PR 80 MERGED. gh pr view 80 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName debe confirmar MERGED en main, con mergedAt y mergeCommit.oid válidos. Actualizá origin/main y usá git merge-base --is-ancestor con el oid confirmado y origin/main para verificar que incluye ese squash. Si falla una comprobación, informá el estado real y entregá el prompt vigente.
-ACCIÓN: Abrí codex/t-078-free-notes-storage desde origin/main actualizado. En el primer commit conciliá T-077 a done con el squash confirmado y habilitá T-078. Implementá la migración Flyway nueva, el repositorio y el servicio privados de notas libres según la tarea, sin rutas HTTP (quedan para T-080), con los negativos de aislamiento, concurrencia 409, datos inválidos, reintento perdido y recibo tras borrar. Publicá un solo PR contra main.
-GATE: diario según T-078, con backend dirigido (fases y cantidades), docs-check y verify-required del HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-SALIDA: PR listo para revisión independiente y gate ligado a HEAD/base. Registrá checkpoint y terminá con el prompt de frontera reviewer en STATUS y completo en el chat. Conservá Render Auto-Deploy On Commit.
+LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-078-free-notes-storage.md, docs/tasks/T-079-free-notes-xlsx.md, S-113, el documento de Libres en S-114 y la portabilidad incremental de S-112.
+PRECONDICIÓN: gh pr view 81 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName debe confirmar MERGED en main, con mergedAt y mergeCommit.oid válidos. Actualizá origin/main y comprobá con git merge-base --is-ancestor que contiene ese squash. Si una comprobación falla, informá el estado real y entregá el prompt vigente.
+ACCIÓN: Abrí codex/t-079-free-notes-xlsx desde origin/main actualizado. En el primer commit conciliá T-078 a done con el squash confirmado y habilitá T-079. Implementá XLSX v4 con la hoja notas_libres y el validador compartido, la vista previa y los contadores por espacio. Conservá la restauración v1/v2/v3 y OCR, y verificá el rollback completo ante un documento inválido. Publicá un solo PR contra main.
+GATE: Ejecutá los comandos exactos de T-079 para backend dirigido, pruebas y typecheck de cliente y E2E de portabilidad en desktop. Corré docs-check y comprobá verify-required del HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+SALIDA: PR listo para revisión independiente, con checkpoint y gate ligados a HEAD/base. Dejá el prompt de frontera reviewer en STATUS y completo en el chat. Conservá Render Auto-Deploy On Commit.
 ```
