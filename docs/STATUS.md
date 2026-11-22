@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-084](tasks/T-084-free-notes-headings.md) · Títulos y negrita en Libres · [S-114](specs/S-114-writing-editor.md) |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente de Formato en Libres |
+| Estado | `mergeable` |
+| Acción actual | Comprobar CI de la transición y confirmar el squash de T-084 |
 | Rama / PR | `codex/t-084-free-notes-headings` · [PR #87](https://github.com/MatiasNicolasAcevedo/devnotes/pull/87) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,15 +34,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer independiente de T-084 en MatiasNicolasAcevedo/devnotes. Sesión nueva, PR #87.
+Actuá como frontera implementer de T-085 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, client/AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-084-free-notes-headings.md y la sección Formato de docs/specs/S-114-writing-editor.md.
+LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-085-side-reading.md y docs/specs/S-115-side-reading.md.
 
-PRECONDICIÓN: gh pr view 87 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, isDraft=false, base main en 3c7dc999419a2930a881be68fe0cb44d398a2090 y verify-required SUCCESS. Tomá headRefOid como $reviewHead. Tras git fetch origin main codex/t-084-free-notes-headings, comprobá que git rev-parse "${reviewHead}^" devuelva 874c071cca41988fcd7c43f687b72bb351afe9ae y que git diff --name-only "${reviewHead}^" $reviewHead liste solo docs/STATUS.md y docs/tasks/T-084-free-notes-headings.md. Si difiere, informá el estado real y corregí el prompt.
+PRECONDICIÓN: gh pr view 87 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit debe confirmar MERGED con mergedAt y mergeCommit.oid válidos. Tras git fetch origin main, comprobá que el SHA confirmado pertenece a origin/main con git merge-base --is-ancestor, pasando mergeCommit.oid y origin/main en ese orden. Si difiere, informá el estado real y corregí el prompt.
 
-ACCIÓN: Revisá el diff publicado contra esa base desde un checkout aislado. Contrastá títulos, negrita, foco, selección, listas, código, diario y restauración XLSX v4 con S-114. Si hay hallazgos, registrá sus condiciones de cierre y devolvé el mismo PR a un implementer nuevo. Si aprobás, publicá la transición documental, verificá el HEAD nuevo y hacé squash merge ligado al SHA revisado según AUTONOMY. Confirmá MERGED, mergedAt y mergeCommit.oid con gh pr view 87 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit.
+ACCIÓN: Creá codex/t-085-side-reading desde main actualizado y conciliá T-084 como done en el primer commit, con la evidencia del merge. Implementá la lectura lateral en Diario y Libres según S-115, preservando borrador, scroll, foco y límites de cuenta y espacio. Publicá un único PR para T-085 y verificá su HEAD/base y CI.
 
-GATE: Dirigidos de T-084, E2E free-notes: headings solo desktop con namespace propio, docs-check y verify-required sobre el HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: Dirigidos de T-085, typecheck, E2E filtrado 'side reading:' en desktop y mobile con namespaces propios, docs-check y verify-required sobre el HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: Registrá HEAD/base y el veredicto. Si confirmás MERGED, dejá el único prompt de T-085 con PR #87 MERGED como precondición y copiá ese prompt completo al final de tu respuesta. Preservá Render Auto-Deploy On Commit.
+SALIDA: Registrá HEAD/base, evidencia y limpieza por labels en la tarea. Dejá en STATUS el único prompt para una sesión nueva de frontera reviewer del PR de T-085 y copialo completo al final de la respuesta. Preservá Render Auto-Deploy On Commit.
 ```
