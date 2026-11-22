@@ -1,6 +1,6 @@
 ---
 id: T-084
-status: mergeable
+status: done
 priority: P1
 size: S
 milestone: M7
@@ -33,7 +33,7 @@ Los tres niveles tienen semántica y jerarquía. Negrita desde menú o teclado. 
 
 ## Checkpoint vigente
 
-2026-11-22. Frontera reviewer independiente en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0, JDK 21 y Docker Desktop. [PR #87](https://github.com/MatiasNicolasAcevedo/devnotes/pull/87). Checkout aislado de `fc101e728c31c47960fb583147ccdb42223282ee` contra `main@3c7dc999419a2930a881be68fe0cb44d398a2090`. Veredicto técnico: conforme a S-114, sin cambios requeridos. Pendiente: comprobar `verify-required` en el HEAD de transición, publicar el veredicto y confirmar el squash en GitHub.
+2026-11-22. Frontera reviewer independiente en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0, JDK 21 y Docker Desktop. [PR #87](https://github.com/MatiasNicolasAcevedo/devnotes/pull/87). Checkout aislado de `fc101e728c31c47960fb583147ccdb42223282ee` contra `main@3c7dc999419a2930a881be68fe0cb44d398a2090`. Veredicto técnico: conforme a S-114, sin cambios requeridos. Cierre conciliado en T-085. `gh pr view 87 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit` (exit 0) confirmó MERGED el 2026-11-22T20:06:14Z con `b1db344cca716bdde10bd61cbb6855cd34c76737`. Tras `git fetch origin main`, `git merge-base --is-ancestor b1db344cca716bdde10bd61cbb6855cd34c76737 origin/main` confirmó ascendencia (exit 0).
 
 - Identidad del diff. `gh pr view 87 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup`, `git fetch origin main codex/t-084-free-notes-headings` y `git rev-parse HEAD^` (exit 0). PR abierto y listo, HEAD/base esperados. El padre `874c071cca41988fcd7c43f687b72bb351afe9ae` difiere del HEAD solo en este checkpoint y STATUS (`git diff --name-only HEAD^ HEAD`, exit 0). `gh run view 45063611855 --repo MatiasNicolasAcevedo/devnotes --json event,headSha,conclusion,status` (exit 0) confirmó la corrida exitosa de pull request ligada a `fc101e7`, posterior a la cancelada. La consulta GraphQL devolvió cero conversaciones de revisión.
 - Comportamiento revisado. Formato expone tres niveles semánticos y conserva el título de la nota como metadato. Negrita por menú y Ctrl+B, foco devuelto al editor y selección hacia atrás conservada al convertir y quitar formato. Quitar formato elimina negrita solo del rango y devuelve títulos a párrafos. La prosa de listas admite negrita y mantiene su estructura. El código conserva lenguaje y texto sin marcas. El diario conserva su esquema restringido.
