@@ -47,6 +47,25 @@ describe('Libres', () => {
     ])
   })
 
+  it('abre la nota recién creada al guardar desde el editor y conserva la fecha de retorno', async () => {
+    installAuthBackend({ user: buildAuthUser() })
+    server.use(
+      http.post(work, () => HttpResponse.json(note, { status: 201 })),
+      http.get(`${work}/${id}`, () => HttpResponse.json(note)),
+    )
+    const { user } = renderWithProviders(<AppRoutes />, {
+      route: '/free-notes/new?space=work&from=2025-06-17',
+    })
+    await user.type(await screen.findByRole('textbox', { name: 'Título' }), 'Original')
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+    expect(await screen.findByRole('heading', { name: 'Editar nota' })).toBeVisible()
+    expect(screen.getByRole('link', { name: 'Libres' })).toHaveAttribute(
+      'href',
+      '/free-notes?from=2025-06-17&space=work',
+    )
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
   it('conserva el título al recibir 409 y pide confirmación antes de abrir la revisión reciente', async () => {
     installAuthBackend({ user: buildAuthUser() })
     const writes: unknown[] = []

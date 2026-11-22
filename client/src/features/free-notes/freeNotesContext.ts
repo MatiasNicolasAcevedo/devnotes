@@ -4,6 +4,8 @@ import { isValidIsoDate } from '../daily/dateUtils'
 import { useSpaceHref } from '../spaces/spaceContext'
 import type { Space } from '../spaces/space'
 
+export const FREE_NOTE_CREATED_INTENT = 'free-note-created'
+
 export type FreeNoteDraft = {
   save: () => Promise<boolean>
   busy: boolean

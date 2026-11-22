@@ -25,7 +25,7 @@ import {
 import { useSession } from '../auth/sessionContext'
 import { useOptionalDailyDraftContext } from '../daily/DailyDraftProvider'
 import { FreeNoteExitDialog } from '../free-notes/FreeNoteExitDialog'
-import { useFreeNotesContext } from '../free-notes/freeNotesContext'
+import { FREE_NOTE_CREATED_INTENT, useFreeNotesContext } from '../free-notes/freeNotesContext'
 import { DiscardImageChanges } from '../ocr/DiscardImageChanges'
 import { ImageDraftContext } from '../ocr/imageDraftContext'
 import { formatDateLocal } from '../daily/dateUtils'
@@ -97,6 +97,17 @@ export function SpaceNavigation({ children }: { children: ReactNode }) {
         setBlockedNotice(lockReason)
         return true
       }
+      // El editor sustituye la URL del borrador después del ACK de creación.
+      const nextSpace = readSpaceParam(nextLocation.search)
+      if (
+        historyAction === NavigationType.Replace &&
+        nextLocation.state === FREE_NOTE_CREATED_INTENT &&
+        matchPath('/free-notes/new', currentLocation.pathname) &&
+        matchPath('/free-notes/:id', nextLocation.pathname) &&
+        nextSpace.kind === 'valid' &&
+        nextSpace.space === origin
+      )
+        return false
       if (leavesFreeDraft(currentLocation, nextLocation)) {
         if (freeDraft?.busy) setBlockedNotice('Se está guardando la nota libre.')
         return true

@@ -29,7 +29,11 @@ import {
   type FreeNote,
   type FreeNoteInput,
 } from './api'
-import { useFreeNotesContext, useFreeNotesLinks } from './freeNotesContext'
+import {
+  FREE_NOTE_CREATED_INTENT,
+  useFreeNotesContext,
+  useFreeNotesLinks,
+} from './freeNotesContext'
 import { useFreeNotesScope } from './useFreeNotesScope'
 
 const emptyDocument: JSONContent = { type: 'doc', content: [{ type: 'paragraph' }] }
@@ -179,7 +183,10 @@ export function FreeNoteEditor({
 
   useEffect(() => {
     if (destination && !context?.draft)
-      void navigate(noteHref(`/free-notes/${destination}`), { replace: true })
+      void navigate(noteHref(`/free-notes/${destination}`), {
+        replace: true,
+        state: FREE_NOTE_CREATED_INTENT,
+      })
   }, [context?.draft, destination, noteHref, navigate])
 
   useEffect(() => {
