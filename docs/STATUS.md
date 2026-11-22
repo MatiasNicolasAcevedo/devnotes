@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-079](tasks/T-079-free-notes-xlsx.md) · Recuperar notas libres en XLSX v4 · [S-113](specs/S-113-free-notes.md) |
-| Estado | `in_progress` |
-| Acción actual | Implementar y verificar XLSX v4 |
-| Rama / PR | `codex/t-079-free-notes-xlsx` |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente del respaldo y la restauración XLSX v4 |
+| Rama / PR | `codex/t-079-free-notes-xlsx` · [PR #82](https://github.com/MatiasNicolasAcevedo/devnotes/pull/82) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
@@ -34,11 +34,11 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de T-079 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
+Actuá como frontera reviewer independiente de T-079 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-078-free-notes-storage.md, docs/tasks/T-079-free-notes-xlsx.md, S-113, el documento de Libres en S-114 y la portabilidad incremental de S-112.
-PRECONDICIÓN: gh pr view 81 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName debe confirmar MERGED en main, con mergedAt y mergeCommit.oid válidos. Actualizá origin/main y comprobá con git merge-base --is-ancestor que contiene ese squash. Si una comprobación falla, informá el estado real y entregá el prompt vigente.
-ACCIÓN: Abrí codex/t-079-free-notes-xlsx desde origin/main actualizado. En el primer commit conciliá T-078 a done con el squash confirmado y habilitá T-079. Implementá XLSX v4 con la hoja notas_libres y el validador compartido, la vista previa y los contadores por espacio. Conservá la restauración v1/v2/v3 y OCR, y verificá el rollback completo ante un documento inválido. Publicá un solo PR contra main.
-GATE: Ejecutá los comandos exactos de T-079 para backend dirigido, pruebas y typecheck de cliente y E2E de portabilidad en desktop. Corré docs-check y comprobá verify-required del HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-SALIDA: PR listo para revisión independiente, con checkpoint y gate ligados a HEAD/base. Dejá el prompt de frontera reviewer en STATUS y completo en el chat. Conservá Render Auto-Deploy On Commit.
+LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-079-free-notes-xlsx.md, S-113, el documento de Libres en S-114, la portabilidad incremental de S-112 y el diff del PR 82.
+PRECONDICIÓN: gh pr view 82 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo, base main en 311e47c1ca6d64f81c3bc1950ec6687a3d418ea7 y verify-required SUCCESS para headRefOid. Usá ese HEAD publicado en un worktree aislado. Su padre debe ser 23e3d6b1a1ae5e2fa5c7c14e2347ea137e7649c4. Comprobá git diff --exit-code 23e3d6b1a1ae5e2fa5c7c14e2347ea137e7649c4 HEAD -- server client e2e para vincularlo con las fuentes probadas.
+ACCIÓN: Revisá el contrato v4 y la restauración v1/v2/v3, la validación compartida, OCR, los conteos de Trabajo y Personal, el lock de cuenta y el rollback completo. Verificá el gate diario de T-079. Si hay hallazgos, publicá una lista cerrada para una sesión de corrección. Si aprobás y AUTONOMY lo permite, publicá la transición, esperá verify-required del nuevo HEAD, ligá el veredicto a HEAD/base, hacé squash y confirmá MERGED con gh pr view 82 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName.
+GATE: Backend dirigido, pruebas y typecheck de cliente, E2E de portabilidad en desktop, docs-check y verify-required según T-079. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+SALIDA: Veredicto independiente y prompt vigente. Si confirmás MERGED, entregá el prompt de frontera implementer de T-080 con la conciliación de T-079 en su primer commit. Conservá Render Auto-Deploy On Commit.
 ```
