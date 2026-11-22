@@ -1,8 +1,10 @@
 package com.example.devnotes.portability.xlsx;
 
 import com.example.devnotes.daily.domain.DailyContent;
+import com.example.devnotes.imagetext.domain.ImageText;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyNoteRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyVersionRecord;
+import com.example.devnotes.portability.xlsx.PortabilityRecords.ImageTextRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ReferenceRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.VoiceNoteRecord;
 import com.example.devnotes.reference.application.ReferenceItemInput;
@@ -99,8 +101,9 @@ public class XlsxWorkbookReader {
             throw new XlsxCodecException(XlsxErrorCode.IMPORT_UNSUPPORTED_FORMAT);
         }
         Meta meta = readMeta(sheets.get(0));
-        requireSheets(sheets);
-        boolean spaces = meta.version() == 2;
+        boolean imageLibrary = meta.version() == 3;
+        requireSheets(sheets, imageLibrary ? XlsxFormat.SHEETS : XlsxFormat.SHEETS_V1_V2);
+        boolean spaces = meta.version() >= 2;
 
         List<ReferenceRecord> references = new ArrayList<>();
         Set<SpaceDate> notes = new HashSet<>();
@@ -130,6 +133,13 @@ public class XlsxWorkbookReader {
                 spaces ? XlsxFormat.HEADER_VOICE : XlsxFormat.HEADER_VOICE_V1,
                 (key, json) -> voiceNotes.add(voiceNote(key, json, spaces)));
 
+        List<ImageTextRecord> imageTexts = new ArrayList<>();
+        if (imageLibrary) {
+            readSheet(
+                    sheets.get(5), XlsxFormat.HEADER_IMAGE_TEXTS, (key, json) -> imageTexts.add(imageText(key, json)));
+            requireCount(meta.imageTexts(), imageTexts.size(), 8);
+        }
+
         requireCount(meta.references(), references.size(), 4);
         requireCount(meta.dailyNotes(), dailyNotes.size(), 5);
         requireCount(meta.dailyVersions(), dailyVersions.size(), 6);
@@ -137,19 +147,26 @@ public class XlsxWorkbookReader {
         return new XlsxWorkbookContent(
                 meta.version(),
                 meta.exportedAt(),
-                new PortabilityRecords(references, dailyNotes, dailyVersions, voiceNotes));
+                new PortabilityRecords(references, dailyNotes, dailyVersions, voiceNotes, imageTexts));
     }
 
     // ── Workbook structure ──
 
     private record Meta(
-            int version, Instant exportedAt, int references, int dailyNotes, int dailyVersions, int voiceNotes) {}
+            int version,
+            Instant exportedAt,
+            int references,
+            int dailyNotes,
+            int dailyVersions,
+            int voiceNotes,
+            int imageTexts) {}
 
     /** Identity of a daily note, and of its version, within the account since S-109. */
     private record SpaceDate(PrivateSpace space, LocalDate date) {}
 
     private static Meta readMeta(Sheet sheet) throws IOException {
         List<String> values = new ArrayList<>();
+        List<String> keys = XlsxFormat.META_KEYS_V1_V2;
         try (Stream<Row> rows = sheet.openStream()) {
             Iterator<Row> iterator = rows.iterator();
             while (iterator.hasNext()) {
@@ -160,24 +177,32 @@ public class XlsxWorkbookReader {
                 }
                 int index = values.size();
                 boolean identity = index < 2;
-                if (index >= XlsxFormat.META_KEYS.size() || lastUsedColumn(row) > 1) {
+                if (index >= keys.size() || lastUsedColumn(row) > 1) {
                     throw invalidRecord(XlsxFormat.SHEET_META, row.getRowNum());
                 }
                 String key = text(cell(row, 0));
                 String value = scalar(cell(row, 1));
-                if (!XlsxFormat.META_KEYS.get(index).equals(key) || value == null) {
+                if (!keys.get(index).equals(key) || value == null) {
                     throw identity
                             ? new XlsxCodecException(XlsxErrorCode.IMPORT_UNSUPPORTED_FORMAT)
                             : invalidRecord(XlsxFormat.SHEET_META, row.getRowNum());
                 }
                 if ((index == 0 && !XlsxFormat.FORMAT.equals(value))
-                        || (index == 1 && !XlsxFormat.VERSION_1.equals(value) && !XlsxFormat.VERSION.equals(value))) {
+                        || (index == 1
+                                && !XlsxFormat.VERSION_1.equals(value)
+                                && !XlsxFormat.VERSION_2.equals(value)
+                                && !XlsxFormat.VERSION.equals(value))) {
                     throw new XlsxCodecException(XlsxErrorCode.IMPORT_UNSUPPORTED_FORMAT);
+                }
+                if (index == 1 && XlsxFormat.VERSION.equals(value)) {
+                    keys = XlsxFormat.META_KEYS;
                 }
                 if (index == 2 && parseInstant(value) == null) {
                     throw invalidRecord(XlsxFormat.SHEET_META, row.getRowNum());
                 }
-                if (index >= 3 && index <= 6 && !COUNT.matcher(value).matches()) {
+                if (index >= 3
+                        && index < keys.size() - 1
+                        && !COUNT.matcher(value).matches()) {
                     throw invalidRecord(XlsxFormat.SHEET_META, row.getRowNum());
                 }
                 values.add(value);
@@ -186,7 +211,7 @@ public class XlsxWorkbookReader {
         if (values.size() < 2) {
             throw new XlsxCodecException(XlsxErrorCode.IMPORT_UNSUPPORTED_FORMAT);
         }
-        if (values.size() != XlsxFormat.META_KEYS.size()) {
+        if (values.size() != keys.size()) {
             throw invalidRecord(XlsxFormat.SHEET_META, null);
         }
         return new Meta(
@@ -195,18 +220,19 @@ public class XlsxWorkbookReader {
                 Integer.parseInt(values.get(3)),
                 Integer.parseInt(values.get(4)),
                 Integer.parseInt(values.get(5)),
-                Integer.parseInt(values.get(6)));
+                Integer.parseInt(values.get(6)),
+                XlsxFormat.VERSION.equals(values.get(1)) ? Integer.parseInt(values.get(7)) : 0);
     }
 
-    /** The five sheets in order and nothing else. Reports the expected name, never a name from the file. */
-    private static void requireSheets(List<Sheet> sheets) {
-        for (int i = 0; i < XlsxFormat.SHEETS.size(); i++) {
-            String expected = XlsxFormat.SHEETS.get(i);
+    /** The versioned sheets in order and nothing else. Reports the expected name, never a name from the file. */
+    private static void requireSheets(List<Sheet> sheets, List<String> names) {
+        for (int i = 0; i < names.size(); i++) {
+            String expected = names.get(i);
             if (i >= sheets.size() || !expected.equals(sheets.get(i).getName())) {
                 throw invalidRecord(expected, null);
             }
         }
-        if (sheets.size() != XlsxFormat.SHEETS.size()) {
+        if (sheets.size() != names.size()) {
             throw invalidRecord(null, null);
         }
     }
@@ -379,6 +405,18 @@ public class XlsxWorkbookReader {
         Instant updatedAt = instant(json, "updatedAt");
         // Versions before T-037 could persist an inverted pair. Both instants are authoritative in v1 and v2.
         return new VoiceNoteRecord(space, id, text, createdAt, updatedAt);
+    }
+
+    private static ImageTextRecord imageText(String key, JsonNode json) {
+        requireFields(json, true, "text", "createdAt");
+        if (!UUID_PATTERN.matcher(key).matches()) {
+            throw new RecordRejected();
+        }
+        return new ImageTextRecord(
+                space(json, true),
+                UUID.fromString(key),
+                ImageText.validate(string(json, "text")),
+                instant(json, "createdAt"));
     }
 
     /** The exact fields of the record in its version: version 2 adds a mandatory {@code space}. */

@@ -20,8 +20,8 @@ import {
 } from './api'
 import { portabilityErrorMessage } from './messages'
 
-const counts = { references: 2, dailyNotes: 3, dailyVersions: 1, voiceNotes: 4 }
-const emptyCounts = { references: 0, dailyNotes: 0, dailyVersions: 0, voiceNotes: 0 }
+const counts = { references: 2, dailyNotes: 3, dailyVersions: 1, voiceNotes: 4, imageTexts: 0 }
+const emptyCounts = { references: 0, dailyNotes: 0, dailyVersions: 0, voiceNotes: 0, imageTexts: 0 }
 const legacyCounts = { work: counts, personal: emptyCounts }
 const preview = {
   format: 'devnotes-xlsx',
@@ -227,8 +227,8 @@ describe.each([
 })
 
 const countsBySpace = {
-  work: { references: 2, dailyNotes: 1, dailyVersions: 0, voiceNotes: 3 },
-  personal: { references: 0, dailyNotes: 2, dailyVersions: 1, voiceNotes: 1 },
+  work: { references: 2, dailyNotes: 1, dailyVersions: 0, voiceNotes: 3, imageTexts: 0 },
+  personal: { references: 0, dailyNotes: 2, dailyVersions: 1, voiceNotes: 1, imageTexts: 0 },
 }
 
 describe('conteos por espacio', () => {
@@ -238,6 +238,23 @@ describe('conteos por espacio', () => {
       countsBySpace,
     })
     expect(importResultSchema.parse({ counts, countsBySpace })).toEqual({ counts, countsBySpace })
+  })
+
+  it('valida los conteos de Imagen en v3 y rechaza esos datos en v2', () => {
+    const summary = {
+      ...preview,
+      version: 3,
+      counts: { ...counts, imageTexts: 3 },
+      countsBySpace: {
+        work: { ...countsBySpace.work, imageTexts: 1 },
+        personal: { ...countsBySpace.personal, imageTexts: 2 },
+      },
+    }
+    expect(importPreviewSchema.parse(summary)).toEqual(summary)
+    expect(importPreviewSchema.safeParse({ ...summary, version: 2 }).success).toBe(false)
+    expect(
+      importPreviewSchema.safeParse({ ...summary, counts: { ...counts, imageTexts: 2 } }).success,
+    ).toBe(false)
   })
 
   it('acepta un respaldo v1 del servidor con todos los datos en Trabajo', () => {
@@ -272,7 +289,7 @@ describe('importPreviewSchema', () => {
   it.each([
     { ...preview, format: 'otro' },
     { ...preview, version: 2, countsBySpace: undefined },
-    { ...preview, version: 3 },
+    { ...preview, version: 4 },
     { ...preview, exportedAt: 'ayer' },
     { ...preview, accountEmpty: 'no' },
     { ...preview, counts: { references: 1 } },
@@ -335,7 +352,7 @@ describe('portabilityErrorMessage', () => {
     [
       'IMPORT_UNSUPPORTED_FORMAT',
       400,
-      'El archivo no tiene el formato devnotes-xlsx versión 1 o 2.',
+      'El archivo no tiene el formato devnotes-xlsx con una versión compatible (1, 2 o 3).',
     ],
     ['IMPORT_INVALID_RECORD', 400, 'El archivo tiene datos inválidos y no se puede importar.'],
     ['IMPORT_TOO_LARGE', 413, 'El archivo supera el máximo de 10 MB.'],

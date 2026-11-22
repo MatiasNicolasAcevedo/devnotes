@@ -3,6 +3,7 @@ package com.example.devnotes.portability.persistence;
 import com.example.devnotes.identity.AccountWriteLock;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyNoteRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyVersionRecord;
+import com.example.devnotes.portability.xlsx.PortabilityRecords.ImageTextRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ReferenceRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.VoiceNoteRecord;
 import java.time.Instant;
@@ -40,15 +41,17 @@ public class PortabilityWriteRepository {
     }
 
     /**
-     * True when the owner has no daily notes, voice notes or references in any space (versions hang from daily
-     * notes): data only in Personal makes the account not empty (S-109).
+     * True when the owner has no daily notes, voice notes, references or image texts in either space.
+     * Versions hang from daily notes; creation receipts do not contain recoverable texts.
      */
     public boolean accountEmpty(UUID ownerId) {
         Boolean empty = jdbc.queryForObject(
                 "SELECT NOT (EXISTS (SELECT 1 FROM daily_note WHERE owner_id = ?) "
                         + "OR EXISTS (SELECT 1 FROM voice_note WHERE owner_id = ?) "
-                        + "OR EXISTS (SELECT 1 FROM reference_item WHERE owner_id = ?))",
+                        + "OR EXISTS (SELECT 1 FROM reference_item WHERE owner_id = ?) "
+                        + "OR EXISTS (SELECT 1 FROM image_text WHERE owner_id = ?))",
                 Boolean.class,
+                ownerId,
                 ownerId,
                 ownerId,
                 ownerId);
@@ -129,6 +132,17 @@ public class PortabilityWriteRepository {
                 "INSERT INTO voice_note (id, owner_id, space, text, revision, created_at, updated_at) "
                         + "VALUES (?, ?, ?, ?, 1, ?, ?)",
                 rows);
+    }
+
+    public void insertImageTexts(UUID ownerId, List<UUID> ids, List<ImageTextRecord> records) {
+        List<Object[]> rows = new ArrayList<>(records.size());
+        for (int i = 0; i < records.size(); i++) {
+            ImageTextRecord record = records.get(i);
+            rows.add(new Object[] {
+                ids.get(i), ownerId, record.space().value(), record.text(), timestamp(record.createdAt())
+            });
+        }
+        jdbc.batchUpdate("INSERT INTO image_text (id, owner_id, space, text, created_at) VALUES (?, ?, ?, ?, ?)", rows);
     }
 
     private static OffsetDateTime timestamp(Instant instant) {

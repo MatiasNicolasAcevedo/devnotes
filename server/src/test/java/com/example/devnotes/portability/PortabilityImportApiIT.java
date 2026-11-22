@@ -247,11 +247,11 @@ class PortabilityImportApiIT {
         assertThat(empty.headers().firstValue("Content-Type").orElseThrow()).startsWith("application/json");
         assertThat(empty.headers().firstValue("Cache-Control").orElseThrow()).contains("no-store");
         assertThat(JSON.readTree(empty.body()))
-                .isEqualTo(JSON.readTree("{\"format\":\"devnotes-xlsx\",\"version\":2,\"exportedAt\":\"" + exportedAt
-                        + "\",\"counts\":{\"references\":2,\"dailyNotes\":2,\"dailyVersions\":1,\"voiceNotes\":2},"
+                .isEqualTo(JSON.readTree("{\"format\":\"devnotes-xlsx\",\"version\":3,\"exportedAt\":\"" + exportedAt
+                        + "\",\"counts\":{\"references\":2,\"dailyNotes\":2,\"dailyVersions\":1,\"voiceNotes\":2,\"imageTexts\":0},"
                         + "\"countsBySpace\":{\"work\":{\"references\":2,\"dailyNotes\":2,\"dailyVersions\":1,"
-                        + "\"voiceNotes\":2},\"personal\":{\"references\":0,\"dailyNotes\":0,\"dailyVersions\":0,"
-                        + "\"voiceNotes\":0}},\"accountEmpty\":true}"));
+                        + "\"voiceNotes\":2,\"imageTexts\":0},\"personal\":{\"references\":0,\"dailyNotes\":0,\"dailyVersions\":0,"
+                        + "\"voiceNotes\":0,\"imageTexts\":0}},\"accountEmpty\":true}"));
         assertThat(notEmpty.statusCode()).isEqualTo(200);
         assertThat(JSON.readTree(notEmpty.body()).get("accountEmpty").asBoolean())
                 .isFalse();
@@ -457,10 +457,10 @@ class PortabilityImportApiIT {
         assertThat(imported.headers().firstValue("Cache-Control").orElseThrow()).contains("no-store");
         assertThat(JSON.readTree(imported.body()))
                 .isEqualTo(JSON.readTree(
-                        "{\"counts\":{\"references\":2,\"dailyNotes\":2,\"dailyVersions\":1,\"voiceNotes\":2},"
+                        "{\"counts\":{\"references\":2,\"dailyNotes\":2,\"dailyVersions\":1,\"voiceNotes\":2,\"imageTexts\":0},"
                                 + "\"countsBySpace\":{\"work\":{\"references\":2,\"dailyNotes\":2,"
-                                + "\"dailyVersions\":1,\"voiceNotes\":2},\"personal\":{\"references\":0,"
-                                + "\"dailyNotes\":0,\"dailyVersions\":0,\"voiceNotes\":0}}}"));
+                                + "\"dailyVersions\":1,\"voiceNotes\":2,\"imageTexts\":0},\"personal\":{\"references\":0,"
+                                + "\"dailyNotes\":0,\"dailyVersions\":0,\"voiceNotes\":0,\"imageTexts\":0}}}"));
 
         PortabilityRecords copy = reader.read(exportBytes(b)).records();
 
@@ -590,9 +590,9 @@ class PortabilityImportApiIT {
                 XlsxTestBooks.build(XlsxTestBooks.validSheets()),
                 "xl/vbaProject.bin",
                 SECRET.getBytes(StandardCharsets.UTF_8));
-        // Format or version: 1 and 2 are known since S-109.
+        // Format or version: 1 to 3 are known.
         var otherVersion = XlsxTestBooks.validSheets();
-        XlsxTestBooks.sheet(otherVersion, "devnotes").rows.get(1).set(1, "3");
+        XlsxTestBooks.sheet(otherVersion, "devnotes").rows.get(1).set(1, "4");
         // Sheet, header, fragment or record.
         var badHeader = XlsxTestBooks.validSheets();
         XlsxTestBooks.sheet(badHeader, "diarias").rows.get(0).set(0, SECRET);

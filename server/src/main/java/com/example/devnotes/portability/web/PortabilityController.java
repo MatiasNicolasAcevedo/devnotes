@@ -47,11 +47,15 @@ public class PortabilityController {
     private static final String FILE_PART = "file";
     private static final String IMPORT_FORMAT = "devnotes-xlsx";
 
-    /** Counts of a workbook, with the field names of the S-107 contract. */
-    public record ImportCounts(int references, int dailyNotes, int dailyVersions, int voiceNotes) {
+    /** Counts of a workbook, including zero counts for collections absent in older versions. */
+    public record ImportCounts(int references, int dailyNotes, int dailyVersions, int voiceNotes, int imageTexts) {
         static ImportCounts of(Counts counts) {
             return new ImportCounts(
-                    counts.references(), counts.dailyNotes(), counts.dailyVersions(), counts.voiceNotes());
+                    counts.references(),
+                    counts.dailyNotes(),
+                    counts.dailyVersions(),
+                    counts.voiceNotes(),
+                    counts.imageTexts());
         }
     }
 
@@ -83,7 +87,7 @@ public class PortabilityController {
     @GetMapping("/export")
     @Operation(
             summary = "Descarga los datos de la cuenta en .xlsx",
-            description = "Libro devnotes-xlsx v2 con referencias, notas diarias, versiones y notas de voz propias de "
+            description = "Libro devnotes-xlsx v3 con referencias, notas diarias, versiones, voz y textos de Imagen de "
                     + "Trabajo y Personal. No admite filtro por espacio.")
     @ApiResponse(
             responseCode = "200",
@@ -129,7 +133,7 @@ public class PortabilityController {
             description = "Multipart con exactamente una parte file de 1 a 10 485 760 bytes. No modifica la cuenta.")
     @ApiResponse(
             responseCode = "200",
-            description = "Versión leída (1 o 2), conteos totales y por espacio, y si la cuenta está vacía en ambos")
+            description = "Versión leída (1, 2 o 3), conteos totales y por espacio, y si la cuenta está vacía en ambos")
     @ApiResponse(
             responseCode = "400",
             description = "IMPORT_INVALID_FILE, IMPORT_UNSUPPORTED_FORMAT o IMPORT_INVALID_RECORD (con sheet y row)",
@@ -163,8 +167,9 @@ public class PortabilityController {
     @SecurityRequirement(name = AuthOpenApi.CSRF_HEADER)
     @Operation(
             summary = "Importa un .xlsx en la cuenta vacía de la sesión",
-            description = "Todo o nada: recrea referencias, notas diarias, versiones y notas de voz con IDs nuevos, "
-                    + "cada una en el espacio del archivo; un libro v1 entra en Trabajo.")
+            description =
+                    "Todo o nada. Recrea referencias, notas diarias, versiones, voz y textos de Imagen con IDs nuevos, "
+                            + "cada registro en el espacio del archivo; un libro v1 entra en Trabajo.")
     @ApiResponse(responseCode = "201", description = "Conteos importados, totales y por espacio")
     @ApiResponse(
             responseCode = "400",

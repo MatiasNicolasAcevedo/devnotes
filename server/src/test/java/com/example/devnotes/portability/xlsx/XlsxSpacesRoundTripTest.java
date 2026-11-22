@@ -76,7 +76,7 @@ class XlsxSpacesRoundTripTest {
     private final XlsxWorkbookWriter writer = new XlsxWorkbookWriter();
     private final XlsxWorkbookReader reader = XlsxTestBooks.reader();
 
-    // ── Version 2 round trip ──
+    // ── Current writer round trip in two spaces ──
 
     @Test
     void sameDateInBothSpacesKeepsNotesVersionsAndTheirReferences() throws IOException {
@@ -85,7 +85,7 @@ class XlsxSpacesRoundTripTest {
         byte[] file = write(records);
         XlsxWorkbookContent content = reader.read(file);
 
-        assertThat(content.version()).isEqualTo(2);
+        assertThat(content.version()).isEqualTo(3);
         assertThat(content.exportedAt()).isEqualTo(EXPORTED);
         assertThat(content.records()).isEqualTo(records);
         assertThat(content.records().dailyNotes())
@@ -97,12 +97,12 @@ class XlsxSpacesRoundTripTest {
     }
 
     @Test
-    void writerProducesTheVersionTwoLayout() throws IOException {
+    void writerPreservesTheVersionTwoLayoutOfExistingSheets() throws IOException {
         byte[] file = write(twoSpaces());
 
         List<Row> meta = rawRows(file, 0);
         assertThat(meta.get(0).getCell(1).asString()).isEqualTo("devnotes-xlsx");
-        assertThat(meta.get(1).getCell(1).asString()).isEqualTo("2");
+        assertThat(meta.get(1).getCell(1).asString()).isEqualTo("3");
         // The announced counts stay global to the account.
         assertThat(meta.get(3).getCell(1).asString()).isEqualTo("2");
         assertThat(meta.get(4).getCell(1).asString()).isEqualTo("2");
@@ -211,15 +211,15 @@ class XlsxSpacesRoundTripTest {
     }
 
     @Test
-    void versionOneToModelToVersionTwoToModelIsIntact() throws IOException {
+    void versionOneToModelToCurrentVersionToModelIsIntact() throws IOException {
         PortabilityRecords fromV1 = reader.read(fixture()).records();
 
-        XlsxWorkbookContent v2 = reader.read(write(fromV1));
+        XlsxWorkbookContent v3 = reader.read(write(fromV1));
 
-        assertThat(v2.version()).isEqualTo(2);
-        assertThat(v2.records()).isEqualTo(fromV1);
-        assertThat(v2.records().references()).extracting(ReferenceRecord::space).containsOnly(WORK);
-        assertThat(v2.records().voiceNotes()).extracting(VoiceNoteRecord::space).containsOnly(WORK);
+        assertThat(v3.version()).isEqualTo(3);
+        assertThat(v3.records()).isEqualTo(fromV1);
+        assertThat(v3.records().references()).extracting(ReferenceRecord::space).containsOnly(WORK);
+        assertThat(v3.records().voiceNotes()).extracting(VoiceNoteRecord::space).containsOnly(WORK);
     }
 
     @Test
@@ -438,7 +438,7 @@ class XlsxSpacesRoundTripTest {
     }
 
     @ParameterizedTest(name = "versión {0}")
-    @ValueSource(strings = {"3", "0", "2.0", "02", "v2"})
+    @ValueSource(strings = {"4", "0", "2.0", "02", "v2"})
     void unknownVersionIsUnsupported(String version) {
         List<RawSheet> sheets = validSheetsV2();
         sheet(sheets, "devnotes").rows.get(1).set(1, version);

@@ -9,7 +9,7 @@ depends_on: [T-075]
 branch: codex/t-076-image-text-xlsx
 role: implementer
 executor: frontier
-pr: null
+pr: 79
 ---
 
 # T-076 · Recuperar textos de Imagen en XLSX v3

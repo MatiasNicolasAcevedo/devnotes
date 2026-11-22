@@ -5,7 +5,7 @@
 | Tarea y contrato | [T-076](tasks/T-076-image-text-xlsx.md) · Recuperar textos de Imagen en XLSX v3 · [S-112](specs/S-112-screenshot-ocr.md) |
 | Estado | `in_progress` |
 | Acción actual | Frontera implementer implementa y verifica XLSX v3 |
-| Rama / PR | `codex/t-076-image-text-xlsx` · Pendiente |
+| Rama / PR | `codex/t-076-image-text-xlsx` · [PR #79](https://github.com/MatiasNicolasAcevedo/devnotes/pull/79) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
@@ -33,4 +33,12 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 
 ### Prompt de la siguiente sesión
 
-Se completa al cerrar la sesión activa de T-076.
+```text
+Actuá como frontera implementer de T-076 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
+
+LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md y docs/tasks/T-076-image-text-xlsx.md.
+PRECONDICIÓN: gh pr view 79 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefName,headRefOid,baseRefName,baseRefOid debe confirmar OPEN en codex/t-076-image-text-xlsx contra main.
+ACCIÓN: Retomá la evidencia del checkpoint de T-076 y cerrá el gate diario y la publicación del mismo PR.
+GATE: diario. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+SALIDA: T-076 in_review y prompt de frontera reviewer. Conservá Render Auto-Deploy On Commit.
+```
