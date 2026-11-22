@@ -16,6 +16,7 @@ export const importCountsSchema = z.object({
   dailyNotes: count,
   dailyVersions: count,
   voiceNotes: count,
+  imageTexts: count,
 })
 export type ImportCounts = z.infer<typeof importCountsSchema>
 
@@ -32,11 +33,11 @@ function countsMatch({ counts, countsBySpace: { work, personal } }: ImportResult
   return countKeys.every((key) => work[key] + personal[key] === counts[key])
 }
 
-/** Contrato de `POST /api/v1/portability/import-preview` (S-109). */
+/** Contrato de `POST /api/v1/portability/import-preview` (S-109, S-112). */
 export const importPreviewSchema = accountCountsSchema
   .extend({
     format: z.literal('devnotes-xlsx'),
-    version: z.literal([1, 2]),
+    version: z.literal([1, 2, 3]),
     exportedAt: z.string().datetime(),
     accountEmpty: z.boolean(),
   })
@@ -46,12 +47,16 @@ export const importPreviewSchema = accountCountsSchema
   })
   .refine(
     ({ version, countsBySpace }) =>
-      version === 2 || countKeys.every((key) => countsBySpace.personal[key] === 0),
+      version !== 1 || countKeys.every((key) => countsBySpace.personal[key] === 0),
     {
       path: ['countsBySpace', 'personal'],
       message: 'Un respaldo v1 solo contiene datos de Trabajo',
     },
   )
+  .refine(({ version, counts }) => version === 3 || counts.imageTexts === 0, {
+    path: ['counts', 'imageTexts'],
+    message: 'Solo los respaldos v3 contienen textos de Imagen',
+  })
 export type ImportPreview = z.infer<typeof importPreviewSchema>
 
 /** Contrato de `POST /api/v1/portability/imports` (201). */

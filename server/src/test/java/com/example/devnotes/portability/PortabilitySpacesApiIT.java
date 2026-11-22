@@ -9,6 +9,7 @@ import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyNoteRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyVersionRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ReferenceRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.VoiceNoteRecord;
+import com.example.devnotes.portability.xlsx.XlsxTestBooks;
 import com.example.devnotes.portability.xlsx.XlsxWorkbookReader;
 import com.example.devnotes.security.OidcHttpBrowser;
 import com.example.devnotes.security.OidcHttpProvider;
@@ -58,8 +59,10 @@ class PortabilitySpacesApiIT {
     private static final com.fasterxml.jackson.databind.ObjectMapper CODEC_JSON =
             new com.fasterxml.jackson.databind.ObjectMapper();
 
-    private static final String ONE_EACH = "{\"references\":1,\"dailyNotes\":1,\"dailyVersions\":1,\"voiceNotes\":1}";
-    private static final String NONE = "{\"references\":0,\"dailyNotes\":0,\"dailyVersions\":0,\"voiceNotes\":0}";
+    private static final String ONE_EACH =
+            "{\"references\":1,\"dailyNotes\":1,\"dailyVersions\":1,\"voiceNotes\":1,\"imageTexts\":0}";
+    private static final String NONE =
+            "{\"references\":0,\"dailyNotes\":0,\"dailyVersions\":0,\"voiceNotes\":0,\"imageTexts\":0}";
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
@@ -208,6 +211,39 @@ class PortabilitySpacesApiIT {
     }
 
     @Test
+    void restoresAVersionTwoBookAndExportsItInVersionThree() throws Exception {
+        var target = login();
+        var sheets = XlsxTestBooks.validSheetsV2();
+        var voice = XlsxTestBooks.sheet(sheets, "voz").rows.get(1);
+        voice.set(3, XlsxTestBooks.inSpace(XlsxTestBooks.VOICE_JSON, "personal"));
+        byte[] file = XlsxTestBooks.build(sheets);
+
+        var preview = upload(target, PREVIEW, file);
+        assertThat(preview.statusCode()).isEqualTo(200);
+        var summary = JSON.readTree(preview.body());
+        assertThat(summary.path("version").asInt()).isEqualTo(2);
+
+        var result = upload(target, IMPORTS, file);
+        assertThat(result.statusCode()).isEqualTo(201);
+        assertThat(JSON.readTree(result.body()).path("countsBySpace")).isEqualTo(summary.path("countsBySpace"));
+        var exported = reader.read(exportBytes(target, EXPORT));
+        assertThat(exported.version()).isEqualTo(3);
+        assertThat(exported.records().references())
+                .extracting(ReferenceRecord::space)
+                .containsExactly(PrivateSpace.WORK);
+        assertThat(exported.records().dailyNotes())
+                .extracting(DailyNoteRecord::space)
+                .containsExactly(PrivateSpace.WORK);
+        assertThat(exported.records().dailyVersions())
+                .extracting(DailyVersionRecord::space)
+                .containsExactly(PrivateSpace.WORK);
+        assertThat(exported.records().voiceNotes())
+                .extracting(VoiceNoteRecord::space, VoiceNoteRecord::text)
+                .containsExactly(tuple(PrivateSpace.PERSONAL, "Idea ficticia\n"));
+        assertThat(exported.records().imageTexts()).isEmpty();
+    }
+
+    @Test
     void bothSpacesOfTheSameDateRoundTripAndTheCrossSpaceAtomStaysUnavailable() throws Exception {
         var a = login();
         var b = login();
@@ -229,7 +265,7 @@ class PortabilitySpacesApiIT {
         assertThat(reader.read(exportBytes(a, EXPORT + PERSONAL)).records())
                 .isEqualTo(reader.read(file).records());
         var book = reader.read(file);
-        assertThat(book.version()).isEqualTo(2);
+        assertThat(book.version()).isEqualTo(3);
         PortabilityRecords source = book.records();
         assertThat(source.dailyNotes())
                 .extracting(DailyNoteRecord::space, DailyNoteRecord::date)
@@ -249,16 +285,17 @@ class PortabilitySpacesApiIT {
         HttpResponse<String> preview = upload(b, PREVIEW, file);
         assertThat(preview.statusCode()).isEqualTo(200);
         assertThat(JSON.readTree(preview.body()))
-                .isEqualTo(JSON.readTree("{\"format\":\"devnotes-xlsx\",\"version\":2,\"exportedAt\":\""
+                .isEqualTo(JSON.readTree("{\"format\":\"devnotes-xlsx\",\"version\":3,\"exportedAt\":\""
                         + book.exportedAt() + "\",\"counts\":{\"references\":2,\"dailyNotes\":2,\"dailyVersions\":2,"
-                        + "\"voiceNotes\":2},\"countsBySpace\":{\"work\":" + ONE_EACH + ",\"personal\":" + ONE_EACH
+                        + "\"voiceNotes\":2,\"imageTexts\":0},\"countsBySpace\":{\"work\":" + ONE_EACH
+                        + ",\"personal\":" + ONE_EACH
                         + "},\"accountEmpty\":true}"));
 
         HttpResponse<String> imported = upload(b, IMPORTS, file);
         assertThat(imported.statusCode()).isEqualTo(201);
         assertThat(JSON.readTree(imported.body()))
                 .isEqualTo(JSON.readTree(
-                        "{\"counts\":{\"references\":2,\"dailyNotes\":2,\"dailyVersions\":2,\"voiceNotes\":2},"
+                        "{\"counts\":{\"references\":2,\"dailyNotes\":2,\"dailyVersions\":2,\"voiceNotes\":2,\"imageTexts\":0},"
                                 + "\"countsBySpace\":{\"work\":" + ONE_EACH + ",\"personal\":" + ONE_EACH + "}}"));
 
         // B has one record of each kind in each space, with new identifiers.
@@ -326,7 +363,7 @@ class PortabilitySpacesApiIT {
         String counts = "{\"references\":" + records.references().size() + ",\"dailyNotes\":"
                 + records.dailyNotes().size() + ",\"dailyVersions\":"
                 + records.dailyVersions().size()
-                + ",\"voiceNotes\":" + records.voiceNotes().size() + "}";
+                + ",\"voiceNotes\":" + records.voiceNotes().size() + ",\"imageTexts\":0}";
         assertThat(counts).isNotEqualTo(NONE);
 
         HttpResponse<String> preview = upload(b, PREVIEW, file);

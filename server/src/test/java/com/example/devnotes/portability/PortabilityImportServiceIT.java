@@ -3,11 +3,13 @@ package com.example.devnotes.portability;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 
 import com.example.devnotes.TestcontainersConfiguration;
+import com.example.devnotes.imagetext.application.ImageTextService;
 import com.example.devnotes.portability.application.ImportAccountNotEmptyException;
 import com.example.devnotes.portability.application.PortabilityExportService;
 import com.example.devnotes.portability.application.PortabilityImportService;
@@ -33,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -45,6 +48,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.hibernate.id.uuid.UuidVersion7Strategy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,6 +61,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /** XL-04 at the service boundary: preview, atomic import, empty-account rule and concurrency on PostgreSQL. */
 @ActiveProfiles("test")
@@ -99,6 +104,12 @@ class PortabilityImportServiceIT {
     @Autowired
     private JdbcTemplate jdbc;
 
+    @Autowired
+    private ImageTextService imageTexts;
+
+    @Autowired
+    private TransactionTemplate transaction;
+
     @MockitoSpyBean
     private PortabilityWriteRepository writeRepository;
 
@@ -119,6 +130,8 @@ class PortabilityImportServiceIT {
         jdbc.update("DELETE FROM daily_note WHERE owner_id IN " + owners, ISSUER);
         jdbc.update("DELETE FROM voice_note WHERE owner_id IN " + owners, ISSUER);
         jdbc.update("DELETE FROM reference_item WHERE owner_id IN " + owners, ISSUER);
+        jdbc.update("DELETE FROM image_text_creation_receipt WHERE owner_id IN " + owners, ISSUER);
+        jdbc.update("DELETE FROM image_text WHERE owner_id IN " + owners, ISSUER);
         jdbc.update("DELETE FROM app_user WHERE issuer=?", ISSUER);
     }
 
@@ -632,6 +645,34 @@ class PortabilityImportServiceIT {
         assertThat(owned("reference_item", owner)).isEqualTo(2);
     }
 
+    @Test
+    void importWaitsForAnImageCreationThenChecksTheCommittedAccount() throws Exception {
+        byte[] file = workbook(fullRecords());
+        try (var pool = Executors.newSingleThreadExecutor()) {
+            var result = transaction.execute(status -> {
+                imageTexts.create(
+                        owner,
+                        PrivateSpace.PERSONAL,
+                        UuidVersion7Strategy.INSTANCE.generateUuid(null),
+                        "Concurrent OCR");
+                Integer lockHolder = jdbc.queryForObject("SELECT pg_backend_pid()", Integer.class);
+                var pending = pool.submit(() -> service.importInto(owner, file));
+                await().atMost(Duration.ofSeconds(10))
+                        .until(() -> jdbc.queryForObject("""
+                                SELECT count(*) FROM pg_stat_activity
+                                WHERE ? = ANY (pg_blocking_pids(pid))
+                                """, Long.class, lockHolder) == 1);
+                assertThat(pending).isNotDone();
+                return pending;
+            });
+            assertThatThrownBy(() -> result.get(10, TimeUnit.SECONDS))
+                    .hasCauseInstanceOf(ImportAccountNotEmptyException.class);
+        }
+        assertThat(owned("image_text", owner)).isEqualTo(1);
+        assertThat(owned("reference_item", owner)).isZero();
+        assertThat(owned("daily_note", owner)).isZero();
+    }
+
     // ── Two spaces (S-109, T-062) ──
 
     @Test
@@ -639,12 +680,12 @@ class PortabilityImportServiceIT {
         byte[] v1File = versionOneFixture();
         Counts v1Counts = counts(reader.read(v1File).records());
 
-        var v2 = service.preview(owner, workbook(twoSpaces()));
+        var v3 = service.preview(owner, workbook(twoSpaces()));
         var v1 = service.preview(owner, v1File);
 
-        assertThat(v2.version()).isEqualTo(2);
-        assertThat(v2.counts()).isEqualTo(new Counts(2, 2, 2, 2));
-        assertThat(v2.countsBySpace()).isEqualTo(new SpaceCounts(ONE_EACH, ONE_EACH));
+        assertThat(v3.version()).isEqualTo(3);
+        assertThat(v3.counts()).isEqualTo(new Counts(2, 2, 2, 2));
+        assertThat(v3.countsBySpace()).isEqualTo(new SpaceCounts(ONE_EACH, ONE_EACH));
         assertThat(v1.version()).isEqualTo(1);
         assertThat(v1Counts).isNotEqualTo(NONE);
         assertThat(v1.counts()).isEqualTo(v1Counts);

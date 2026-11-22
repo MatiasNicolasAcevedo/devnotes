@@ -2,6 +2,7 @@ package com.example.devnotes.portability.xlsx;
 
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyNoteRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyVersionRecord;
+import com.example.devnotes.portability.xlsx.PortabilityRecords.ImageTextRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ReferenceRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.VoiceNoteRecord;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -18,7 +19,7 @@ import org.dhatim.fastexcel.Worksheet;
 import org.springframework.stereotype.Component;
 
 /**
- * Streaming writer of the {@code devnotes-xlsx} version 2 workbook (S-107 layout plus the spaces of S-109).
+ * Streaming writer of the {@code devnotes-xlsx} version 3 workbook (S-107, S-109, S-112).
  *
  * Records are written in the order received; the caller provides the deterministic order of S-107. Text
  * goes out as inline strings, so no shared-string table grows in memory and no cell is ever a formula.
@@ -30,7 +31,11 @@ public class XlsxWorkbookWriter {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /** Record counts announced in the {@code devnotes} sheet, which precedes the data sheets. */
-    public record Counts(int references, int dailyNotes, int dailyVersions, int voiceNotes) {}
+    public record Counts(int references, int dailyNotes, int dailyVersions, int voiceNotes, int imageTexts) {
+        public Counts(int references, int dailyNotes, int dailyVersions, int voiceNotes) {
+            this(references, dailyNotes, dailyVersions, voiceNotes, 0);
+        }
+    }
 
     /** Write an in-memory set of records. The stream is flushed but not closed. */
     public void write(PortabilityRecords records, Instant exportedAt, OutputStream out) throws IOException {
@@ -40,11 +45,13 @@ public class XlsxWorkbookWriter {
                         records.references().size(),
                         records.dailyNotes().size(),
                         records.dailyVersions().size(),
-                        records.voiceNotes().size()),
+                        records.voiceNotes().size(),
+                        records.imageTexts().size()),
                 records.references(),
                 records.dailyNotes(),
                 records.dailyVersions(),
                 records.voiceNotes(),
+                records.imageTexts(),
                 out);
     }
 
@@ -61,6 +68,7 @@ public class XlsxWorkbookWriter {
             Iterable<DailyNoteRecord> dailyNotes,
             Iterable<DailyVersionRecord> dailyVersions,
             Iterable<VoiceNoteRecord> voiceNotes,
+            Iterable<ImageTextRecord> imageTexts,
             OutputStream out)
             throws IOException {
         Objects.requireNonNull(exportedAt);
@@ -94,6 +102,13 @@ public class XlsxWorkbookWriter {
                 voiceNotes,
                 counts.voiceNotes(),
                 XlsxWorkbookWriter::voiceRow);
+        writeSheet(
+                workbook,
+                XlsxFormat.SHEET_IMAGE_TEXTS,
+                XlsxFormat.HEADER_IMAGE_TEXTS,
+                imageTexts,
+                counts.imageTexts(),
+                XlsxWorkbookWriter::imageTextRow);
         workbook.finish();
         out.flush();
     }
@@ -108,6 +123,7 @@ public class XlsxWorkbookWriter {
                 Integer.toString(counts.dailyNotes()),
                 Integer.toString(counts.dailyVersions()),
                 Integer.toString(counts.voiceNotes()),
+                Integer.toString(counts.imageTexts()),
                 XlsxFormat.NOTICE);
         for (int row = 0; row < values.size(); row++) {
             sheet.inlineString(row, 0, XlsxFormat.META_KEYS.get(row));
@@ -233,6 +249,18 @@ public class XlsxWorkbookWriter {
                 record.id().toString(),
                 serialize(json),
                 List.of(XlsxText.readableText(record.text()), created, updated, XlsxFormat.spaceLabel(record.space())));
+    }
+
+    private static RecordRow imageTextRow(ImageTextRecord record) {
+        String created = XlsxText.instant(record.createdAt());
+        ObjectNode json = MAPPER.createObjectNode();
+        json.put("space", record.space().value());
+        json.put("text", record.text());
+        json.put("createdAt", created);
+        return new RecordRow(
+                record.id().toString(),
+                serialize(json),
+                List.of(XlsxText.readableText(record.text()), created, XlsxFormat.spaceLabel(record.space())));
     }
 
     private static String serialize(ObjectNode json) {

@@ -40,15 +40,15 @@ class PortabilityExportServiceTest {
         byte[] exact = XlsxTestBooks.atByteSize(compressed, 0);
         byte[] excess = XlsxTestBooks.atByteSize(compressed, 1);
         doAnswer(call -> {
-                    call.<OutputStream>getArgument(6).write(exact);
+                    call.<OutputStream>getArgument(7).write(exact);
                     return null;
                 })
                 .doAnswer(call -> {
-                    call.<OutputStream>getArgument(6).write(excess);
+                    call.<OutputStream>getArgument(7).write(excess);
                     return null;
                 })
                 .when(writer)
-                .write(any(), any(), any(), any(), any(), any(), any());
+                .write(any(), any(), any(), any(), any(), any(), any(), any());
 
         var out = new ByteArrayOutputStream();
         Set<Path> before = exportFiles();
@@ -70,6 +70,7 @@ class PortabilityExportServiceTest {
         var owner = UUID.randomUUID();
         var repository = mock(PortabilityReadRepository.class);
         when(repository.counts(owner)).thenReturn(new Counts(0, 0, 0, 0));
+        when(repository.imageTexts(owner)).thenAnswer(call -> java.util.stream.Stream.empty());
         var service = service(repository, new XlsxWorkbookWriter(), clock);
 
         try (var file = service.prepare(owner)) {
@@ -83,6 +84,7 @@ class PortabilityExportServiceTest {
         var owner = UUID.randomUUID();
         var repository = mock(PortabilityReadRepository.class);
         when(repository.counts(owner)).thenReturn(new Counts(0, 0, 0, 0));
+        when(repository.imageTexts(owner)).thenAnswer(call -> java.util.stream.Stream.empty());
         var service = service(repository, new XlsxWorkbookWriter(), Clock.systemUTC());
         var file = service.prepare(owner);
         var interrupted = new OutputStream() {

@@ -36,7 +36,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Service
 public class PortabilityImportService {
 
-    /** Summary of a valid file: its format version (1 or 2), counts and whether the account can receive it. */
+    /** Summary of a valid file: its format version (1 to 3), counts and whether the account can receive it. */
     public record ImportPreview(
             int version, Instant exportedAt, Counts counts, SpaceCounts countsBySpace, boolean accountEmpty) {}
 
@@ -94,7 +94,7 @@ public class PortabilityImportService {
     }
 
     private void write(UUID ownerId, PortabilityRecords records) {
-        // Serializes imports of the same account: the second one waits here and then sees the first one's rows.
+        // Serialize the empty-account check with imports and writes to the account, including Imagen.
         if (!repository.lockOwner(ownerId) || !repository.accountEmpty(ownerId)) {
             throw new ImportAccountNotEmptyException();
         }
@@ -144,6 +144,7 @@ public class PortabilityImportService {
         repository.insertDailyVersions(newIds(versions.size()), versionNoteIds, versions);
 
         repository.insertVoiceNotes(ownerId, newIds(records.voiceNotes().size()), records.voiceNotes());
+        repository.insertImageTexts(ownerId, newIds(records.imageTexts().size()), records.imageTexts());
     }
 
     /**
@@ -183,7 +184,8 @@ public class PortabilityImportService {
                 records.references().size(),
                 records.dailyNotes().size(),
                 records.dailyVersions().size(),
-                records.voiceNotes().size());
+                records.voiceNotes().size(),
+                records.imageTexts().size());
     }
 
     /** Counts of each space. A version 1 book is read as Trabajo, so its Personal counts are zero. */
@@ -203,6 +205,9 @@ public class PortabilityImportService {
                         .filter(record -> record.space() == space)
                         .count(),
                 (int) records.voiceNotes().stream()
+                        .filter(record -> record.space() == space)
+                        .count(),
+                (int) records.imageTexts().stream()
                         .filter(record -> record.space() == space)
                         .count());
     }

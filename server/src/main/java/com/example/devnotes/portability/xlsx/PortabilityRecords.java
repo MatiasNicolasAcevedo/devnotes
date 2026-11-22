@@ -17,13 +17,32 @@ public record PortabilityRecords(
         List<ReferenceRecord> references,
         List<DailyNoteRecord> dailyNotes,
         List<DailyVersionRecord> dailyVersions,
-        List<VoiceNoteRecord> voiceNotes) {
+        List<VoiceNoteRecord> voiceNotes,
+        List<ImageTextRecord> imageTexts) {
 
     public PortabilityRecords {
         references = List.copyOf(references);
         dailyNotes = List.copyOf(dailyNotes);
         dailyVersions = List.copyOf(dailyVersions);
         voiceNotes = List.copyOf(voiceNotes);
+        imageTexts = List.copyOf(imageTexts);
+    }
+
+    public PortabilityRecords(
+            List<ReferenceRecord> references,
+            List<DailyNoteRecord> dailyNotes,
+            List<DailyVersionRecord> dailyVersions,
+            List<VoiceNoteRecord> voiceNotes) {
+        this(references, dailyNotes, dailyVersions, voiceNotes, List.of());
+    }
+
+    public record ImageTextRecord(PrivateSpace space, UUID id, String text, Instant createdAt) {
+        public ImageTextRecord {
+            Objects.requireNonNull(space);
+            Objects.requireNonNull(id);
+            Objects.requireNonNull(text);
+            Objects.requireNonNull(createdAt);
+        }
     }
 
     public static PortabilityRecords empty() {

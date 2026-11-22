@@ -173,7 +173,7 @@ function PrivateData({ owner }: { owner: string }) {
       )
       if (!sessionIsCurrent()) return
       setImportState({ kind: 'success', result })
-      // Todo lo privado de esta identidad quedó desactualizado: notas, historial, voz y referencias.
+      // Todo lo privado de esta identidad quedó desactualizado: notas, historial, voz, referencias y textos de Imagen.
       void client.invalidateQueries()
     } catch (error) {
       if (!sessionIsCurrent()) return
@@ -423,7 +423,7 @@ function CountList({
         {COUNT_LABELS.map((item) => (
           <li key={item.key}>
             {item.label}: {counts[item.key]}
-            {linkSpace && counts[item.key] > 0 && (
+            {linkSpace && item.to !== null && counts[item.key] > 0 && (
               <>
                 {' · '}
                 <Link

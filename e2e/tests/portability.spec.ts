@@ -25,12 +25,12 @@ const previewPath = '/api/v1/portability/import-preview';
 const importsPath = '/api/v1/portability/imports';
 const xlsx = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 const href = 'https://jira.ejemplo.test/browse/ABC-1279';
-const counts = { references: 1, dailyNotes: 1, dailyVersions: 1, voiceNotes: 1 };
+const counts = { references: 1, dailyNotes: 1, dailyVersions: 1, voiceNotes: 1, imageTexts: 0 };
 const countsBySpace = {
   work: counts,
-  personal: { references: 0, dailyNotes: 0, dailyVersions: 0, voiceNotes: 0 },
+  personal: { references: 0, dailyNotes: 0, dailyVersions: 0, voiceNotes: 0, imageTexts: 0 },
 };
-const countLines = ['Notas diarias: 1', 'Versiones guardadas: 1', 'Notas de voz: 1', 'Referencias: 1'];
+const countLines = ['Notas diarias: 1', 'Versiones guardadas: 1', 'Notas de voz: 1', 'Referencias: 1', 'Textos de Imagen: 0'];
 
 function on(path: string, method: string) {
   return (message: Request | Response) => {
@@ -206,7 +206,7 @@ test('portability: A exports, empty B previews and imports the same data, reimpo
     const previewResponse = await previewed;
     expect(previewResponse.status()).toBe(200);
     expect(previewResponse.request().headers()['content-type']).toMatch(/^multipart\/form-data; boundary=/);
-    expect(await previewResponse.json()).toMatchObject({ format: 'devnotes-xlsx', version: 2, counts, countsBySpace, accountEmpty: true });
+    expect(await previewResponse.json()).toMatchObject({ format: 'devnotes-xlsx', version: 3, counts, countsBySpace, accountEmpty: true });
     await expectPreview(bPage);
     for (const path of [references, voiceNotes, dailyNotes, dailyVersions]) {
       expect((await json(bPage, path)).totalElements, `Preview wrote nothing: ${path}`).toBe(0);
