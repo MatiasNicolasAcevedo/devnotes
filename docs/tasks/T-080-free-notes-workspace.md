@@ -1,6 +1,6 @@
 ---
 id: T-080
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M7
@@ -34,4 +34,4 @@ Crear, renombrar, recargar y borrar a 320/768. POST/PUT inválidos, revisión st
 
 ## Checkpoint vigente
 
-Habilitar en sesión nueva tras confirmar [T-079](T-079-free-notes-xlsx.md) MERGED y conciliarla. Registrar el SHA/base y la evidencia efectivamente ejecutada.
+2026-11-22. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto). PR #82 MERGED y squash incluido en origin/main (ambos comandos exit 0). Base 7a700175b98669c3a1d9457150df4230279f2c62. Pendientes REST, UI y gate diario. FULL/STARTER: DIFERIDO POR EL DUEÑO.
