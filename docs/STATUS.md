@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-083](tasks/T-083-free-notes-code-blocks.md) · Bloques de código en Libres · [S-114](specs/S-114-writing-editor.md) |
-| Estado | `in_progress` |
-| Acción actual | Implementar y verificar bloques de código en Libres |
-| Rama / PR | `codex/t-083-free-notes-code-blocks` |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente del PR #86 |
+| Rama / PR | `codex/t-083-free-notes-code-blocks` · [PR #86](https://github.com/MatiasNicolasAcevedo/devnotes/pull/86) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
@@ -34,15 +34,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de T-083 en MatiasNicolasAcevedo/devnotes. Sesión nueva, rama codex/t-083-free-notes-code-blocks.
+Actuá como frontera reviewer independiente de T-083 en MatiasNicolasAcevedo/devnotes. Sesión nueva, PR #86, rama codex/t-083-free-notes-code-blocks.
 
-LEER: AGENTS.md, client/AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-082-free-notes-lists.md, docs/tasks/T-083-free-notes-code-blocks.md y la sección Bloque de código de docs/specs/S-114-writing-editor.md.
+LEER: AGENTS.md, client/AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-083-free-notes-code-blocks.md y la sección Bloque de código de docs/specs/S-114-writing-editor.md.
 
-PRECONDICIÓN: gh pr view 85 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit debe confirmar MERGED, mergedAt y mergeCommit.oid. Tomá mergeCommit.oid como $mergeOid. Ejecutá git fetch origin main y git merge-base --is-ancestor $mergeOid origin/main para comprobar que el squash está en main. Si falla una comprobación, informá el estado real y retomá T-082 antes de habilitar T-083.
+PRECONDICIÓN: gh pr view 86 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe mostrar OPEN, isDraft false, base main en 1b6ee91b2c5276e170da00aa0204d222892096c0 y verify-required exitoso para el HEAD publicado. Traé la rama y comprobá que el HEAD publicado coincide con el remoto y que el commit de entrega solo cambia la tarea y STATUS respecto de las fuentes probadas en 31b2d2ff3261858416f172c4ae724c8ac9bf19b9. Si difiere el HEAD técnico o la base, invalidá la evidencia afectada e informá el estado real.
 
-ACCIÓN: Creá la rama desde main actualizado. Conciliá T-082 como done en el primer commit con el SHA y la fecha confirmados, y habilitá T-083. Implementá Bloque de código bajo Herramientas con JSON, SQL y TXT, resaltado acotado, copia exacta, salida del bloque y deshacer, validación y round trip XLSX v4 según S-114. Conservá el comportamiento de las listas y del diario.
+ACCIÓN: Revisá el diff sobre los SHA publicados y contrastá la evidencia de validación, guardado, copia exacta, deshacer, scroll, restauración XLSX v4 y compatibilidad de listas y diario. Si hay hallazgos, dejá la corrección en el mismo PR para una sesión implementer nueva. Si aprobás, seguí la transición y el squash por SHA de AUTONOMY.md. Confirmá MERGED con gh pr view 86 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit.
 
-GATE: Ejecutá los dirigidos, typecheck y el E2E filtrado desktop/mobile de T-083, docs-check, git diff --check y verify-required sobre el HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: Diario según riesgo, con E2E filtrado si corresponde y verify-required verde en el HEAD que se vaya a mergear. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: Publicá un único PR contra main, dejá el checkpoint con evidencia por HEAD/base y terminá con el único prompt de reviewer independiente en STATUS y en la respuesta final. Preservá Render Auto-Deploy On Commit.
+SALIDA: Veredicto con HEAD/base y evidencia, más el único prompt siguiente según el resultado. Preservá Render Auto-Deploy On Commit.
 ```
