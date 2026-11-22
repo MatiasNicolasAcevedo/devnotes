@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-077](tasks/T-077-image-text-library-ui.md) · Guardar, abrir y borrar textos de Imagen · [S-112](specs/S-112-screenshot-ocr.md) |
-| Estado | `changes_requested` |
-| Acción actual | Frontera implementer corrige H1 y H2 de la ronda 1 en el mismo PR |
+| Estado | `in_review` |
+| Acción actual | Frontera reviewer independiente revisa la ronda 2 del PR (H1 y H2 corregidos en `f7ebbd9`) |
 | Rama / PR | `codex/t-077-image-text-library-ui` · [PR #80](https://github.com/MatiasNicolasAcevedo/devnotes/pull/80) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,11 +34,10 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de corrección de T-077 en MatiasNicolasAcevedo/devnotes. Sesión nueva, ronda 1 de 2.
+Actuá como frontera reviewer independiente de T-077 en MatiasNicolasAcevedo/devnotes. Sesión nueva, ronda 2 de 2. No revises si implementaste o corregiste esta tarea.
 
-LEER: AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/tasks/T-077-image-text-library-ui.md (checkpoint del reviewer y hallazgos H1 y H2) y server/src/test/java/com/example/devnotes/security/SecurityConfigTest.java.
-PRECONDICIÓN: gh pr view 80 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid debe confirmar OPEN y base edb27c87a1097e605d0ed9d0a8dd4327911a5187. Tras git fetch origin main codex/t-077-image-text-library-ui, headRefOid debe coincidir con git log -1 --format=%H origin/codex/t-077-image-text-library-ui -- docs/STATUS.md. Si no se cumple, informá el estado real y entregá el prompt corregido.
-ACCIÓN: En la rama codex/t-077-image-text-library-ui actualizada con git pull --ff-only, preservando archivos ajenos sin versionar, resolvé solo la lista cerrada. H1: agregar el @MockitoBean de ImageTextService en SecurityConfigTest. H2: agregar imageTextsExactMethodsAllowedAndOthersDenied con el patrón de voz: PUT, PATCH, HEAD y OPTIONS sobre colección e ítem, rutas vecinas con 403 y verifyNoInteractions. Sin cambios de producción. Sumá SecurityConfigTest y OpenApiContractIT al comando backend de la tarea. Spotless, commit con rutas explícitas y push.
-GATE: desde server/, ./mvnw -q verify -Dtest=ImageTextServiceTest,SecurityConfigTest -Dit.test=ImageTextApiIT,OcrExtractionApiIT,OpenApiContractIT -Djacoco.skip=true con exit 0 y SecurityConfigTest 14/14. Cliente y E2E se acreditan si git diff --exit-code e1a57e34f10c9bf5757e4c7d0daa337314e3ca02 HEAD -- server/src/main client e2e da exit 0; si no, repetí sus comandos de la tarea. docs-check, git diff --check y verify-required del HEAD nuevo. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-SALIDA: Tarea y STATUS en in_review con evidencia por comando y exit. Terminá con el prompt de frontera reviewer independiente de T-077, ronda 2, con PR 80 y el SHA del HEAD nuevo, en STATUS y completo en la respuesta final.
+LEER: AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md y docs/tasks/T-077-image-text-library-ui.md (checkpoint vigente y hallazgos H1 y H2).
+PRECONDICIÓN: gh pr view 80 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup debe confirmar OPEN, listo, base edb27c87a1097e605d0ed9d0a8dd4327911a5187 y verify-required SUCCESS. Tras git fetch origin main codex/t-077-image-text-library-ui, headRefOid debe coincidir con git log -1 --format=%H origin/codex/t-077-image-text-library-ui -- docs/STATUS.md, y git diff --name-only f7ebbd9f625008947cbe60f6e0f9769c24d06b8b origin/codex/t-077-image-text-library-ui solo debe listar la tarea y STATUS. Si no se cumple, informá el estado real y entregá el prompt corregido.
+ACCIÓN: En un worktree aislado del HEAD publicado, verificá solo el cierre de H1 y H2 y que git diff --exit-code e1a57e34f10c9bf5757e4c7d0daa337314e3ca02 origin/codex/t-077-image-text-library-ui -- server/src/main client e2e dé exit 0 (cliente y E2E quedan acreditados por la ronda 1). Desde server/, ./mvnw -q verify -Dtest=ImageTextServiceTest,SecurityConfigTest -Dit.test=ImageTextApiIT,OcrExtractionApiIT,OpenApiContractIT -Djacoco.skip=true con exit 0 y SecurityConfigTest 14/14. docs-check y git diff --check. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+SALIDA: Si aprobás, commit en la rama con la tarea en mergeable y STATUS con el prompt del implementer de la tarea siguiente (precondición «PR 80 MERGED»), push, verify-required verde del HEAD final, squash merge según AUTONOMY sin --admin y MERGED confirmado con gh pr view 80 --repo MatiasNicolasAcevedo/devnotes (state, mergedAt y mergeCommit.oid). Si quedan hallazgos tras la ronda 2, devolvé a frontera o dueño con causa, evidencia y la pregunta exacta. Terminá con el prompt siguiente completo en la respuesta final.
 ```
