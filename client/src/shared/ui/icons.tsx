@@ -30,6 +30,9 @@ export const DatabaseIcon = icon(
 export const BriefcaseIcon = icon(
   'M20 6h-4V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zM10 4h4v2h-4V4zm10 8h-7v2h-2v-2H4v-4h16v4z',
 )
+export const MoreIcon = icon(
+  'M6 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm6 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z',
+)
 export const ChevronDownIcon = icon('M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z')
 export const PersonIcon = icon(
   'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z',

@@ -3,6 +3,13 @@ import { expect, savedIndicator } from './fixtures';
 
 type Space = 'work' | 'personal';
 
+export async function openDailyTools(page: Page) {
+  const trigger = page.getByRole('button', { name: 'Herramientas', exact: true });
+  if (await trigger.isVisible() && await trigger.getAttribute('aria-expanded') === 'false') {
+    await trigger.click();
+  }
+}
+
 export async function chooseDate(page: Page, date: string, space: Space = 'work') {
   await page.getByLabel('Fecha', { exact: true }).fill(date);
   await expect(page).toHaveURL(`http://localhost/notes/${date}?space=${space}`);

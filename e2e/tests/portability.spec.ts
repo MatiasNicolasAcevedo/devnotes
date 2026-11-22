@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { Locator, Page, Request, Response } from '@playwright/test';
 import { accountButton, control, csrfHeaders, expect, interactiveLogin, layout, readiness, test, savedIndicator } from './fixtures';
-import { saveVersion } from './daily-helpers';
+import { openDailyTools, saveVersion } from './daily-helpers';
 
 /**
  * T-045 · S-107 / XL-06. Recorrido real de ida y vuelta: A crea datos en las cuatro colecciones y exporta su
@@ -146,6 +146,7 @@ test('portability: A exports, empty B previews and imports the same data, reimpo
   await page.keyboard.down('Shift');
   for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowLeft');
   await page.keyboard.up('Shift');
+  await openDailyTools(page);
   await page.getByRole('button', { name: 'Agregar enlace', exact: true }).click();
   const linkDialog = page.getByRole('dialog');
   await linkDialog.getByRole('textbox', { name: 'URL', exact: true }).fill(href);

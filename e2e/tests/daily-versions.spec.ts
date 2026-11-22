@@ -10,8 +10,11 @@ const day20 = '2026-10-20';
 test('T-020: direct URL, reload, Hoy and empty dates keep route and editor coherent without writes', async ({ page, identity }) => {
   await login(page, identity);
   const writes: string[] = [];
+  const listRequests: string[] = [];
   page.on('request', request => {
-    if (['PUT', 'POST'].includes(request.method()) && new URL(request.url()).pathname.startsWith('/api/v1/daily-')) writes.push(request.url());
+    const path = new URL(request.url()).pathname;
+    if (['PUT', 'POST'].includes(request.method()) && path.startsWith('/api/v1/daily-')) writes.push(path);
+    if (request.method() === 'GET' && path === '/api/v1/daily-notes') listRequests.push(path);
   });
   await page.goto(`/notes/${day19}`);
   await expect(page).toHaveURL(`http://localhost/notes/${day19}?space=work`);
@@ -38,6 +41,8 @@ test('T-020: direct URL, reload, Hoy and empty dates keep route and editor coher
   // Completar un debounce real prueba que montar/hidratar no programa una escritura.
   await page.waitForTimeout(800);
   expect(writes).toEqual([]);
+  expect(listRequests).toEqual([]);
+  await expect(page.getByRole('heading', { name: 'Notas guardadas' })).toHaveCount(0);
   const listResponse = await page.request.get('/api/v1/daily-notes');
   expect(listResponse.status()).toBe(200);
   expect((await listResponse.json()).totalElements).toBe(0);
@@ -54,6 +59,15 @@ test('CA-04: dates 19/10 and 20/10 are independent; create/replace one version; 
   await chooseDate(page, day20);
   await expect(page.getByRole('textbox', { name: 'Editor de nota diaria' })).toHaveText('');
   await writeWork(page, day20, 'Nota del 20 de octubre');
+  await page.getByRole('link', { name: 'Historial', exact: true }).click();
+  await expect(page.getByRole('link', { name: /19\/10\/2026/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /20\/10\/2026/ })).toHaveCount(0);
+  await page.getByRole('link', { name: 'Notas', exact: true }).click();
+  await chooseDate(page, day20);
+  const editor = page.getByRole('textbox', { name: 'Editor de nota diaria' });
+  await expect(editor).toHaveText('Nota del 20 de octubre');
+  await page.goto(`/notes/${day20}?space=work`);
+  await expect(editor).toHaveText('Nota del 20 de octubre');
   const version20 = await saveVersion(page, day20);
   expect(version20.id).not.toBe(original.id);
   await readVersion(page, day19, 'Nota del 19 de octubre');

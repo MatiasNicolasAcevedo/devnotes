@@ -164,6 +164,9 @@ function AppShellContent({
   children: ReactNode
 }) {
   const { status } = useSession()
+  const { pathname } = useLocation()
+  const daily = matchPath('/notes/:date?', pathname) != null
+  const headerHeight = daily ? 48 : 56
   const desktop = useMediaQuery('(min-width: 768px)', { noSsr: true })
   // Datos sigue siendo un enlace del shell para el coordinador de navegación diaria.
   const menuContainer = () => navigationRoot.current
@@ -177,8 +180,8 @@ function AppShellContent({
         display: 'flex',
         flexDirection: 'column',
         '--shell-chrome-height': desktop
-          ? 'calc(56px + env(safe-area-inset-top))'
-          : 'calc(105px + env(safe-area-inset-top) + env(safe-area-inset-bottom))',
+          ? `calc(${headerHeight}px + env(safe-area-inset-top))`
+          : `calc(${headerHeight + 49}px + env(safe-area-inset-top) + env(safe-area-inset-bottom))`,
       }}
     >
       <AppBar
@@ -191,7 +194,7 @@ function AppShellContent({
           disableGutters
           sx={{
             gap: desktop ? 1.5 : 0.5,
-            minHeight: 56,
+            minHeight: headerHeight,
             pl: 'max(8px, env(safe-area-inset-left))',
             pr: 'max(8px, env(safe-area-inset-right))',
           }}
@@ -224,7 +227,7 @@ function AppShellContent({
             xs: 'max(8px, env(safe-area-inset-right))',
             sm: 'max(16px, env(safe-area-inset-right))',
           },
-          py: { xs: 1, sm: 1.5 },
+          py: daily ? 0.5 : { xs: 1, sm: 1.5 },
         }}
       >
         <Stack spacing={1}>

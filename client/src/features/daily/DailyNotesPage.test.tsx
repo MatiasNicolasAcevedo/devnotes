@@ -28,7 +28,7 @@ function buildDetail(date: string, revision: number) {
 }
 
 describe('DailyNotesPage', () => {
-  it('selector, ruta y contenido cambian juntos; Hoy y la lista vuelven a su propia nota sin escribir', async () => {
+  it('selector, ruta y contenido cambian juntos; Hoy y el calendario vuelven a su propia nota sin escribir', async () => {
     installAuthBackend({ user: buildAuthUser() })
     const today = todayLocal()
     let writes = 0
@@ -47,13 +47,6 @@ describe('DailyNotesPage', () => {
         writes++
         return HttpResponse.error()
       }),
-      mock.get(LIST, () =>
-        HttpResponse.json({
-          ...emptyList(),
-          content: [{ date: '2024-06-15', updatedAt: '2024-06-15T10:00:00Z', revision: 2 }],
-          totalElements: 1,
-        }),
-      ),
     )
     function Location() {
       return <output data-testid="route">{useLocation().pathname}</output>
@@ -80,7 +73,7 @@ describe('DailyNotesPage', () => {
     await waitFor(() =>
       expect(screen.getByLabelText('Editor de nota diaria')).toHaveTextContent('nota hoy'),
     )
-    await user.click(await screen.findByRole('button', { name: /2024-06-15/ }))
+    fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: '2024-06-15' } })
     await waitFor(() => expect(screen.getByLabelText('Fecha')).toHaveValue('2024-06-15'))
     expect(writes).toBe(0)
   })
@@ -197,39 +190,28 @@ describe('todayLocal', () => {
   })
 })
 
-describe('DailyNotesPage notes list', () => {
-  it('carga la lista "Notas guardadas" al montar la página', async () => {
-    installAuthBackend({ user: buildAuthUser() })
-    const today = todayLocal()
-    const detailPath = `/api/v1/daily-notes/${today}`
-    const listPath = '/api/v1/daily-notes'
+it('abre un borrador por URL sin cargar ni mostrar el listado de notas', async () => {
+  installAuthBackend({ user: buildAuthUser() })
+  const listRequests = vi.fn(() => HttpResponse.json(emptyList()))
+  server.use(
+    mock.get(DETAIL, () =>
+      HttpResponse.json({
+        ...buildDetail('2024-06-15', 2),
+        content: {
+          type: 'doc',
+          content: [{ type: 'paragraph', content: [{ type: 'text', text: 'borrador directo' }] }],
+        },
+      }),
+    ),
+    mock.get(LIST, listRequests),
+  )
 
-    server.use(
-      mock.get(detailPath, () => HttpResponse.json(buildDetail(today, 0))),
-      mock.get(listPath, () =>
-        HttpResponse.json({
-          content: [
-            { date: '2024-06-15', updatedAt: '2024-06-15T10:00:00Z', revision: 1 },
-            { date: '2024-06-14', updatedAt: '2024-06-14T09:00:00Z', revision: 0 },
-          ],
-          page: 0,
-          size: 20,
-          totalElements: 2,
-          totalPages: 1,
-        }),
-      ),
-    )
-
-    renderWithProviders(<AppRoutes />, { route: '/notes' })
-
-    // El heading de la sección de lista debe aparecer
-    expect(await screen.findByRole('heading', { name: 'Notas guardadas' })).toBeVisible()
-    // Las notas de la lista deben renderizarse, no el mensaje vacío
-    expect(await screen.findByText('2024-06-15')).toBeVisible()
-    expect(screen.getByText('2024-06-14')).toBeVisible()
-    // El mensaje "Aún no tenés notas guardadas" NO debe aparecer
-    expect(screen.queryByText('Aún no tenés notas guardadas')).not.toBeInTheDocument()
-  })
+  renderWithProviders(<AppRoutes />, { route: '/notes/2024-06-15' })
+  await waitFor(() =>
+    expect(screen.getByLabelText('Editor de nota diaria')).toHaveTextContent('borrador directo'),
+  )
+  expect(screen.queryByRole('heading', { name: 'Notas guardadas' })).not.toBeInTheDocument()
+  expect(listRequests).not.toHaveBeenCalled()
 })
 
 describe('DailyNotesPage copy note', () => {

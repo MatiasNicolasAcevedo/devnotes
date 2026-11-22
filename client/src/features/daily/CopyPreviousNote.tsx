@@ -16,7 +16,7 @@ import { formatDateLocal } from './dateUtils'
 
 const reloadMessage = 'No se pudo confirmar la copia. Revisá la nota de destino antes de repetirla.'
 
-export function CopyPreviousNote({ onCopied }: { onCopied: () => void }) {
+export function CopyPreviousNote() {
   const ctx = useDailyDraftContext()
   const { activeDate, owner, space, isCopyingPrevious, confirmedCopy, copyTargetNeedsReload } = ctx
   const { csrfReady, logoutPending } = useSession()
@@ -67,9 +67,7 @@ export function CopyPreviousNote({ onCopied }: { onCopied: () => void }) {
     const isCurrent = () => isCurrentOwner() && generation === logoutGeneration.current
     setMessage(null)
     try {
-      if (await ctx.copyPrevious(source, ctx.revision, isCurrent)) {
-        if (isCurrent()) onCopied()
-      }
+      await ctx.copyPrevious(source, ctx.revision, isCurrent)
     } catch (error) {
       if (!isCurrent()) return
       const code = error instanceof ApiError ? error.problem?.code : undefined
@@ -97,7 +95,7 @@ export function CopyPreviousNote({ onCopied }: { onCopied: () => void }) {
   if (!showOffer && !isCopyingPrevious && !copied && !copyTargetNeedsReload) return null
 
   return (
-    <Box sx={{ px: 1.5, py: 0.75, borderBottom: 1, borderColor: 'divider' }}>
+    <Box sx={{ px: 1.5, py: 0.75, borderTop: 1, borderColor: 'divider' }}>
       {(message || copyTargetNeedsReload) && (
         <Alert
           severity="warning"

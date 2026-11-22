@@ -1,4 +1,4 @@
-/* Editor de notas: numeración dentro del área desplazable, alineada con cada bloque. */
+/* Editor de notas: numeraciÃ³n dentro del Ã¡rea desplazable, alineada con cada bloque. */
 .daily-editor-wrapper {
   --editor-bg: #212324;
   --editor-text: #e1e3e6;
@@ -14,7 +14,7 @@
 }
 
 .daily-editor-toolbar {
-  /* Fija al desplazar la página: el guardado de versión queda siempre a mano. */
+  /* Fija al desplazar la pÃ¡gina: el guardado de versiÃ³n queda siempre a mano. */
   position: sticky;
   top: 0;
   z-index: 2;
@@ -27,6 +27,15 @@
   border-radius: 6px 6px 0 0;
   background: var(--editor-bg);
   font-family: system-ui, sans-serif;
+}
+
+.daily-editor-wrapper--fill > .daily-editor-toolbar {
+  gap: 4px;
+  padding: 2px 6px;
+}
+
+.daily-editor-wrapper--fill .daily-editor-content {
+  padding-top: 6px;
 }
 
 .daily-editor-tool {
@@ -167,8 +176,14 @@
   color: #fff;
 }
 
-/* Angosto (menos de 600 px): columna de números más estrecha para ganar ancho de escritura. */
+/* Angosto (menos de 600 px): columna de nÃºmeros mÃ¡s estrecha para ganar ancho de escritura. */
 @media (max-width: 599.95px) {
+  .daily-editor-wrapper--fill > .daily-editor-toolbar button,
+  .daily-editor-wrapper--fill > .daily-editor-toolbar a {
+    min-height: 44px;
+    min-width: 32px;
+  }
+
   .daily-editor-content {
     padding-right: 12px;
     padding-left: 40px;

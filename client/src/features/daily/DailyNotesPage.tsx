@@ -2,22 +2,16 @@ import Alert from '@mui/material/Alert'
 import AlertTitle from '@mui/material/AlertTitle'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import CircularProgress from '@mui/material/CircularProgress'
 import IconButton from '@mui/material/IconButton'
 import Link from '@mui/material/Link'
-import List from '@mui/material/List'
-import ListItem from '@mui/material/ListItem'
-import ListItemButton from '@mui/material/ListItemButton'
-import ListItemText from '@mui/material/ListItemText'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
-import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react'
+import { useCallback, useEffect, useRef, type ChangeEvent } from 'react'
 import { Link as RouterLink, useNavigate, useParams } from 'react-router'
 import { useSession } from '../../features/auth/sessionContext'
 import { useDailyDraftContext } from '../../features/daily/DailyDraftProvider'
-import { listDailyNotes, type DailyNoteListItem } from '../../features/daily/api'
 import { DailyEditor } from '../../features/daily/editor/DailyEditor'
 import { documentToPlainText, emptyDocument } from '../../features/daily/editor/dailyDocument'
 import type { DailyContent } from '../../features/daily/editor/dailyDocument'
@@ -82,13 +76,6 @@ function DailyNotesInner() {
   const rememberDate = useFreeNotesContext()?.rememberDate
   useEffect(() => rememberDate?.(space, activeDate), [rememberDate, space, activeDate])
 
-  // Estado de la lista paginada (listLoading inicia true para cargar al montar sin setState en efecto)
-  const [notesList, setNotesList] = useState<DailyNoteListItem[]>([])
-  const [listLoading, setListLoading] = useState(true)
-  const [listError, setListError] = useState<Error | null>(null)
-  const [listPage, setListPage] = useState(0)
-  const [listTotalPages, setListTotalPages] = useState(1)
-
   // Refs para evitar closures stale en callbacks
   const navigateToDateRef = useRef(navigateToDate)
   const navigatingRef = useRef(false)
@@ -97,41 +84,6 @@ function DailyNotesInner() {
   useEffect(() => {
     navigateToDateRef.current = navigateToDate
   }, [navigateToDate])
-
-  // Cargar lista de notas
-  const loadList = useCallback(
-    async (page: number) => {
-      setListError(null)
-      try {
-        const result = await listDailyNotes(space, page)
-        setNotesList(result.content)
-        setListTotalPages(result.totalPages)
-        setListPage(result.page)
-      } catch (err) {
-        setListError(err instanceof Error ? err : new Error('Error al cargar notas'))
-      } finally {
-        setListLoading(false)
-      }
-    },
-    [space],
-  )
-
-  // Cargar lista al montar (llamada directa para evitar setState síncrono en efecto)
-  useEffect(() => {
-    listDailyNotes(space, 0)
-      .then((result) => {
-        setNotesList(result.content)
-        setListTotalPages(result.totalPages)
-        setListPage(result.page)
-        setListError(null)
-      })
-      .catch((err) => {
-        setListError(err instanceof Error ? err : new Error('Error al cargar notas'))
-      })
-      .finally(() => {
-        setListLoading(false)
-      })
-  }, [space])
 
   // Navegar a otra fecha, con flush si hay dirty
   const handleNavigateToDate = useCallback(
@@ -266,10 +218,12 @@ function DailyNotesInner() {
     </>
   )
 
+  const copyNote = <CopyButton aria-label="Copiar nota" text={notePlainText} iconOnly />
+
   const toolbarEnd = (
     <>
       <SaveStatusIndicator status={status} isDirty={isDirty} />
-      <CopyButton aria-label="Copiar nota" text={notePlainText} iconOnly />
+      {!narrow && copyNote}
       {!ctx.isLoading && (
         <SaveDailyVersion
           save={saveVersion}
@@ -315,90 +269,32 @@ function DailyNotesInner() {
         Notas diarias
       </Typography>
 
-      {/* Primera pantalla: alto libre de la ventana después de las barras de navegación y los márgenes. */}
-      <Box
+      <Paper
+        variant="outlined"
         sx={{
           display: 'flex',
           flexDirection: 'column',
-          height: {
-            xs: 'max(calc(100dvh - var(--shell-chrome-height, 56px) - 16px), 220px)',
-            sm: 'max(calc(100dvh - var(--shell-chrome-height, 56px) - 24px), 220px)',
-          },
+          minHeight: 220,
+          height: 'calc(100dvh - var(--shell-chrome-height, 48px) - 8px)',
         }}
       >
-        <Paper
-          variant="outlined"
-          sx={{ flex: '1 1 auto', minHeight: 0, display: 'flex', flexDirection: 'column' }}
+        <DailyEditor
+          initialContent={content ?? emptyDocument()}
+          onChange={handleEditorChange}
+          readOnly={ctx.navigationLocked || ctx.isLoading || ctx.copyTargetNeedsReload}
+          toolbarStart={toolbarStart}
+          toolbarEnd={toolbarEnd}
+          narrowTools={
+            <CopyButton aria-label="Copiar nota" text={notePlainText}>
+              Copiar nota
+            </CopyButton>
+          }
+          confirmedCopyContent={ctx.confirmedCopy?.note.content}
+          fillHeight
         >
-          <DailyEditor
-            initialContent={content ?? emptyDocument()}
-            onChange={handleEditorChange}
-            readOnly={ctx.navigationLocked || ctx.isLoading || ctx.copyTargetNeedsReload}
-            toolbarStart={toolbarStart}
-            toolbarEnd={toolbarEnd}
-            beforeContent={<CopyPreviousNote onCopied={() => void loadList(listPage)} />}
-            confirmedCopyContent={ctx.confirmedCopy?.note.content}
-            fillHeight
-          />
-        </Paper>
-      </Box>
-
-      {/* Lista de notas existentes */}
-      <Stack spacing={1}>
-        <Typography variant="h6" component="h2">
-          Notas guardadas
-        </Typography>
-        {listLoading ? (
-          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
-            <CircularProgress size={20} aria-hidden />
-            <Typography>Cargando…</Typography>
-          </Stack>
-        ) : listError ? (
-          <Alert severity="error" role="alert">
-            No se pudieron cargar las notas.
-          </Alert>
-        ) : notesList.length === 0 ? (
-          <Typography color="text.secondary">Aún no tenés notas guardadas.</Typography>
-        ) : (
-          <>
-            <List dense>
-              {notesList.map((item) => (
-                <ListItem key={item.date} disablePadding>
-                  <ListItemButton
-                    component="button"
-                    disabled={ctx.navigationLocked}
-                    onClick={() => handleNavigateToDate(item.date)}
-                    selected={item.date === targetDate}
-                  >
-                    <ListItemText
-                      primary={item.date}
-                      secondary={`Modificada: ${item.updatedAt} · Revisión ${item.revision}`}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </List>
-            {/* Paginación simple */}
-            {listTotalPages > 1 && (
-              <Stack direction="row" spacing={1} sx={{ justifyContent: 'center' }}>
-                {listPage > 0 && (
-                  <Button size="small" onClick={() => loadList(listPage - 1)}>
-                    Anterior
-                  </Button>
-                )}
-                <Typography variant="caption">
-                  Página {listPage + 1} de {listTotalPages}
-                </Typography>
-                {listPage < listTotalPages - 1 && (
-                  <Button size="small" onClick={() => loadList(listPage + 1)}>
-                    Siguiente
-                  </Button>
-                )}
-              </Stack>
-            )}
-          </>
-        )}
-      </Stack>
+          <CopyPreviousNote />
+        </DailyEditor>
+      </Paper>
     </Stack>
   )
 }

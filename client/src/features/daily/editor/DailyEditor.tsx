@@ -2,7 +2,10 @@ import '@fontsource/roboto-mono'
 import './dailyEditor.css'
 
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react'
+import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
+import IconButton from '@mui/material/IconButton'
+import Popover from '@mui/material/Popover'
 import Tooltip from '@mui/material/Tooltip'
 import Document from '@tiptap/extension-document'
 import Paragraph from '@tiptap/extension-paragraph'
@@ -10,7 +13,7 @@ import Text from '@tiptap/extension-text'
 import { Fragment, Slice } from '@tiptap/pm/model'
 import { closeHistory } from '@tiptap/pm/history'
 import { UndoRedo } from '@tiptap/extensions'
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { plainTextToDocument, validateDailyContent, type DailyContent } from './dailyDocument'
 import { LinkDialog } from './LinkDialog'
 import { Link } from './link'
@@ -18,7 +21,7 @@ import { ReferencePicker } from './ReferencePicker'
 import { Reference } from './reference'
 import { Separator } from './separator'
 import type { ReferenceItem } from '../../reference/api'
-import { LinkIcon } from '../../../shared/ui/icons'
+import { LinkIcon, MoreIcon } from '../../../shared/ui/icons'
 import { useIsNarrow } from '../../../shared/ui/useIsNarrow'
 
 // Document extiende content a (paragraph|separator)+
@@ -41,8 +44,8 @@ export interface DailyEditorProps {
   toolbarStart?: ReactNode
   /** Controles al final de la barra, tras un espacio flexible. Un hijo de ancho completo ocupa una fila propia. */
   toolbarEnd?: ReactNode
-  /** Franja contextual entre la barra y el área de escritura. */
-  beforeContent?: ReactNode
+  /** Acciones secundarias que acompañan a Enlace en Herramientas a ancho estrecho. */
+  narrowTools?: ReactNode
   /** Documento confirmado por un POST de copia, que debe entrar al historial sin programar un PUT. */
   confirmedCopyContent?: DailyContent
   /** El área de escritura ocupa el alto libre del contenedor en lugar de una altura fija redimensionable. */
@@ -57,11 +60,13 @@ export function DailyEditor({
   children,
   toolbarStart,
   toolbarEnd,
-  beforeContent,
+  narrowTools,
   confirmedCopyContent,
   fillHeight = false,
 }: DailyEditorProps) {
   const narrow = useIsNarrow()
+  const toolsId = useId()
+  const [toolsAnchor, setToolsAnchor] = useState<HTMLButtonElement | null>(null)
   const onChangeRef = useRef(onChange)
   const editorRef = useRef<ReturnType<typeof useEditor>>(null)
   const linkSelectionRef = useRef<{ from: number; to: number } | null>(null)
@@ -395,6 +400,30 @@ export function DailyEditor({
   const hasToolbarSlots = toolbarStart != null || toolbarEnd != null
   const linkLabel = linkState?.isLink ? 'Editar enlace' : 'Agregar enlace'
 
+  const groupTools = narrow && narrowTools != null
+  const toolsOpen = groupTools && toolsAnchor != null
+  const linkTool = (
+    <Tooltip title="Seleccioná texto y agregá un enlace (Ctrl+K)." describeChild>
+      <span className="daily-editor-tool">
+        <Button
+          size="small"
+          variant="outlined"
+          disabled={readOnly || !linkState?.canLink}
+          aria-label={linkLabel}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => {
+            setToolsAnchor(null)
+            openLinkDialog()
+          }}
+          startIcon={narrow && !groupTools ? undefined : <LinkIcon />}
+          sx={narrow && !groupTools ? { minWidth: 0, px: 0.75 } : undefined}
+        >
+          {narrow && !groupTools ? <LinkIcon /> : linkState?.isLink ? 'Editar enlace' : 'Enlace'}
+        </Button>
+      </span>
+    </Tooltip>
+  )
+
   return (
     <div
       className={
@@ -405,28 +434,54 @@ export function DailyEditor({
       {(!readOnly || hasToolbarSlots) && (
         <div className="daily-editor-toolbar" role="group" aria-label="Herramientas del editor">
           {toolbarStart}
-          {/* El span recibe el puntero cuando el botón está deshabilitado, así el tooltip sigue disponible. */}
-          <Tooltip title="Seleccioná texto y agregá un enlace (Ctrl+K)." describeChild>
-            <span className="daily-editor-tool">
-              <Button
-                size="small"
-                variant="outlined"
-                disabled={readOnly || !linkState?.canLink}
-                aria-label={linkLabel}
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={openLinkDialog}
-                startIcon={narrow ? undefined : <LinkIcon />}
-                sx={narrow ? { minWidth: 0, px: 0.75 } : undefined}
-              >
-                {narrow ? <LinkIcon /> : linkState?.isLink ? 'Editar enlace' : 'Enlace'}
-              </Button>
-            </span>
-          </Tooltip>
+          {!groupTools && linkTool}
           <span className="daily-editor-toolbar-spacer" />
+          {groupTools && (
+            <>
+              <IconButton
+                size="small"
+                color="primary"
+                aria-label="Herramientas"
+                aria-haspopup="dialog"
+                aria-expanded={toolsOpen}
+                aria-controls={toolsOpen ? toolsId : undefined}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={(event) => {
+                  event.currentTarget.focus({ preventScroll: true })
+                  setToolsAnchor(event.currentTarget)
+                }}
+              >
+                <MoreIcon />
+              </IconButton>
+              <Popover
+                open={toolsOpen}
+                anchorEl={toolsAnchor}
+                onClose={() => setToolsAnchor(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+              >
+                <Box
+                  id={toolsId}
+                  role="dialog"
+                  aria-label="Herramientas"
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    p: 1,
+                    gap: 0.5,
+                    '& button': { minHeight: 44 },
+                  }}
+                >
+                  {linkTool}
+                  {narrowTools}
+                </Box>
+              </Popover>
+            </>
+          )}
           {toolbarEnd}
         </div>
       )}
-      {beforeContent}
       {pasteError && (
         <div role="alert" className="daily-editor-error">
           El texto supera los límites de la nota y no se pegó.
