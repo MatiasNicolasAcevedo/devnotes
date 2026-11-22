@@ -158,12 +158,20 @@ export function changeList(editor: Editor, target: BlockType) {
       const selected = position < to && position + paragraph.nodeSize > from
       lines.push({ paragraph, position, source, sourcePosition, item, selected })
     }
-    if (source.type === schema.nodes.paragraph) addLine(source, sourcePosition)
+    if (source.isTextblock) addLine(source, sourcePosition)
     else source.forEach((item, offset) => addLine(item.child(0), sourcePosition + offset + 2, item))
   })
 
   editor.commands.focus()
-  if (!lines.some((line) => line.selected && line.source.type.name !== target)) return
+  if (
+    !lines.some(
+      (line) =>
+        line.selected &&
+        line.source.type.name !== target &&
+        !(target === 'paragraph' && line.source.isTextblock),
+    )
+  )
+    return
 
   const replacement: ProseMirrorNode[] = []
   const mappedPositions: number[] = []
@@ -171,7 +179,7 @@ export function changeList(editor: Editor, target: BlockType) {
   for (let index = 0; index < lines.length;) {
     const line = lines[index]
     const type = line.selected ? schema.nodes[target] : line.source.type
-    if (type === schema.nodes.paragraph) {
+    if (type.isTextblock) {
       mappedPositions.push(cursor)
       replacement.push(line.paragraph)
       cursor += line.paragraph.nodeSize
@@ -189,7 +197,11 @@ export function changeList(editor: Editor, target: BlockType) {
         (!line.selected && next.sourcePosition !== line.sourcePosition)
       )
         break
-      const item = next.item?.type === itemType ? next.item : itemType.create(null, next.paragraph)
+      const paragraph =
+        next.paragraph.type === schema.nodes.paragraph
+          ? next.paragraph
+          : schema.nodes.paragraph.create(null, next.paragraph.content)
+      const item = next.item?.type === itemType ? next.item : itemType.create(null, paragraph)
       items.push(item)
       mappedPositions.push(itemPosition + 1)
       itemPosition += item.nodeSize

@@ -69,6 +69,55 @@ class FreeNoteDocumentTest {
     }
 
     @ParameterizedTest
+    @ValueSource(ints = {1, 2, 3})
+    void preservesHeadingsAndBoldWithoutExtendingTheDailySchema(int level) throws Exception {
+        var bold = """
+                {"type":"paragraph","content":[{"type":"text","text":"Detalle","marks":[{"type":"bold"}]}]}
+                """;
+        var heading = """
+                {"type":"heading","attrs":{"level":%d},"content":[{"type":"text","text":"Sección","marks":[{"type":"bold"}]}]}
+                """.formatted(level);
+        var list = """
+                {"type":"bulletList","content":[{"type":"listItem","content":[%s]}]}
+                """.formatted(bold);
+        var formatted = readBlocks(heading + "," + bold + "," + list);
+        assertThat(FreeNoteDocument.read(FreeNoteDocument.validate(formatted))).isEqualTo(formatted);
+        assertThatThrownBy(() -> DailyContent.validate(readBlocks(heading)))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+        assertThatThrownBy(() -> DailyContent.validate(readBlocks(bold)))
+                .isInstanceOf(DailyContent.DailyContentException.class);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"""
+        {"type":"heading","attrs":{"level":4}}
+        """, """
+        {"type":"heading","attrs":{"level":"2"}}
+        """, """
+        {"type":"heading","attrs":{"level":1.5}}
+        """, """
+        {"type":"heading","attrs":{"level":2,"extra":true}}
+        """, """
+        {"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"a","marks":[{"type":"italic"}]}]}
+        """, """
+        {"type":"paragraph","content":[{"type":"text","text":"a","marks":[{"type":"bold","attrs":{}}]}]}
+        """, """
+        {"type":"paragraph","content":[{"type":"text","text":"a","marks":[{"type":"bold"},{"type":"bold"}]}]}
+        """, """
+        {"type":"codeBlock","attrs":{"language":"text"},"content":[{"type":"text","text":"a","marks":[{"type":"bold"}]}]}
+        """, """
+        {"type":"bulletList","content":[{"type":"listItem","content":[{"type":"heading","attrs":{"level":2}}]}]}
+        """})
+    void rejectsInvalidFormatting(String block) throws Exception {
+        var invalid = readBlocks(block);
+        assertThatIllegalArgumentException().isThrownBy(() -> FreeNoteDocument.validate(invalid));
+    }
+
+    private static JsonNode readBlocks(String blocks) throws Exception {
+        return JSON.readTree("{\"type\":\"doc\",\"content\":[" + blocks + "]}");
+    }
+
+    @ParameterizedTest
     @ValueSource(strings = {"""
         {"type":"orderedList","attrs":{"start":2},"content":[{"type":"listItem","content":[{"type":"paragraph"}]}]}
         """, """

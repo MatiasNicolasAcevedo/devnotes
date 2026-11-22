@@ -131,6 +131,35 @@ class XlsxFreeNotesRoundTripTest {
     }
 
     @Test
+    void restoresHeadingsAndBoldInV4AndShowsTheirText() throws Exception {
+        var document = new ObjectMapper().readTree("""
+                {"type":"doc","content":[
+                  {"type":"heading","attrs":{"level":1},"content":[{"type":"text","text":"Sección"}]},
+                  {"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"Tema","marks":[{"type":"bold"}]}]},
+                  {"type":"heading","attrs":{"level":3},"content":[{"type":"text","text":"Detalle"}]},
+                  {"type":"paragraph","content":[{"type":"text","text":"Texto ","marks":[{"type":"bold"}]},{"type":"text","text":"normal"}]},
+                  {"type":"bulletList","content":[{"type":"listItem","content":[
+                    {"type":"paragraph","content":[{"type":"text","text":"Punto","marks":[{"type":"bold"}]}]}]}]}
+                ]}
+                """);
+        var note = new FreeNoteRecord(WORK, UUID.randomUUID(), "Formato", document, CREATED, CREATED);
+        var records = new PortabilityRecords(List.of(), List.of(), List.of(), List.of(), List.of(), List.of(note));
+        var out = new ByteArrayOutputStream();
+        new XlsxWorkbookWriter().write(records, CREATED, out);
+        byte[] file = out.toByteArray();
+
+        assertThat(reader.read(file)).isEqualTo(new XlsxWorkbookContent(4, CREATED, records));
+        try (var workbook = new ReadableWorkbook(new ByteArrayInputStream(file));
+                var sheets = workbook.getSheets()) {
+            var rows = sheets.filter(sheet -> SHEET.equals(sheet.getName()))
+                    .findFirst()
+                    .orElseThrow()
+                    .read();
+            assertThat(rows.get(1).getCell(5).asString()).isEqualTo("Sección\nTema\nDetalle\nTexto normal\n- Punto");
+        }
+    }
+
+    @Test
     void restoresListStructureAndShowsReadableListText() throws Exception {
         var document = new ObjectMapper().readTree("""
                 {"type":"doc","content":[
@@ -182,6 +211,7 @@ class XlsxFreeNotesRoundTripTest {
         var book = withNewCollections(true, DOC);
         mutate.accept(book);
         var error = catchThrowableOfType(XlsxCodecException.class, () -> reader.read(build(book)));
+        assertThat(error).as(reason).isNotNull();
         assertThat(error.getCode()).as(reason).isEqualTo(XlsxErrorCode.IMPORT_INVALID_RECORD);
     }
 
@@ -211,6 +241,14 @@ class XlsxFreeNotesRoundTripTest {
                 invalid("unknown space", book -> replace(book, "\"work\"", "\"unknown\"")),
                 invalid("untrimmed title", book -> replace(book, "Libre ficticia", " Libre ficticia ")),
                 invalid("invalid node", book -> replace(book, "paragraph", "heading")),
+                invalid("unknown heading level", book -> replace(
+                        book, "\"type\":\"paragraph\"", "\"type\":\"heading\",\"attrs\":{\"level\":4}")),
+                invalid("unknown mark", book -> replace(
+                        book,
+                        "\"type\":\"paragraph\"",
+                        """
+                        "type":"paragraph","content":[{"type":"text","text":"Ajeno","marks":[{"type":"italic"}]}]
+                        """)),
                 invalid("inverted dates", book -> replace(book, "T13:", "T11:")));
     }
 

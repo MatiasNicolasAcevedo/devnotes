@@ -266,6 +266,151 @@ test('free-notes: code blocks preserve clipboard, undo and XLSX v4', async ({
   });
 });
 
+async function expectFreeNoteFormat(note: Page, title: string) {
+  const content = note.getByRole('textbox', { name: 'Contenido' });
+  await expect(note.getByRole('textbox', { name: 'Título' })).toHaveValue(title);
+  await expect(content.locator('h1')).toHaveText('Alfa beta gamma');
+  await expect(content.locator('h1 strong')).toHaveText('beta');
+  await expect(content.locator('h2 strong')).toHaveText('Tema');
+  await expect(content.locator('h3')).toHaveText('Detalle');
+  await expect(content.locator('ul li p strong')).toHaveText('Punto');
+  await expect(content.locator('[data-language="sql"] code')).toHaveText('SELECT 1');
+}
+
+test('free-notes: headings preserve selection, lists, code and reload', async ({
+  page, context, identity,
+}) => {
+  await login(page, identity);
+  await page.goto('/free-notes/new?space=work');
+  const title = 'T-084 formato ficticio';
+  await page.getByRole('textbox', { name: 'Título' }).fill(title);
+  const body = page.getByRole('textbox', { name: 'Contenido' });
+  const paragraphs = body.locator(':scope > p');
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.evaluate(() => navigator.clipboard.writeText('Alfa beta gamma\nTema\nDetalle\nPunto\nSELECT 1'));
+  await body.press('Control+v');
+  await expect(paragraphs).toHaveText(['Alfa beta gamma', 'Tema', 'Detalle', 'Punto', 'SELECT 1']);
+
+  const select = async (text: ReturnType<Page['locator']>, start: number, end: number) => {
+    await text.click();
+    await text.evaluate((element, [start, end]) => {
+      const selection = window.getSelection()!;
+      selection.setBaseAndExtent(element.firstChild!, end, element.firstChild!, start);
+    }, [start, end]);
+  };
+  const selectedText = () => page.evaluate(() => window.getSelection()?.toString());
+  const format = async (name: string) => {
+    await page.getByRole('button', { name: 'Formato', exact: true }).click();
+    await page.getByRole('menuitem', { name, exact: true }).click();
+    await expect(body).toBeFocused();
+  };
+  const heading = (level: number) => body.getByRole('heading', { level });
+
+  await select(paragraphs.nth(0), 5, 15);
+  await format('Título 1');
+  await expect(heading(1)).toHaveText('Alfa beta gamma');
+  expect(await selectedText()).toBe('beta gamma');
+  await format('Negrita');
+  await expect(heading(1).locator('strong')).toHaveText('beta gamma');
+  await select(heading(1).locator('strong'), 5, 10);
+  await format('Quitar formato');
+  await expect(paragraphs.nth(0)).toHaveText('Alfa beta gamma');
+  await expect(paragraphs.nth(0).locator('strong')).toHaveText('beta');
+  expect(await selectedText()).toBe('gamma');
+  expect(await paragraphs.nth(0).evaluate((element) => {
+    const selection = window.getSelection()!;
+    const offsetInParagraph = (node: Node, offset: number) => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      range.setEnd(node, offset);
+      return range.toString().length;
+    };
+    return [
+      offsetInParagraph(selection.anchorNode!, selection.anchorOffset),
+      offsetInParagraph(selection.focusNode!, selection.focusOffset),
+    ];
+  })).toEqual([15, 10]);
+  await format('Título 1');
+
+  await select(paragraphs.nth(0), 0, 4);
+  await format('Título 2');
+  await page.keyboard.press('Control+b');
+  await expect(heading(2).locator('strong')).toHaveText('Tema');
+  await format('Párrafo');
+  await expect(paragraphs.nth(0).locator('strong')).toHaveText('Tema');
+  await format('Título 2');
+  await select(paragraphs.nth(0), 0, 7);
+  await format('Título 3');
+
+  await select(paragraphs.nth(0), 0, 5);
+  await format('Título 3');
+  await page.getByRole('button', { name: 'Lista', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Viñetas', exact: true }).click();
+  await expect(body.locator('li p')).toHaveText('Punto');
+  await format('Título 2');
+  await format('Negrita');
+  await expect(body.locator('li strong')).toHaveText('Punto');
+
+  await select(paragraphs.nth(0), 0, 8);
+  await page.getByRole('button', { name: 'Herramientas' }).click();
+  await page.getByRole('menuitem', { name: 'Bloque de código' }).click();
+  await page.getByRole('menuitem', { name: 'SQL' }).click();
+  await expect(body.locator('code')).toHaveText('SELECT 1');
+  await body.locator('code .code-keyword').click();
+  await page.keyboard.press('Control+b');
+  await format('Quitar formato');
+  await expect(body.locator('code')).toHaveText('SELECT 1');
+  await expect(body.locator('code strong')).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Editar nota' })).toBeVisible();
+  await page.reload();
+  await expectFreeNoteFormat(page, title);
+
+  const headers = await csrfHeaders(page);
+  const invalid = [
+    { type: 'heading', attrs: { level: 4 } },
+    { type: 'paragraph', content: [{ type: 'text', text: 'Ajeno', marks: [{ type: 'italic' }] }] },
+  ];
+  for (const block of invalid) {
+    const response = await page.request.post('/api/spaces/work/free-notes', {
+      headers,
+      data: {
+        attemptId: '01918f5e-d001-7000-8000-000000000084',
+        title: 'Formato ajeno',
+        document: { type: 'doc', content: [block] },
+      },
+    });
+    expect(response.status()).toBe(400);
+  }
+});
+
+test('free-notes: headings and bold restore from XLSX v4', async ({ page, browser, identity }) => {
+  const sourceUser = await login(page, identity);
+  const title = 'T-084 restauración ficticia';
+  const text = (value: string) => ({ type: 'text', text: value });
+  const bold = (value: string) => ({ ...text(value), marks: [{ type: 'bold' }] });
+  const document = {
+    type: 'doc',
+    content: [
+      { type: 'heading', attrs: { level: 1 }, content: [text('Alfa '), bold('beta '), text('gamma')] },
+      { type: 'heading', attrs: { level: 2 }, content: [bold('Tema')] },
+      { type: 'heading', attrs: { level: 3 }, content: [text('Detalle')] },
+      {
+        type: 'bulletList',
+        content: [{ type: 'listItem', content: [{ type: 'paragraph', content: [bold('Punto')] }] }],
+      },
+      { type: 'codeBlock', attrs: { language: 'sql' }, content: [text('SELECT 1')] },
+    ],
+  };
+  const response = await page.request.post('/api/spaces/work/free-notes', {
+    headers: await csrfHeaders(page),
+    data: { attemptId: '01918f5e-d001-7000-8000-000000000085', title, document },
+  });
+  expect(response.status()).toBe(201);
+  await checkFreeNoteRestore(page, browser, sourceUser, title, (note) => expectFreeNoteFormat(note, title));
+});
+
 test('free-notes: lifecycle with draft guard, space and diary date', async ({ page, identity, isMobile }) => {
   await page.setViewportSize({ width: isMobile ? 320 : 768, height: 700 });
   await login(page, identity);

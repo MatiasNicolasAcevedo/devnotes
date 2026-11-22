@@ -35,6 +35,7 @@ import {
 } from './api'
 import { codeLanguageLabels, codeLanguages } from './codeLanguages'
 import { freeNoteCodeBlock, setCodeLanguage } from './freeNoteCodeBlock'
+import { applyFormat, formatOptions, freeNoteFormatting } from './freeNoteFormatting'
 import { changeList, freeNoteLists, listOptions } from './freeNoteLists'
 import {
   FREE_NOTE_CREATED_INTENT,
@@ -44,7 +45,15 @@ import {
 import { useFreeNotesScope } from './useFreeNotesScope'
 
 const emptyDocument: JSONContent = { type: 'doc', content: [{ type: 'paragraph' }] }
-const extensions = [Document, Paragraph, Text, UndoRedo, freeNoteCodeBlock, ...freeNoteLists]
+const extensions = [
+  Document,
+  Paragraph,
+  Text,
+  UndoRedo,
+  ...freeNoteFormatting,
+  freeNoteCodeBlock,
+  ...freeNoteLists,
+]
 type Fields = { title: string; document: JSONContent }
 
 export function FreeNoteEditor({
@@ -62,6 +71,7 @@ export function FreeNoteEditor({
   const contentLabel = useId()
   const contentErrorId = useId()
   const listMenuId = useId()
+  const formatMenuId = useId()
   const toolsMenuId = useId()
   const reloadTitle = useId()
   const stored = useRef(note ? { id: note.id, revision: note.revision } : null)
@@ -71,6 +81,7 @@ export function FreeNoteEditor({
   const [failure, setFailure] = useState<'conflict' | 'save' | 'reload' | null>(null)
   const [confirmReload, setConfirmReload] = useState(false)
   const [listAnchor, setListAnchor] = useState<HTMLElement | null>(null)
+  const [formatAnchor, setFormatAnchor] = useState<HTMLElement | null>(null)
   const [toolsAnchor, setToolsAnchor] = useState<HTMLElement | null>(null)
   const [choosingLanguage, setChoosingLanguage] = useState(false)
   const inFlight = useRef(false)
@@ -100,7 +111,7 @@ export function FreeNoteEditor({
       clipboardTextSerializer(slice) {
         const lines: string[] = []
         slice.content.descendants((node) => {
-          if (node.type.name !== 'paragraph' && node.type.name !== 'codeBlock') return true
+          if (!node.isTextblock) return true
           lines.push(node.textContent)
           return false
         })
@@ -306,6 +317,37 @@ export function FreeNoteEditor({
         </Menu>
         <Button
           aria-haspopup="menu"
+          aria-controls={formatAnchor ? formatMenuId : undefined}
+          aria-expanded={!!formatAnchor}
+          disabled={!editor || !scope.canWrite || busy}
+          onClick={(event) => setFormatAnchor(event.currentTarget)}
+        >
+          Formato
+        </Button>
+        <Menu
+          anchorEl={formatAnchor}
+          open={!!formatAnchor}
+          disableRestoreFocus
+          onClose={() => {
+            setFormatAnchor(null)
+            requestAnimationFrame(() => formatAnchor?.focus())
+          }}
+          slotProps={{ list: { id: formatMenuId, 'aria-label': 'Formato' } }}
+        >
+          {formatOptions.map(([format, label]) => (
+            <MenuItem
+              key={format}
+              onClick={() => {
+                setFormatAnchor(null)
+                if (editor) applyFormat(editor, format)
+              }}
+            >
+              {label}
+            </MenuItem>
+          ))}
+        </Menu>
+        <Button
+          aria-haspopup="menu"
           aria-controls={toolsAnchor ? toolsMenuId : undefined}
           aria-expanded={!!toolsAnchor}
           disabled={!editor || !scope.canWrite || busy}
@@ -414,6 +456,10 @@ export function FreeNoteEditor({
               outline: 'none',
             },
             '& p': { my: 0, minHeight: '1.5em' },
+            '& h1, & h2, & h3': { my: 0.5, fontWeight: 650, lineHeight: 1.35 },
+            '& h1': { fontSize: '1.25rem' },
+            '& h2': { fontSize: '1.125rem' },
+            '& h3': { fontSize: '1rem' },
             '& .free-note-code': {
               minWidth: 0,
               maxWidth: '100%',

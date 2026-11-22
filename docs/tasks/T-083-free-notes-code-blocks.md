@@ -1,6 +1,6 @@
 ---
 id: T-083
-status: mergeable
+status: done
 priority: P1
 size: S
 milestone: M7
@@ -34,7 +34,7 @@ Cambiar lenguaje y copiar conserva sangría/saltos. Salir y deshacer vuelve al p
 
 ## Checkpoint vigente
 
-2026-11-22. Frontera reviewer independiente en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0, JDK 21 y Docker Desktop. [PR #86](https://github.com/MatiasNicolasAcevedo/devnotes/pull/86), base `main@1b6ee91b2c5276e170da00aa0204d222892096c0`, fuentes probadas `31b2d2ff3261858416f172c4ae724c8ac9bf19b9` y entrega revisada `8db53604ddab54380957bc38a2d4c3b9ab47c7a2`. Alcance conforme a S-114. Pendiente: comprobar la CI del commit documental de transición, publicar el veredicto sobre ese SHA y confirmar el squash en GitHub.
+2026-11-22. Frontera reviewer independiente en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0, JDK 21 y Docker Desktop. [PR #86](https://github.com/MatiasNicolasAcevedo/devnotes/pull/86), base `main@1b6ee91b2c5276e170da00aa0204d222892096c0`, fuentes probadas `31b2d2ff3261858416f172c4ae724c8ac9bf19b9` y entrega revisada `8db53604ddab54380957bc38a2d4c3b9ab47c7a2`. Alcance conforme a S-114. Squash confirmado por GitHub como `MERGED` el 2026-11-22 a las 19:37:26 UTC, commit `3c7dc999419a2930a881be68fe0cb44d398a2090`. `git fetch origin main` y `git merge-base --is-ancestor 3c7dc999419a2930a881be68fe0cb44d398a2090 origin/main` dieron exit 0.
 
 - Identidad del diff. `gh pr view 86 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup`, `git fetch origin main codex/t-083-free-notes-code-blocks` y `git ls-remote origin refs/heads/main refs/heads/codex/t-083-free-notes-code-blocks` (exit 0). PR abierto, listo para revisión y HEAD/base coincidentes. `gh run view 45045872070 --repo MatiasNicolasAcevedo/devnotes --json headSha,conclusion` (exit 0) confirmó el check exitoso ligado a `8db5360`, posterior al cancelado. Cero conversaciones en la consulta de revisión. `git rev-parse HEAD^` y `git diff --name-status 31b2d2f..8db5360` (exit 0) confirmaron que la entrega es hija directa y que cambia solo esta tarea y STATUS.
 - Comportamiento revisado. Herramientas cambia JSON, SQL y TXT sin alterar el texto. Las decoraciones léxicas quedan fuera del documento guardado. Copia exacta, salida con deshacer y scroll dentro de la tarjeta. El validador de Libres acepta solo lenguajes permitidos y texto sin marcas, conserva los límites existentes y se reutiliza en XLSX v4. Las listas mantienen sus acciones e historial. El diario mantiene su esquema. Persistencia JSONB y autorización por propietario conservadas.

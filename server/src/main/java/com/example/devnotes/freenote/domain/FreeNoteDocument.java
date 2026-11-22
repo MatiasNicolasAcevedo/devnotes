@@ -14,6 +14,8 @@ public final class FreeNoteDocument {
     private static final Set<String> BLOCK_FIELDS = Set.of("type", "content");
     private static final Set<String> ATTRIBUTED_BLOCK_FIELDS = Set.of("type", "content", "attrs");
     private static final Set<String> TEXT_FIELDS = Set.of("type", "text");
+    private static final Set<String> MARKED_TEXT_FIELDS = Set.of("type", "text", "marks");
+    private static final Set<String> MARK_FIELDS = Set.of("type");
     private static final Set<String> CODE_LANGUAGES = Set.of("json", "sql", "text");
     private static final JsonMapper MAPPER =
             JsonMapper.builder().enable(JsonNodeFeature.WRITE_PROPERTIES_SORTED).build();
@@ -29,6 +31,7 @@ public final class FreeNoteDocument {
                 case "orderedList" -> listPoints(block, "orderedList", "listItem");
                 case "taskList" -> listPoints(block, "taskList", "taskItem");
                 case "codeBlock" -> codePoints(block);
+                case "heading" -> headingPoints(block);
                 default -> paragraphPoints(block);
             };
             if (textPoints > MAX_TEXT_POINTS) {
@@ -73,7 +76,18 @@ public final class FreeNoteDocument {
 
     private static long paragraphPoints(JsonNode paragraph) {
         requireNode(paragraph, "paragraph", BLOCK_FIELDS);
-        return textPoints(paragraph);
+        return textPoints(paragraph, true);
+    }
+
+    private static long headingPoints(JsonNode heading) {
+        requireNode(heading, "heading", ATTRIBUTED_BLOCK_FIELDS);
+        JsonNode level = requireAttribute(heading, "level");
+        if (!level.isNumber() || level.decimalValue().compareTo(java.math.BigDecimal.ONE) < 0
+                || level.decimalValue().compareTo(java.math.BigDecimal.valueOf(3)) > 0
+                || level.decimalValue().stripTrailingZeros().scale() > 0) {
+            throw new IllegalArgumentException("Free note headings require a level from 1 to 3");
+        }
+        return textPoints(heading, true);
     }
 
     private static long codePoints(JsonNode block) {
@@ -82,10 +96,10 @@ public final class FreeNoteDocument {
         if (!language.isTextual() || !CODE_LANGUAGES.contains(language.textValue())) {
             throw new IllegalArgumentException("Unsupported free note code block language");
         }
-        return textPoints(block);
+        return textPoints(block, false);
     }
 
-    private static long textPoints(JsonNode block) {
+    private static long textPoints(JsonNode block, boolean allowBold) {
         JsonNode content = block.get("content");
         if (content == null) {
             return 0;
@@ -95,7 +109,14 @@ public final class FreeNoteDocument {
         }
         long points = 0;
         for (JsonNode node : content) {
-            requireNode(node, "text", TEXT_FIELDS);
+            requireNode(node, "text", allowBold ? MARKED_TEXT_FIELDS : TEXT_FIELDS);
+            if (node.has("marks")) {
+                JsonNode marks = node.get("marks");
+                if (!marks.isArray() || marks.size() != 1) {
+                    throw new IllegalArgumentException("Free note text supports only a single bold mark");
+                }
+                requireNode(marks.get(0), "bold", MARK_FIELDS);
+            }
             String text = node.path("text").textValue();
             if (text == null || text.isEmpty()) {
                 throw new IllegalArgumentException("Text nodes must contain a nonempty string");

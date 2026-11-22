@@ -2,14 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-083](tasks/T-083-free-notes-code-blocks.md) · Bloques de código en Libres · [S-114](specs/S-114-writing-editor.md) |
+| Tarea y contrato | [T-084](tasks/T-084-free-notes-headings.md) · Títulos y negrita en Libres · [S-114](specs/S-114-writing-editor.md) |
 | Estado | `mergeable` |
-| Acción actual | Confirmar CI de la transición y cerrar el squash del PR #86 |
-| Rama / PR | `codex/t-083-free-notes-code-blocks` · [PR #86](https://github.com/MatiasNicolasAcevedo/devnotes/pull/86) |
+| Acción actual | Comprobar CI de la transición y confirmar el squash de T-084 |
+| Rama / PR | `codex/t-084-free-notes-headings` · [PR #87](https://github.com/MatiasNicolasAcevedo/devnotes/pull/87) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
-El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-082 quedó mergeada y conciliada.
+El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-083 quedó mergeada y conciliada.
 
 ## Pendientes del dueño
 
@@ -27,22 +27,22 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 | Dato | Valor |
 |---|---|
 | Último integrado válido | FULL local del 2026-11-15 sobre `398801f` ([T-069](tasks/T-069-ocr-workspace.md#evidencia-del-full-de-cierre)); STARTER de T-068 conservado |
-| Mergeado desde entonces | T-070 (recorrido E2E de OCR), T-074 (navegación de Imagen), T-071 y T-092 (documentales), la adopción documental del flujo y el encadenamiento del lote hasta T-082 |
+| Mergeado desde entonces | T-070 (recorrido E2E de OCR), T-074 (navegación de Imagen), T-071 y T-092 (documentales), la adopción documental del flujo y el encadenamiento del lote hasta T-083 |
 | Corte acumulado | Desde `7aa8946` hasta el HEAD de `main` que indique el dueño ([TESTING](TESTING.md#corte-acumulado-vigente)). El FULL/STARTER de I5 sigue diferido |
 | Recomendación | Ejecutar el integrado del corte acumulado con V8 y V9 cuando el dueño lo ordene. T-080 incorpora rutas privadas en Spring Security |
 
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de T-084 en MatiasNicolasAcevedo/devnotes. Sesión nueva, rama codex/t-084-free-notes-headings.
+Actuá como frontera implementer de T-085 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, client/AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-083-free-notes-code-blocks.md, docs/tasks/T-084-free-notes-headings.md y la sección Formato de docs/specs/S-114-writing-editor.md.
+LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-085-side-reading.md y docs/specs/S-115-side-reading.md.
 
-PRECONDICIÓN: gh pr view 86 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit debe confirmar MERGED con mergedAt y mergeCommit.oid válidos. Tomá mergeCommit.oid como $mergeOid. Ejecutá git fetch origin main y git merge-base --is-ancestor $mergeOid origin/main. Si falla una comprobación, informá el estado real y retomá T-083 antes de habilitar T-084.
+PRECONDICIÓN: gh pr view 87 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit debe confirmar MERGED con mergedAt y mergeCommit.oid válidos. Tras git fetch origin main, comprobá que el SHA confirmado pertenece a origin/main con git merge-base --is-ancestor, pasando mergeCommit.oid y origin/main en ese orden. Si difiere, informá el estado real y corregí el prompt.
 
-ACCIÓN: Creá la rama desde main actualizado. Conciliá T-083 como done en el primer commit con el SHA y fecha confirmados, y habilitá T-084. Implementá el menú Formato con Párrafo, Título 1–3, Negrita y Quitar formato según S-114. Conservá texto, selección, foco y compatibilidad con listas, bloques de código y diario. Extendé validadores y restauración XLSX v4.
+ACCIÓN: Creá codex/t-085-side-reading desde main actualizado y conciliá T-084 como done en el primer commit, con la evidencia del merge. Implementá la lectura lateral en Diario y Libres según S-115, preservando borrador, scroll, foco y límites de cuenta y espacio. Publicá un único PR para T-085 y verificá su HEAD/base y CI.
 
-GATE: Ejecutá los dirigidos y typecheck de T-084, bash scripts/e2e.sh --grep 'free-notes: headings' --project desktop con un namespace propio, docs-check, git diff --check y verify-required sobre el HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: Dirigidos de T-085, typecheck, E2E filtrado 'side reading:' en desktop y mobile con namespaces propios, docs-check y verify-required sobre el HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: Publicá un único PR contra main, guardá evidencia por HEAD/base y terminá con el único prompt de reviewer independiente en STATUS y en la respuesta final. Preservá Render Auto-Deploy On Commit.
+SALIDA: Registrá HEAD/base, evidencia y limpieza por labels en la tarea. Dejá en STATUS el único prompt para una sesión nueva de frontera reviewer del PR de T-085 y copialo completo al final de la respuesta. Preservá Render Auto-Deploy On Commit.
 ```
