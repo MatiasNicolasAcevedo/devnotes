@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-080](tasks/T-080-free-notes-workspace.md) · Libres desde Notas · [S-113](specs/S-113-free-notes.md) |
-| Estado | `changes_requested` |
-| Acción actual | Corregir la revisión obsoleta al reabrir una nota libre |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente de la corrección de reapertura |
 | Rama / PR | `codex/t-080-free-notes-workspace` · [PR #83](https://github.com/MatiasNicolasAcevedo/devnotes/pull/83) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,11 +34,11 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de corrección de T-080 en MatiasNicolasAcevedo/devnotes. Sesión nueva, mismo PR 83 y rama codex/t-080-free-notes-workspace.
+Actuá como frontera reviewer independiente de T-080 en MatiasNicolasAcevedo/devnotes. Sesión nueva, ronda 2, mismo PR 83 y rama codex/t-080-free-notes-workspace.
 
-LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-080-free-notes-workspace.md, S-113 y el documento de Libres en S-114.
-PRECONDICIÓN: gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid debe confirmar OPEN, listo, base main en 7a700175b98669c3a1d9457150df4230279f2c62 y HEAD igual a git log -1 --format=%H -- docs/STATUS.md en la rama publicada, con T-080 en changes_requested.
-ACCIÓN: Reproducí primero en rojo el único hallazgo del checkpoint. Corregí la reapertura desde el directorio tras guardar título y cuerpo, y mantené la guardia y la protección de borradores ante refetch y 409. El segundo guardado tras reabrir sin recargar debe usar la revisión confirmada y persistir correctamente.
-GATE: Corré la regresión, los dirigidos y typecheck del cliente, Playwright filtrado de Libres en desktop/mobile con proyectos propios, docs-check y diff --check. Si cambian insumos del backend, repetí el dirigido PostgreSQL de la tarea. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-SALIDA: Publicá la corrección en el mismo PR, actualizá tarea y STATUS a in_review y devolvé el prompt completo para una revisión independiente del nuevo HEAD. Conservá Render Auto-Deploy On Commit.
+LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-080-free-notes-workspace.md, S-113 y el documento de Libres en S-114.
+PRECONDICIÓN: gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo y base main en 7a700175b98669c3a1d9457150df4230279f2c62. Sobre la rama publicada, el HEAD debe coincidir con git log -1 --format=%H -- docs/STATUS.md, su padre con 92a7962002f3cb5b351fd2430ba77eb0bebb5c05 y T-080 debe figurar in_review. Si no coincide, informá el estado real y devolvé el prompt vigente.
+ACCIÓN: Revisá el diff publicado contra main y la corrección del hallazgo de ronda 1. Comprobá que al reabrir desde Libres sin recargar aparecen el título y el cuerpo confirmados, que el segundo PUT usa la revisión del primer guardado y que la segunda edición persiste. Verificá la guardia de borradores, el refetch en curso y la recuperación con confirmación ante un 409 auténtico.
+GATE: Comprobá la evidencia del checkpoint, corré la regresión y los dirigidos de los riesgos encontrados, docs-check y diff --check, y verificá verify-required verde para el HEAD y base vigentes. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+SALIDA: Si aprobás, seguí el protocolo de reviewer para la transición documental, CI del nuevo HEAD y squash ligado al SHA aprobado, y confirmá MERGED con gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. Si queda un hallazgo en esta segunda ronda, documentalo y devolvé a frontera o dueño. Conservá Render Auto-Deploy On Commit. Cerrá con el prompt completo de la sesión siguiente.
 ```
