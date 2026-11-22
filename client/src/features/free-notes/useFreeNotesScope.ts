@@ -9,7 +9,7 @@ export function useFreeNotesScope() {
   const { owner, space } = useSpaceScope()
   const { csrfReady, logoutPending } = useSession()
   const client = useQueryClient()
-  const mounted = useRef(false)
+  const mounted = useRef(true)
   useLayoutEffect(() => {
     mounted.current = true
     return () => {

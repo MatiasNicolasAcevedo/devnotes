@@ -13,7 +13,15 @@ import Text from '@tiptap/extension-text'
 import { Fragment, Slice } from '@tiptap/pm/model'
 import { closeHistory } from '@tiptap/pm/history'
 import { UndoRedo } from '@tiptap/extensions'
-import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react'
 import { plainTextToDocument, validateDailyContent, type DailyContent } from './dailyDocument'
 import { LinkDialog } from './LinkDialog'
 import { Link } from './link'
@@ -46,6 +54,8 @@ export interface DailyEditorProps {
   toolbarEnd?: ReactNode
   /** Acciones secundarias que acompañan a Enlace en Herramientas a ancho estrecho. */
   narrowTools?: ReactNode
+  extraTools?: (close: () => void) => ReactNode
+  toolsTriggerRef?: RefObject<HTMLButtonElement | null>
   /** Documento confirmado por un POST de copia, que debe entrar al historial sin programar un PUT. */
   confirmedCopyContent?: DailyContent
   /** El área de escritura ocupa el alto libre del contenedor en lugar de una altura fija redimensionable. */
@@ -61,11 +71,14 @@ export function DailyEditor({
   toolbarStart,
   toolbarEnd,
   narrowTools,
+  extraTools,
+  toolsTriggerRef,
   confirmedCopyContent,
   fillHeight = false,
 }: DailyEditorProps) {
   const narrow = useIsNarrow()
   const groupTools = narrow && narrowTools != null
+  const showTools = groupTools || extraTools != null
   const toolsId = useId()
   const [toolsAnchor, setToolsAnchor] = useState<HTMLButtonElement | null>(null)
   const onChangeRef = useRef(onChange)
@@ -88,7 +101,7 @@ export function DailyEditor({
   const refAnchorRef = useRef(refAnchor)
 
   // Al desmontar el botón, el diálogo pierde su ancla hasta una nueva apertura.
-  if (!groupTools && toolsAnchor !== null) {
+  if (!showTools && toolsAnchor !== null) {
     setToolsAnchor(null)
   }
 
@@ -441,9 +454,10 @@ export function DailyEditor({
           {toolbarStart}
           {!groupTools && linkTool}
           <span className="daily-editor-toolbar-spacer" />
-          {groupTools && (
+          {showTools && (
             <>
               <IconButton
+                ref={toolsTriggerRef}
                 size="small"
                 color="primary"
                 aria-label="Herramientas"
@@ -461,7 +475,11 @@ export function DailyEditor({
               <Popover
                 open={toolsOpen}
                 anchorEl={toolsAnchor}
-                onClose={() => setToolsAnchor(null)}
+                disableRestoreFocus
+                onClose={() => {
+                  setToolsAnchor(null)
+                  requestAnimationFrame(() => toolsAnchor?.focus({ preventScroll: true }))
+                }}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                 transformOrigin={{ vertical: 'top', horizontal: 'right' }}
               >
@@ -478,8 +496,9 @@ export function DailyEditor({
                     '& button': { minHeight: 44 },
                   }}
                 >
-                  {linkTool}
-                  {narrowTools}
+                  {groupTools && linkTool}
+                  {groupTools && narrowTools}
+                  {extraTools?.(() => setToolsAnchor(null))}
                 </Box>
               </Popover>
             </>

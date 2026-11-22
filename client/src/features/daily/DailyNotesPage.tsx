@@ -25,6 +25,7 @@ import { useSaveDailyVersion } from '../../features/daily/useSaveDailyVersion'
 import { isValidIsoDate } from './dateUtils'
 import { useSpaceHref } from '../spaces/spaceContext'
 import { useFreeNotesContext } from '../free-notes/freeNotesContext'
+import { ReadingWorkspace } from '../side-reading/ReadingWorkspace'
 import { CopyPreviousNote } from './CopyPreviousNote'
 
 // ——— Fallbacks sin provider ———
@@ -269,33 +270,58 @@ function DailyNotesInner() {
         Notas diarias
       </Typography>
 
-      <Paper
-        variant="outlined"
-        sx={{
-          display: 'flex',
-          flexDirection: 'column',
-          flexGrow: 1,
-          minHeight: 220,
-          height: 'var(--daily-editor-height, 220px)',
-        }}
-      >
-        <DailyEditor
-          initialContent={content ?? emptyDocument()}
-          onChange={handleEditorChange}
-          readOnly={ctx.navigationLocked || ctx.isLoading || ctx.copyTargetNeedsReload}
-          toolbarStart={toolbarStart}
-          toolbarEnd={toolbarEnd}
-          narrowTools={
-            <CopyButton aria-label="Copiar nota" text={notePlainText}>
-              Copiar nota
-            </CopyButton>
-          }
-          confirmedCopyContent={ctx.confirmedCopy?.note.content}
-          fillHeight
-        >
-          <CopyPreviousNote />
-        </DailyEditor>
-      </Paper>
+      <ReadingWorkspace>
+        {(tools) => (
+          <Paper
+            variant="outlined"
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              flexGrow: 1,
+              minHeight: 220,
+              height: 'var(--daily-editor-height, 220px)',
+            }}
+          >
+            <DailyEditor
+              initialContent={content ?? emptyDocument()}
+              onChange={handleEditorChange}
+              readOnly={ctx.navigationLocked || ctx.isLoading || ctx.copyTargetNeedsReload}
+              toolbarStart={toolbarStart}
+              toolbarEnd={toolbarEnd}
+              toolsTriggerRef={tools?.triggerRef}
+              extraTools={
+                tools
+                  ? (close) =>
+                      tools.href ? (
+                        <Button component={RouterLink} to={tools.href} size="small" onClick={close}>
+                          {tools.label}
+                        </Button>
+                      ) : (
+                        <Button
+                          size="small"
+                          onClick={() => {
+                            close()
+                            tools.open()
+                          }}
+                        >
+                          {tools.label}
+                        </Button>
+                      )
+                  : undefined
+              }
+              narrowTools={
+                <CopyButton aria-label="Copiar nota" text={notePlainText}>
+                  Copiar nota
+                </CopyButton>
+              }
+              confirmedCopyContent={ctx.confirmedCopy?.note.content}
+              fillHeight
+            >
+              <CopyPreviousNote />
+            </DailyEditor>
+          </Paper>
+        )}
+      </ReadingWorkspace>
     </Stack>
   )
 }

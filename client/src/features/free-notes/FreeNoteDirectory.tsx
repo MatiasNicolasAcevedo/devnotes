@@ -12,13 +12,13 @@ import ListItemText from '@mui/material/ListItemText'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
-import { useInfiniteQuery } from '@tanstack/react-query'
 import { useId, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { ApiError } from '../../services/http'
 
-import { deleteFreeNote, fetchFreeNotes, type FreeNoteItem } from './api'
+import { deleteFreeNote, type FreeNoteItem } from './api'
 import { useFreeNotesContext, useFreeNotesLinks } from './freeNotesContext'
+import { useFreeNoteList } from './useFreeNoteQueries'
 import { useFreeNotesScope } from './useFreeNotesScope'
 
 const dateFormat = new Intl.DateTimeFormat('es-AR', { dateStyle: 'short', timeStyle: 'short' })
@@ -28,13 +28,7 @@ export function FreeNoteDirectory() {
   const { href, noteHref, fromDate } = useFreeNotesLinks()
   const rememberedDate = useFreeNotesContext()?.diaryDates[scope.space]
   const date = fromDate ?? rememberedDate
-  const query = useInfiniteQuery({
-    queryKey: [...scope.key, 'list'],
-    queryFn: ({ pageParam, signal }) =>
-      fetchFreeNotes(scope.space, pageParam, { signal, sessionIsCurrent: scope.isCurrent }),
-    initialPageParam: null as string | null,
-    getNextPageParam: (page) => page.next ?? undefined,
-  })
+  const query = useFreeNoteList(scope)
   const rows = query.data?.pages.flatMap((page) => page.items) ?? []
   const [deleted, setDeleted] = useState<ReadonlySet<string>>(new Set())
   const items = [...new Map(rows.map((item) => [item.id, item])).values()].filter(

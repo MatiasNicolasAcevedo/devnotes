@@ -17,6 +17,7 @@ import { DailyDraftWorkspace } from '../features/daily/DailyDraftNavigation'
 import { DailyCopyRecoveryProvider } from '../features/daily/DailyDraftProvider'
 import { FreeNotesProvider } from '../features/free-notes/FreeNotesProvider'
 import { ImageDraftContext } from '../features/ocr/imageDraftContext'
+import { SideReadingProvider } from '../features/side-reading/SideReadingProvider'
 import { SpaceNavigation } from '../features/spaces/SpaceNavigation'
 import { SpaceProvider } from '../features/spaces/SpaceProvider'
 import { SpaceSelector } from '../features/spaces/SpaceSelector'
@@ -65,19 +66,21 @@ function SpaceWorkspaces({
   const voiceActive = status !== 'loading' && matchPath('/voice', pathname) != null
   return (
     <VoiceDraftProvider key={`${owner}/${space ?? ''}`} owner={owner} active={voiceActive}>
-      <VoiceDraftNavigation>
-        {(outletOverride, bypassDailyLinks) => (
-          <DailyDraftWorkspace
-            owner={owner}
-            space={space}
-            outletOverride={outletOverride}
-            bypassLinkFlush={bypassDailyLinks}
-            navigationRoot={navigationRoot}
-          >
-            {(outlet) => <SpaceNavigation>{outlet}</SpaceNavigation>}
-          </DailyDraftWorkspace>
-        )}
-      </VoiceDraftNavigation>
+      <SideReadingProvider>
+        <VoiceDraftNavigation>
+          {(outletOverride, bypassDailyLinks) => (
+            <DailyDraftWorkspace
+              owner={owner}
+              space={space}
+              outletOverride={outletOverride}
+              bypassLinkFlush={bypassDailyLinks}
+              navigationRoot={navigationRoot}
+            >
+              {(outlet) => <SpaceNavigation>{outlet}</SpaceNavigation>}
+            </DailyDraftWorkspace>
+          )}
+        </VoiceDraftNavigation>
+      </SideReadingProvider>
     </VoiceDraftProvider>
   )
 }
@@ -235,6 +238,9 @@ function AppShellContent({
               daily && desktop
                 ? `calc(100dvh - ${headerHeight}px - env(safe-area-inset-top) - 8px)`
                 : undefined,
+            '--free-writing-height': desktop
+              ? `calc(100dvh - ${headerHeight}px - env(safe-area-inset-top) - 24px)`
+              : 'calc(100dvh - 120px - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
           }}
         >
           <SessionAlerts />

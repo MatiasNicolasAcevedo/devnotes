@@ -12,10 +12,6 @@ import Stack from '@mui/material/Stack'
 import SvgIcon from '@mui/material/SvgIcon'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
-import Document from '@tiptap/extension-document'
-import Paragraph from '@tiptap/extension-paragraph'
-import Text from '@tiptap/extension-text'
-import { UndoRedo } from '@tiptap/extensions'
 import { Fragment, Slice } from '@tiptap/pm/model'
 import { EditorContent, useEditor, type JSONContent } from '@tiptap/react'
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
@@ -24,6 +20,7 @@ import { Link, useNavigate } from 'react-router'
 import { ApiError } from '../../services/http'
 import { CopyButton } from '../../shared/ui/CopyButton'
 import { newUuidV7 } from '../../shared/uuidV7'
+import { ReadingWorkspace, type ReadingTools } from '../side-reading/ReadingWorkspace'
 
 import {
   createFreeNote,
@@ -34,26 +31,18 @@ import {
   type FreeNoteInput,
 } from './api'
 import { codeLanguageLabels, codeLanguages } from './codeLanguages'
-import { freeNoteCodeBlock, setCodeLanguage } from './freeNoteCodeBlock'
-import { applyFormat, formatOptions, freeNoteFormatting } from './freeNoteFormatting'
-import { changeList, freeNoteLists, listOptions } from './freeNoteLists'
+import { setCodeLanguage } from './freeNoteCodeBlock'
+import { applyFormat, formatOptions } from './freeNoteFormatting'
+import { changeList, listOptions } from './freeNoteLists'
 import {
   FREE_NOTE_CREATED_INTENT,
   useFreeNotesContext,
   useFreeNotesLinks,
 } from './freeNotesContext'
+import { freeNoteContentStyles, freeNoteExtensions } from './freeNoteContent'
 import { useFreeNotesScope } from './useFreeNotesScope'
 
 const emptyDocument: JSONContent = { type: 'doc', content: [{ type: 'paragraph' }] }
-const extensions = [
-  Document,
-  Paragraph,
-  Text,
-  UndoRedo,
-  ...freeNoteFormatting,
-  freeNoteCodeBlock,
-  ...freeNoteLists,
-]
 type Fields = { title: string; document: JSONContent }
 
 export function FreeNoteEditor({
@@ -62,6 +51,22 @@ export function FreeNoteEditor({
 }: {
   note?: FreeNote
   reload?: () => Promise<FreeNote | undefined>
+}) {
+  return (
+    <ReadingWorkspace excludeFreeId={note?.id}>
+      {(tools) => <FreeNoteForm note={note} reload={reload} readingTools={tools} />}
+    </ReadingWorkspace>
+  )
+}
+
+function FreeNoteForm({
+  note,
+  reload,
+  readingTools,
+}: {
+  note?: FreeNote
+  reload?: () => Promise<FreeNote | undefined>
+  readingTools: ReadingTools | null
 }) {
   const scope = useFreeNotesScope()
   const { noteHref } = useFreeNotesLinks()
@@ -100,7 +105,7 @@ export function FreeNoteEditor({
   })
 
   const editor = useEditor({
-    extensions,
+    extensions: freeNoteExtensions,
     content: note?.document ?? emptyDocument,
     editorProps: {
       attributes: { role: 'textbox', 'aria-multiline': 'true', 'aria-labelledby': contentLabel },
@@ -273,6 +278,12 @@ export function FreeNoteEditor({
       component="form"
       noValidate
       spacing={1.5}
+      sx={{
+        maxHeight: 'var(--free-writing-height, none)',
+        minHeight: 0,
+        overflow: 'auto',
+        px: 0.5,
+      }}
       onSubmit={(event) => {
         event.preventDefault()
         void save(true)
@@ -347,6 +358,7 @@ export function FreeNoteEditor({
           ))}
         </Menu>
         <Button
+          ref={readingTools?.triggerRef}
           aria-haspopup="menu"
           aria-controls={toolsAnchor ? toolsMenuId : undefined}
           aria-expanded={!!toolsAnchor}
@@ -361,7 +373,11 @@ export function FreeNoteEditor({
         <Menu
           anchorEl={toolsAnchor}
           open={!!toolsAnchor}
-          onClose={() => setToolsAnchor(null)}
+          disableRestoreFocus
+          onClose={() => {
+            setToolsAnchor(null)
+            requestAnimationFrame(() => toolsAnchor?.focus({ preventScroll: true }))
+          }}
           slotProps={{
             list: {
               id: toolsMenuId,
@@ -369,22 +385,45 @@ export function FreeNoteEditor({
             },
           }}
         >
-          {choosingLanguage ? (
-            codeLanguages.map((language, index) => (
-              <MenuItem
-                key={language}
-                autoFocus={index === 0}
-                onClick={() => {
-                  setToolsAnchor(null)
-                  if (editor) setCodeLanguage(editor, language)
-                }}
-              >
-                {codeLanguageLabels[language]}
-              </MenuItem>
-            ))
-          ) : (
-            <MenuItem onClick={() => setChoosingLanguage(true)}>Bloque de código</MenuItem>
-          )}
+          {choosingLanguage
+            ? codeLanguages.map((language, index) => (
+                <MenuItem
+                  key={language}
+                  autoFocus={index === 0}
+                  onClick={() => {
+                    setToolsAnchor(null)
+                    if (editor) setCodeLanguage(editor, language)
+                  }}
+                >
+                  {codeLanguageLabels[language]}
+                </MenuItem>
+              ))
+            : [
+                <MenuItem key="code" onClick={() => setChoosingLanguage(true)}>
+                  Bloque de código
+                </MenuItem>,
+                readingTools &&
+                  (readingTools.href ? (
+                    <MenuItem
+                      key="reading"
+                      component={Link}
+                      to={readingTools.href}
+                      onClick={() => setToolsAnchor(null)}
+                    >
+                      {readingTools.label}
+                    </MenuItem>
+                  ) : (
+                    <MenuItem
+                      key="reading"
+                      onClick={() => {
+                        setToolsAnchor(null)
+                        readingTools.open()
+                      }}
+                    >
+                      {readingTools.label}
+                    </MenuItem>
+                  )),
+              ]}
         </Menu>
         <Button
           type="submit"
@@ -446,58 +485,7 @@ export function FreeNoteEditor({
               outlineColor: 'primary.main',
               outlineOffset: -1,
             },
-            '& .tiptap': {
-              minHeight: 'min(38dvh, 320px)',
-              px: 1.5,
-              py: 1,
-              fontSize: '1rem',
-              whiteSpace: 'pre-wrap',
-              overflowWrap: 'anywhere',
-              outline: 'none',
-            },
-            '& p': { my: 0, minHeight: '1.5em' },
-            '& h1, & h2, & h3': { my: 0.5, fontWeight: 650, lineHeight: 1.35 },
-            '& h1': { fontSize: '1.25rem' },
-            '& h2': { fontSize: '1.125rem' },
-            '& h3': { fontSize: '1rem' },
-            '& .free-note-code': {
-              minWidth: 0,
-              maxWidth: '100%',
-              my: 0.75,
-              border: 1,
-              borderColor: 'divider',
-              borderRadius: 1,
-              bgcolor: 'action.hover',
-            },
-            '& .free-note-code-content': {
-              px: 1,
-              pb: 0.75,
-              overflowX: 'auto',
-              whiteSpace: 'pre',
-              overflowWrap: 'normal',
-              fontFamily: '"Roboto Mono", monospace',
-              fontSize: '0.875rem',
-              '& code': { font: 'inherit', display: 'block', minHeight: '1.5em' },
-              '& .code-keyword': { color: 'primary.light', fontWeight: 600 },
-              '& .code-string': { color: 'success.light' },
-              '& .code-number': { color: 'warning.light' },
-              '& .code-comment': { color: 'text.secondary', fontStyle: 'italic' },
-            },
-            '& ul, & ol': { my: 0, paddingInlineStart: 3 },
-            '& ul[data-type="taskList"]': { paddingInlineStart: 0, listStyle: 'none' },
-            '& li[data-type="taskItem"]': {
-              display: 'flex',
-              alignItems: 'flex-start',
-              '& > span': { display: 'grid', placeItems: 'center', flexShrink: 0 },
-              '& > div': { flex: 1, minWidth: 0, pt: '0.25rem' },
-              '& input': {
-                width: 28,
-                height: 28,
-                margin: 0,
-                marginInlineEnd: 1,
-                cursor: 'pointer',
-              },
-            },
+            ...freeNoteContentStyles,
           }}
         >
           <EditorContent editor={editor} />
