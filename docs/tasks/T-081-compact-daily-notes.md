@@ -1,6 +1,6 @@
 ---
 id: T-081
-status: draft
+status: in_progress
 priority: P1
 size: S
 milestone: M7
@@ -33,4 +33,4 @@ Medidas pre/post a 768×559 en Chromium/PWA según spec, 320/375 y 1280 para ref
 
 ## Checkpoint vigente
 
-Habilitar en sesión nueva tras confirmar [T-080](T-080-free-notes-workspace.md) MERGED y conciliarla. Registrar el SHA/base y la evidencia efectivamente ejecutada.
+2026-11-22. Frontera implementer, Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto). Base `main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e`. `gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit` y `git merge-base --is-ancestor 8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e origin/main` (exit 0) habilitaron T-081. Alcance UI del diario y shell contextual. Pendientes medición, implementación, gate y publicación.
