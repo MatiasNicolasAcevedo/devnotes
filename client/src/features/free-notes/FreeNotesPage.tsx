@@ -2,17 +2,18 @@ import Alert from '@mui/material/Alert'
 import Button from '@mui/material/Button'
 import CircularProgress from '@mui/material/CircularProgress'
 import Stack from '@mui/material/Stack'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { useSession } from '../auth/sessionContext'
 import { useOptionalActiveSpace } from '../spaces/spaceContext'
 import { ApiError } from '../../services/http'
-import { fetchFreeNote, type FreeNote } from './api'
+import type { FreeNote } from './api'
 import { FreeNoteDirectory } from './FreeNoteDirectory'
 import { FreeNoteEditor } from './FreeNoteEditor'
 import { useFreeNotesLinks } from './freeNotesContext'
 import { useFreeNotesScope } from './useFreeNotesScope'
+import { freeNoteDetailKey, useFreeNoteDetail } from './useFreeNoteQueries'
 
 export function FreeNotesPage() {
   const { user } = useSession()
@@ -26,14 +27,11 @@ export function FreeNotesPage() {
 }
 
 function ExistingNote({ id }: { id: string }) {
-  const { space, key, isCurrent } = useFreeNotesScope()
+  const scope = useFreeNotesScope()
   const { noteHref } = useFreeNotesLinks()
   const client = useQueryClient()
-  const queryKey = [...key, 'detail', id] as const
-  const query = useQuery({
-    queryKey,
-    queryFn: ({ signal }) => fetchFreeNote(space, id, { signal, sessionIsCurrent: isCurrent }),
-  })
+  const queryKey = freeNoteDetailKey(scope.key, id)
+  const query = useFreeNoteDetail(scope, id)
   const [initialNote, setInitialNote] = useState<FreeNote>()
   // After a save, wait for the invalidated detail to refresh before opening a new editor.
   // Once opened, background requests must not replace the editor's draft or revision.

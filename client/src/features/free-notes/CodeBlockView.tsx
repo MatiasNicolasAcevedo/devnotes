@@ -37,15 +37,17 @@ export function CodeBlockView({ editor, getPos, node }: NodeViewProps) {
           {codeLanguageLabels[language]}
         </Typography>
         <CopyButton aria-label="Copiar código" iconOnly text={node.textContent} />
-        <Button
-          size="small"
-          onClick={() => {
-            const position = getPos()
-            if (position !== undefined) exitCodeBlock(editor, position)
-          }}
-        >
-          Salir del bloque
-        </Button>
+        {editor.isEditable && (
+          <Button
+            size="small"
+            onClick={() => {
+              const position = getPos()
+              if (position !== undefined) exitCodeBlock(editor, position)
+            }}
+          >
+            Salir del bloque
+          </Button>
+        )}
       </Box>
       <NodeViewContent as="div" className="free-note-code-content" />
     </NodeViewWrapper>

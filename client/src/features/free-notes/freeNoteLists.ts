@@ -84,6 +84,7 @@ const taskItem = Node.create({
       control.contentEditable = 'false'
       const checkbox = document.createElement('input')
       checkbox.type = 'checkbox'
+      checkbox.disabled = !editor.isEditable
       control.append(checkbox)
       const contentDOM = document.createElement('div')
       dom.append(control, contentDOM)
