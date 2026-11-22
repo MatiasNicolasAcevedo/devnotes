@@ -1,6 +1,6 @@
 ---
 id: T-077
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M6
@@ -33,6 +33,10 @@ Guardar dos textos, abrir/copy, borrar uno y recargar. Guardado fallido conserva
 
 ## Checkpoint vigente
 
+2026-11-21 (Buenos Aires). PR #80 confirmado MERGED en main a las 22:03:28 ART (2026-11-22T01:03:28Z), squash `84151b0a782760e278280abd344ce9ad3e0a285f`, incluido en origin/main tras fetch. T-078 concilió este cierre.
+
+### Evidencia de la revisión independiente
+
 2026-11-21. Frontera reviewer independiente, ronda 2 de 2, en Claude Code Desktop, Claude Opus 5.5 (`claude-opus-5-5`, esfuerzo sin dato expuesto), Git Bash, Git/gh, Java 21 y Docker. No implementó ni corrigió esta tarea. [PR #80](https://github.com/MatiasNicolasAcevedo/devnotes/pull/80): revisión de `e957aeef3b27fd3ee5857109463ccaea36583ded` contra `main@edb27c87a1097e605d0ed9d0a8dd4327911a5187` en el worktree aislado `.orchestrator/review-t077-r2`. Veredicto: APROBADO, sujeto a `verify-required` verde del commit de transición.
 
 - Entrada (exit 0). `gh pr view 80 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup`: OPEN, listo, base `edb27c8`, head `e957aee`, `verify-required` SUCCESS. Tras `git fetch origin main codex/t-077-image-text-library-ui`, el head coincide con el último commit de STATUS; `git diff --name-only f7ebbd9 origin/codex/t-077-image-text-library-ui` lista solo la tarea y STATUS.
@@ -41,7 +45,7 @@ Guardar dos textos, abrir/copy, borrar uno y recargar. Guardado fallido conserva
 - Backend desde `server/` (exit 0). `./mvnw -q verify -Dtest=ImageTextServiceTest,SecurityConfigTest -Dit.test=ImageTextApiIT,OcrExtractionApiIT,OpenApiContractIT -Djacoco.skip=true`. Surefire: `ImageTextServiceTest` 12/12 y `SecurityConfigTest` 14/14. Failsafe con PostgreSQL Testcontainers: `ImageTextApiIT` 4/4, `OcrExtractionApiIT` 4/4 y `OpenApiContractIT` 6/6. Sin fallos ni omitidos.
 - Documentos y diff (exit 0). `node scripts/docs-check.mjs` en el worktree limpio y `git diff --check origin/main HEAD`.
 
-Pendiente: `verify-required` del commit de transición, comentario APROBADO, squash ligado a ese SHA y MERGED confirmado. FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente.
+Al cierre de la revisión quedaban por completar `verify-required` del commit de transición, comentario APROBADO y squash. El estado MERGED quedó confirmado en la conciliación de arriba. FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente.
 
 ### Corrección de la ronda 1
 

@@ -1,6 +1,6 @@
 ---
 id: T-078
-status: draft
+status: in_progress
 priority: P1
 size: S
 milestone: M7
@@ -31,4 +31,8 @@ Migración con tablas previas, títulos repetidos, paginación estable y aislami
 
 ## Checkpoint vigente
 
-Habilitar en sesión nueva tras confirmar [T-077](T-077-image-text-library-ui.md) MERGED y conciliarla. Registrar el SHA/base y la evidencia efectivamente ejecutada.
+2026-11-21. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git y gh. Base `84151b0a782760e278280abd344ce9ad3e0a285f`. Impacto previsto: almacenamiento privado nuevo, sin cambios de API HTTP, permisos ni UI.
+
+- Entrada (exit 0). `gh pr view 80 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName`, `git fetch origin main`, `git merge-base --is-ancestor 84151b0a782760e278280abd344ce9ad3e0a285f origin/main` y `gh pr list --repo MatiasNicolasAcevedo/devnotes --state open --json number,headRefName`. PR #80 MERGED, squash incluido en main, sin PR abiertos.
+
+Pendiente: implementación, gate dirigido y publicación. FULL/STARTER: DIFERIDO POR EL DUEÑO.
