@@ -30,6 +30,7 @@ import { visuallyHidden } from '../../shared/ui/visuallyHidden'
 import { useSaveDailyVersion } from '../../features/daily/useSaveDailyVersion'
 import { isValidIsoDate } from './dateUtils'
 import { useSpaceHref } from '../spaces/spaceContext'
+import { useFreeNotesContext } from '../free-notes/freeNotesContext'
 import { CopyPreviousNote } from './CopyPreviousNote'
 
 // ——— Fallbacks sin provider ———
@@ -77,6 +78,9 @@ function DailyNotesInner() {
   const ctx = useDailyDraftContext()
   const { isDirty, status, error, content, retry, navigateToDate, activeDate, space } = ctx
   const href = useSpaceHref()
+
+  const rememberDate = useFreeNotesContext()?.rememberDate
+  useEffect(() => rememberDate?.(space, activeDate), [rememberDate, space, activeDate])
 
   // Estado de la lista paginada (listLoading inicia true para cargar al montar sin setState en efecto)
   const [notesList, setNotesList] = useState<DailyNoteListItem[]>([])
@@ -228,6 +232,14 @@ function DailyNotesInner() {
           sx={{ ...visuallyHidden, left: 0, bottom: 0, margin: 0, opacity: 0, colorScheme: 'dark' }}
         />
       </Box>
+      <Button
+        component={RouterLink}
+        to={href(`/free-notes?from=${targetDate}`)}
+        size="small"
+        sx={{ flexShrink: 0 }}
+      >
+        Libres
+      </Button>
       {narrow ? (
         <Tooltip title="Ir a hoy">
           <IconButton

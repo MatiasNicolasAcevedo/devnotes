@@ -4,7 +4,7 @@ import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import { alpha } from '@mui/material/styles'
 import { useId, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router'
+import { matchPath, useLocation, useNavigate } from 'react-router'
 import { BriefcaseIcon, CheckIcon, ChevronDownIcon, PersonIcon } from '../../shared/ui/icons'
 import { isSpaceRoute, spaceHref, SPACE_LABELS, SPACE_SELECTOR_INTENT, SPACES } from './space'
 import { useSpaceContext } from './spaceContext'
@@ -27,7 +27,11 @@ export function SpaceSelector() {
   const open = anchor !== null
   const label = SPACE_LABELS[space]
   const { color, Icon } = APPEARANCE[space]
-  const destination = isSpaceRoute(pathname) ? pathname : '/notes'
+  const destination = matchPath('/free-notes/:id', pathname)
+    ? '/free-notes'
+    : isSpaceRoute(pathname)
+      ? pathname
+      : '/notes'
   const close = () => setMenu(null)
 
   return (

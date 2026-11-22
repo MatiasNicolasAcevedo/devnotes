@@ -7,6 +7,7 @@ import { DataPage } from '../features/portability/DataPage'
 import { ReferencePage } from '../features/reference/ReferencePage'
 import { VoicePage } from '../features/voice/VoicePage'
 import { ImagePage } from '../features/ocr/ImagePage'
+import { FreeNotesPage } from '../features/free-notes/FreeNotesPage'
 import { AppShell } from './AppShell'
 import { NotFoundPage } from './NotFoundPage'
 
@@ -21,6 +22,8 @@ export function AppRoutes() {
           <Route path="login" element={<LoginPage />} />
           <Route path="notes" element={<DailyNotesPage />} />
           <Route path="notes/:date" element={<DailyNotesPage />} />
+          <Route path="free-notes" element={<FreeNotesPage />} />
+          <Route path="free-notes/:id" element={<FreeNotesPage />} />
           <Route path="history" element={<DailyHistoryPage />} />
           <Route path="history/:date" element={<DailyHistoryPage />} />
           <Route path="reference" element={<ReferencePage />} />

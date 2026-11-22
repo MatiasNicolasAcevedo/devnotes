@@ -1,6 +1,6 @@
 ---
 id: T-079
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M7
@@ -45,3 +45,5 @@ Restaurar v1/v2/v3 sin inventar Libres. Ida y vuelta v4 conserva título, saltos
 | El negativo de versión futura usaba v4, que ya se reconoce. | Usa v5 y conserva `0`, `2.0`, `02` y `v2`. | Las cinco variantes pasaron con `IMPORT_UNSUPPORTED_FORMAT`, sin hoja ni fila. Los negativos de versiones conocidas con esquema inválido pasaron, incluidos los de v4. |
 
 Pendiente al publicar esta transición: verificar `verify-required` del nuevo HEAD documental, publicar el veredicto ligado a HEAD/base, hacer squash condicionado al SHA y confirmar `MERGED` con fecha y SHA. Render Auto-Deploy On Commit.
+
+Conciliación: PR #82 MERGED contra main el 2026-11-22T03:30:36Z, squash 7a700175b98669c3a1d9457150df4230279f2c62, confirmado en origin/main.

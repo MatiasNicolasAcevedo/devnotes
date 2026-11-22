@@ -24,6 +24,8 @@ import {
 } from 'react-router'
 import { useSession } from '../auth/sessionContext'
 import { useOptionalDailyDraftContext } from '../daily/DailyDraftProvider'
+import { FreeNoteExitDialog } from '../free-notes/FreeNoteExitDialog'
+import { FREE_NOTE_CREATED_INTENT, useFreeNotesContext } from '../free-notes/freeNotesContext'
 import { DiscardImageChanges } from '../ocr/DiscardImageChanges'
 import { ImageDraftContext } from '../ocr/imageDraftContext'
 import { formatDateLocal } from '../daily/dateUtils'
@@ -61,8 +63,9 @@ export function SpaceNavigation({ children }: { children: ReactNode }) {
   const location = useLocation()
   const { requested, space: origin, commit, lockReason } = ctx
 
+  const freeDraft = useFreeNotesContext()?.draft
   const [blockedNotice, setBlockedNotice] = useState<string | null>(null)
-  if (blockedNotice && !lockReason) setBlockedNotice(null)
+  if (blockedNotice && !lockReason && !freeDraft?.busy) setBlockedNotice(null)
   const { imageEdited } = useContext(ImageDraftContext)
   const leavesImageDraft = useCallback(
     (next: Location) => {
@@ -76,10 +79,37 @@ export function SpaceNavigation({ children }: { children: ReactNode }) {
     },
     [ctx.owner, imageEdited, origin],
   )
+  const leavesFreeDraft = useCallback(
+    (current: Location, next: Location) => {
+      if (!freeDraft || !ctx.owner) return false
+      const destination = readSpaceParam(next.search)
+      return (
+        next.pathname !== current.pathname ||
+        (destination.kind !== 'missing' &&
+          (destination.kind !== 'valid' || destination.space !== origin))
+      )
+    },
+    [ctx.owner, freeDraft, origin],
+  )
   const shouldBlock = useCallback<BlockerFunction>(
     ({ currentLocation, nextLocation, historyAction }) => {
       if (ctx.owner && lockReason && currentLocation.pathname !== nextLocation.pathname) {
         setBlockedNotice(lockReason)
+        return true
+      }
+      // El editor sustituye la URL del borrador después del ACK de creación.
+      const nextSpace = readSpaceParam(nextLocation.search)
+      if (
+        historyAction === NavigationType.Replace &&
+        nextLocation.state === FREE_NOTE_CREATED_INTENT &&
+        matchPath('/free-notes/new', currentLocation.pathname) &&
+        matchPath('/free-notes/:id', nextLocation.pathname) &&
+        nextSpace.kind === 'valid' &&
+        nextSpace.space === origin
+      )
+        return false
+      if (leavesFreeDraft(currentLocation, nextLocation)) {
+        if (freeDraft?.busy) setBlockedNotice('Se está guardando la nota libre.')
         return true
       }
       if (leavesImageDraft(nextLocation)) return true
@@ -90,14 +120,17 @@ export function SpaceNavigation({ children }: { children: ReactNode }) {
         nextLocation.state === SPACE_SELECTOR_INTENT
       )
     },
-    [ctx.owner, leavesImageDraft, lockReason, origin],
+    [ctx.owner, freeDraft?.busy, leavesFreeDraft, leavesImageDraft, lockReason, origin],
   )
   const blocker = useBlocker(shouldBlock)
   const confirmImageExit =
     blocker.state === 'blocked' && !blockedNotice && leavesImageDraft(blocker.location)
+  const confirmFreeExit =
+    blocker.state === 'blocked' && !blockedNotice && leavesFreeDraft(location, blocker.location)
   const selectorIntent =
     blocker.state === 'blocked' &&
     !confirmImageExit &&
+    !confirmFreeExit &&
     blocker.location.state === SPACE_SELECTOR_INTENT
       ? readSpaceParam(blocker.location.search)
       : null
@@ -178,6 +211,10 @@ export function SpaceNavigation({ children }: { children: ReactNode }) {
       {children}
     </>
   )
+  if (confirmFreeExit && freeDraft && blocker.state === 'blocked')
+    return withOrigin(
+      <FreeNoteExitDialog draft={freeDraft} cancel={blocker.reset} proceed={blocker.proceed} />,
+    )
   if (confirmImageExit && blocker.state === 'blocked')
     return withOrigin(<DiscardImageChanges cancel={blocker.reset} discard={blocker.proceed} />)
 

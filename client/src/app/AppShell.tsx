@@ -15,6 +15,7 @@ import { SessionControls } from '../features/auth/SessionControls'
 import { useSession } from '../features/auth/sessionContext'
 import { DailyDraftWorkspace } from '../features/daily/DailyDraftNavigation'
 import { DailyCopyRecoveryProvider } from '../features/daily/DailyDraftProvider'
+import { FreeNotesProvider } from '../features/free-notes/FreeNotesProvider'
 import { ImageDraftContext } from '../features/ocr/imageDraftContext'
 import { SpaceNavigation } from '../features/spaces/SpaceNavigation'
 import { SpaceProvider } from '../features/spaces/SpaceProvider'
@@ -38,11 +39,13 @@ export function AppShell() {
   return (
     <SpaceProvider owner={owner}>
       <ImageDraftContext.Provider value={{ imageEdited, setImageEdited }}>
-        <AppShellContent navigationRoot={navigationRoot}>
-          <DailyCopyRecoveryProvider key={owner}>
-            <SpaceWorkspaces owner={owner} navigationRoot={navigationRoot} />
-          </DailyCopyRecoveryProvider>
-        </AppShellContent>
+        <FreeNotesProvider key={owner}>
+          <AppShellContent navigationRoot={navigationRoot}>
+            <DailyCopyRecoveryProvider key={owner}>
+              <SpaceWorkspaces owner={owner} navigationRoot={navigationRoot} />
+            </DailyCopyRecoveryProvider>
+          </AppShellContent>
+        </FreeNotesProvider>
       </ImageDraftContext.Provider>
     </SpaceProvider>
   )
@@ -121,7 +124,12 @@ function PrimaryNavigation({ mobile }: { mobile: boolean }) {
           to={href(to)}
           underline="none"
           color="inherit"
-          aria-current={matchPath({ path: to, end: false }, pathname) ? 'page' : undefined}
+          aria-current={
+            matchPath({ path: to, end: false }, pathname) ||
+            (to === '/notes' && matchPath({ path: '/free-notes', end: false }, pathname))
+              ? 'page'
+              : undefined
+          }
           sx={{
             display: 'flex',
             flexDirection: mobile ? 'column' : 'row',

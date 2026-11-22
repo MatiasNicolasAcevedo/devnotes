@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { http, type RequestOptions } from '../../services/http'
+import { newUuidV7 } from '../../shared/uuidV7'
 import type { Space } from '../spaces/space'
 
 const cursorSchema = z.object({ id: z.uuidv7(), createdAt: z.iso.datetime() })
@@ -39,10 +40,5 @@ export function deleteImageText(space: Space, id: string, options: Options) {
 }
 
 export function newImageTextAttempt(text: string): ImageTextAttempt {
-  const timestamp = Date.now().toString(16).padStart(12, '0')
-  const random = crypto.randomUUID()
-  return {
-    attemptId: `${timestamp.slice(0, 8)}-${timestamp.slice(8)}-7${random.slice(15)}`,
-    text,
-  }
+  return { attemptId: newUuidV7(), text }
 }

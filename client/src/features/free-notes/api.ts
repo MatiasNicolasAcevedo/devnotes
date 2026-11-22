@@ -1,0 +1,106 @@
+import { z } from 'zod'
+import { http, type RequestOptions } from '../../services/http'
+import type { Space } from '../spaces/space'
+
+const storableText = z.string().refine((text) => {
+  for (const character of text) {
+    const code = character.codePointAt(0) ?? 0
+    if (code === 0 || (code >= 0xd800 && code <= 0xdfff)) return false
+  }
+  return true
+})
+const paragraph = z.strictObject({
+  type: z.literal('paragraph'),
+  content: z
+    .array(z.strictObject({ type: z.literal('text'), text: storableText.min(1) }))
+    .optional(),
+})
+const documentSchema = z
+  .strictObject({
+    type: z.literal('doc'),
+    content: z.array(paragraph).min(1),
+  })
+  .refine((document) => {
+    let length = 0
+    for (const paragraph of document.content) {
+      for (const node of paragraph.content ?? []) length += Array.from(node.text).length
+    }
+    return (
+      length <= 60_000 && new TextEncoder().encode(JSON.stringify(document)).length <= 512 * 1024
+    )
+  }, 'El contenido supera el tamaño permitido.')
+
+const titleSchema = storableText
+  .transform((title) => title.replace(/^[\p{Z}\t\n\v\f\r\u0085]+|[\p{Z}\t\n\v\f\r\u0085]+$/gu, ''))
+  .refine(
+    (title) => Array.from(title).length >= 1 && Array.from(title).length <= 160,
+    'Escribí un título de 1 a 160 caracteres.',
+  )
+
+export const freeNoteInput = z.object({ title: titleSchema, document: documentSchema })
+export type FreeNoteInput = z.infer<typeof freeNoteInput>
+export type FreeNoteDocument = FreeNoteInput['document']
+
+const itemSchema = z.object({
+  id: z.uuidv7(),
+  title: z.string(),
+  revision: z.int().positive(),
+  updatedAt: z.iso.datetime(),
+})
+const noteSchema = itemSchema.extend({ document: documentSchema, createdAt: z.iso.datetime() })
+const pageSchema = z.object({ items: z.array(itemSchema), next: z.string().nullable() })
+export type FreeNoteItem = z.infer<typeof itemSchema>
+export type FreeNote = z.infer<typeof noteSchema>
+
+type Options = Pick<RequestOptions, 'signal' | 'sessionIsCurrent'>
+
+function path(space: Space, id?: string) {
+  const collection = `/api/spaces/${space}/free-notes`
+  return id ? `${collection}/${encodeURIComponent(id)}` : collection
+}
+
+export function fetchFreeNotes(space: Space, cursor: string | null, options: Options) {
+  return http.request(
+    path(space) + (cursor ? '?' + new URLSearchParams({ cursor }) : ''),
+    pageSchema,
+    options,
+  )
+}
+
+export function fetchFreeNote(space: Space, id: string, options: Options) {
+  return http.request(path(space, id), noteSchema, options)
+}
+
+export function createFreeNote(
+  space: Space,
+  payload: FreeNoteInput,
+  attemptId: string,
+  options: Options,
+) {
+  return http.request(path(space), noteSchema, {
+    ...options,
+    method: 'POST',
+    body: { ...payload, attemptId },
+  })
+}
+
+export function updateFreeNote(
+  space: Space,
+  id: string,
+  payload: FreeNoteInput,
+  expectedRevision: number,
+  options: Options,
+) {
+  return http.request(path(space, id), noteSchema, {
+    ...options,
+    method: 'PUT',
+    body: { ...payload, expectedRevision },
+  })
+}
+
+export function deleteFreeNote(space: Space, { id, revision }: FreeNoteItem, options: Options) {
+  return http.requestVoid(`${path(space, id)}?expectedRevision=${revision}`, {
+    ...options,
+    method: 'DELETE',
+  })
+}

@@ -62,6 +62,8 @@ function assertSpace(space: Space): Space {
 const SPACE_ROUTES = [
   '/notes',
   '/notes/:date',
+  '/free-notes',
+  '/free-notes/:id',
   '/history',
   '/history/:date',
   '/reference',
