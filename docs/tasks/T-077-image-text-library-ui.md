@@ -1,13 +1,13 @@
 ---
 id: T-077
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: M6
 spec: S-112
 depends_on: [T-076]
 branch: codex/t-077-image-text-library-ui
-role: implementer
+role: reviewer
 executor: frontier
 pr: 80
 ---
@@ -32,6 +32,18 @@ Guardar dos textos, abrir/copy, borrar uno y recargar. Guardado fallido conserva
 - Cerrar con [pruebas dirigidas del lote](../TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16), docs-check y evidencia por HEAD/base.
 
 ## Checkpoint vigente
+
+2026-11-21. Frontera reviewer independiente, ronda 2 de 2, en Claude Code Desktop, Claude Opus 5.5 (`claude-opus-5-5`, esfuerzo sin dato expuesto), Git Bash, Git/gh, Java 21 y Docker. No implementó ni corrigió esta tarea. [PR #80](https://github.com/MatiasNicolasAcevedo/devnotes/pull/80): revisión de `e957aeef3b27fd3ee5857109463ccaea36583ded` contra `main@edb27c87a1097e605d0ed9d0a8dd4327911a5187` en el worktree aislado `.orchestrator/review-t077-r2`. Veredicto: APROBADO, sujeto a `verify-required` verde del commit de transición.
+
+- Entrada (exit 0). `gh pr view 80 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup`: OPEN, listo, base `edb27c8`, head `e957aee`, `verify-required` SUCCESS. Tras `git fetch origin main codex/t-077-image-text-library-ui`, el head coincide con el último commit de STATUS; `git diff --name-only f7ebbd9 origin/codex/t-077-image-text-library-ui` lista solo la tarea y STATUS.
+- Igualdad de fuentes (exit 0). `git diff --exit-code e1a57e34f10c9bf5757e4c7d0daa337314e3ca02 origin/codex/t-077-image-text-library-ui -- server/src/main client e2e`: cliente y E2E siguen acreditados por la ronda 1.
+- H1 cerrado: `SecurityConfigTest` registra `@MockitoBean ImageTextService` y el slice levanta. H2 cerrado: `imageTextsExactMethodsAllowedAndOthersDenied` deniega PUT, PATCH, HEAD y OPTIONS en colección e ítem con sesión y CSRF reales, y GET a `/child` y a la colección con barra final, con `verifyNoInteractions`; coincide con las tres reglas exactas de `SecurityConfig`. Los métodos permitidos quedan cubiertos por `ImageTextApiIT`.
+- Backend desde `server/` (exit 0). `./mvnw -q verify -Dtest=ImageTextServiceTest,SecurityConfigTest -Dit.test=ImageTextApiIT,OcrExtractionApiIT,OpenApiContractIT -Djacoco.skip=true`. Surefire: `ImageTextServiceTest` 12/12 y `SecurityConfigTest` 14/14. Failsafe con PostgreSQL Testcontainers: `ImageTextApiIT` 4/4, `OcrExtractionApiIT` 4/4 y `OpenApiContractIT` 6/6. Sin fallos ni omitidos.
+- Documentos y diff (exit 0). `node scripts/docs-check.mjs` en el worktree limpio y `git diff --check origin/main HEAD`.
+
+Pendiente: `verify-required` del commit de transición, comentario APROBADO, squash ligado a ese SHA y MERGED confirmado. FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente.
+
+### Corrección de la ronda 1
 
 2026-11-21. Frontera implementer de corrección, ronda 1 de 2, en Claude Code Desktop, Claude Opus 5.5 (`claude-opus-5-5`, esfuerzo sin dato expuesto), Git Bash, Git/gh, Java Corretto 21.0.9 y Docker. [PR #80](https://github.com/MatiasNicolasAcevedo/devnotes/pull/80) contra `main@edb27c87a1097e605d0ed9d0a8dd4327911a5187`. Fuentes corregidas en `f7ebbd9f625008947cbe60f6e0f9769c24d06b8b`; el HEAD de entrega agrega este checkpoint y el prompt de revisión en STATUS. Impacto: solo pruebas; sin cambios de comportamiento, API, permisos, datos ni UI.
 
