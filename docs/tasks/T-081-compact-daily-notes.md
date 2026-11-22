@@ -33,6 +33,19 @@ Medidas pre/post a 768×559 en Chromium/PWA según spec, 320/375 y 1280 para ref
 
 ## Checkpoint vigente
 
+2026-11-22. Frontera, decisión de cierre en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git y gh. Con autorización del dueño, se habilita **una corrección acotada de altura móvil y una revisión independiente de cierre** tras la segunda ronda, en la misma rama y el PR #84. El cambio se limita al layout del diario y, si hace falta, al espacio que su ruta recibe del shell. Impacto previsto: área visible de escritura, reflujo y scroll. API, permisos y datos quedan fuera del alcance.
+
+| Causa | Arreglo autorizado | Prueba de cierre |
+|---|---|---|
+| CA-01 móvil midió el borde del editor en 766 CSS px y la navegación comenzó en 763. El cálculo de alto parte de una estimación del espacio del shell. | Ajustar el diario al espacio disponible sobre la navegación, manteniendo el relleno vertical del editor y el acceso con viewport reducido. | CA-01 móvil verde con sus aserciones intactas, filtros originales de escritorio y móvil, medidas y regresiones de T-081. Revisión independiente y `verify-required SUCCESS` sobre el HEAD que se apruebe. |
+
+- `gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,headRefName,baseRefName,baseRefOid,statusCheckRollup,mergedAt,mergeCommit,url` (exit 0 con acceso de red) confirmó `OPEN`, `isDraft=false`, `verify-required SUCCESS`, HEAD de entrada `0bb5d92d5f0b4ede8e6b4fe23f78068129e82da2` y base `main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e`. El primer intento en el sandbox falló al conectar con `api.github.com` (exit 1).
+- `git fetch origin main codex/t-081-compact-daily-notes` (exit 0), `git rev-parse origin/main` y `git log -1 --format='%H %P' origin/codex/t-081-compact-daily-notes` (exit 0) confirmaron el HEAD de entrada y su padre `1b0d098cf0c4939109080024785a1a12dd985009`. `git diff --check 8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e...1b0d098cf0c4939109080024785a1a12dd985009` (exit 0).
+- `node scripts/docs-check.mjs` sobre una copia del árbol versionado con ambos documentos de la decisión, excluido el `trailer/` local preexistente, y `git diff --check` (exit 0). `bash scripts/verify.sh --policy origin/main` (exit 0 fuera del sandbox tras un error MSYS `0xC0000022`) informó APPLICATION / FULL para el PR acumulado.
+- Pendiente: aplicar la corrección en sesión implementer, comprobar el gate diario y entregar al reviewer independiente. T-082 sigue pendiente de `MERGED` confirmado. **FULL/STARTER: DIFERIDO POR EL DUEÑO**. Render Auto-Deploy On Commit.
+
+## Evidencia de segunda revisión
+
 2026-11-22. Segunda ronda de frontera reviewer independiente, Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0 y Docker Desktop. **CAMBIOS REQUERIDOS** en el [PR #84](https://github.com/MatiasNicolasAcevedo/devnotes/pull/84). HEAD revisado `1b0d098cf0c4939109080024785a1a12dd985009`, padre técnico `2e5f37eda23195d923478cc3e21f0d2867c35370` y base `main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e`. Impacto observado en reflujo y foco del diario. El diff técnico se limita al cliente y sus E2E. Pendiente de decisión de frontera tras dos rondas. T-082 sigue pendiente del merge.
 
 | Hallazgo | Resultado y condición de cierre |

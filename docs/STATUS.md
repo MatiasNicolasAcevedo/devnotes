@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-081](tasks/T-081-compact-daily-notes.md) · Diario compacto · [S-114](specs/S-114-writing-editor.md) |
 | Estado | `changes_requested` |
-| Acción actual | Decisión de frontera tras segunda ronda por regresión de altura en CA-01 móvil |
+| Acción actual | Implementer de corrección autorizada para la altura del editor en CA-01 móvil |
 | Rama / PR | `codex/t-081-compact-daily-notes` · [PR #84](https://github.com/MatiasNicolasAcevedo/devnotes/pull/84) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,15 +34,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera para decidir el cierre de T-081 en MatiasNicolasAcevedo/devnotes. Sesión nueva sobre el PR #84.
+Actuá como frontera implementer de corrección de T-081 en MatiasNicolasAcevedo/devnotes. Sesión nueva en codex/t-081-compact-daily-notes sobre el PR #84.
 
-LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-081-compact-daily-notes.md y la sección del diario de docs/specs/S-114-writing-editor.md.
+LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-081-compact-daily-notes.md y la sección del diario de docs/specs/S-114-writing-editor.md.
 
-PRECONDICIÓN: gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo para revisión, base main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e y el HEAD documental que contiene el veredicto de segunda ronda. Tras git fetch, comprobá que su padre es 1b0d098cf0c4939109080024785a1a12dd985009. Si cambió, informá el estado comprobado y entregá el prompt vigente.
+PRECONDICIÓN: gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo para revisión y base main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e. Tras git fetch, cotejá que el HEAD publicado contiene esta decisión y que su padre es 0bb5d92d5f0b4ede8e6b4fe23f78068129e82da2. Si cambió, informá el estado comprobado y entregá el prompt vigente.
 
-ACCIÓN: Decidí si autorizás una corrección acotada en el mismo PR para que el área de escritura quede dentro del espacio disponible sobre la navegación móvil. En CA-01 el borde quedó en 766 px con límite de 763 px. Los dos hallazgos previos quedaron cerrados y se alcanzó el límite de dos rondas. Si autorizás la corrección, fijá como condición de cierre CA-01 móvil verde con sus aserciones intactas, más las medidas y regresiones de T-081. Conservá los SHA y la comparación con main del checkpoint.
+ACCIÓN: Usá el rojo documentado de CA-01 móvil como referencia (borde 766 px, límite 763 px, verde en main). Aplicá una corrección acotada para que DailyNotesPage use el espacio disponible sobre la navegación móvil. Conservá scroll, foco, reflujo y las medidas de primera línea de S-114. Los dos hallazgos de la ronda anterior ya están cerrados.
 
-GATE: Si autorizás la corrección, exigí CA-01 móvil con namespace propio, los filtros originales de T-081, docs-check, git diff --check y verify-required SUCCESS sobre el HEAD que se revise. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: CA-01 móvil con namespace propio y aserciones geométricas intactas, comandos y filtros originales de T-081, docs-check, git diff --check, perfil informativo y verify-required SUCCESS sobre el HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: Registrá la decisión y dejá un único prompt para el rol que corresponda. Mantené T-082 pendiente hasta la confirmación explícita de MERGED del PR #84 y preservá Render Auto-Deploy On Commit.
+SALIDA: Publicá la corrección y su evidencia con HEAD y base en el PR #84. Dejá el único prompt para la revisión independiente de cierre autorizada. Mantené T-082 pendiente hasta confirmar MERGED del PR #84 y preservá Render Auto-Deploy On Commit.
 ```
