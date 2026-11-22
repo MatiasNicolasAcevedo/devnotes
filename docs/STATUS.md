@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-076](tasks/T-076-image-text-xlsx.md) · Recuperar textos de Imagen en XLSX v3 · [S-112](specs/S-112-screenshot-ocr.md) |
-| Estado | `in_review` |
-| Acción actual | Frontera reviewer revisa el PR #79 |
+| Estado | `mergeable` |
+| Acción actual | Frontera reviewer verifica el CI de la transición y ejecuta el squash del PR #79 |
 | Rama / PR | `codex/t-076-image-text-xlsx` · [PR #79](https://github.com/MatiasNicolasAcevedo/devnotes/pull/79) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,11 +34,11 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer de T-076 en MatiasNicolasAcevedo/devnotes. Sesión nueva e independiente.
+Actuá como frontera implementer de T-077 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-076-image-text-xlsx.md y la sección Portabilidad incremental de Imagen y Libres de docs/specs/S-112-screenshot-ocr.md.
-PRECONDICIÓN: gh pr view 79 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefName,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN y listo para revisión desde codex/t-076-image-text-xlsx contra main@3318c1a05017e7faaea2294099274b8684a860c9, con verify-required SUCCESS. Actualizá origin/main y origin/codex/t-076-image-text-xlsx. El HEAD publicado debe coincidir con git rev-parse origin/codex/t-076-image-text-xlsx y con git log -1 --format=%H origin/codex/t-076-image-text-xlsx -- docs/STATUS.md. Vinculá el gate al HEAD comprobando con git diff --exit-code 96c33340fb391444a26eb016cdf1119dfbddfa70 origin/codex/t-076-image-text-xlsx -- server client e2e docs/DEPLOYMENT.md que las fuentes probadas coinciden.
-ACCIÓN: Revisá el diff publicado en un checkout aislado. Cotejá la lectura v1/v2/v3, el formato v3 estricto, los conteos, la propiedad y el lock de cuenta según el checkpoint. Si encontrás hallazgos, publicá CAMBIOS REQUERIDOS con HEAD/base y condición de cierre. Si aprobás, seguí la transición documental a mergeable, verificá el nuevo HEAD y su CI, hacé squash ligado al SHA aprobado y confirmá MERGED con gh pr view 79 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName.
-GATE: diario. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-SALIDA: Veredicto ligado a HEAD y base. Tras MERGED confirmado, entregá el prompt de frontera implementer de T-077 para conciliar T-076. Conservá Render Auto-Deploy On Commit.
+LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-076-image-text-xlsx.md, docs/tasks/T-077-image-text-library-ui.md y la sección Biblioteca de Imagen de docs/specs/S-112-screenshot-ocr.md con su referencia visual.
+PRECONDICIÓN: gh pr view 79 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName debe confirmar MERGED en main, con mergedAt y mergeCommit.oid válidos. Actualizá origin/main y usá git merge-base --is-ancestor con el oid confirmado y origin/main para verificar que incluye ese squash. Si falla una comprobación, informá el estado real y entregá el prompt vigente.
+ACCIÓN: Abrí codex/t-077-image-text-library-ui desde origin/main actualizado. En el primer commit conciliá T-076 a done con el squash confirmado y habilitá T-077. Implementá la API y la interfaz de Textos guardados según la tarea, con las guardias de espacio y cuenta y los negativos de permiso, CSRF, doble clic y fallo. Publicá un solo PR contra main.
+GATE: diario según T-077, con backend dirigido, cliente y typecheck, E2E filtrado desktop con proyecto propio, docs-check y verify-required del HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+SALIDA: PR listo para revisión independiente y gate ligado a HEAD/base. Registrá checkpoint y terminá con el prompt de frontera reviewer en STATUS y completo en el chat. Conservá Render Auto-Deploy On Commit.
 ```
