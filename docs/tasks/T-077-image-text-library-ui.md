@@ -1,6 +1,6 @@
 ---
 id: T-077
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 milestone: M6
@@ -32,6 +32,26 @@ Guardar dos textos, abrir/copy, borrar uno y recargar. Guardado fallido conserva
 - Cerrar con [pruebas dirigidas del lote](../TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16), docs-check y evidencia por HEAD/base.
 
 ## Checkpoint vigente
+
+2026-11-21. Frontera reviewer independiente en Claude Code Desktop, Claude Opus 5.5 (`claude-opus-5-5`, esfuerzo sin dato expuesto), Git Bash, Git/gh, Java Corretto 21.0.9, Node 24.21.0 y Docker 28.5.1. [PR #80](https://github.com/MatiasNicolasAcevedo/devnotes/pull/80). Revisión de `e1a57e34f10c9bf5757e4c7d0daa337314e3ca02` contra `main@edb27c87a1097e605d0ed9d0a8dd4327911a5187` en un worktree aislado. Veredicto: **CAMBIOS REQUERIDOS**, ronda 1 de 2.
+
+- Entrada (exit 0). `gh pr view 80 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup`: OPEN, listo, base `edb27c8` y `verify-required` SUCCESS. Tras `git fetch origin main codex/t-077-image-text-library-ui`, el HEAD remoto coincide con el último commit de STATUS. `git diff --name-only fbf6f37f061fb73986695d87d1c35ce0743da2d8 e1a57e34f10c9bf5757e4c7d0daa337314e3ca02` solo lista la tarea y STATUS.
+- Cotejados con código y prueba: propiedad por cuenta y espacio con 404 uniforme, CSRF en POST/DELETE, idempotencia por intento UUID v7 (reintento tras respuesta perdida, 409 con otro cuerpo y recibo tras borrar), cursor por fecha e ID, borrador aislado del diálogo de consulta, foco a la fila vecina o al encabezado, remontaje por `cuenta/espacio` que descarta respuestas tardías, e invalidación de la lista. Guardar, abrir y copiar no llaman a OCR.
+- Backend desde `server/`. `./mvnw -q verify -Dtest=ImageTextServiceTest,SecurityConfigTest -Dit.test=ImageTextApiIT,OcrExtractionApiIT,OpenApiContractIT -Djacoco.skip=true` (exit 1): `ImageTextServiceTest` 12/12 y `SecurityConfigTest` 13 errores de contexto (H1). En `edb27c8`, `./mvnw -q test -Dtest=SecurityConfigTest` (exit 0, 13/13). Sin el slice, `./mvnw -q verify -Dtest=ImageTextServiceTest -Dit.test=ImageTextApiIT,OcrExtractionApiIT,OpenApiContractIT -Djacoco.skip=true` (exit 0): Surefire 12/12 y Failsafe 14/14 con PostgreSQL 18.6 Testcontainers; contenedores de Testcontainers ausentes al terminar.
+- Cliente desde `client/`. `npm ci --no-audit --no-fund`, `npx vitest run src/features/ocr` (exit 0, 33/33), `npm run typecheck` (exit 0) y `npx eslint src/features/ocr` (exit 0).
+- E2E. `STARTER_E2E_PROJECT=starter-e2e-t077-review bash scripts/e2e.sh --grep 'image-text-library:|screenshot OCR:' --project desktop` (exit 0, 4/4, 188 s). Labels exactos ausentes antes y después: 0 contenedores, 0 redes y 0 volúmenes.
+- `node scripts/docs-check.mjs` y `git diff --check origin/main HEAD` (exit 0). `bash scripts/verify.sh --policy origin/main` (exit 0, perfil informativo APPLICATION / FULL).
+
+### Hallazgos · lista cerrada de la ronda 1
+
+| ID | Evidencia | Corrección suficiente | Cierre observable |
+|---|---|---|---|
+| H1 · bloqueante | `SecurityConfigTest` usa `@WebMvcTest` sin lista de controladores y declara un `@MockitoBean` por cada servicio que piden. El nuevo `ImageTextController` exige `ImageTextService`, que falta en el slice. Los 13 casos fallan con `UnsatisfiedDependencyException` y en `main` pasan 13/13. El comando de la tarea no incluía esa prueba y la CI no corre backend; al mergear, `main` quedaría con el slice de seguridad roto. | Agregar `@MockitoBean` de `com.example.devnotes.imagetext.application.ImageTextService` en `SecurityConfigTest`. Sin cambios en código de producción. Sumar `SecurityConfigTest` y `OpenApiContractIT` al comando backend de esta tarea. | Desde `server/`, `./mvnw -q verify -Dtest=ImageTextServiceTest,SecurityConfigTest -Dit.test=ImageTextApiIT,OcrExtractionApiIT,OpenApiContractIT -Djacoco.skip=true` termina con exit 0 y sin errores. |
+| H2 | Las reglas nuevas de `SecurityConfig` no tienen el negativo de métodos y rutas exactas que tienen voz y portabilidad en `SecurityConfigTest`. `ImageTextApiIT` cubre 401 y CSRF, pero no métodos sin contrato ni rutas vecinas. | Agregar `imageTextsExactMethodsAllowedAndOthersDenied` con el patrón de `voiceNotesExactMethodsAllowedAndOthersDenied`. Con sesión y CSRF reales: PUT, PATCH, HEAD y OPTIONS sobre `/api/spaces/work/image-texts` y sobre `/api/spaces/work/image-texts/01900000-0000-7000-8000-000000000001` responden 403. GET a `/api/spaces/work/image-texts/01900000-0000-7000-8000-000000000001/child` y a `/api/spaces/work/image-texts/` también da 403. Cerrar con `verifyNoInteractions` del mock. | El mismo comando de H1 informa `SecurityConfigTest` 14/14. |
+
+Cliente y E2E quedan acreditados si las fuentes de producción no cambian: `git diff --exit-code e1a57e34f10c9bf5757e4c7d0daa337314e3ca02 HEAD -- server/src/main client e2e` con exit 0. Si difieren, repetir los comandos de cliente y E2E de esta tarea. FULL/STARTER: DIFERIDO POR EL DUEÑO. Render conserva Auto-Deploy On Commit.
+
+### Gate del implementer sobre las fuentes de T-077
 
 2026-11-21. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Git Bash, Java Corretto 21.0.9, Node 24.21.0 y Docker Desktop. [PR #80](https://github.com/MatiasNicolasAcevedo/devnotes/pull/80) contra `main@edb27c87a1097e605d0ed9d0a8dd4327911a5187`. Fuentes probadas en `fbf6f37f061fb73986695d87d1c35ce0743da2d8`. El HEAD de entrega agrega este checkpoint y el prompt de revisión en STATUS.
 
