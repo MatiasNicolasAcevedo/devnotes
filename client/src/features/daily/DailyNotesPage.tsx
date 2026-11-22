@@ -264,7 +264,7 @@ function DailyNotesInner() {
   )
 
   return (
-    <Stack spacing={1}>
+    <Stack spacing={1} sx={{ flexGrow: 1 }}>
       <Typography component="h1" sx={visuallyHidden}>
         Notas diarias
       </Typography>
@@ -274,8 +274,9 @@ function DailyNotesInner() {
         sx={{
           display: 'flex',
           flexDirection: 'column',
+          flexGrow: 1,
           minHeight: 220,
-          height: 'calc(100dvh - var(--shell-chrome-height, 48px) - 8px)',
+          height: 'var(--daily-editor-height, 220px)',
         }}
       >
         <DailyEditor
