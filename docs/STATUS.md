@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-079](tasks/T-079-free-notes-xlsx.md) · Recuperar notas libres en XLSX v4 · [S-113](specs/S-113-free-notes.md) |
-| Estado | `changes_requested` |
-| Acción actual | Corregir dos aserciones de compatibilidad XLSX y volver a revisión |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente de la corrección XLSX v4 · ronda 2 |
 | Rama / PR | `codex/t-079-free-notes-xlsx` · [PR #82](https://github.com/MatiasNicolasAcevedo/devnotes/pull/82) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,11 +34,11 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de corrección de T-079 en MatiasNicolasAcevedo/devnotes. Sesión nueva, mismo PR 82 y rama codex/t-079-free-notes-xlsx.
+Actuá como frontera reviewer independiente de T-079 en MatiasNicolasAcevedo/devnotes. Sesión nueva, ronda 2 del PR 82.
 
-LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-079-free-notes-xlsx.md, S-113, el documento de Libres en S-114, la portabilidad incremental de S-112 y los hallazgos de la revisión del PR 82.
-PRECONDICIÓN: gh pr view 82 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid debe confirmar OPEN, listo, base main en 311e47c1ca6d64f81c3bc1950ec6687a3d418ea7 y un HEAD publicado que contenga el checkpoint de cambios requeridos. Verificá esa ascendencia y trabajá sobre dicho HEAD preservando los cambios locales ajenos.
-ACCIÓN: Cerrá los dos hallazgos de XlsxSpacesRoundTripTest. (1) Exigí v4 en writerPreservesTheVersionTwoLayoutOfExistingSheets y conservá las aserciones de compatibilidad de las hojas v2. (2) Usá v5 en unknownVersionIsUnsupported y conservá los negativos restantes y la aserción IMPORT_UNSUPPORTED_FORMAT. Mantené la cobertura que rechaza libros con versión conocida y esquema inválido.
-GATE: Corré desde server/ ./mvnw -q test -Dtest=XlsxSpacesRoundTripTest,XlsxWorkbookRoundTripTest,PortabilityExportServiceTest -Djacoco.skip=true y exigí las 66 pruebas verdes. Verificá el gate diario de T-079, registrá qué repetiste y ligá al nuevo HEAD/base la evidencia de fuentes sin cambios, cuando corresponda. Corré docs-check y git diff --check, publicá en el mismo PR y confirmá verify-required SUCCESS del nuevo HEAD. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-SALIDA: Checkpoint y STATUS en in_review con el prompt de reviewer independiente para la ronda 2, SHA del HEAD publicado y condiciones de cierre verificables. No merges en esta sesión. Conservá Render Auto-Deploy On Commit.
+LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-079-free-notes-xlsx.md, S-113, el documento de Libres en S-114, la portabilidad incremental de S-112 y los hallazgos de la ronda 1 del PR 82.
+PRECONDICIÓN: gh pr view 82 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo, base main en 311e47c1ca6d64f81c3bc1950ec6687a3d418ea7 y verify-required SUCCESS. En el checkout del HEAD remoto, comprobá que headRefOid coincide con git log -1 --format=%H -- docs/STATUS.md y que git rev-parse HEAD^ devuelve 63b4f5d032b4b07608cfb19aec9cb493ce3c1a9b.
+ACCIÓN: Revisá el diff publicado contra la base y verificá ambos cierres. El writer exige v4 y conserva todas las aserciones del layout v2. El lector rechaza v5 y las otras cuatro variantes con IMPORT_UNSUPPORTED_FORMAT, sin hoja ni fila. Verificá que las versiones conocidas con esquema inválido conservan sus negativos.
+GATE: Validá las 66 pruebas verdes del comando dirigido de la corrección, la igualdad de las fuentes que respaldan el resto del gate diario y docs-check. Repetí los dirigidos que exija el riesgo. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+SALIDA: Si aprobás, seguí el protocolo de reviewer y AUTONOMY para la transición documental, la CI del nuevo HEAD, el squash ligado al SHA aprobado y la confirmación de MERGED con fecha y merge SHA. Si queda un hallazgo, entregalo a frontera o al dueño con evidencia y condición de cierre. Conservá Render Auto-Deploy On Commit.
 ```
