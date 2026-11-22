@@ -30,11 +30,12 @@ public class FreeNoteRepository {
                 VALUES (:id, :ownerId, :space, :title, CAST(:document AS jsonb), 1, :now, :now)
                 ON CONFLICT (id) DO NOTHING
                 """, ownerId, space)
-                .param("id", note.id())
-                .param("title", note.title())
-                .param("document", note.document())
-                .param("now", utc(note.createdAt()))
-                .update() == 1;
+                        .param("id", note.id())
+                        .param("title", note.title())
+                        .param("document", note.document())
+                        .param("now", utc(note.createdAt()))
+                        .update()
+                == 1;
     }
 
     public Optional<StoredNote> find(UUID ownerId, PrivateSpace space, UUID id) {
@@ -51,8 +52,7 @@ public class FreeNoteRepository {
                 .optional();
     }
 
-    public StoredNote update(
-            UUID ownerId, PrivateSpace space, UUID id, String title, String document, Instant now) {
+    public StoredNote update(UUID ownerId, PrivateSpace space, UUID id, String title, String document, Instant now) {
         return scoped("""
                 UPDATE free_note
                 SET title = :title, document = CAST(:document AS jsonb), revision = revision + 1,
@@ -83,7 +83,8 @@ public class FreeNoteRepository {
         if (after != null) {
             statement.param("updatedAt", utc(after.updatedAt())).param("id", after.id());
         }
-        return statement.param("limit", limit)
+        return statement
+                .param("limit", limit)
                 .query((rs, row) -> new Summary(
                         rs.getObject("id", UUID.class), rs.getString("title"),
                         rs.getLong("revision"), instant(rs, "updated_at")))
@@ -128,8 +129,12 @@ public class FreeNoteRepository {
 
     private static StoredNote note(ResultSet rs, int row) throws SQLException {
         return new StoredNote(
-                rs.getObject("id", UUID.class), rs.getString("title"), rs.getString("document"),
-                rs.getLong("revision"), instant(rs, "created_at"), instant(rs, "updated_at"));
+                rs.getObject("id", UUID.class),
+                rs.getString("title"),
+                rs.getString("document"),
+                rs.getLong("revision"),
+                instant(rs, "created_at"),
+                instant(rs, "updated_at"));
     }
 
     private static Instant instant(ResultSet rs, String field) throws SQLException {
@@ -140,8 +145,12 @@ public class FreeNoteRepository {
         return instant.atOffset(ZoneOffset.UTC);
     }
 
-    public record StoredNote(UUID id, String title, String document, long revision, Instant createdAt, Instant updatedAt) {}
+    public record StoredNote(
+            UUID id, String title, String document, long revision, Instant createdAt, Instant updatedAt) {}
+
     public record Summary(UUID id, String title, long revision, Instant updatedAt) {}
+
     public record Position(Instant updatedAt, UUID id) {}
+
     public record Receipt(byte[] digest, UUID noteId, Instant createdAt) {}
 }

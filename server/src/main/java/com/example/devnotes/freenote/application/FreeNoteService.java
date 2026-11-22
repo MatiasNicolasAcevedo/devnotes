@@ -96,7 +96,8 @@ public class FreeNoteService {
     }
 
     @Transactional
-    public Note update(UUID ownerId, PrivateSpace space, UUID id, long expectedRevision, String title, JsonNode document) {
+    public Note update(
+            UUID ownerId, PrivateSpace space, UUID id, long expectedRevision, String title, JsonNode document) {
         requireScope(ownerId, space);
         requireUuidV7(id);
         requireRevision(expectedRevision);
@@ -139,8 +140,13 @@ public class FreeNoteService {
     }
 
     private static Note view(StoredNote note) {
-        return new Note(note.id(), note.title(), FreeNoteDocument.read(note.document()),
-                note.revision(), note.createdAt(), note.updatedAt());
+        return new Note(
+                note.id(),
+                note.title(),
+                FreeNoteDocument.read(note.document()),
+                note.revision(),
+                note.createdAt(),
+                note.updatedAt());
     }
 
     public static String validateTitle(String title) {
@@ -197,7 +203,9 @@ public class FreeNoteService {
     }
 
     public record Note(UUID id, String title, JsonNode document, long revision, Instant createdAt, Instant updatedAt) {}
+
     public record ListItem(UUID id, String title, long revision, Instant updatedAt) {}
+
     public record Page(List<ListItem> items, Cursor next) {}
 
     public record Cursor(UUID ownerId, PrivateSpace space, Instant updatedAt, UUID id) {

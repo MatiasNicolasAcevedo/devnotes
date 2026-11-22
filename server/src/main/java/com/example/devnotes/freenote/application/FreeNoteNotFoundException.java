@@ -6,6 +6,9 @@ import org.springframework.web.ErrorResponseException;
 
 public class FreeNoteNotFoundException extends ErrorResponseException {
     public FreeNoteNotFoundException() {
-        super(HttpStatus.NOT_FOUND, ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Free note not found"), null);
+        super(
+                HttpStatus.NOT_FOUND,
+                ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "Free note not found"),
+                null);
     }
 }
