@@ -6,8 +6,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCopyToClipboard } from './useCopyToClipboard'
 
 interface CopyButtonProps {
-  /** Texto que se copiará al portapapeles. */
-  text: string
+  /** Texto que se copiará o función que lo lee al pulsar el botón. */
+  text: string | (() => string)
   /** Label accesible del botón. */
   'aria-label': string
   /** Texto visible del botón (opcional; por defecto solo icono). */
@@ -36,7 +36,7 @@ export function CopyButton({
   const handleCopy = useCallback(async () => {
     clear()
     setShowSuccess(false)
-    const res = await copy(text)
+    const res = await copy(typeof text === 'function' ? text() : text)
     if (res.success) {
       setShowSuccess(true)
       if (timerRef.current) clearTimeout(timerRef.current)

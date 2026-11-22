@@ -87,3 +87,59 @@ test('free-notes: lifecycle returns to the original diary date', async ({ page, 
   await page.getByRole('link', { name: 'Diario' }).click();
   await expect(page.getByLabel('Fecha', { exact: true })).toHaveValue('2025-06-17');
 });
+
+test('free-notes: lifecycle recovers from a conflicting revision', async ({ page, context, identity, isMobile }) => {
+  test.skip(isMobile, 'La recuperación en dos pestañas se verifica en desktop.');
+  await login(page, identity);
+  await page.goto('/free-notes/new?space=work');
+  const title = page.getByRole('textbox', { name: 'Título' });
+  const body = page.getByRole('textbox', { name: 'Contenido' });
+  const save = page.getByRole('button', { name: 'Guardar', exact: true });
+  await title.fill('Nota inicial');
+  await body.fill('Cuerpo inicial');
+  await save.click();
+  await expect(page.getByRole('heading', { name: 'Editar nota' })).toBeVisible();
+  const notePath = `/api/spaces/work/free-notes/${new URL(page.url()).pathname.split('/').at(-1)}`;
+
+  const remote = await context.newPage();
+  try {
+    await remote.goto(page.url());
+    await remote.getByRole('textbox', { name: 'Título' }).fill('Nota remota');
+    await remote.getByRole('textbox', { name: 'Contenido' }).fill('Cuerpo remoto');
+    await remote.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await expect(remote.getByText('Guardada', { exact: true })).toBeVisible();
+  } finally {
+    await remote.close();
+  }
+
+  const waitForSave = () => page.waitForResponse(response =>
+    response.request().method() === 'PUT' && new URL(response.url()).pathname === notePath);
+  await title.fill('Nota local');
+  await body.fill('Cuerpo local');
+  const conflict = waitForSave();
+  await save.click();
+  expect((await conflict).status()).toBe(409);
+  await expect(page.getByText('La nota cambió en otra sesión.')).toBeVisible();
+
+  const openLatest = page.getByRole('button', { name: 'Abrir versión reciente' });
+  const confirmation = page.getByRole('dialog');
+  await openLatest.click();
+  await confirmation.getByRole('button', { name: 'Seguir editando' }).click();
+  await expect(title).toHaveValue('Nota local');
+  await expect(body).toHaveText('Cuerpo local');
+  await openLatest.click();
+  await confirmation.getByRole('button', { name: 'Descartar y abrir' }).click();
+  await expect(title).toHaveValue('Nota remota');
+  await expect(body).toHaveText('Cuerpo remoto');
+
+  await body.fill('Cuerpo reconciliado');
+  const saved = waitForSave();
+  await save.click();
+  const response = await saved;
+  expect(response.status()).toBe(200);
+  expect(response.request().postDataJSON()).toMatchObject({ expectedRevision: 2 });
+  await expect(page.getByText('Guardada', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(title).toHaveValue('Nota remota');
+  await expect(body).toHaveText('Cuerpo reconciliado');
+});

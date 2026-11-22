@@ -206,6 +206,12 @@ describe('Libres', () => {
     expect(writes).toEqual([
       { title: 'Edición local', expectedRevision: 1, document: textDocument('Cuerpo local') },
     ])
+    const correctedBody = 'Cuerpo local corregido después del conflicto'
+    replaceBody(body, correctedBody)
+    expect(body).toHaveTextContent(correctedBody)
+    await user.click(screen.getByRole('button', { name: 'Copiar texto local' }))
+    await expect(navigator.clipboard.readText()).resolves.toBe(correctedBody)
+    expect(writes).toHaveLength(1)
     await user.click(screen.getByRole('button', { name: 'Abrir versión reciente' }))
     expect(screen.getByRole('dialog')).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Descartar y abrir' }))

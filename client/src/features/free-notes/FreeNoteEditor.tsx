@@ -263,7 +263,7 @@ export function FreeNoteEditor({
             <Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap' }}>
               <Button onClick={() => setConfirmReload(true)}>Abrir versión reciente</Button>
               <CopyButton
-                text={editor?.getText({ blockSeparator: '\n' }) ?? ''}
+                text={() => editor?.getText({ blockSeparator: '\n' }) ?? ''}
                 aria-label="Copiar texto local"
               />
             </Stack>
