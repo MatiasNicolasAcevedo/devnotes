@@ -2,14 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-083](tasks/T-083-free-notes-code-blocks.md) · Bloques de código en Libres · [S-114](specs/S-114-writing-editor.md) |
-| Estado | `mergeable` |
-| Acción actual | Confirmar CI de la transición y cerrar el squash del PR #86 |
-| Rama / PR | `codex/t-083-free-notes-code-blocks` · [PR #86](https://github.com/MatiasNicolasAcevedo/devnotes/pull/86) |
+| Tarea y contrato | [T-084](tasks/T-084-free-notes-headings.md) · Títulos y negrita en Libres · [S-114](specs/S-114-writing-editor.md) |
+| Estado | `in_progress` |
+| Acción actual | Implementar y verificar Formato en Libres |
+| Rama / PR | `codex/t-084-free-notes-headings` |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
-El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-082 quedó mergeada y conciliada.
+El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-083 quedó mergeada y conciliada.
 
 ## Pendientes del dueño
 
@@ -27,7 +27,7 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 | Dato | Valor |
 |---|---|
 | Último integrado válido | FULL local del 2026-11-15 sobre `398801f` ([T-069](tasks/T-069-ocr-workspace.md#evidencia-del-full-de-cierre)); STARTER de T-068 conservado |
-| Mergeado desde entonces | T-070 (recorrido E2E de OCR), T-074 (navegación de Imagen), T-071 y T-092 (documentales), la adopción documental del flujo y el encadenamiento del lote hasta T-082 |
+| Mergeado desde entonces | T-070 (recorrido E2E de OCR), T-074 (navegación de Imagen), T-071 y T-092 (documentales), la adopción documental del flujo y el encadenamiento del lote hasta T-083 |
 | Corte acumulado | Desde `7aa8946` hasta el HEAD de `main` que indique el dueño ([TESTING](TESTING.md#corte-acumulado-vigente)). El FULL/STARTER de I5 sigue diferido |
 | Recomendación | Ejecutar el integrado del corte acumulado con V8 y V9 cuando el dueño lo ordene. T-080 incorpora rutas privadas en Spring Security |
 
