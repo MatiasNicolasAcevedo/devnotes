@@ -113,6 +113,36 @@ test('multiline clipboard, persistence, scroll focus and compact layout: first l
   }
 });
 
+test('compact daily notes: tools stay closed after crossing the breakpoint', async ({ page, identity, isMobile }) => {
+  test.skip(!isMobile, 'Exercises the mobile tools dialog');
+  await page.setViewportSize({ width: 375, height: 559 });
+  await login(page, identity);
+  await page.getByRole('link', { name: 'Notas', exact: true }).click();
+  const editor = page.getByRole('textbox', { name: 'Editor de nota diaria' });
+  await expect(editor).toHaveAttribute('contenteditable', 'true');
+  const tools = page.getByRole('button', { name: 'Herramientas', exact: true });
+  const dialog = page.getByRole('dialog', { name: 'Herramientas' });
+  await tools.click();
+  await expect(dialog).toBeVisible();
+
+  await page.setViewportSize({ width: 1280, height: 559 });
+  await expect(tools).toHaveCount(0);
+  await expect(dialog).toHaveCount(0);
+  await editor.focus();
+  await expect(editor).toBeFocused();
+
+  await page.setViewportSize({ width: 320, height: 559 });
+  await expect(tools).toBeVisible();
+  await expect(dialog).toHaveCount(0);
+  await expect(editor).toBeFocused();
+
+  await tools.click();
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(tools).toBeFocused();
+});
+
 test('remove a link only from the selected fragment and type beyond its end', async ({ page, identity }) => {
   await login(page, identity);
   await page.getByRole('link', { name: 'Notas', exact: true }).click();

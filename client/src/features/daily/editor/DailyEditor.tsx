@@ -65,6 +65,7 @@ export function DailyEditor({
   fillHeight = false,
 }: DailyEditorProps) {
   const narrow = useIsNarrow()
+  const groupTools = narrow && narrowTools != null
   const toolsId = useId()
   const [toolsAnchor, setToolsAnchor] = useState<HTMLButtonElement | null>(null)
   const onChangeRef = useRef(onChange)
@@ -85,6 +86,11 @@ export function DailyEditor({
   const imeComposingRef = useRef(false)
   const refPickerOpenRef = useRef(refPickerOpen)
   const refAnchorRef = useRef(refAnchor)
+
+  // Al desmontar el botón, el diálogo pierde su ancla hasta una nueva apertura.
+  if (!groupTools && toolsAnchor !== null) {
+    setToolsAnchor(null)
+  }
 
   useEffect(() => {
     onChangeRef.current = onChange
@@ -400,8 +406,7 @@ export function DailyEditor({
   const hasToolbarSlots = toolbarStart != null || toolbarEnd != null
   const linkLabel = linkState?.isLink ? 'Editar enlace' : 'Agregar enlace'
 
-  const groupTools = narrow && narrowTools != null
-  const toolsOpen = groupTools && toolsAnchor != null
+  const toolsOpen = toolsAnchor !== null
   const linkTool = (
     <Tooltip title="Seleccioná texto y agregá un enlace (Ctrl+K)." describeChild>
       <span className="daily-editor-tool">
