@@ -1,6 +1,6 @@
 ---
 id: T-083
-status: draft
+status: in_progress
 priority: P1
 size: S
 milestone: M7
@@ -34,4 +34,4 @@ Cambiar lenguaje y copiar conserva sangría/saltos. Salir y deshacer vuelve al p
 
 ## Checkpoint vigente
 
-Habilitar en sesión nueva tras confirmar [T-082](T-082-free-notes-lists.md) MERGED y conciliarla. Registrar el SHA/base y la evidencia efectivamente ejecutada.
+2026-11-22. Frontera implementer en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto). Base `1b6ee91b2c5276e170da00aa0204d222892096c0`. PR #85 MERGED. `gh pr view 85 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit`, `git fetch origin main` y `git merge-base --is-ancestor $mergeOid origin/main` (exit 0). Pendiente implementar y correr el gate. **FULL/STARTER: DIFERIDO POR EL DUEÑO**.
