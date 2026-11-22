@@ -359,6 +359,67 @@ test('screenshot OCR: extract through the proxy, edit and return to the daily no
   await (isMobile ? mobileJourney : desktopJourney)(page, context, identity);
 });
 
+test('image-text-library: save two texts, copy a saved text, delete and reload', async ({
+  page, context, identity,
+}) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://localhost' });
+  await login(page, identity);
+  const traffic = observeOcr(page);
+  const saves: string[] = [];
+  page.on('request', request => {
+    if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/spaces/work/image-texts') {
+      saves.push(request.postDataJSON().text);
+    }
+  });
+  const image = await openImage(page, false, 'work');
+  const library = image.getByRole('region', { name: 'Textos guardados' });
+  await expect(library.getByText('Todavía no hay textos guardados en este espacio.')).toBeVisible();
+  await image.getByLabel('Archivo de la captura').setInputFiles(fixture('terminal.png'));
+  const extraction = extractionResponse(page, 'work');
+  await image.getByRole('button', { name: 'Extraer texto', exact: true }).click();
+  await expectExtracted(await extraction, image);
+
+  const draft = result(image);
+  const first = 'T-077 texto primero';
+  const second = 'T-077 texto segundo';
+  const save = image.getByRole('button', { name: 'Guardar', exact: true });
+  await draft.fill(first);
+  await save.dblclick();
+  const firstRow = library.getByRole('button', { name: `Abrir ${first}` });
+  await expect(firstRow).toBeVisible();
+  await draft.fill(second);
+  await save.click();
+  const secondRow = library.getByRole('button', { name: `Abrir ${second}` });
+  await expect(secondRow).toBeVisible();
+
+  await firstRow.click();
+  const saved = page.getByRole('dialog', { name: 'Texto guardado', exact: true });
+  await expect(saved.getByText(first, { exact: true })).toBeVisible();
+  await saved.getByRole('button', { name: 'Copiar texto guardado' }).click();
+  await expect(saved.getByRole('status')).toHaveText('Texto copiado');
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(first);
+  await saved.getByRole('button', { name: 'Cerrar' }).click();
+  await expect(draft).toHaveValue(second);
+
+  await library.getByRole('button', { name: `Borrar ${first}` }).click();
+  const confirm = page.getByRole('dialog', { name: 'Borrar texto guardado' });
+  await expect(confirm.getByRole('button', { name: 'Cancelar' })).toBeFocused();
+  await confirm.getByRole('button', { name: 'Confirmar' }).click();
+  await expect(firstRow).toHaveCount(0);
+  await expect(secondRow).toBeFocused();
+  await page.reload();
+  await expect(secondRow).toBeVisible();
+  await expect(firstRow).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Espacio: Trabajo' }).click();
+  await page.getByRole('menuitemradio', { name: 'Personal' }).click();
+  await expect(page.getByRole('button', { name: 'Espacio: Personal' })).toBeVisible();
+  await expect(library.getByText('Todavía no hay textos guardados en este espacio.')).toBeVisible();
+  await expect(secondRow).toHaveCount(0);
+  expect(saves).toEqual([first, second]);
+  expect(traffic.extractions).toEqual(['work']);
+});
+
 for (const extra of [
   { type: 'text/uri-list', value: 'https://fixture.invalid/demo.png' },
   { type: 'text/plain', value: 'Texto ficticio' },

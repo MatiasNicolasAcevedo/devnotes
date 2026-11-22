@@ -12,6 +12,7 @@ import { authQueryKeys } from '../auth/api'
 
 const CAPABILITIES = '/api/v1/ocr/capabilities'
 const EXTRACTIONS = '/api/v1/ocr/extractions'
+const IMAGE_TEXTS = '/api/spaces/:space/image-texts'
 const DATE = '2026-11-15'
 const TITLE = 'Imagen a texto'
 const TEXT = 'T-055\nERR_CONNECTION_RESET\n/src/api/foo-bar.ts'
@@ -44,6 +45,7 @@ async function notes({ available = true, route = `/notes/${DATE}?space=work` } =
   const auth = installAuthBackend({ user: buildAuthUser() })
   const capability = vi.fn()
   server.use(
+    mock.get(IMAGE_TEXTS, () => HttpResponse.json({ items: [], next: null })),
     mock.get(CAPABILITIES, ({ request }) => {
       capability(new URL(request.url).search)
       return HttpResponse.json({ available })
@@ -90,6 +92,126 @@ function chooseFile(file: File) {
 
 const extractButton = () => screen.getByRole('button', { name: 'Extraer texto' })
 const extractedText = () => screen.findByRole('textbox', { name: 'Texto extraído' })
+
+describe('Textos guardados', () => {
+  const id = '01900000-0000-7000-8000-000000000004'
+  const createdAt = '2026-11-21T23:10:00Z'
+
+  it('protege el doble clic y reintenta el mismo guardado tras perder la respuesta', async () => {
+    const view = await notes()
+    const responses = deferred<void>()
+    const requests: unknown[] = []
+    const post = vi.fn(() => HttpResponse.json({ text: TEXT }))
+    server.use(
+      mock.post(EXTRACTIONS, post),
+      mock.post(IMAGE_TEXTS, async ({ params, request }) => {
+        expect(params.space).toBe('work')
+        requests.push(await request.json())
+        if (requests.length === 1) {
+          await responses.promise
+          return HttpResponse.error()
+        }
+        return HttpResponse.json({ id, text: 'Texto editado', createdAt }, { status: 201 })
+      }),
+    )
+    await openImage(view)
+    chooseFile(png)
+    await view.user.click(extractButton())
+    const result = await extractedText()
+    fireEvent.change(result, { target: { value: 'Texto editado' } })
+    const save = screen.getByRole('button', { name: /^Guardar$/ })
+    await view.user.dblClick(save)
+    await waitFor(() => expect(requests).toHaveLength(1))
+    expect(save).toBeDisabled()
+    responses.resolve()
+    expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo guardar el texto')
+    expect(result).toHaveValue('Texto editado')
+    await view.user.click(save)
+    expect(await screen.findByText('Texto guardado', { exact: true })).toBeVisible()
+    expect(requests).toHaveLength(2)
+    expect(requests[0]).toEqual({
+      text: 'Texto editado',
+      attemptId: expect.stringMatching(
+        /^[\da-f]{8}-[\da-f]{4}-7[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/,
+      ),
+    })
+    expect(requests[1]).toEqual(requests[0])
+    expect(result).toHaveValue('Texto editado')
+    expect(post).toHaveBeenCalledTimes(1)
+  })
+
+  it('conserva la fila al fallar el borrado y enfoca el encabezado después de reintentar', async () => {
+    const view = await notes({ available: false })
+    let deleted = false
+    const remove = vi.fn().mockImplementationOnce(() => new HttpResponse(null, { status: 500 }))
+    server.use(
+      mock.get(IMAGE_TEXTS, () =>
+        HttpResponse.json({
+          items: deleted ? [] : [{ id, excerpt: 'Texto anterior', createdAt }],
+          next: null,
+        }),
+      ),
+      mock.delete(`${IMAGE_TEXTS}/:id`, ({ params }) => {
+        expect(params).toMatchObject({ space: 'work', id })
+        const failed = remove()
+        if (failed) return failed
+        deleted = true
+        return new HttpResponse(null, { status: 204 })
+      }),
+    )
+    await openImage(view)
+    const removeButton = await screen.findByRole('button', { name: 'Borrar Texto anterior' })
+    await view.user.click(removeButton)
+    const dialog = await screen.findByRole('dialog', { name: 'Borrar texto guardado' })
+    const confirm = within(dialog).getByRole('button', { name: 'Confirmar' })
+    await view.user.click(confirm)
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('No se pudo borrar el texto')
+    expect(removeButton).toBeInTheDocument()
+    await view.user.click(confirm)
+    expect(
+      await screen.findByText('Todavía no hay textos guardados en este espacio.'),
+    ).toBeVisible()
+    expect(removeButton).not.toBeInTheDocument()
+    await waitFor(() =>
+      expect(screen.getByRole('heading', { name: 'Textos guardados' })).toHaveFocus(),
+    )
+    expect(remove).toHaveBeenCalledTimes(2)
+  })
+
+  it.each(['espacio', 'cuenta'] as const)(
+    'descarta un guardado tardío al cambiar de %s',
+    async (context) => {
+      const view = await notes()
+      const entered = deferred<void>()
+      const resume = deferred<void>()
+      server.use(
+        mock.post(EXTRACTIONS, () => HttpResponse.json({ text: TEXT })),
+        mock.post(IMAGE_TEXTS, async () => {
+          entered.resolve()
+          await resume.promise
+          return HttpResponse.json({ id, text: TEXT, createdAt }, { status: 201 })
+        }),
+      )
+      await openImage(view)
+      chooseFile(png)
+      await view.user.click(extractButton())
+      await extractedText()
+      await view.user.click(screen.getByRole('button', { name: /^Guardar$/ }))
+      await entered.promise
+      if (context === 'espacio') {
+        await view.user.click(screen.getByRole('button', { name: 'Espacio: Trabajo' }))
+        await view.user.click(screen.getByRole('menuitemradio', { name: 'Personal' }))
+        await screen.findByRole('button', { name: 'Espacio: Personal' })
+      } else {
+        act(() => view.queryClient.setQueryData(authQueryKeys.session, buildAuthUser({ id })))
+      }
+      await waitFor(() => expect(screen.queryByLabelText('Texto extraído')).not.toBeInTheDocument())
+      await act(async () => resume.resolve())
+      expect(screen.queryByText('Texto guardado', { exact: true })).not.toBeInTheDocument()
+      expect(screen.queryByText('Guardando texto…')).not.toBeInTheDocument()
+    },
+  )
+})
 
 describe('Imagen a texto', () => {
   it('muestra la disponibilidad en el espacio activo y no permite extraer cuando está deshabilitada', async () => {

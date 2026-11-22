@@ -65,7 +65,7 @@ function PrivateImagePage({
         <Alert severity="info">La extracción no está habilitada en este espacio.</Alert>
       )}
       <ImageWorkspace
-        space={space}
+        scope={{ owner, space, csrfReady }}
         canExtract={csrfReady && !capability.isError && capability.data?.available === true}
       />
     </>
