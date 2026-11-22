@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-078](tasks/T-078-free-notes-storage.md) · Persistencia privada para notas libres · [S-113](specs/S-113-free-notes.md) |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente del almacenamiento interno de Libres |
+| Estado | `mergeable` |
+| Acción actual | Revisión independiente sin hallazgos. Validar la transición, publicar el veredicto y confirmar el squash del PR 81 |
 | Rama / PR | `codex/t-078-free-notes-storage` · [PR #81](https://github.com/MatiasNicolasAcevedo/devnotes/pull/81) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,11 +34,11 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer independiente de T-078 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
+Actuá como frontera implementer de T-079 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-078-free-notes-storage.md, S-113, el documento de Libres en S-114 y el diff del PR 81.
-PRECONDICIÓN: gh pr view 81 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo, base main en 84151b0a782760e278280abd344ce9ad3e0a285f y verify-required SUCCESS para headRefOid. Usá el HEAD publicado en un worktree aislado y comprobá git diff --exit-code e6e9c3744d3e956f00d9581a17df88b57e972992 HEAD -- server para vincularlo con las fuentes probadas.
-ACCIÓN: Revisá V9 sobre datos previos, aislamiento por cuenta y espacio, paginación, validación, revisión concurrente y recibos de 24 h. Comprobá el gate diario de T-078. Si hay hallazgos, publicá su lista cerrada para una sesión de corrección. Si aprobás y AUTONOMY lo permite, publicá la transición, esperá verify-required del nuevo HEAD, ligá el veredicto a HEAD/base, hacé squash y confirmá MERGED con gh pr view 81 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName.
-GATE: Backend dirigido de T-078, docs-check y verify-required del HEAD revisado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-SALIDA: Veredicto independiente y prompt vigente. Si confirmás MERGED, entregá el prompt de frontera implementer de T-079, con la conciliación de T-078 en su primer commit. Conservá Render Auto-Deploy On Commit.
+LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-078-free-notes-storage.md, docs/tasks/T-079-free-notes-xlsx.md, S-113, el documento de Libres en S-114 y la portabilidad incremental de S-112.
+PRECONDICIÓN: gh pr view 81 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName debe confirmar MERGED en main, con mergedAt y mergeCommit.oid válidos. Actualizá origin/main y comprobá con git merge-base --is-ancestor que contiene ese squash. Si una comprobación falla, informá el estado real y entregá el prompt vigente.
+ACCIÓN: Abrí codex/t-079-free-notes-xlsx desde origin/main actualizado. En el primer commit conciliá T-078 a done con el squash confirmado y habilitá T-079. Implementá XLSX v4 con la hoja notas_libres y el validador compartido, la vista previa y los contadores por espacio. Conservá la restauración v1/v2/v3 y OCR, y verificá el rollback completo ante un documento inválido. Publicá un solo PR contra main.
+GATE: Ejecutá los comandos exactos de T-079 para backend dirigido, pruebas y typecheck de cliente y E2E de portabilidad en desktop. Corré docs-check y comprobá verify-required del HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+SALIDA: PR listo para revisión independiente, con checkpoint y gate ligados a HEAD/base. Dejá el prompt de frontera reviewer en STATUS y completo en el chat. Conservá Render Auto-Deploy On Commit.
 ```
