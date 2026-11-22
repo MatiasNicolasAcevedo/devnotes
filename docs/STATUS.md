@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-082](tasks/T-082-free-notes-lists.md) · Listas en Libres · [S-114](specs/S-114-writing-editor.md) |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente de listas en Libres |
+| Estado | `mergeable` |
+| Acción actual | Confirmar CI de la transición y cerrar el squash del PR #85 |
 | Rama / PR | `codex/t-082-free-notes-lists` · [PR #85](https://github.com/MatiasNicolasAcevedo/devnotes/pull/85) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,15 +34,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer independiente de T-082 en MatiasNicolasAcevedo/devnotes. Sesión nueva, PR #85 contra main.
+Actuá como frontera implementer de T-083 en MatiasNicolasAcevedo/devnotes. Sesión nueva, rama codex/t-083-free-notes-code-blocks.
 
-LEER: AGENTS.md, client/AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/agents/merger.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-082-free-notes-lists.md y la sección Lista de docs/specs/S-114-writing-editor.md.
+LEER: AGENTS.md, client/AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-082-free-notes-lists.md, docs/tasks/T-083-free-notes-code-blocks.md y la sección Bloque de código de docs/specs/S-114-writing-editor.md.
 
-PRECONDICIÓN: gh pr view 85 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo, base main@9e545c63a52415568dde2a548c999e1b27bd80ad y verify-required SUCCESS. Tras git fetch origin main codex/t-082-free-notes-lists, comprobá que headRefOid coincide con el HEAD remoto y es el cierre documental hijo de f82041276528bb555449886299191b02f2fca6cb. Si cambia HEAD o base, informá el estado real y revisá el gate antes de evaluar el merge.
+PRECONDICIÓN: gh pr view 85 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit debe confirmar MERGED, mergedAt y mergeCommit.oid. Tomá mergeCommit.oid como $mergeOid. Ejecutá git fetch origin main y git merge-base --is-ancestor $mergeOid origin/main para comprobar que el squash está en main. Si falla una comprobación, informá el estado real y retomá T-082 antes de habilitar T-083.
 
-ACCIÓN: Revisá el diff publicado en un checkout aislado y cotejá esquema de Libres, conversión y deshacer, casillas por teclado y toque, portapapeles, rechazo de anidación, diario previo y recarga/restauración XLSX v4 contra la evidencia por SHA. Repetí los dirigidos que pida el riesgo. Si hay hallazgos, dejá condiciones de cierre concretas. Si aprobás, publicá la transición a mergeable con el prompt de T-083 condicionado al merge, verificá CI del nuevo HEAD y hacé squash ligado al SHA aprobado según AUTONOMY.
+ACCIÓN: Creá la rama desde main actualizado. Conciliá T-082 como done en el primer commit con el SHA y la fecha confirmados, y habilitá T-083. Implementá Bloque de código bajo Herramientas con JSON, SQL y TXT, resaltado acotado, copia exacta, salida del bloque y deshacer, validación y round trip XLSX v4 según S-114. Conservá el comportamiento de las listas y del diario.
 
-GATE: Pruebas dirigidas según riesgo, docs-check, git diff --check y verify-required del HEAD evaluado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: Ejecutá los dirigidos, typecheck y el E2E filtrado desktop/mobile de T-083, docs-check, git diff --check y verify-required sobre el HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: Publicá el veredicto por HEAD/base. Si mergeás, confirmá state, mergedAt y mergeCommit.oid con gh pr view 85 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. Cerrá con el único prompt vigente de la sesión siguiente. Preservá Render Auto-Deploy On Commit.
+SALIDA: Publicá un único PR contra main, dejá el checkpoint con evidencia por HEAD/base y terminá con el único prompt de reviewer independiente en STATUS y en la respuesta final. Preservá Render Auto-Deploy On Commit.
 ```

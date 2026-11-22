@@ -1,6 +1,6 @@
 ---
 id: T-082
-status: in_review
+status: mergeable
 priority: P1
 size: S
 milestone: M7
@@ -33,6 +33,17 @@ Casilla por teclado/toque, conversión y deshacer. Enter continúa y vacío sale
 - Cerrar con [pruebas dirigidas del lote](../TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16), docs-check y evidencia por HEAD/base.
 
 ## Checkpoint vigente
+
+2026-11-22. Frontera reviewer independiente en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0, JDK 21 y Docker Desktop. [PR #85](https://github.com/MatiasNicolasAcevedo/devnotes/pull/85). Base `main@9e545c63a52415568dde2a548c999e1b27bd80ad`, HEAD técnico probado `f82041276528bb555449886299191b02f2fca6cb` y entrega revisada `bd4c44541e42a00e14985c76ed75665faa10f4a4`. El commit hijo de transición cambia solo esta tarea y STATUS. Pendiente en esta transición: confirmar CI y HEAD/base publicados, emitir el veredicto por SHA y confirmar el squash en GitHub.
+
+- Entrada. `gh pr view 85 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup` y `git fetch origin main codex/t-082-free-notes-lists` (exit 0). PR abierto y listo, HEAD remoto coincidente y `verify-required` exitoso para `bd4c445` en el run `45042859220`, posterior al run cancelado. Revisiones pendientes en la consulta de conversaciones: cero. `git diff --exit-code f82041276528bb555449886299191b02f2fca6cb HEAD -- client server e2e scripts` (exit 0) y revisión del diff completo en checkout aislado.
+- Impacto revisado. El esquema de Libres y los validadores admiten listas planas con un párrafo por ítem. El validador del servidor se reutiliza en API y XLSX v4. La revisión cubrió UI, teclado y toque, conversión parcial, deshacer, copia en texto y HTML, persistencia del orden/marcado y compatibilidad de documentos previos. El diff conserva el esquema del diario, rutas, permisos y almacenamiento JSONB. Una sonda independiente de TipTap verificó conversión de un rango de casillas a numerada, deshacer y pegado multilínea sin anidación (exit 0).
+- Backend. Desde `server/`, `./mvnw -q test -Dtest=FreeNoteDocumentTest,XlsxFreeNotesRoundTripTest` (exit 0, Surefire 24/24 y 16/16), incluidos rechazo de listas mal formadas, compatibilidad del diario y restauración exacta v4.
+- Cliente. Desde `client/`, `npm test -- --run src/features/free-notes src/features/daily/editor/DailyEditor.test.tsx` (34/34, exit 0) y `npm run typecheck` (exit 0).
+- E2E. `bash scripts/e2e.sh --grep 'free-notes: lists' --project mobile` en `starter-e2e-t082-review-mobile-1122` y `bash scripts/e2e.sh --grep 'free-notes: lists' --project desktop` en `starter-e2e-t082-review-desktop-retry-1122` (exit 0, 1/1 cada uno). API y PostgreSQL reales con OIDC ficticio. Verifican teclado/toque, Enter, portapapeles, recarga, rechazo de anidación por API y restauración v4 en una cuenta ficticia distinta. La primera corrida desktop, `starter-e2e-t082-review-desktop-1122`, agotó el plazo del caso (exit 1). La repetición en solitario conservó SHA, filtro, aserciones y plazo. Antes y después se comprobó cero contenedores, redes y volúmenes para los labels exactos de los tres proyectos.
+- Gate documental. `node scripts/docs-check.mjs`, `git diff --check origin/main...HEAD` y `bash scripts/verify.sh --policy origin/main` (exit 0, APPLICATION / FULL informativo). **FULL/STARTER: DIFERIDO POR EL DUEÑO**. Render Auto-Deploy On Commit.
+
+### Evidencia de implementación conservada
 
 2026-11-22. Frontera implementer en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0, JDK 21 y Docker Desktop. [PR #85](https://github.com/MatiasNicolasAcevedo/devnotes/pull/85), base `main@9e545c63a52415568dde2a548c999e1b27bd80ad`, implementación `f86812906032ddc89681398eb98fa84e4ed87ef8`, fuentes probadas `f82041276528bb555449886299191b02f2fca6cb`. El HEAD de entrega es el hijo documental de las fuentes probadas, consultable con `gh pr view 85 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup`. Pendiente: revisión independiente.
 
