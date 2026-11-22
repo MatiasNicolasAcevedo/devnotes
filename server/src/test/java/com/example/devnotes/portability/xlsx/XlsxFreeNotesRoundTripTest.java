@@ -104,6 +104,52 @@ class XlsxFreeNotesRoundTripTest {
         });
     }
 
+    @Test
+    void restoresListStructureAndShowsReadableListText() throws Exception {
+        var document = new ObjectMapper().readTree("""
+                {"type":"doc","content":[
+                  {"type":"bulletList","content":[
+                    {"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"Viñeta"}]}]}]},
+                  {"type":"taskList","content":[
+                    {"type":"taskItem","attrs":{"checked":true},"content":[
+                      {"type":"paragraph","content":[{"type":"text","text":"Hecha"}]}]},
+                    {"type":"taskItem","attrs":{"checked":false},"content":[
+                      {"type":"paragraph","content":[{"type":"text","text":"Pendiente"}]}]}]},
+                  {"type":"orderedList","attrs":{"start":1},"content":[
+                    {"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"Primero"}]}]},
+                    {"type":"listItem","content":[{"type":"paragraph","content":[{"type":"text","text":"Segundo"}]}]}]}
+                ]}
+                """);
+        var note = new FreeNoteRecord(WORK, UUID.randomUUID(), "Listas", document, CREATED, CREATED);
+        var records = new PortabilityRecords(List.of(), List.of(), List.of(), List.of(), List.of(), List.of(note));
+        var out = new ByteArrayOutputStream();
+        new XlsxWorkbookWriter().write(records, CREATED, out);
+        byte[] file = out.toByteArray();
+
+        assertThat(reader.read(file)).isEqualTo(new XlsxWorkbookContent(4, CREATED, records));
+        try (var workbook = new ReadableWorkbook(new ByteArrayInputStream(file));
+                var sheets = workbook.getSheets()) {
+            var rows = sheets.filter(sheet -> SHEET.equals(sheet.getName()))
+                    .findFirst()
+                    .orElseThrow()
+                    .read();
+            assertThat(rows.get(1).getCell(5).asString())
+                    .isEqualTo("- Viñeta\n[x] Hecha\n[ ] Pendiente\n1. Primero\n2. Segundo");
+        }
+    }
+
+    @Test
+    void rejectsNestedListsDuringV4Restore() {
+        var nested = """
+                {"type":"doc","content":[{"type":"bulletList","content":[{"type":"listItem","content":[
+                  {"type":"paragraph"},{"type":"bulletList","content":[{"type":"listItem","content":[
+                    {"type":"paragraph"}]}]}]}]}]}
+                """;
+        var error = catchThrowableOfType(
+                XlsxCodecException.class, () -> reader.read(build(withNewCollections(true, nested))));
+        assertThat(error.getCode()).isEqualTo(XlsxErrorCode.IMPORT_INVALID_RECORD);
+    }
+
     @ParameterizedTest(name = "{0}")
     @MethodSource("invalidBooks")
     void rejectsInvalidBooks(String reason, Consumer<List<RawSheet>> mutate) {

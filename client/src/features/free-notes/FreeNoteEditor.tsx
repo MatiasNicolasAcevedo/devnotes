@@ -4,8 +4,12 @@ import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
 import DialogTitle from '@mui/material/DialogTitle'
+import IconButton from '@mui/material/IconButton'
+import Menu from '@mui/material/Menu'
+import MenuItem from '@mui/material/MenuItem'
 import Paper from '@mui/material/Paper'
 import Stack from '@mui/material/Stack'
+import SvgIcon from '@mui/material/SvgIcon'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import Document from '@tiptap/extension-document'
@@ -29,6 +33,7 @@ import {
   type FreeNote,
   type FreeNoteInput,
 } from './api'
+import { changeList, freeNoteLists, listOptions } from './freeNoteLists'
 import {
   FREE_NOTE_CREATED_INTENT,
   useFreeNotesContext,
@@ -37,7 +42,7 @@ import {
 import { useFreeNotesScope } from './useFreeNotesScope'
 
 const emptyDocument: JSONContent = { type: 'doc', content: [{ type: 'paragraph' }] }
-const extensions = [Document, Paragraph, Text, UndoRedo]
+const extensions = [Document, Paragraph, Text, UndoRedo, ...freeNoteLists]
 type Fields = { title: string; document: JSONContent }
 
 export function FreeNoteEditor({
@@ -54,6 +59,7 @@ export function FreeNoteEditor({
   const setDraft = context?.setDraft
   const contentLabel = useId()
   const contentErrorId = useId()
+  const listMenuId = useId()
   const reloadTitle = useId()
   const stored = useRef(note ? { id: note.id, revision: note.revision } : null)
   const [busy, setBusy] = useState(false)
@@ -61,6 +67,7 @@ export function FreeNoteEditor({
   const [destination, setDestination] = useState<string | null>(null)
   const [failure, setFailure] = useState<'conflict' | 'save' | 'reload' | null>(null)
   const [confirmReload, setConfirmReload] = useState(false)
+  const [listAnchor, setListAnchor] = useState<HTMLElement | null>(null)
   const inFlight = useRef(false)
   const attempt = useRef<{ id: string; input: FreeNoteInput; fingerprint: string } | null>(null)
   const {
@@ -81,6 +88,19 @@ export function FreeNoteEditor({
     content: note?.document ?? emptyDocument,
     editorProps: {
       attributes: { role: 'textbox', 'aria-multiline': 'true', 'aria-labelledby': contentLabel },
+      transformCopied(slice) {
+        // Preserve the list wrapper in HTML even when copying part of a single item.
+        return slice.openStart > 1 && slice.openEnd > 1 ? new Slice(slice.content, 0, 0) : slice
+      },
+      clipboardTextSerializer(slice) {
+        const lines: string[] = []
+        slice.content.descendants((node) => {
+          if (node.type.name !== 'paragraph') return true
+          lines.push(node.textContent)
+          return false
+        })
+        return lines.join('\n')
+      },
       handlePaste(view, event) {
         const clipboard = event.clipboardData
         if (!clipboard?.types.includes('text/plain')) return true
@@ -113,7 +133,8 @@ export function FreeNoteEditor({
         setError('title', { message: 'Escribí un título válido de 1 a 160 caracteres.' })
       if (documentError)
         setError('document', {
-          message: 'El contenido contiene caracteres inválidos o supera el tamaño permitido.',
+          message:
+            'El formato o los caracteres del contenido son inválidos, o supera el tamaño permitido.',
         })
       if (titleError) setFocus('title')
       else editor.commands.focus()
@@ -241,6 +262,36 @@ export function FreeNoteEditor({
         <Typography component="h1" variant="h6" sx={{ flexGrow: 1 }}>
           {note ? 'Editar nota' : 'Nueva nota'}
         </Typography>
+        <IconButton
+          aria-label="Lista"
+          aria-haspopup="menu"
+          aria-controls={listAnchor ? listMenuId : undefined}
+          aria-expanded={!!listAnchor}
+          disabled={!editor || !scope.canWrite || busy}
+          onClick={(event) => setListAnchor(event.currentTarget)}
+        >
+          <SvgIcon aria-hidden="true">
+            <path d="M8 5h13v2H8zm0 6h13v2H8zm0 6h13v2H8zM3 5h2v2H3zm0 6h2v2H3zm0 6h2v2H3z" />
+          </SvgIcon>
+        </IconButton>
+        <Menu
+          anchorEl={listAnchor}
+          open={!!listAnchor}
+          onClose={() => setListAnchor(null)}
+          slotProps={{ list: { id: listMenuId, 'aria-label': 'Lista' } }}
+        >
+          {listOptions.map(([type, label]) => (
+            <MenuItem
+              key={type}
+              onClick={() => {
+                setListAnchor(null)
+                if (editor) changeList(editor, type)
+              }}
+            >
+              {label}
+            </MenuItem>
+          ))}
+        </Menu>
         <Button
           type="submit"
           variant="contained"
@@ -311,6 +362,21 @@ export function FreeNoteEditor({
               outline: 'none',
             },
             '& p': { my: 0, minHeight: '1.5em' },
+            '& ul, & ol': { my: 0, paddingInlineStart: 3 },
+            '& ul[data-type="taskList"]': { paddingInlineStart: 0, listStyle: 'none' },
+            '& li[data-type="taskItem"]': {
+              display: 'flex',
+              alignItems: 'flex-start',
+              '& > span': { display: 'grid', placeItems: 'center', flexShrink: 0 },
+              '& > div': { flex: 1, minWidth: 0, pt: '0.25rem' },
+              '& input': {
+                width: 28,
+                height: 28,
+                margin: 0,
+                marginInlineEnd: 1,
+                cursor: 'pointer',
+              },
+            },
           }}
         >
           <EditorContent editor={editor} />

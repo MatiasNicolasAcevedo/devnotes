@@ -1,4 +1,146 @@
-import { test, expect, login } from './fixtures';
+import { randomUUID } from 'node:crypto';
+import { control, csrfHeaders, expect, login, readiness, test } from './fixtures';
+
+test('free-notes: lists support editing, clipboard, reload and XLSX v4 restore', async ({
+  page, context, browser, identity, isMobile,
+}) => {
+  const sourceUser = await login(page, identity);
+  await page.goto('/free-notes/new?space=work');
+  const title = page.getByRole('textbox', { name: 'Título' });
+  const body = page.getByRole('textbox', { name: 'Contenido' });
+  const format = async (name: string) => {
+    await page.getByRole('button', { name: 'Lista', exact: true }).click();
+    await page.getByRole('menuitem', { name, exact: true }).click();
+    await expect(body).toBeFocused();
+  };
+  await title.fill('T-082 listas ficticias');
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.evaluate(() => navigator.clipboard.writeText('Preparar\nComprobar'));
+  await body.press('Control+v');
+  await expect(body.locator(':scope > p')).toHaveText(['Preparar', 'Comprobar']);
+  await body.press('Control+a');
+  await format('Casillas');
+
+  const first = body.getByRole('checkbox', { name: 'Casilla: Preparar' });
+  const second = body.getByRole('checkbox', { name: 'Casilla: Comprobar' });
+  if (isMobile) await first.tap();
+  else {
+    await body.press('Tab');
+    await expect(first).toBeFocused();
+    await page.keyboard.press('Space');
+  }
+  await expect(first).toBeChecked();
+  await expect(second).not.toBeChecked();
+
+  await body.locator('li p').first().click();
+  await format('Viñetas');
+  await expect(body.locator('ul:not([data-type]) > li p')).toHaveText(['Preparar']);
+  await expect(second).not.toBeChecked();
+  await expect(first).toHaveCount(0);
+  await body.press('Control+z');
+  await expect(first).toBeChecked();
+  await expect(body.locator('ul[data-type=taskList] li p')).toHaveText(['Preparar', 'Comprobar']);
+
+  const readClipboard = () => page.evaluate(async () => {
+    const [item] = await navigator.clipboard.read();
+    const html = await (await item.getType('text/html')).text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return {
+      text: (await (await item.getType('text/plain')).text()).replace(/\r\n/g, '\n'),
+      checked: [...doc.querySelectorAll<HTMLInputElement>('li input[type=checkbox]')].map(input => input.checked),
+    };
+  });
+  await body.press('Control+a');
+  await body.press('Control+c');
+  const clipboard = await readClipboard();
+  expect(clipboard.text).toBe('Preparar\nComprobar');
+  expect(clipboard.checked).toEqual([true, false]);
+
+  await body.locator('li p').first().click();
+  await body.press('Home');
+  await body.press('Shift+End');
+  await body.press('Control+c');
+  expect(await readClipboard()).toEqual({ text: 'Preparar', checked: [true] });
+
+  await body.press('Control+End');
+  await body.press('Enter');
+  await expect(body.getByRole('checkbox', { name: 'Casilla sin texto' })).not.toBeChecked();
+  await body.press('Enter');
+  await expect(body.locator(':scope > p')).toHaveCount(1);
+
+  await body.pressSequentially('Revisar');
+  await format('Viñetas');
+  await body.press('Enter');
+  await body.press('Enter');
+  await body.pressSequentially('Primero');
+  await format('Numerada');
+  await body.press('Enter');
+  await body.pressSequentially('Segundo');
+  await format('Sin lista');
+  await expect(body.locator(':scope > p')).toHaveText(['Segundo']);
+  await body.press('Control+z');
+
+  const expectLists = async (editor: typeof body) => {
+    await expect(editor.locator(':scope > ul[data-type=taskList] li p')).toHaveText(['Preparar', 'Comprobar']);
+    await expect(editor.getByRole('checkbox', { name: 'Casilla: Preparar' })).toBeChecked();
+    await expect(editor.getByRole('checkbox', { name: 'Casilla: Comprobar' })).not.toBeChecked();
+    await expect(editor.locator(':scope > ul:not([data-type]) li p')).toHaveText(['Revisar']);
+    await expect(editor.locator(':scope > ol li p')).toHaveText(['Primero', 'Segundo']);
+    await expect(editor.locator(':scope > ol[start]')).toHaveCount(0);
+    await expect(editor.locator('li ul, li ol')).toHaveCount(0);
+  };
+  await expectLists(body);
+  await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Editar nota' })).toBeVisible();
+  await page.reload();
+  await expectLists(body);
+
+  const paragraph = { type: 'paragraph' };
+  const nestedItem = { type: 'listItem', content: [paragraph] };
+  const nestedList = { type: 'bulletList', content: [nestedItem] };
+  const response = await page.request.post('/api/spaces/work/free-notes', {
+    headers: await csrfHeaders(page),
+    data: {
+      attemptId: '01918f5e-d001-7000-8000-000000000082',
+      title: 'Anidada ficticia',
+      document: { type: 'doc', content: [
+        { type: 'bulletList', content: [{ type: 'listItem', content: [paragraph, nestedList] }] },
+      ] },
+    },
+  });
+  expect(response.status()).toBe(400);
+  const workbook = await page.request.get('/api/v1/portability/export');
+  expect(workbook.status()).toBe(200);
+
+  const restoreIdentity = randomUUID();
+  await control('identity', restoreIdentity);
+  const restore = await browser.newContext({ baseURL: 'http://localhost', viewport: page.viewportSize()! });
+  try {
+    const restored = await restore.newPage();
+    await readiness(restored);
+    expect(await login(restored, restoreIdentity)).not.toBe(sourceUser);
+    const file = {
+      name: 'listas-v4.xlsx',
+      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      buffer: await workbook.body(),
+    };
+    const headers = await csrfHeaders(restored);
+    const preview = await restored.request.post('/api/v1/portability/import-preview', {
+      headers, multipart: { file },
+    });
+    expect(preview.status()).toBe(200);
+    expect(await preview.json()).toMatchObject({ version: 4, accountEmpty: true, counts: { freeNotes: 1 } });
+    const result = await restored.request.post('/api/v1/portability/imports', {
+      headers, multipart: { file },
+    });
+    expect(result.status()).toBe(201);
+    await restored.goto('/free-notes?space=work');
+    await restored.getByRole('link', { name: /T-082 listas ficticias/ }).click();
+    await expectLists(restored.getByRole('textbox', { name: 'Contenido' }));
+  } finally {
+    await restore.close();
+  }
+});
 
 test('free-notes: lifecycle with draft guard, space and diary date', async ({ page, identity, isMobile }) => {
   await page.setViewportSize({ width: isMobile ? 320 : 768, height: 700 });

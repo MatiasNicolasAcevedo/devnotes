@@ -108,18 +108,39 @@ final class XlsxText {
                 out.append('\n');
             }
             first = false;
-            if (!"paragraph".equals(block.path("type").asText())) {
-                continue;
-            }
-            for (JsonNode inline : block.path("content")) {
-                if ("reference".equals(inline.path("type").asText())) {
-                    out.append(UNRESOLVED_REFERENCE);
-                } else {
-                    out.append(inline.path("text").asText(""));
-                }
+            switch (block.path("type").asText()) {
+                case "paragraph" -> appendParagraph(out, block);
+                case "bulletList", "orderedList", "taskList" -> appendList(out, block);
+                default -> {}
             }
         }
         return out.toString();
+    }
+
+    private static void appendList(StringBuilder out, JsonNode list) {
+        int index = 0;
+        for (JsonNode item : list.path("content")) {
+            if (index++ > 0) {
+                out.append('\n');
+            }
+            switch (list.path("type").asText()) {
+                case "bulletList" -> out.append("- ");
+                case "orderedList" -> out.append(index).append(". ");
+                case "taskList" -> out.append(item.path("attrs").path("checked").asBoolean() ? "[x] " : "[ ] ");
+                default -> throw new IllegalArgumentException("Unsupported list type");
+            }
+            appendParagraph(out, item.path("content").path(0));
+        }
+    }
+
+    private static void appendParagraph(StringBuilder out, JsonNode paragraph) {
+        for (JsonNode inline : paragraph.path("content")) {
+            if ("reference".equals(inline.path("type").asText())) {
+                out.append(UNRESOLVED_REFERENCE);
+            } else {
+                out.append(inline.path("text").asText(""));
+            }
+        }
     }
 
     /** True when a NUL or an unpaired surrogate occurs: text PostgreSQL cannot store. */
