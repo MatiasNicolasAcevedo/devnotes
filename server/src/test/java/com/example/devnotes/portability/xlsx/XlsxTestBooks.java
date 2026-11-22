@@ -104,6 +104,29 @@ public final class XlsxTestBooks {
         return sheets;
     }
 
+    public static final String FREE_NOTE_ID = "01900000-0000-7000-8000-000000000079";
+
+    /** A v3 workbook with OCR in Personal, or that same workbook plus one Libres record in v4. */
+    public static List<RawSheet> withNewCollections(boolean v4, String freeNoteDocument) {
+        var sheets = validSheetsV2();
+        var manifest = sheet(sheets, "devnotes").rows;
+        manifest.get(1).set(1, v4 ? "4" : "3");
+        manifest.add(7, new ArrayList<>(List.of("imagen_textos", "1")));
+        sheets.add(header("imagen_textos", XlsxFormat.HEADER_IMAGE_TEXTS)
+                .row("01900000-0000-7000-8000-000000000076", 1, 1, """
+                {"space":"personal","text":"OCR ficticio","createdAt":"2026-11-21T12:00:00Z"}
+                """));
+        if (v4) {
+            manifest.add(8, new ArrayList<>(List.of("notas_libres", "1")));
+            sheets.add(header("notas_libres", XlsxFormat.HEADER_FREE_NOTES)
+                    .row(FREE_NOTE_ID, 1, 1, """
+                    {"space":"work","title":"Libre ficticia","document":%s,
+                    "createdAt":"2026-11-21T12:00:00Z","updatedAt":"2026-11-21T13:00:00Z"}
+                    """.formatted(freeNoteDocument)));
+        }
+        return sheets;
+    }
+
     static RawSheet header(String name, List<String> header) {
         return new RawSheet(name).row(header.toArray());
     }

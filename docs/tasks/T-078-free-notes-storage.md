@@ -1,6 +1,6 @@
 ---
 id: T-078
-status: mergeable
+status: done
 priority: P1
 size: S
 milestone: M7
@@ -30,6 +30,8 @@ Migración con tablas previas, títulos repetidos, paginación estable y aislami
 - Cerrar con [pruebas dirigidas del lote](../TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16), docs-check y evidencia por HEAD/base.
 
 ## Checkpoint vigente
+
+Conciliación T-079. La consulta explícita del PR #81 confirmó MERGED contra main el 2026-11-22T02:46:28Z, squash `311e47c1ca6d64f81c3bc1950ec6687a3d418ea7`. Se comprobó su inclusión en origin/main (exit 0).
 
 2026-11-21 (Buenos Aires). Frontera reviewer independiente en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh y Git Bash. [PR #81](https://github.com/MatiasNicolasAcevedo/devnotes/pull/81), ronda 1. HEAD revisado `dbb6630d6aca7bb2a078b9754cb21174bdefd508` contra `main@84151b0a782760e278280abd344ce9ad3e0a285f`. Evidencia del implementer en el checkpoint de ese HEAD.
 

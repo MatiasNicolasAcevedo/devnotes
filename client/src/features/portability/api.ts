@@ -17,6 +17,7 @@ export const importCountsSchema = z.object({
   dailyVersions: count,
   voiceNotes: count,
   imageTexts: count,
+  freeNotes: count,
 })
 export type ImportCounts = z.infer<typeof importCountsSchema>
 
@@ -37,7 +38,7 @@ function countsMatch({ counts, countsBySpace: { work, personal } }: ImportResult
 export const importPreviewSchema = accountCountsSchema
   .extend({
     format: z.literal('devnotes-xlsx'),
-    version: z.literal([1, 2, 3]),
+    version: z.literal([1, 2, 3, 4]),
     exportedAt: z.string().datetime(),
     accountEmpty: z.boolean(),
   })
@@ -53,9 +54,13 @@ export const importPreviewSchema = accountCountsSchema
       message: 'Un respaldo v1 solo contiene datos de Trabajo',
     },
   )
-  .refine(({ version, counts }) => version === 3 || counts.imageTexts === 0, {
+  .refine(({ version, counts }) => version >= 3 || counts.imageTexts === 0, {
     path: ['counts', 'imageTexts'],
-    message: 'Solo los respaldos v3 contienen textos de Imagen',
+    message: 'Los textos de Imagen requieren un respaldo v3 o posterior',
+  })
+  .refine(({ version, counts }) => version === 4 || counts.freeNotes === 0, {
+    path: ['counts', 'freeNotes'],
+    message: 'Las notas libres requieren un respaldo v4',
   })
 export type ImportPreview = z.infer<typeof importPreviewSchema>
 

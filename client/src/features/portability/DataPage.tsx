@@ -173,7 +173,7 @@ function PrivateData({ owner }: { owner: string }) {
       )
       if (!sessionIsCurrent()) return
       setImportState({ kind: 'success', result })
-      // Todo lo privado de esta identidad quedó desactualizado: notas, historial, voz, referencias y textos de Imagen.
+      // Todo lo privado de esta identidad quedó desactualizado: notas, historial, voz, referencias, textos de Imagen y notas libres.
       void client.invalidateQueries()
     } catch (error) {
       if (!sessionIsCurrent()) return

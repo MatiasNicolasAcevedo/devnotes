@@ -20,8 +20,22 @@ import {
 } from './api'
 import { portabilityErrorMessage } from './messages'
 
-const counts = { references: 2, dailyNotes: 3, dailyVersions: 1, voiceNotes: 4, imageTexts: 0 }
-const emptyCounts = { references: 0, dailyNotes: 0, dailyVersions: 0, voiceNotes: 0, imageTexts: 0 }
+const counts = {
+  references: 2,
+  dailyNotes: 3,
+  dailyVersions: 1,
+  voiceNotes: 4,
+  imageTexts: 0,
+  freeNotes: 0,
+}
+const emptyCounts = {
+  references: 0,
+  dailyNotes: 0,
+  dailyVersions: 0,
+  voiceNotes: 0,
+  imageTexts: 0,
+  freeNotes: 0,
+}
 const legacyCounts = { work: counts, personal: emptyCounts }
 const preview = {
   format: 'devnotes-xlsx',
@@ -227,8 +241,22 @@ describe.each([
 })
 
 const countsBySpace = {
-  work: { references: 2, dailyNotes: 1, dailyVersions: 0, voiceNotes: 3, imageTexts: 0 },
-  personal: { references: 0, dailyNotes: 2, dailyVersions: 1, voiceNotes: 1, imageTexts: 0 },
+  work: {
+    references: 2,
+    dailyNotes: 1,
+    dailyVersions: 0,
+    voiceNotes: 3,
+    imageTexts: 0,
+    freeNotes: 0,
+  },
+  personal: {
+    references: 0,
+    dailyNotes: 2,
+    dailyVersions: 1,
+    voiceNotes: 1,
+    imageTexts: 0,
+    freeNotes: 0,
+  },
 }
 
 describe('conteos por espacio', () => {
@@ -240,20 +268,40 @@ describe('conteos por espacio', () => {
     expect(importResultSchema.parse({ counts, countsBySpace })).toEqual({ counts, countsBySpace })
   })
 
+  it('valida notas libres por espacio en v4 y exige cero en un libro anterior', () => {
+    const summary = {
+      ...preview,
+      version: 4,
+      counts: { ...counts, freeNotes: 3 },
+      countsBySpace: {
+        work: { ...countsBySpace.work, freeNotes: 1 },
+        personal: { ...countsBySpace.personal, freeNotes: 2 },
+      },
+    }
+    expect(importPreviewSchema.parse(summary)).toEqual(summary)
+    expect(importPreviewSchema.safeParse({ ...summary, version: 3 }).success).toBe(false)
+    expect(
+      importPreviewSchema.safeParse({ ...summary, counts: { ...counts, freeNotes: 2 } }).success,
+    ).toBe(false)
+  })
+
   it('valida los conteos de Imagen en v3 y rechaza esos datos en v2', () => {
     const summary = {
       ...preview,
       version: 3,
-      counts: { ...counts, imageTexts: 3 },
+      counts: { ...counts, imageTexts: 3, freeNotes: 0 },
       countsBySpace: {
-        work: { ...countsBySpace.work, imageTexts: 1 },
-        personal: { ...countsBySpace.personal, imageTexts: 2 },
+        work: { ...countsBySpace.work, imageTexts: 1, freeNotes: 0 },
+        personal: { ...countsBySpace.personal, imageTexts: 2, freeNotes: 0 },
       },
     }
     expect(importPreviewSchema.parse(summary)).toEqual(summary)
     expect(importPreviewSchema.safeParse({ ...summary, version: 2 }).success).toBe(false)
     expect(
-      importPreviewSchema.safeParse({ ...summary, counts: { ...counts, imageTexts: 2 } }).success,
+      importPreviewSchema.safeParse({
+        ...summary,
+        counts: { ...counts, imageTexts: 2, freeNotes: 0 },
+      }).success,
     ).toBe(false)
   })
 
@@ -289,7 +337,7 @@ describe('importPreviewSchema', () => {
   it.each([
     { ...preview, format: 'otro' },
     { ...preview, version: 2, countsBySpace: undefined },
-    { ...preview, version: 4 },
+    { ...preview, version: 5 },
     { ...preview, exportedAt: 'ayer' },
     { ...preview, accountEmpty: 'no' },
     { ...preview, counts: { references: 1 } },
@@ -352,7 +400,7 @@ describe('portabilityErrorMessage', () => {
     [
       'IMPORT_UNSUPPORTED_FORMAT',
       400,
-      'El archivo no tiene el formato devnotes-xlsx con una versión compatible (1, 2 o 3).',
+      'El archivo no tiene el formato devnotes-xlsx con una versión compatible (1, 2, 3 o 4).',
     ],
     ['IMPORT_INVALID_RECORD', 400, 'El archivo tiene datos inválidos y no se puede importar.'],
     ['IMPORT_TOO_LARGE', 413, 'El archivo supera el máximo de 10 MB.'],

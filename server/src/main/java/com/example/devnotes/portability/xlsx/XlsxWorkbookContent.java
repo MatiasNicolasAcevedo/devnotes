@@ -3,10 +3,10 @@ package com.example.devnotes.portability.xlsx;
 import java.time.Instant;
 import java.util.Objects;
 
-/** A fully validated {@code devnotes-xlsx} workbook: format version read (1 to 3), export instant and records. */
+/** A fully validated {@code devnotes-xlsx} workbook: format version read (1 to 4), export instant and records. */
 public record XlsxWorkbookContent(int version, Instant exportedAt, PortabilityRecords records) {
     public XlsxWorkbookContent {
-        if (version < 1 || version > 3) {
+        if (version < 1 || version > 4) {
             throw new IllegalArgumentException("Unknown devnotes-xlsx version");
         }
         Objects.requireNonNull(exportedAt);

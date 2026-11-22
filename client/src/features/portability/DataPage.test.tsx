@@ -17,10 +17,24 @@ import { EXPORT_PATH, IMPORT_PREVIEW_PATH, IMPORTS_PATH, XLSX_MEDIA_TYPE } from 
  */
 const a = buildAuthUser({ id: '01900000-0000-7000-8000-00000000000a', displayName: 'Persona A' })
 const b = buildAuthUser({ id: '01900000-0000-7000-8000-00000000000b', displayName: 'Persona B' })
-const counts = { references: 2, dailyNotes: 3, dailyVersions: 1, voiceNotes: 4, imageTexts: 0 }
+const counts = {
+  references: 2,
+  dailyNotes: 3,
+  dailyVersions: 1,
+  voiceNotes: 4,
+  imageTexts: 0,
+  freeNotes: 0,
+}
 const countsBySpace = {
   work: counts,
-  personal: { references: 0, dailyNotes: 0, dailyVersions: 0, voiceNotes: 0, imageTexts: 0 },
+  personal: {
+    references: 0,
+    dailyNotes: 0,
+    dailyVersions: 0,
+    voiceNotes: 0,
+    imageTexts: 0,
+    freeNotes: 0,
+  },
 }
 const FILE_LABEL = 'Archivo de respaldo (.xlsx)'
 
@@ -292,13 +306,21 @@ describe('DataPage · vista previa', () => {
           exportedAt: '2026-11-10T12:30:00Z',
           counts,
           countsBySpace: {
-            work: { references: 2, dailyNotes: 1, dailyVersions: 1, voiceNotes: 0, imageTexts: 0 },
+            work: {
+              references: 2,
+              dailyNotes: 1,
+              dailyVersions: 1,
+              voiceNotes: 0,
+              imageTexts: 0,
+              freeNotes: 0,
+            },
             personal: {
               references: 0,
               dailyNotes: 2,
               dailyVersions: 0,
               voiceNotes: 4,
               imageTexts: 0,
+              freeNotes: 0,
             },
           },
           accountEmpty: true,
@@ -329,15 +351,30 @@ describe('DataPage · vista previa', () => {
           format: 'devnotes-xlsx',
           version: 3,
           exportedAt: '2026-11-10T12:30:00Z',
-          counts: { references: 0, dailyNotes: 0, dailyVersions: 0, voiceNotes: 0, imageTexts: 3 },
+          counts: {
+            references: 0,
+            dailyNotes: 0,
+            dailyVersions: 0,
+            voiceNotes: 0,
+            imageTexts: 3,
+            freeNotes: 0,
+          },
           countsBySpace: {
-            work: { references: 0, dailyNotes: 0, dailyVersions: 0, voiceNotes: 0, imageTexts: 1 },
+            work: {
+              references: 0,
+              dailyNotes: 0,
+              dailyVersions: 0,
+              voiceNotes: 0,
+              imageTexts: 1,
+              freeNotes: 0,
+            },
             personal: {
               references: 0,
               dailyNotes: 0,
               dailyVersions: 0,
               voiceNotes: 0,
               imageTexts: 2,
+              freeNotes: 0,
             },
           },
           accountEmpty: true,
@@ -360,6 +397,41 @@ describe('DataPage · vista previa', () => {
     const dialog = await screen.findByRole('dialog')
     expect(within(dialog).getByRole('list', { name: 'Personal' })).toHaveTextContent(
       'Textos de Imagen: 2',
+    )
+  })
+
+  it('muestra las notas libres en el total y en ambos espacios de un respaldo v4', async () => {
+    const { user, input } = await renderData({
+      previewResponse: () =>
+        HttpResponse.json({
+          format: 'devnotes-xlsx',
+          version: 4,
+          exportedAt: '2026-11-10T12:30:00Z',
+          counts: { ...counts, freeNotes: 3 },
+          countsBySpace: {
+            work: { ...countsBySpace.work, freeNotes: 1 },
+            personal: { ...countsBySpace.personal, freeNotes: 2 },
+          },
+          accountEmpty: true,
+        }),
+    })
+
+    await user.upload(input, xlsxFile())
+    const preview = await screen.findByRole('region', { name: 'Contenido del archivo' })
+    expect(within(preview).getByText(/Versión 4/)).toBeVisible()
+    for (const [name, count] of [
+      ['Trabajo', 1],
+      ['Personal', 2],
+      ['Total de la cuenta', 3],
+    ] as const) {
+      expect(within(preview).getByRole('list', { name })).toHaveTextContent(
+        'Notas libres: ' + count,
+      )
+    }
+    await user.click(within(preview).getByRole('button', { name: 'Importar' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByRole('list', { name: 'Personal' })).toHaveTextContent(
+      'Notas libres: 2',
     )
   })
 
@@ -541,7 +613,7 @@ describe('DataPage · errores por código', () => {
       'IMPORT_UNSUPPORTED_FORMAT',
       400,
       { code: 'IMPORT_UNSUPPORTED_FORMAT', sheet: 'devnotes', row: 2 },
-      'El archivo no tiene el formato devnotes-xlsx con una versión compatible (1, 2 o 3). Hoja «devnotes», fila 2.',
+      'El archivo no tiene el formato devnotes-xlsx con una versión compatible (1, 2, 3 o 4). Hoja «devnotes», fila 2.',
     ],
     [
       'IMPORT_INVALID_RECORD',

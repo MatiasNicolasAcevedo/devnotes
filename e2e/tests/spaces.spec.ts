@@ -460,10 +460,10 @@ test('spaces: SP-08 XLSX round trip preserves both spaces and the import guard',
     await switchSpace(target, 'work', 'personal');
     await expect(selector(target, 'personal')).toBeVisible();
     await openData(target);
-    const backupCounts = { ...two, imageTexts: 0 };
-    const spaceBackupCounts = { ...one, imageTexts: 0 };
+    const backupCounts = { ...two, imageTexts: 0, freeNotes: 0 };
+    const spaceBackupCounts = { ...one, imageTexts: 0, freeNotes: 0 };
     const bySpace = { work: spaceBackupCounts, personal: spaceBackupCounts };
-    expect(await selectWorkbook(target, bytes)).toMatchObject({ version: 3, counts: backupCounts, countsBySpace: bySpace, accountEmpty: true });
+    expect(await selectWorkbook(target, bytes)).toMatchObject({ version: 4, counts: backupCounts, countsBySpace: bySpace, accountEmpty: true });
     expect(await counts(target, 'work')).toEqual(none);
     expect(await counts(target, 'personal')).toEqual(none);
     const cdp = await second.newCDPSession(target);
@@ -528,8 +528,8 @@ test('spaces: SP-08 legacy v1 imports only into Trabajo from Personal', async ({
   // Immutable copy of the pre-spaces server test fixture (see T-065).
   const bytes = await readFile(new URL('../fixtures/devnotes-v1.xlsx', import.meta.url));
   const preview = await selectWorkbook(page, bytes);
-  const emptyBackupCounts = { ...none, imageTexts: 0 };
-  expect(preview).toMatchObject({ version: 1, accountEmpty: true, counts: { imageTexts: 0 }, countsBySpace: { work: preview.counts, personal: emptyBackupCounts } });
+  const emptyBackupCounts = { ...none, imageTexts: 0, freeNotes: 0 };
+  expect(preview).toMatchObject({ version: 1, accountEmpty: true, counts: { imageTexts: 0, freeNotes: 0 }, countsBySpace: { work: preview.counts, personal: emptyBackupCounts } });
   expect(preview.counts).not.toEqual(emptyBackupCounts);
   await expect(page.getByText('Los respaldos de versión 1 se importan en Trabajo.')).toBeVisible();
   expect(await counts(page, 'work')).toEqual(none);
@@ -541,7 +541,7 @@ test('spaces: SP-08 legacy v1 imports only into Trabajo from Personal', async ({
   expect(await result.json()).toEqual({ counts: preview.counts, countsBySpace: { work: preview.counts, personal: emptyBackupCounts } });
   await expect(page.getByText('Importación completa', { exact: true })).toBeVisible();
   await expect(selector(page, 'personal')).toBeVisible();
-  expect({ ...await counts(page, 'work'), imageTexts: 0 }).toEqual(preview.counts);
+  expect({ ...await counts(page, 'work'), imageTexts: 0, freeNotes: 0 }).toEqual(preview.counts);
   expect(await counts(page, 'personal')).toEqual(none);
 });
 

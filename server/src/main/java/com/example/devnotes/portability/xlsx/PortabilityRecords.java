@@ -18,7 +18,8 @@ public record PortabilityRecords(
         List<DailyNoteRecord> dailyNotes,
         List<DailyVersionRecord> dailyVersions,
         List<VoiceNoteRecord> voiceNotes,
-        List<ImageTextRecord> imageTexts) {
+        List<ImageTextRecord> imageTexts,
+        List<FreeNoteRecord> freeNotes) {
 
     public PortabilityRecords {
         references = List.copyOf(references);
@@ -26,6 +27,7 @@ public record PortabilityRecords(
         dailyVersions = List.copyOf(dailyVersions);
         voiceNotes = List.copyOf(voiceNotes);
         imageTexts = List.copyOf(imageTexts);
+        freeNotes = List.copyOf(freeNotes);
     }
 
     public PortabilityRecords(
@@ -34,6 +36,32 @@ public record PortabilityRecords(
             List<DailyVersionRecord> dailyVersions,
             List<VoiceNoteRecord> voiceNotes) {
         this(references, dailyNotes, dailyVersions, voiceNotes, List.of());
+    }
+
+    public PortabilityRecords(
+            List<ReferenceRecord> references,
+            List<DailyNoteRecord> dailyNotes,
+            List<DailyVersionRecord> dailyVersions,
+            List<VoiceNoteRecord> voiceNotes,
+            List<ImageTextRecord> imageTexts) {
+        this(references, dailyNotes, dailyVersions, voiceNotes, imageTexts, List.of());
+    }
+
+    public record FreeNoteRecord(
+            PrivateSpace space, UUID id, String title, JsonNode document, Instant createdAt, Instant updatedAt) {
+        public FreeNoteRecord {
+            Objects.requireNonNull(space);
+            Objects.requireNonNull(id);
+            Objects.requireNonNull(title);
+            document = Objects.requireNonNull(document).deepCopy();
+            Objects.requireNonNull(createdAt);
+            Objects.requireNonNull(updatedAt);
+        }
+
+        @Override
+        public JsonNode document() {
+            return document.deepCopy();
+        }
     }
 
     public record ImageTextRecord(PrivateSpace space, UUID id, String text, Instant createdAt) {

@@ -1,7 +1,10 @@
 package com.example.devnotes.portability.xlsx;
 
+import com.example.devnotes.freenote.application.FreeNoteService;
+import com.example.devnotes.freenote.domain.FreeNoteDocument;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyNoteRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyVersionRecord;
+import com.example.devnotes.portability.xlsx.PortabilityRecords.FreeNoteRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ImageTextRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ReferenceRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.VoiceNoteRecord;
@@ -19,7 +22,7 @@ import org.dhatim.fastexcel.Worksheet;
 import org.springframework.stereotype.Component;
 
 /**
- * Streaming writer of the {@code devnotes-xlsx} version 3 workbook (S-107, S-109, S-112).
+ * Streaming writer of the {@code devnotes-xlsx} version 4 workbook (S-107, S-109, S-112, S-113).
  *
  * Records are written in the order received; the caller provides the deterministic order of S-107. Text
  * goes out as inline strings, so no shared-string table grows in memory and no cell is ever a formula.
@@ -31,7 +34,12 @@ public class XlsxWorkbookWriter {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     /** Record counts announced in the {@code devnotes} sheet, which precedes the data sheets. */
-    public record Counts(int references, int dailyNotes, int dailyVersions, int voiceNotes, int imageTexts) {
+    public record Counts(
+            int references, int dailyNotes, int dailyVersions, int voiceNotes, int imageTexts, int freeNotes) {
+        public Counts(int references, int dailyNotes, int dailyVersions, int voiceNotes, int imageTexts) {
+            this(references, dailyNotes, dailyVersions, voiceNotes, imageTexts, 0);
+        }
+
         public Counts(int references, int dailyNotes, int dailyVersions, int voiceNotes) {
             this(references, dailyNotes, dailyVersions, voiceNotes, 0);
         }
@@ -46,12 +54,14 @@ public class XlsxWorkbookWriter {
                         records.dailyNotes().size(),
                         records.dailyVersions().size(),
                         records.voiceNotes().size(),
-                        records.imageTexts().size()),
+                        records.imageTexts().size(),
+                        records.freeNotes().size()),
                 records.references(),
                 records.dailyNotes(),
                 records.dailyVersions(),
                 records.voiceNotes(),
                 records.imageTexts(),
+                records.freeNotes(),
                 out);
     }
 
@@ -69,6 +79,7 @@ public class XlsxWorkbookWriter {
             Iterable<DailyVersionRecord> dailyVersions,
             Iterable<VoiceNoteRecord> voiceNotes,
             Iterable<ImageTextRecord> imageTexts,
+            Iterable<FreeNoteRecord> freeNotes,
             OutputStream out)
             throws IOException {
         Objects.requireNonNull(exportedAt);
@@ -109,6 +120,13 @@ public class XlsxWorkbookWriter {
                 imageTexts,
                 counts.imageTexts(),
                 XlsxWorkbookWriter::imageTextRow);
+        writeSheet(
+                workbook,
+                XlsxFormat.SHEET_FREE_NOTES,
+                XlsxFormat.HEADER_FREE_NOTES,
+                freeNotes,
+                counts.freeNotes(),
+                XlsxWorkbookWriter::freeNoteRow);
         workbook.finish();
         out.flush();
     }
@@ -124,6 +142,7 @@ public class XlsxWorkbookWriter {
                 Integer.toString(counts.dailyVersions()),
                 Integer.toString(counts.voiceNotes()),
                 Integer.toString(counts.imageTexts()),
+                Integer.toString(counts.freeNotes()),
                 XlsxFormat.NOTICE);
         for (int row = 0; row < values.size(); row++) {
             sheet.inlineString(row, 0, XlsxFormat.META_KEYS.get(row));
@@ -261,6 +280,31 @@ public class XlsxWorkbookWriter {
                 record.id().toString(),
                 serialize(json),
                 List.of(XlsxText.readableText(record.text()), created, XlsxFormat.spaceLabel(record.space())));
+    }
+
+    private static RecordRow freeNoteRow(FreeNoteRecord record) {
+        var document = record.document();
+        FreeNoteDocument.validate(document);
+        if (!record.title().equals(FreeNoteService.validateTitle(record.title()))) {
+            throw new IllegalArgumentException("Free note title must already be trimmed");
+        }
+        String created = XlsxText.instant(record.createdAt());
+        String updated = XlsxText.instant(record.updatedAt());
+        ObjectNode json = MAPPER.createObjectNode();
+        json.put("space", record.space().value());
+        json.put("title", record.title());
+        json.set("document", document);
+        json.put("createdAt", created);
+        json.put("updatedAt", updated);
+        return new RecordRow(
+                record.id().toString(),
+                serialize(json),
+                List.of(
+                        XlsxText.readable(record.title()),
+                        XlsxText.readableText(XlsxText.plainText(document)),
+                        created,
+                        updated,
+                        XlsxFormat.spaceLabel(record.space())));
     }
 
     private static String serialize(ObjectNode json) {

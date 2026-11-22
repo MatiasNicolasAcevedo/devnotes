@@ -8,7 +8,7 @@ import { saveVersion } from './daily-helpers';
 
 /**
  * T-045 · S-107 / XL-06. Recorrido real de ida y vuelta: A crea datos en las cuatro colecciones y exporta su
- * Excel; B, cuenta vacía y simultánea, lo previsualiza, confirma e importa, y ve lo mismo con IDs propios.
+ * Excel, incluidos los registros de Libres e Imagen de una fixture v4; B, cuenta vacía y simultánea, lo previsualiza, confirma e importa, y ve lo mismo con IDs propios.
  * Reimportar en B se rechaza y A queda intacta. Chromium usa API/DB/OIDC propios y entrega intacta la respuesta
  * de importación retenida con CDP. El archivo se descarga con el evento download a un directorio temporal del
  * test, fuera de los artefactos exportados, y se borra al terminar.
@@ -25,12 +25,12 @@ const previewPath = '/api/v1/portability/import-preview';
 const importsPath = '/api/v1/portability/imports';
 const xlsx = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 const href = 'https://jira.ejemplo.test/browse/ABC-1279';
-const counts = { references: 1, dailyNotes: 1, dailyVersions: 1, voiceNotes: 1, imageTexts: 0 };
+const counts = { references: 1, dailyNotes: 1, dailyVersions: 1, voiceNotes: 1, imageTexts: 1, freeNotes: 2 };
 const countsBySpace = {
-  work: counts,
-  personal: { references: 0, dailyNotes: 0, dailyVersions: 0, voiceNotes: 0, imageTexts: 0 },
+  work: { ...counts, imageTexts: 0, freeNotes: 1 },
+  personal: { references: 0, dailyNotes: 0, dailyVersions: 0, voiceNotes: 0, imageTexts: 1, freeNotes: 1 },
 };
-const countLines = ['Notas diarias: 1', 'Versiones guardadas: 1', 'Notas de voz: 1', 'Referencias: 1', 'Textos de Imagen: 0'];
+const countLines = ['Notas diarias: 1', 'Versiones guardadas: 1', 'Notas de voz: 1', 'Referencias: 1', 'Textos de Imagen: 1', 'Notas libres: 2'];
 
 function on(path: string, method: string) {
   return (message: Request | Response) => {
@@ -94,6 +94,13 @@ test('portability: A exports, empty B previews and imports the same data, reimpo
   await control('reference-login');
   await readiness(page);
   const a = await interactiveLogin(page, identity);
+  // T-080 habilita la creación de Libres. Sembramos ambas notas por la API real de importación v4.
+  const sourceFixture = new URL('../fixtures/devnotes-v4-free-notes.xlsx', import.meta.url);
+  const seed = await page.request.post(importsPath, {
+    headers: await csrfHeaders(page),
+    multipart: { file: { name: 'devnotes-v4-free-notes.xlsx', mimeType: xlsx, buffer: await readFile(sourceFixture) } },
+  });
+  expect(seed.status()).toBe(201);
   const tag = identity.slice(0, 8);
   const title = `Runbook ${tag}`;
   const description = `Pasos ficticios ${tag}`;
@@ -206,8 +213,11 @@ test('portability: A exports, empty B previews and imports the same data, reimpo
     const previewResponse = await previewed;
     expect(previewResponse.status()).toBe(200);
     expect(previewResponse.request().headers()['content-type']).toMatch(/^multipart\/form-data; boundary=/);
-    expect(await previewResponse.json()).toMatchObject({ format: 'devnotes-xlsx', version: 3, counts, countsBySpace, accountEmpty: true });
-    await expectPreview(bPage);
+    expect(await previewResponse.json()).toMatchObject({ format: 'devnotes-xlsx', version: 4, counts, countsBySpace, accountEmpty: true });
+    const previewRegion = await expectPreview(bPage);
+    for (const name of ['Trabajo', 'Personal']) {
+      await expect(previewRegion.getByRole('list', { name }).getByText('Notas libres: 1', { exact: true })).toBeVisible();
+    }
     for (const path of [references, voiceNotes, dailyNotes, dailyVersions]) {
       expect((await json(bPage, path)).totalElements, `Preview wrote nothing: ${path}`).toBe(0);
     }

@@ -2,14 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-078](tasks/T-078-free-notes-storage.md) · Persistencia privada para notas libres · [S-113](specs/S-113-free-notes.md) |
+| Tarea y contrato | [T-079](tasks/T-079-free-notes-xlsx.md) · Recuperar notas libres en XLSX v4 · [S-113](specs/S-113-free-notes.md) |
 | Estado | `mergeable` |
-| Acción actual | Revisión independiente sin hallazgos. Validar la transición, publicar el veredicto y confirmar el squash del PR 81 |
-| Rama / PR | `codex/t-078-free-notes-storage` · [PR #81](https://github.com/MatiasNicolasAcevedo/devnotes/pull/81) |
+| Acción actual | Verificar CI de la transición documental y hacer squash del PR 82 |
+| Rama / PR | `codex/t-079-free-notes-xlsx` · [PR #82](https://github.com/MatiasNicolasAcevedo/devnotes/pull/82) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
-El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-077 quedó mergeada y conciliada.
+El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-078 quedó mergeada y conciliada.
 
 ## Pendientes del dueño
 
@@ -34,11 +34,11 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de T-079 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
+Actuá como frontera implementer de T-080 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-078-free-notes-storage.md, docs/tasks/T-079-free-notes-xlsx.md, S-113, el documento de Libres en S-114 y la portabilidad incremental de S-112.
-PRECONDICIÓN: gh pr view 81 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName debe confirmar MERGED en main, con mergedAt y mergeCommit.oid válidos. Actualizá origin/main y comprobá con git merge-base --is-ancestor que contiene ese squash. Si una comprobación falla, informá el estado real y entregá el prompt vigente.
-ACCIÓN: Abrí codex/t-079-free-notes-xlsx desde origin/main actualizado. En el primer commit conciliá T-078 a done con el squash confirmado y habilitá T-079. Implementá XLSX v4 con la hoja notas_libres y el validador compartido, la vista previa y los contadores por espacio. Conservá la restauración v1/v2/v3 y OCR, y verificá el rollback completo ante un documento inválido. Publicá un solo PR contra main.
-GATE: Ejecutá los comandos exactos de T-079 para backend dirigido, pruebas y typecheck de cliente y E2E de portabilidad en desktop. Corré docs-check y comprobá verify-required del HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-SALIDA: PR listo para revisión independiente, con checkpoint y gate ligados a HEAD/base. Dejá el prompt de frontera reviewer en STATUS y completo en el chat. Conservá Render Auto-Deploy On Commit.
+LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-079-free-notes-xlsx.md, docs/tasks/T-080-free-notes-workspace.md, S-113 y el documento de Libres en S-114.
+PRECONDICIÓN: gh pr view 82 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName debe confirmar MERGED contra main con fecha y SHA válidos. Comprobá que el squash está incluido en origin/main antes de crear codex/t-080-free-notes-workspace.
+ACCIÓN: Conciliá T-079 a done con la fecha y el SHA del squash y habilitá T-080 en el primer commit de la rama nueva. Implementá REST y el recorrido privado de Libres desde Notas según el contrato. Conservá la fecha al volver al Diario, la guardia del borrador y el aislamiento por cuenta y espacio.
+GATE: Corré los dirigidos de T-080 con Failsafe en PostgreSQL, pruebas y typecheck del cliente, Playwright filtrado en desktop y mobile, docs-check y verify-required. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+SALIDA: Publicá un único PR para T-080 con evidencia por HEAD/base y dejá el prompt de revisión independiente en docs/STATUS.md y al final de la respuesta. Conservá Render Auto-Deploy On Commit.
 ```

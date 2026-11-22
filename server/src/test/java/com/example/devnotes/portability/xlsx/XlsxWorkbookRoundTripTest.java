@@ -47,21 +47,23 @@ class XlsxWorkbookRoundTripTest {
 
         XlsxWorkbookContent content = reader.read(file);
 
-        assertThat(content.version()).isEqualTo(3);
+        assertThat(content.version()).isEqualTo(4);
         assertThat(content.exportedAt()).isEqualTo(EXPORTED);
         assertThat(content.records()).isEqualTo(PortabilityRecords.empty());
         assertThat(sheetNames(file))
-                .containsExactly("devnotes", "referencias", "diarias", "versiones", "voz", "imagen_textos");
+                .containsExactly(
+                        "devnotes", "referencias", "diarias", "versiones", "voz", "imagen_textos", "notas_libres");
         assertThat(texts(rawRows(file, 0)))
                 .containsExactly(
                         List.of("formato", "devnotes-xlsx"),
-                        List.of("version", "3"),
+                        List.of("version", "4"),
                         List.of("exportado_utc", "2026-11-10T20:00:20.973456Z"),
                         List.of("referencias", "0"),
                         List.of("diarias", "0"),
                         List.of("versiones", "0"),
                         List.of("voz", "0"),
                         List.of("imagen_textos", "0"),
+                        List.of("notas_libres", "0"),
                         List.of(
                                 "aviso",
                                 "Respaldo de DevNotes. La importación usa solo la columna dato_json; no editar."));
@@ -266,6 +268,7 @@ class XlsxWorkbookRoundTripTest {
                         List.of(),
                         List.of(),
                         voice,
+                        List.of(),
                         List.of(),
                         new ByteArrayOutputStream()))
                 .isInstanceOf(IllegalStateException.class);

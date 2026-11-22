@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 
 import com.example.devnotes.TestcontainersConfiguration;
+import com.example.devnotes.freenote.application.FreeNoteService;
 import com.example.devnotes.imagetext.application.ImageTextService;
 import com.example.devnotes.portability.application.ImportAccountNotEmptyException;
 import com.example.devnotes.portability.application.PortabilityExportService;
@@ -72,8 +73,8 @@ class PortabilityImportServiceIT {
     private static final String ISSUER = "https://portability-import.example.invalid";
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final Instant EXPORTED = Instant.parse("2026-11-10T20:00:00.123456Z");
-    private static final List<String> TABLES =
-            List.of("reference_item", "daily_note", "daily_version", "voice_note", "app_user");
+    private static final List<String> TABLES = List.of(
+            "reference_item", "daily_note", "daily_version", "voice_note", "app_user", "image_text", "free_note");
 
     private static final UUID REF_ONE = UUID.fromString("01900000-0000-7000-8000-000000000101");
     private static final UUID REF_TWO = UUID.fromString("01900000-0000-7000-8000-000000000102");
@@ -108,6 +109,9 @@ class PortabilityImportServiceIT {
     private ImageTextService imageTexts;
 
     @Autowired
+    private FreeNoteService freeNotes;
+
+    @Autowired
     private TransactionTemplate transaction;
 
     @MockitoSpyBean
@@ -132,6 +136,8 @@ class PortabilityImportServiceIT {
         jdbc.update("DELETE FROM reference_item WHERE owner_id IN " + owners, ISSUER);
         jdbc.update("DELETE FROM image_text_creation_receipt WHERE owner_id IN " + owners, ISSUER);
         jdbc.update("DELETE FROM image_text WHERE owner_id IN " + owners, ISSUER);
+        jdbc.update("DELETE FROM free_note_creation_receipt WHERE owner_id IN " + owners, ISSUER);
+        jdbc.update("DELETE FROM free_note WHERE owner_id IN " + owners, ISSUER);
         jdbc.update("DELETE FROM app_user WHERE issuer=?", ISSUER);
     }
 
@@ -673,6 +679,52 @@ class PortabilityImportServiceIT {
         assertThat(owned("daily_note", owner)).isZero();
     }
 
+    @Test
+    void failureAfterTheFreeNotesBatchRollsBackEveryCollection() {
+        byte[] file = XlsxTestBooks.build(XlsxTestBooks.withNewCollections(true, XlsxTestBooks.DOC));
+        doAnswer(invocation -> {
+                    invocation.callRealMethod();
+                    assertThat(owned("free_note", owner)).isEqualTo(1);
+                    assertThat(owned("image_text", owner)).isEqualTo(1);
+                    throw new DuplicateKeyException("simulated failure in the last batch");
+                })
+                .when(writeRepository)
+                .insertFreeNotes(eq(owner), any(), any());
+        List<Long> before = rows();
+
+        assertThatThrownBy(() -> service.importInto(owner, file)).isInstanceOf(ImportAccountNotEmptyException.class);
+        assertThat(rows()).isEqualTo(before);
+    }
+
+    @Test
+    void importWaitsForAFreeNoteCreationThenChecksTheCommittedAccount() throws Exception {
+        byte[] file = workbook(fullRecords());
+        try (var pool = Executors.newSingleThreadExecutor()) {
+            var result = transaction.execute(status -> {
+                freeNotes.create(
+                        owner,
+                        PrivateSpace.PERSONAL,
+                        UuidVersion7Strategy.INSTANCE.generateUuid(null),
+                        "Concurrent free note",
+                        document("Body"));
+                Integer lockHolder = jdbc.queryForObject("SELECT pg_backend_pid()", Integer.class);
+                var pending = pool.submit(() -> service.importInto(owner, file));
+                await().atMost(Duration.ofSeconds(10))
+                        .until(() -> jdbc.queryForObject("""
+                                SELECT count(*) FROM pg_stat_activity
+                                WHERE ? = ANY (pg_blocking_pids(pid))
+                                """, Long.class, lockHolder) == 1);
+                assertThat(pending).isNotDone();
+                return pending;
+            });
+            assertThatThrownBy(() -> result.get(10, TimeUnit.SECONDS))
+                    .hasCauseInstanceOf(ImportAccountNotEmptyException.class);
+        }
+        assertThat(owned("free_note", owner)).isEqualTo(1);
+        assertThat(owned("reference_item", owner)).isZero();
+        assertThat(owned("daily_note", owner)).isZero();
+    }
+
     // ── Two spaces (S-109, T-062) ──
 
     @Test
@@ -680,12 +732,12 @@ class PortabilityImportServiceIT {
         byte[] v1File = versionOneFixture();
         Counts v1Counts = counts(reader.read(v1File).records());
 
-        var v3 = service.preview(owner, workbook(twoSpaces()));
+        var v4 = service.preview(owner, workbook(twoSpaces()));
         var v1 = service.preview(owner, v1File);
 
-        assertThat(v3.version()).isEqualTo(3);
-        assertThat(v3.counts()).isEqualTo(new Counts(2, 2, 2, 2));
-        assertThat(v3.countsBySpace()).isEqualTo(new SpaceCounts(ONE_EACH, ONE_EACH));
+        assertThat(v4.version()).isEqualTo(4);
+        assertThat(v4.counts()).isEqualTo(new Counts(2, 2, 2, 2));
+        assertThat(v4.countsBySpace()).isEqualTo(new SpaceCounts(ONE_EACH, ONE_EACH));
         assertThat(v1.version()).isEqualTo(1);
         assertThat(v1Counts).isNotEqualTo(NONE);
         assertThat(v1.counts()).isEqualTo(v1Counts);

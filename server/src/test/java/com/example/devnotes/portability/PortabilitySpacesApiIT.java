@@ -60,9 +60,9 @@ class PortabilitySpacesApiIT {
             new com.fasterxml.jackson.databind.ObjectMapper();
 
     private static final String ONE_EACH =
-            "{\"references\":1,\"dailyNotes\":1,\"dailyVersions\":1,\"voiceNotes\":1,\"imageTexts\":0}";
+            "{\"references\":1,\"dailyNotes\":1,\"dailyVersions\":1,\"voiceNotes\":1,\"imageTexts\":0,\"freeNotes\":0}";
     private static final String NONE =
-            "{\"references\":0,\"dailyNotes\":0,\"dailyVersions\":0,\"voiceNotes\":0,\"imageTexts\":0}";
+            "{\"references\":0,\"dailyNotes\":0,\"dailyVersions\":0,\"voiceNotes\":0,\"imageTexts\":0,\"freeNotes\":0}";
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry registry) {
@@ -227,7 +227,7 @@ class PortabilitySpacesApiIT {
         assertThat(result.statusCode()).isEqualTo(201);
         assertThat(JSON.readTree(result.body()).path("countsBySpace")).isEqualTo(summary.path("countsBySpace"));
         var exported = reader.read(exportBytes(target, EXPORT));
-        assertThat(exported.version()).isEqualTo(3);
+        assertThat(exported.version()).isEqualTo(4);
         assertThat(exported.records().references())
                 .extracting(ReferenceRecord::space)
                 .containsExactly(PrivateSpace.WORK);
@@ -265,7 +265,7 @@ class PortabilitySpacesApiIT {
         assertThat(reader.read(exportBytes(a, EXPORT + PERSONAL)).records())
                 .isEqualTo(reader.read(file).records());
         var book = reader.read(file);
-        assertThat(book.version()).isEqualTo(3);
+        assertThat(book.version()).isEqualTo(4);
         PortabilityRecords source = book.records();
         assertThat(source.dailyNotes())
                 .extracting(DailyNoteRecord::space, DailyNoteRecord::date)
@@ -285,9 +285,9 @@ class PortabilitySpacesApiIT {
         HttpResponse<String> preview = upload(b, PREVIEW, file);
         assertThat(preview.statusCode()).isEqualTo(200);
         assertThat(JSON.readTree(preview.body()))
-                .isEqualTo(JSON.readTree("{\"format\":\"devnotes-xlsx\",\"version\":3,\"exportedAt\":\""
+                .isEqualTo(JSON.readTree("{\"format\":\"devnotes-xlsx\",\"version\":4,\"exportedAt\":\""
                         + book.exportedAt() + "\",\"counts\":{\"references\":2,\"dailyNotes\":2,\"dailyVersions\":2,"
-                        + "\"voiceNotes\":2,\"imageTexts\":0},\"countsBySpace\":{\"work\":" + ONE_EACH
+                        + "\"voiceNotes\":2,\"imageTexts\":0,\"freeNotes\":0},\"countsBySpace\":{\"work\":" + ONE_EACH
                         + ",\"personal\":" + ONE_EACH
                         + "},\"accountEmpty\":true}"));
 
@@ -295,7 +295,7 @@ class PortabilitySpacesApiIT {
         assertThat(imported.statusCode()).isEqualTo(201);
         assertThat(JSON.readTree(imported.body()))
                 .isEqualTo(JSON.readTree(
-                        "{\"counts\":{\"references\":2,\"dailyNotes\":2,\"dailyVersions\":2,\"voiceNotes\":2,\"imageTexts\":0},"
+                        "{\"counts\":{\"references\":2,\"dailyNotes\":2,\"dailyVersions\":2,\"voiceNotes\":2,\"imageTexts\":0,\"freeNotes\":0},"
                                 + "\"countsBySpace\":{\"work\":" + ONE_EACH + ",\"personal\":" + ONE_EACH + "}}"));
 
         // B has one record of each kind in each space, with new identifiers.
@@ -363,7 +363,7 @@ class PortabilitySpacesApiIT {
         String counts = "{\"references\":" + records.references().size() + ",\"dailyNotes\":"
                 + records.dailyNotes().size() + ",\"dailyVersions\":"
                 + records.dailyVersions().size()
-                + ",\"voiceNotes\":" + records.voiceNotes().size() + ",\"imageTexts\":0}";
+                + ",\"voiceNotes\":" + records.voiceNotes().size() + ",\"imageTexts\":0,\"freeNotes\":0}";
         assertThat(counts).isNotEqualTo(NONE);
 
         HttpResponse<String> preview = upload(b, PREVIEW, file);

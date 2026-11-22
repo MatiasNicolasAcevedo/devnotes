@@ -8,7 +8,7 @@ export const texts = {
     'Descargá un respaldo de tu cuenta en Excel o recuperalo en una cuenta sin datos. Incluye Trabajo y Personal.',
   exportTitle: 'Exportar',
   exportHelp:
-    'El archivo incluye tus notas diarias, la versión guardada de cada una, tus notas de voz, tus referencias y los textos guardados de Imagen. Conservá el archivo tal como se descargó y usá una versión de DevNotes compatible con XLSX v3 para restaurarlo.',
+    'El archivo incluye tus notas diarias, la versión guardada de cada una, tus notas de voz, tus referencias, los textos guardados de Imagen y tus notas libres. Conservá el archivo tal como se descargó y usá una versión de DevNotes compatible con XLSX v4 para restaurarlo.',
   exportButton: 'Descargar Excel',
   exporting: 'Descargando…',
   exportError: 'No se pudo descargar el Excel',
@@ -38,7 +38,7 @@ const CODE_MESSAGES: Record<string, string> = {
     'Tu cuenta supera los límites de cantidad o tamaño de un respaldo restaurable. No se generó ningún archivo.',
   IMPORT_INVALID_FILE: 'El archivo no es un Excel exportado desde DevNotes.',
   IMPORT_UNSUPPORTED_FORMAT:
-    'El archivo no tiene el formato devnotes-xlsx con una versión compatible (1, 2 o 3).',
+    'El archivo no tiene el formato devnotes-xlsx con una versión compatible (1, 2, 3 o 4).',
   IMPORT_INVALID_RECORD: 'El archivo tiene datos inválidos y no se puede importar.',
   IMPORT_TOO_LARGE: 'El archivo supera el máximo de 10 MB.',
   IMPORT_ACCOUNT_NOT_EMPTY: texts.notEmpty,
@@ -52,6 +52,7 @@ const SHEETS: ReadonlySet<string> = new Set([
   'versiones',
   'voz',
   'imagen_textos',
+  'notas_libres',
 ])
 
 /**
@@ -88,6 +89,7 @@ export const COUNT_LABELS = [
   { key: 'voiceNotes', label: 'Notas de voz', to: '/voice', link: 'Voz' },
   { key: 'references', label: 'Referencias', to: '/reference', link: 'Referencias' },
   { key: 'imageTexts', label: 'Textos de Imagen', to: null },
+  { key: 'freeNotes', label: 'Notas libres', to: null },
 ] as const
 
 const dateFormat = new Intl.DateTimeFormat('es-AR', {
