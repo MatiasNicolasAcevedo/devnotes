@@ -266,10 +266,21 @@ test('free-notes: code blocks preserve clipboard, undo and XLSX v4', async ({
   });
 });
 
-test('free-notes: headings preserve selection, lists, code and XLSX v4', async ({
-  page, context, browser, identity,
+async function expectFreeNoteFormat(note: Page, title: string) {
+  const content = note.getByRole('textbox', { name: 'Contenido' });
+  await expect(note.getByRole('textbox', { name: 'Título' })).toHaveValue(title);
+  await expect(content.locator('h1')).toHaveText('Alfa beta gamma');
+  await expect(content.locator('h1 strong')).toHaveText('beta');
+  await expect(content.locator('h2 strong')).toHaveText('Tema');
+  await expect(content.locator('h3')).toHaveText('Detalle');
+  await expect(content.locator('ul li p strong')).toHaveText('Punto');
+  await expect(content.locator('[data-language="sql"] code')).toHaveText('SELECT 1');
+}
+
+test('free-notes: headings preserve selection, lists, code and reload', async ({
+  page, context, identity,
 }) => {
-  const sourceUser = await login(page, identity);
+  await login(page, identity);
   await page.goto('/free-notes/new?space=work');
   const title = 'T-084 formato ficticio';
   await page.getByRole('textbox', { name: 'Título' }).fill(title);
@@ -351,20 +362,10 @@ test('free-notes: headings preserve selection, lists, code and XLSX v4', async (
   await expect(body.locator('code')).toHaveText('SELECT 1');
   await expect(body.locator('code strong')).toHaveCount(0);
 
-  const checkFormat = async (note: Page) => {
-    const content = note.getByRole('textbox', { name: 'Contenido' });
-    await expect(note.getByRole('textbox', { name: 'Título' })).toHaveValue(title);
-    await expect(content.locator('h1')).toHaveText('Alfa beta gamma');
-    await expect(content.locator('h1 strong')).toHaveText('beta');
-    await expect(content.locator('h2 strong')).toHaveText('Tema');
-    await expect(content.locator('h3')).toHaveText('Detalle');
-    await expect(content.locator('ul li p strong')).toHaveText('Punto');
-    await expect(content.locator('[data-language="sql"] code')).toHaveText('SELECT 1');
-  };
   await page.getByRole('button', { name: 'Guardar', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Editar nota' })).toBeVisible();
   await page.reload();
-  await checkFormat(page);
+  await expectFreeNoteFormat(page, title);
 
   const headers = await csrfHeaders(page);
   const invalid = [
@@ -382,7 +383,32 @@ test('free-notes: headings preserve selection, lists, code and XLSX v4', async (
     });
     expect(response.status()).toBe(400);
   }
-  await checkFreeNoteRestore(page, browser, sourceUser, title, checkFormat);
+});
+
+test('free-notes: headings and bold restore from XLSX v4', async ({ page, browser, identity }) => {
+  const sourceUser = await login(page, identity);
+  const title = 'T-084 restauración ficticia';
+  const text = (value: string) => ({ type: 'text', text: value });
+  const bold = (value: string) => ({ ...text(value), marks: [{ type: 'bold' }] });
+  const document = {
+    type: 'doc',
+    content: [
+      { type: 'heading', attrs: { level: 1 }, content: [text('Alfa '), bold('beta '), text('gamma')] },
+      { type: 'heading', attrs: { level: 2 }, content: [bold('Tema')] },
+      { type: 'heading', attrs: { level: 3 }, content: [text('Detalle')] },
+      {
+        type: 'bulletList',
+        content: [{ type: 'listItem', content: [{ type: 'paragraph', content: [bold('Punto')] }] }],
+      },
+      { type: 'codeBlock', attrs: { language: 'sql' }, content: [text('SELECT 1')] },
+    ],
+  };
+  const response = await page.request.post('/api/spaces/work/free-notes', {
+    headers: await csrfHeaders(page),
+    data: { attemptId: '01918f5e-d001-7000-8000-000000000085', title, document },
+  });
+  expect(response.status()).toBe(201);
+  await checkFreeNoteRestore(page, browser, sourceUser, title, (note) => expectFreeNoteFormat(note, title));
 });
 
 test('free-notes: lifecycle with draft guard, space and diary date', async ({ page, identity, isMobile }) => {
