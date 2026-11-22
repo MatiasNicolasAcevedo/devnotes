@@ -102,7 +102,7 @@ class XlsxSpacesRoundTripTest {
 
         List<Row> meta = rawRows(file, 0);
         assertThat(meta.get(0).getCell(1).asString()).isEqualTo("devnotes-xlsx");
-        assertThat(meta.get(1).getCell(1).asString()).isEqualTo("3");
+        assertThat(meta.get(1).getCell(1).asString()).isEqualTo("4");
         // The announced counts stay global to the account.
         assertThat(meta.get(3).getCell(1).asString()).isEqualTo("2");
         assertThat(meta.get(4).getCell(1).asString()).isEqualTo("2");
@@ -438,7 +438,7 @@ class XlsxSpacesRoundTripTest {
     }
 
     @ParameterizedTest(name = "versión {0}")
-    @ValueSource(strings = {"4", "0", "2.0", "02", "v2"})
+    @ValueSource(strings = {"5", "0", "2.0", "02", "v2"})
     void unknownVersionIsUnsupported(String version) {
         List<RawSheet> sheets = validSheetsV2();
         sheet(sheets, "devnotes").rows.get(1).set(1, version);
