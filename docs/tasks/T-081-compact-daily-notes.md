@@ -1,6 +1,6 @@
 ---
 id: T-081
-status: in_review
+status: mergeable
 priority: P1
 size: S
 milestone: M7
@@ -32,6 +32,16 @@ Medidas pre/post a 768×559 en Chromium/PWA según spec, 320/375 y 1280 para ref
 - Cerrar con [pruebas dirigidas del lote](../TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16), docs-check y evidencia por HEAD/base.
 
 ## Checkpoint vigente
+
+2026-11-22. Frontera reviewer independiente de cierre en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0 y Docker Desktop. [PR #84](https://github.com/MatiasNicolasAcevedo/devnotes/pull/84), HEAD revisado `f1b7ff0be17cc3054cf9b380b2b9ede84637195f`, cambio técnico `adb4f2445409f842ad5b5217bde40670f03e150e` y base `main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e`. La transición es el hijo documental de ese HEAD. Impacto en UI del diario y sus consultas de pantalla. API, permisos, datos y formato de persistencia preservados.
+
+- `gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup`, `git fetch origin main codex/t-081-compact-daily-notes` y `git log -1 --format='%H %P' origin/codex/t-081-compact-daily-notes` (exit 0) confirmaron OPEN, listo, HEAD/base/padre esperados y `verify-required SUCCESS`. La consulta GraphQL de hilos (exit 0) devolvió cero conversaciones. La consulta inicial de gh dentro del sandbox dio exit 1 por acceso a `api.github.com` y se recuperó con acceso de red autorizado.
+- `STARTER_E2E_PROJECT=starter-e2e-t081-reviewclose-ca01-8422 bash scripts/e2e.sh --grep 'CA-01:' --project mobile` (exit 0, 1/1) en worktree aislado del HEAD publicado. Conserva `fill.bottom <= availableBottom`, mínimos de altura y tolerancia inferior de 20 px después del pie. `git diff --exit-code 29289826458033a8b0386b1e7161d9bcbef4c731 HEAD -- e2e/tests/daily-notes.spec.ts` (exit 0) confirmó identidad con el caso rojo. Docker devolvió cero contenedores, redes y volúmenes para el label exacto del namespace al finalizar. Sesión OIDC ficticia, API y PostgreSQL reales.
+- Gate del implementer cotejado abajo. Cliente 48/48 y typecheck, filtros originales desktop 5/5 y mobile 6/6 sobre las mismas fuentes y base. Los casos cubren scroll interno, foco, reflujo a 320/375/1280 px, foco con viewport reducido a 320×380 y la primera línea a 768×559 dentro de 110 px con mejora de al menos 12 px. La rama móvil llena el espacio real del shell y conserva el mínimo de 220 px. Los dos hallazgos previos siguen cerrados.
+- `node scripts/docs-check.mjs`, `git diff --check 8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e...HEAD` y `git diff --exit-code adb4f2445409f842ad5b5217bde40670f03e150e HEAD -- client server e2e scripts` (exit 0) sobre el HEAD revisado. **FULL/STARTER: DIFERIDO POR EL DUEÑO**.
+- Pendiente de esta transición: validar docs-check y CI sobre el nuevo HEAD, publicar veredicto por SHA y confirmar MERGED en GitHub. T-082 se habilita tras esa confirmación. Render Auto-Deploy On Commit.
+
+## Evidencia de corrección de altura
 
 2026-11-22. Frontera implementer de corrección en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0 y Docker Desktop. [PR #84](https://github.com/MatiasNicolasAcevedo/devnotes/pull/84). Base `main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e`, entrada `29289826458033a8b0386b1e7161d9bcbef4c731`, cambio técnico `adb4f2445409f842ad5b5217bde40670f03e150e`. El HEAD de entrega es el hijo documental que contiene este checkpoint y STATUS. Impacto acotado al layout del diario. Se conserva el comportamiento de API, permisos, datos y persistencia. La decisión de entrada autoriza esta corrección y una revisión independiente de cierre.
 

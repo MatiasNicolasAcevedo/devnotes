@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-081](tasks/T-081-compact-daily-notes.md) · Diario compacto · [S-114](specs/S-114-writing-editor.md) |
-| Estado | `in_review` |
-| Acción actual | Reviewer independiente de cierre tras la corrección de altura móvil |
+| Estado | `mergeable` |
+| Acción actual | Validar CI de transición y cerrar el PR #84 |
 | Rama / PR | `codex/t-081-compact-daily-notes` · [PR #84](https://github.com/MatiasNicolasAcevedo/devnotes/pull/84) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,15 +34,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer independiente de cierre de T-081 en MatiasNicolasAcevedo/devnotes. Sesión nueva sobre el PR #84, rama codex/t-081-compact-daily-notes.
+Actuá como frontera implementer de T-082 en MatiasNicolasAcevedo/devnotes. Sesión nueva, rama codex/t-082-free-notes-lists desde main actualizado.
 
-LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-081-compact-daily-notes.md y la sección del diario de docs/specs/S-114-writing-editor.md.
+LEER: AGENTS.md, client/AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-081-compact-daily-notes.md, docs/tasks/T-082-free-notes-lists.md y la sección Lista de docs/specs/S-114-writing-editor.md.
 
-PRECONDICIÓN: gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo para revisión, base main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e y verify-required SUCCESS en el HEAD publicado. Tras git fetch, cotejá con git log -1 --format='%H %P' origin/codex/t-081-compact-daily-notes que ese HEAD es el commit documental que contiene este prompt y que su padre es adb4f2445409f842ad5b5217bde40670f03e150e. Si cambió, informá el estado comprobado y entregá el prompt vigente.
+PRECONDICIÓN: gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit debe confirmar MERGED con mergedAt y mergeCommit.oid válidos. Tras git fetch origin main, guardá mergeCommit.oid en $taskMergeOid y verificá con git merge-base --is-ancestor $taskMergeOid origin/main que main contiene el squash. Si falla la precondición, informá el estado comprobado y entregá el prompt vigente.
 
-ACCIÓN: Revisá el diff publicado contra la base y cotejá el gate del implementer. Confirmá que CA-01 móvil mantiene las aserciones geométricas y que la corrección conserva scroll, foco, reflujo y la primera línea de S-114. Los dos hallazgos previos ya están cerrados. Si el cierre es elegible, seguí el protocolo de transición, aprobación y squash ligado al SHA revisado. Si queda un bloqueo, registrá evidencia y devolvé el control a frontera o al dueño.
+ACCIÓN: En el primer commit conciliá T-081 como done con el SHA confirmado y habilitá T-082. Implementá viñetas, casillas y numeración en Libres, con validación, conversión, teclado y deshacer. Verificá recarga y restauración XLSX v4, rechazo de anidación y compatibilidad del diario.
 
-GATE: CA-01 móvil dirigido con namespace propio, comprobación de la evidencia vigente de los filtros originales de T-081, docs-check, git diff --check y verify-required SUCCESS en el HEAD que se apruebe. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: Backend y cliente dirigidos, typecheck, filtro «free-notes: lists» en desktop y mobile con namespaces propios y sintaxis --project desktop o --project mobile, docs-check y git diff --check. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: Publicá en el PR #84 el veredicto con HEAD y base. Si mergeás, confirmá state, mergedAt y mergeCommit.oid con gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. Mantené T-082 pendiente hasta confirmar MERGED del PR #84 y preservá Render Auto-Deploy On Commit. Cerrá con el único prompt de la sesión siguiente.
+SALIDA: Publicá el PR contra main, registrá HEAD/base y evidencia de T-082, confirmá verify-required SUCCESS y dejá el único prompt de reviewer independiente en STATUS y al final de la respuesta. Preservá Render Auto-Deploy On Commit.
 ```
