@@ -1,9 +1,12 @@
 package com.example.devnotes.portability.xlsx;
 
 import com.example.devnotes.daily.domain.DailyContent;
+import com.example.devnotes.freenote.application.FreeNoteService;
+import com.example.devnotes.freenote.domain.FreeNoteDocument;
 import com.example.devnotes.imagetext.domain.ImageText;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyNoteRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyVersionRecord;
+import com.example.devnotes.portability.xlsx.PortabilityRecords.FreeNoteRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ImageTextRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ReferenceRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.VoiceNoteRecord;
@@ -101,8 +104,13 @@ public class XlsxWorkbookReader {
             throw new XlsxCodecException(XlsxErrorCode.IMPORT_UNSUPPORTED_FORMAT);
         }
         Meta meta = readMeta(sheets.get(0));
-        boolean imageLibrary = meta.version() == 3;
-        requireSheets(sheets, imageLibrary ? XlsxFormat.SHEETS : XlsxFormat.SHEETS_V1_V2);
+        requireSheets(
+                sheets,
+                switch (meta.version()) {
+                    case 4 -> XlsxFormat.SHEETS;
+                    case 3 -> XlsxFormat.SHEETS_V3;
+                    default -> XlsxFormat.SHEETS_V1_V2;
+                });
         boolean spaces = meta.version() >= 2;
 
         List<ReferenceRecord> references = new ArrayList<>();
@@ -134,10 +142,16 @@ public class XlsxWorkbookReader {
                 (key, json) -> voiceNotes.add(voiceNote(key, json, spaces)));
 
         List<ImageTextRecord> imageTexts = new ArrayList<>();
-        if (imageLibrary) {
+        if (meta.version() >= 3) {
             readSheet(
                     sheets.get(5), XlsxFormat.HEADER_IMAGE_TEXTS, (key, json) -> imageTexts.add(imageText(key, json)));
             requireCount(meta.imageTexts(), imageTexts.size(), 8);
+        }
+
+        List<FreeNoteRecord> freeNotes = new ArrayList<>();
+        if (meta.version() == 4) {
+            readSheet(sheets.get(6), XlsxFormat.HEADER_FREE_NOTES, (key, json) -> freeNotes.add(freeNote(key, json)));
+            requireCount(meta.freeNotes(), freeNotes.size(), 9);
         }
 
         requireCount(meta.references(), references.size(), 4);
@@ -147,7 +161,7 @@ public class XlsxWorkbookReader {
         return new XlsxWorkbookContent(
                 meta.version(),
                 meta.exportedAt(),
-                new PortabilityRecords(references, dailyNotes, dailyVersions, voiceNotes, imageTexts));
+                new PortabilityRecords(references, dailyNotes, dailyVersions, voiceNotes, imageTexts, freeNotes));
     }
 
     // ── Workbook structure ──
@@ -159,7 +173,8 @@ public class XlsxWorkbookReader {
             int dailyNotes,
             int dailyVersions,
             int voiceNotes,
-            int imageTexts) {}
+            int imageTexts,
+            int freeNotes) {}
 
     /** Identity of a daily note, and of its version, within the account since S-109. */
     private record SpaceDate(PrivateSpace space, LocalDate date) {}
@@ -191,11 +206,16 @@ public class XlsxWorkbookReader {
                         || (index == 1
                                 && !XlsxFormat.VERSION_1.equals(value)
                                 && !XlsxFormat.VERSION_2.equals(value)
+                                && !XlsxFormat.VERSION_3.equals(value)
                                 && !XlsxFormat.VERSION.equals(value))) {
                     throw new XlsxCodecException(XlsxErrorCode.IMPORT_UNSUPPORTED_FORMAT);
                 }
-                if (index == 1 && XlsxFormat.VERSION.equals(value)) {
-                    keys = XlsxFormat.META_KEYS;
+                if (index == 1) {
+                    keys = switch (value) {
+                        case XlsxFormat.VERSION -> XlsxFormat.META_KEYS;
+                        case XlsxFormat.VERSION_3 -> XlsxFormat.META_KEYS_V3;
+                        default -> XlsxFormat.META_KEYS_V1_V2;
+                    };
                 }
                 if (index == 2 && parseInstant(value) == null) {
                     throw invalidRecord(XlsxFormat.SHEET_META, row.getRowNum());
@@ -214,14 +234,16 @@ public class XlsxWorkbookReader {
         if (values.size() != keys.size()) {
             throw invalidRecord(XlsxFormat.SHEET_META, null);
         }
+        int version = Integer.parseInt(values.get(1));
         return new Meta(
-                Integer.parseInt(values.get(1)),
+                version,
                 parseInstant(values.get(2)),
                 Integer.parseInt(values.get(3)),
                 Integer.parseInt(values.get(4)),
                 Integer.parseInt(values.get(5)),
                 Integer.parseInt(values.get(6)),
-                XlsxFormat.VERSION.equals(values.get(1)) ? Integer.parseInt(values.get(7)) : 0);
+                version >= 3 ? Integer.parseInt(values.get(7)) : 0,
+                version == 4 ? Integer.parseInt(values.get(8)) : 0);
     }
 
     /** The versioned sheets in order and nothing else. Reports the expected name, never a name from the file. */
@@ -417,6 +439,22 @@ public class XlsxWorkbookReader {
                 UUID.fromString(key),
                 ImageText.validate(string(json, "text")),
                 instant(json, "createdAt"));
+    }
+
+    private static FreeNoteRecord freeNote(String key, JsonNode json) {
+        requireFields(json, true, "title", "document", "createdAt", "updatedAt");
+        String title = string(json, "title");
+        if (!UUID_PATTERN.matcher(key).matches() || !title.equals(FreeNoteService.validateTitle(title))) {
+            throw new RecordRejected();
+        }
+        JsonNode document = json.get("document");
+        FreeNoteDocument.validate(document);
+        Instant createdAt = instant(json, "createdAt");
+        Instant updatedAt = instant(json, "updatedAt");
+        if (updatedAt.isBefore(createdAt)) {
+            throw new RecordRejected();
+        }
+        return new FreeNoteRecord(space(json, true), UUID.fromString(key), title, document, createdAt, updatedAt);
     }
 
     /** The exact fields of the record in its version: version 2 adds a mandatory {@code space}. */

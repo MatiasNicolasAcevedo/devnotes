@@ -102,7 +102,8 @@ public class PortabilityExportService {
                 || counts.dailyNotes() > XlsxFormat.MAX_RECORDS
                 || counts.dailyVersions() > XlsxFormat.MAX_RECORDS
                 || counts.voiceNotes() > XlsxFormat.MAX_RECORDS
-                || counts.imageTexts() > XlsxFormat.MAX_RECORDS) {
+                || counts.imageTexts() > XlsxFormat.MAX_RECORDS
+                || counts.freeNotes() > XlsxFormat.MAX_RECORDS) {
             throw new ExportLimitExceededException();
         }
         List<Stream<?>> opened = new ArrayList<>();
@@ -115,6 +116,7 @@ public class PortabilityExportService {
                     lazy(() -> repository.dailyVersions(ownerId), opened),
                     lazy(() -> repository.voiceNotes(ownerId), opened),
                     lazy(() -> repository.imageTexts(ownerId), opened),
+                    lazy(() -> repository.freeNotes(ownerId), opened),
                     out);
         } finally {
             opened.forEach(Stream::close);

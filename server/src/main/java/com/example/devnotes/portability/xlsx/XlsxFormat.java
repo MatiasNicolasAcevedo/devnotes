@@ -5,15 +5,16 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Constants of the {@code devnotes-xlsx} format: version 3 is written and versions 1 to 3 are read. */
+/** Constants of the {@code devnotes-xlsx} format: version 4 is written and versions 1 to 4 are read. */
 public final class XlsxFormat {
 
     static final String FORMAT = "devnotes-xlsx";
     /** Version written by the exporter. */
-    static final String VERSION = "3";
+    static final String VERSION = "4";
 
     static final String VERSION_1 = "1";
     static final String VERSION_2 = "2";
+    static final String VERSION_3 = "3";
     static final String NOTICE = "Respaldo de DevNotes. La importación usa solo la columna dato_json; no editar.";
 
     static final String SHEET_META = "devnotes";
@@ -25,8 +26,18 @@ public final class XlsxFormat {
             List.of(SHEET_META, SHEET_REFERENCES, SHEET_DAILY, SHEET_VERSIONS, SHEET_VOICE);
 
     static final String SHEET_IMAGE_TEXTS = "imagen_textos";
-    static final List<String> SHEETS =
+    static final String SHEET_FREE_NOTES = "notas_libres";
+    static final List<String> SHEETS_V3 =
             List.of(SHEET_META, SHEET_REFERENCES, SHEET_DAILY, SHEET_VERSIONS, SHEET_VOICE, SHEET_IMAGE_TEXTS);
+
+    static final List<String> SHEETS = List.of(
+            SHEET_META,
+            SHEET_REFERENCES,
+            SHEET_DAILY,
+            SHEET_VERSIONS,
+            SHEET_VOICE,
+            SHEET_IMAGE_TEXTS,
+            SHEET_FREE_NOTES);
 
     static final String KEY_FORMAT = "formato";
     static final String KEY_VERSION = "version";
@@ -43,7 +54,7 @@ public final class XlsxFormat {
             SHEET_VOICE,
             KEY_NOTICE);
 
-    static final List<String> META_KEYS = List.of(
+    static final List<String> META_KEYS_V3 = List.of(
             KEY_FORMAT,
             KEY_VERSION,
             KEY_EXPORTED,
@@ -77,6 +88,21 @@ public final class XlsxFormat {
 
     static final List<String> HEADER_IMAGE_TEXTS =
             List.of("clave", "parte", "partes", "dato_json", "texto", "creada_utc", COLUMN_SPACE);
+
+    static final List<String> META_KEYS = List.of(
+            KEY_FORMAT,
+            KEY_VERSION,
+            KEY_EXPORTED,
+            SHEET_REFERENCES,
+            SHEET_DAILY,
+            SHEET_VERSIONS,
+            SHEET_VOICE,
+            SHEET_IMAGE_TEXTS,
+            SHEET_FREE_NOTES,
+            KEY_NOTICE);
+
+    static final List<String> HEADER_FREE_NOTES = List.of(
+            "clave", "parte", "partes", "dato_json", "titulo", "texto", "creada_utc", "actualizada_utc", COLUMN_SPACE);
 
     static final int COLUMN_KEY = 0;
     static final int COLUMN_PART = 1;

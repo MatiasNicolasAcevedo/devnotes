@@ -164,8 +164,8 @@ class XlsxWorkbookReaderTest {
         return Stream.of(
                 mutation("otro formato", s -> meta(s, 0).set(1, "devnotes-csv")),
                 mutation("formato con otra capitalización", s -> meta(s, 0).set(1, "DevNotes-XLSX")),
-                mutation("versión 4", s -> meta(s, 1).set(1, "4")),
-                mutation("versión numérica 4", s -> meta(s, 1).set(1, 4)),
+                mutation("versión 5", s -> meta(s, 1).set(1, "5")),
+                mutation("versión numérica 5", s -> meta(s, 1).set(1, 5)),
                 mutation("versión 1.0", s -> meta(s, 1).set(1, "1.0")),
                 mutation("sin fila formato", s -> sheet(s, "devnotes").rows.remove(0)),
                 mutation("clave formato alterada", s -> meta(s, 0).set(0, "format")),

@@ -388,11 +388,11 @@ class PortabilityExportApiIT {
         var a = login();
         byte[] file = XlsxTestBooks.atByteSize(compressed, 1);
         doAnswer(call -> {
-                    call.<OutputStream>getArgument(7).write(file);
+                    call.<OutputStream>getArgument(8).write(file);
                     return null;
                 })
                 .when(writer)
-                .write(any(), any(), any(), any(), any(), any(), any(), any());
+                .write(any(), any(), any(), any(), any(), any(), any(), any(), any());
 
         assertExportLimit(a.download(EXPORT));
     }
@@ -475,7 +475,7 @@ class PortabilityExportApiIT {
                 })
                 .doCallRealMethod()
                 .when(writer)
-                .write(any(), any(), any(), any(), any(), any(), any(), any());
+                .write(any(), any(), any(), any(), any(), any(), any(), any(), any());
 
         PortabilityRecords records = export(a).records();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM voice_note WHERE owner_id = ?::uuid", Long.class, owner))

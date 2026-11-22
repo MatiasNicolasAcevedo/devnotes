@@ -1,7 +1,9 @@
 package com.example.devnotes.portability.persistence;
 
+import com.example.devnotes.freenote.domain.FreeNoteDocument;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyNoteRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyVersionRecord;
+import com.example.devnotes.portability.xlsx.PortabilityRecords.FreeNoteRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ImageTextRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ReferenceRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.VoiceNoteRecord;
@@ -53,7 +55,8 @@ public class PortabilityReadRepository {
                                 + "WHERE dn.owner_id = ?",
                         ownerId),
                 count("SELECT count(*) FROM voice_note WHERE owner_id = ?", ownerId),
-                count("SELECT count(*) FROM image_text WHERE owner_id = ?", ownerId));
+                count("SELECT count(*) FROM image_text WHERE owner_id = ?", ownerId),
+                count("SELECT count(*) FROM free_note WHERE owner_id = ?", ownerId));
     }
 
     public Stream<ReferenceRecord> references(UUID ownerId) {
@@ -114,6 +117,20 @@ public class PortabilityReadRepository {
                 "SELECT id, space, text, created_at FROM image_text WHERE owner_id = ? ORDER BY created_at, id",
                 (rs, row) -> new ImageTextRecord(
                         space(rs), rs.getObject("id", UUID.class), rs.getString("text"), instant(rs, "created_at")),
+                ownerId);
+    }
+
+    public Stream<FreeNoteRecord> freeNotes(UUID ownerId) {
+        return jdbc.queryForStream(
+                "SELECT id, space, title, document::text AS document, created_at, updated_at FROM free_note "
+                        + "WHERE owner_id = ? ORDER BY created_at, id",
+                (rs, row) -> new FreeNoteRecord(
+                        space(rs),
+                        rs.getObject("id", UUID.class),
+                        rs.getString("title"),
+                        FreeNoteDocument.read(rs.getString("document")),
+                        instant(rs, "created_at"),
+                        instant(rs, "updated_at")),
                 ownerId);
     }
 

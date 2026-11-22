@@ -102,7 +102,7 @@ class PortabilityImageTextsApiIT {
 
         byte[] file = exported(source);
         var book = reader.read(file);
-        assertThat(book.version()).isEqualTo(3);
+        assertThat(book.version()).isEqualTo(4);
         assertThat(book.records().imageTexts()).containsExactly(work, personal);
         assertThat(XlsxTestBooks.entries(file).keySet())
                 .noneMatch(path -> path.contains("/media/") || path.contains("/drawings/"));
@@ -110,7 +110,7 @@ class PortabilityImageTextsApiIT {
         assertThat(preview.statusCode()).isEqualTo(200);
         var previewBody = JSON.readTree(preview.body());
         assertThat(previewBody.path("accountEmpty").asBoolean()).isTrue();
-        assertThat(previewBody.path("version").asInt()).isEqualTo(3);
+        assertThat(previewBody.path("version").asInt()).isEqualTo(4);
         assertThat(previewBody.at("/counts/imageTexts").asInt()).isEqualTo(2);
         assertThat(previewBody.at("/countsBySpace/work/imageTexts").asInt()).isEqualTo(1);
         assertThat(previewBody.at("/countsBySpace/personal/imageTexts").asInt()).isEqualTo(1);

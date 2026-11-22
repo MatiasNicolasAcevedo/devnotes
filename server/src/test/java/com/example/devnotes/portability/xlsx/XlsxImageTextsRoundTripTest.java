@@ -47,17 +47,17 @@ class XlsxImageTextsRoundTripTest {
         new XlsxWorkbookWriter().write(records, CREATED, out);
         byte[] bytes = out.toByteArray();
 
-        assertThat(reader.read(bytes)).isEqualTo(new XlsxWorkbookContent(3, CREATED, records));
+        assertThat(reader.read(bytes)).isEqualTo(new XlsxWorkbookContent(4, CREATED, records));
         try (var book = new ReadableWorkbook(new ByteArrayInputStream(bytes));
                 var sheets = book.getSheets()) {
             var all = sheets.toList();
             assertThat(all)
                     .extracting(s -> s.getName())
-                    .containsExactly("devnotes", "referencias", "diarias", "versiones", "voz", SHEET);
+                    .containsExactly("devnotes", "referencias", "diarias", "versiones", "voz", SHEET, "notas_libres");
             var manifest = all.getFirst().read();
             assertThat(manifest.get(7).getCell(0).asString()).isEqualTo(SHEET);
             assertThat(manifest.get(7).getCell(1).asString()).isEqualTo("2");
-            var rows = all.getLast().read();
+            var rows = all.get(5).read();
             var header = rows.getFirst();
             assertThat(IntStream.range(0, header.getCellCount())
                             .mapToObj(i -> header.getCell(i).asString())

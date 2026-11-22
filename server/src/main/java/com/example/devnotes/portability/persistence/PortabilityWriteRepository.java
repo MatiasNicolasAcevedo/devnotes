@@ -3,6 +3,7 @@ package com.example.devnotes.portability.persistence;
 import com.example.devnotes.identity.AccountWriteLock;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyNoteRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.DailyVersionRecord;
+import com.example.devnotes.portability.xlsx.PortabilityRecords.FreeNoteRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ImageTextRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.ReferenceRecord;
 import com.example.devnotes.portability.xlsx.PortabilityRecords.VoiceNoteRecord;
@@ -41,7 +42,7 @@ public class PortabilityWriteRepository {
     }
 
     /**
-     * True when the owner has no daily notes, voice notes, references or image texts in either space.
+     * True when the owner has no daily notes, voice notes, references, image texts or free notes in either space.
      * Versions hang from daily notes; creation receipts do not contain recoverable texts.
      */
     public boolean accountEmpty(UUID ownerId) {
@@ -49,8 +50,10 @@ public class PortabilityWriteRepository {
                 "SELECT NOT (EXISTS (SELECT 1 FROM daily_note WHERE owner_id = ?) "
                         + "OR EXISTS (SELECT 1 FROM voice_note WHERE owner_id = ?) "
                         + "OR EXISTS (SELECT 1 FROM reference_item WHERE owner_id = ?) "
-                        + "OR EXISTS (SELECT 1 FROM image_text WHERE owner_id = ?))",
+                        + "OR EXISTS (SELECT 1 FROM image_text WHERE owner_id = ?) "
+                        + "OR EXISTS (SELECT 1 FROM free_note WHERE owner_id = ?))",
                 Boolean.class,
+                ownerId,
                 ownerId,
                 ownerId,
                 ownerId,
@@ -143,6 +146,26 @@ public class PortabilityWriteRepository {
             });
         }
         jdbc.batchUpdate("INSERT INTO image_text (id, owner_id, space, text, created_at) VALUES (?, ?, ?, ?, ?)", rows);
+    }
+
+    public void insertFreeNotes(UUID ownerId, List<UUID> ids, List<FreeNoteRecord> records) {
+        List<Object[]> rows = new ArrayList<>(records.size());
+        for (int i = 0; i < records.size(); i++) {
+            FreeNoteRecord record = records.get(i);
+            rows.add(new Object[] {
+                ids.get(i),
+                ownerId,
+                record.space().value(),
+                record.title(),
+                record.document().toString(),
+                timestamp(record.createdAt()),
+                timestamp(record.updatedAt())
+            });
+        }
+        jdbc.batchUpdate(
+                "INSERT INTO free_note (id, owner_id, space, title, document, revision, created_at, updated_at) "
+                        + "VALUES (?, ?, ?, ?, CAST(? AS jsonb), 1, ?, ?)",
+                rows);
     }
 
     private static OffsetDateTime timestamp(Instant instant) {

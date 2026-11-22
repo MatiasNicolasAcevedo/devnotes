@@ -36,7 +36,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Service
 public class PortabilityImportService {
 
-    /** Summary of a valid file: its format version (1 to 3), counts and whether the account can receive it. */
+    /** Summary of a valid file: its format version (1 to 4), counts and whether the account can receive it. */
     public record ImportPreview(
             int version, Instant exportedAt, Counts counts, SpaceCounts countsBySpace, boolean accountEmpty) {}
 
@@ -94,7 +94,7 @@ public class PortabilityImportService {
     }
 
     private void write(UUID ownerId, PortabilityRecords records) {
-        // Serialize the empty-account check with imports and writes to the account, including Imagen.
+        // Serialize the empty-account check with imports and writes to the account, including Imagen and Libres.
         if (!repository.lockOwner(ownerId) || !repository.accountEmpty(ownerId)) {
             throw new ImportAccountNotEmptyException();
         }
@@ -145,6 +145,7 @@ public class PortabilityImportService {
 
         repository.insertVoiceNotes(ownerId, newIds(records.voiceNotes().size()), records.voiceNotes());
         repository.insertImageTexts(ownerId, newIds(records.imageTexts().size()), records.imageTexts());
+        repository.insertFreeNotes(ownerId, newIds(records.freeNotes().size()), records.freeNotes());
     }
 
     /**
@@ -185,7 +186,8 @@ public class PortabilityImportService {
                 records.dailyNotes().size(),
                 records.dailyVersions().size(),
                 records.voiceNotes().size(),
-                records.imageTexts().size());
+                records.imageTexts().size(),
+                records.freeNotes().size());
     }
 
     /** Counts of each space. A version 1 book is read as Trabajo, so its Personal counts are zero. */
@@ -208,6 +210,9 @@ public class PortabilityImportService {
                         .filter(record -> record.space() == space)
                         .count(),
                 (int) records.imageTexts().stream()
+                        .filter(record -> record.space() == space)
+                        .count(),
+                (int) records.freeNotes().stream()
                         .filter(record -> record.space() == space)
                         .count());
     }

@@ -85,7 +85,7 @@ class XlsxSpacesRoundTripTest {
         byte[] file = write(records);
         XlsxWorkbookContent content = reader.read(file);
 
-        assertThat(content.version()).isEqualTo(3);
+        assertThat(content.version()).isEqualTo(4);
         assertThat(content.exportedAt()).isEqualTo(EXPORTED);
         assertThat(content.records()).isEqualTo(records);
         assertThat(content.records().dailyNotes())
@@ -214,12 +214,12 @@ class XlsxSpacesRoundTripTest {
     void versionOneToModelToCurrentVersionToModelIsIntact() throws IOException {
         PortabilityRecords fromV1 = reader.read(fixture()).records();
 
-        XlsxWorkbookContent v3 = reader.read(write(fromV1));
+        XlsxWorkbookContent v4 = reader.read(write(fromV1));
 
-        assertThat(v3.version()).isEqualTo(3);
-        assertThat(v3.records()).isEqualTo(fromV1);
-        assertThat(v3.records().references()).extracting(ReferenceRecord::space).containsOnly(WORK);
-        assertThat(v3.records().voiceNotes()).extracting(VoiceNoteRecord::space).containsOnly(WORK);
+        assertThat(v4.version()).isEqualTo(4);
+        assertThat(v4.records()).isEqualTo(fromV1);
+        assertThat(v4.records().references()).extracting(ReferenceRecord::space).containsOnly(WORK);
+        assertThat(v4.records().voiceNotes()).extracting(VoiceNoteRecord::space).containsOnly(WORK);
     }
 
     @Test
