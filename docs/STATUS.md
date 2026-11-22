@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-085](tasks/T-085-side-reading.md) · Consulta al lado · [S-115](specs/S-115-side-reading.md) |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente de la consulta al lado en Diario y Libres |
+| Estado | `mergeable` |
+| Acción actual | Verificar la CI del HEAD de transición y hacer squash del PR #88 |
 | Rama / PR | `codex/t-085-side-reading` · [PR #88](https://github.com/MatiasNicolasAcevedo/devnotes/pull/88) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,15 +34,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer independiente de T-085 en MatiasNicolasAcevedo/devnotes. Sesión nueva, PR #88.
+Actuá como frontera implementer de T-086 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-085-side-reading.md y docs/specs/S-115-side-reading.md.
+LEER: AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-085-side-reading.md, docs/tasks/T-086-ai-groq-api.md y docs/specs/S-116-ai-workspace.md.
 
-PRECONDICIÓN: gh pr view 88 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, isDraft=false, base main en b1db344cca716bdde10bd61cbb6855cd34c76737 y verify-required SUCCESS. Tomá headRefOid como $reviewHead. Tras git fetch origin main codex/t-085-side-reading, verificá que $reviewHead coincida con origin/codex/t-085-side-reading, que su padre sea b14145fc884b9827613d49397c5345e09fe4084e y que git diff --name-only "${reviewHead}^" $reviewHead liste solo docs/STATUS.md y docs/tasks/T-085-side-reading.md. Si difiere, informá el estado real y corregí el prompt.
+PRECONDICIÓN: gh pr view 88 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit debe confirmar MERGED, mergedAt válido y mergeCommit.oid válido. Tras git fetch origin main, comprobá con git merge-base --is-ancestor que ese SHA esté en origin/main. Si difiere, informá el estado real y entregá el prompt vigente.
 
-ACCIÓN: Revisá el diff publicado contra esa base desde un checkout aislado. Contrastá ancho útil y proporción, selector, formatos de solo lectura, foco, scroll, borrador, navegación angosta y separación entre cuentas y espacios con S-115. Si hay hallazgos, registrá sus condiciones de cierre y devolvé el mismo PR a un implementer nuevo. Si aprobás, publicá la transición documental, verificá su CI y hacé squash merge ligado al SHA revisado según AUTONOMY. Confirmá MERGED, mergedAt y mergeCommit.oid con gh pr view 88 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit.
+ACCIÓN: Partí de origin/main en codex/t-086-ai-groq-api. Conciliá T-085 a done con el merge confirmado en el primer commit. Implementá options/messages y Groq según T-086 y S-116, con habilitación cerrada por cuenta y proveedor y clave separada de Voz. Usá datos ficticios y el doble del proveedor. Publicá un solo PR contra main.
 
-GATE: Comprobá los dirigidos, typecheck y E2E filtrado 'side reading:' en desktop y mobile sobre las fuentes y base revisadas. Si repetís E2E, usá namespaces propios y verificá la limpieza por labels. Exigí docs-check y verify-required sobre el HEAD vigente. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: Desde server/ con Git Bash, JDK 21 y PostgreSQL Testcontainers, ejecutá ./mvnw -q verify -Dtest=GroqAiClientTest,AiMessageServiceTest -Dit.test=AiMessageApiIT,VoiceTranscriptionApiIT -Djacoco.skip=true. Registrá fases y cantidades, docs-check, git diff --check y verify-required del HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: Registrá HEAD/base y veredicto. Si confirmás MERGED, entregá el prompt de una sesión nueva de frontera implementer de T-086 con el PR #88 MERGED como precondición y copialo completo al final. Preservá Render Auto-Deploy On Commit.
+SALIDA: Registrá HEAD, base y evidencia en T-086. Dejá el prompt de una sesión nueva de frontera reviewer independiente en STATUS y completo al final de la respuesta. Preservá Render Auto-Deploy On Commit.
 ```
