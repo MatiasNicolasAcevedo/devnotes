@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-080](tasks/T-080-free-notes-workspace.md) · Libres desde Notas · [S-113](specs/S-113-free-notes.md) |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente de la corrección de reapertura |
+| Estado | `changes_requested` |
+| Acción actual | Decisión de frontera o dueño sobre el hallazgo de ronda 2 |
 | Rama / PR | `codex/t-080-free-notes-workspace` · [PR #83](https://github.com/MatiasNicolasAcevedo/devnotes/pull/83) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,11 +34,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer independiente de T-080 en MatiasNicolasAcevedo/devnotes. Sesión nueva, ronda 2, mismo PR 83 y rama codex/t-080-free-notes-workspace.
+Actuá como frontera a cargo del cierre de T-080 en MatiasNicolasAcevedo/devnotes. Sesión nueva de decisión con el dueño tras la ronda 2, mismo PR 83 y rama codex/t-080-free-notes-workspace.
 
-LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-080-free-notes-workspace.md, S-113 y el documento de Libres en S-114.
-PRECONDICIÓN: gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo y base main en 7a700175b98669c3a1d9457150df4230279f2c62. Sobre la rama publicada, el HEAD debe coincidir con git log -1 --format=%H -- docs/STATUS.md, su padre con 92a7962002f3cb5b351fd2430ba77eb0bebb5c05 y T-080 debe figurar in_review. Si no coincide, informá el estado real y devolvé el prompt vigente.
-ACCIÓN: Revisá el diff publicado contra main y la corrección del hallazgo de ronda 1. Comprobá que al reabrir desde Libres sin recargar aparecen el título y el cuerpo confirmados, que el segundo PUT usa la revisión del primer guardado y que la segunda edición persiste. Verificá la guardia de borradores, el refetch en curso y la recuperación con confirmación ante un 409 auténtico.
-GATE: Comprobá la evidencia del checkpoint, corré la regresión y los dirigidos de los riesgos encontrados, docs-check y diff --check, y verificá verify-required verde para el HEAD y base vigentes. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-SALIDA: Si aprobás, seguí el protocolo de reviewer para la transición documental, CI del nuevo HEAD y squash ligado al SHA aprobado, y confirmá MERGED con gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. Si queda un hallazgo en esta segunda ronda, documentalo y devolvé a frontera o dueño. Conservá Render Auto-Deploy On Commit. Cerrá con el prompt completo de la sesión siguiente.
+LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-080-free-notes-workspace.md y S-113, sección Interacción.
+
+PRECONDICIÓN: gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid debe confirmar OPEN, listo y base main en 7a700175b98669c3a1d9457150df4230279f2c62. En la rama publicada, el HEAD debe coincidir con git log -1 --format=%H -- docs/STATUS.md y T-080 debe figurar changes_requested. Si cambió el estado, informá el dato comprobado y entregá el prompt vigente.
+
+ACCIÓN: Revisá el hallazgo de ronda 2. En el SHA revisado 710a225c8a50bca9619cb33bde7f49b5022fef4a, tras un 409, el editor muestra el cuerpo corregido y Copiar texto local copia el cuerpo anterior. La reapertura y el segundo guardado ya pasaron. La decisión exacta para el dueño es «¿Autorizás reabrir el ciclo de T-080 en el mismo PR para corregir la copia del borrador tras un 409 con el criterio de cierre documentado?». Si lo autoriza, dejá un contrato de corrección cerrado para una sesión independiente con regresión roja y verde. Conservá la confirmación de descarte y la revisión del guardado.
+
+GATE: Si se autoriza corregir, gate diario dirigido con la regresión de copia, reapertura, recuperación 409, docs-check y CI del SHA vigente. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+
+SALIDA: Registrá la decisión en la tarea y el único prompt vigente en STATUS. Mantené el PR abierto hasta una aprobación independiente y preservá Render Auto-Deploy On Commit. Terminá con el prompt completo de la sesión siguiente.
 ```
