@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-082](tasks/T-082-free-notes-lists.md) · Listas en Libres · [S-114](specs/S-114-writing-editor.md) |
-| Estado | `in_progress` |
-| Acción actual | Implementar y verificar listas de Libres |
-| Rama / PR | `codex/t-082-free-notes-lists` |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente de listas en Libres |
+| Rama / PR | `codex/t-082-free-notes-lists` · [PR #85](https://github.com/MatiasNicolasAcevedo/devnotes/pull/85) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
@@ -27,22 +27,22 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 | Dato | Valor |
 |---|---|
 | Último integrado válido | FULL local del 2026-11-15 sobre `398801f` ([T-069](tasks/T-069-ocr-workspace.md#evidencia-del-full-de-cierre)); STARTER de T-068 conservado |
-| Mergeado desde entonces | T-070 (recorrido E2E de OCR), T-074 (navegación de Imagen), T-071 y T-092 (documentales) y la adopción documental del flujo |
+| Mergeado desde entonces | T-070 (recorrido E2E de OCR), T-074 (navegación de Imagen), T-071 y T-092 (documentales), la adopción documental del flujo y el encadenamiento del lote hasta T-081 |
 | Corte acumulado | Desde `7aa8946` hasta el HEAD de `main` que indique el dueño ([TESTING](TESTING.md#corte-acumulado-vigente)). El FULL/STARTER de I5 sigue diferido |
 | Recomendación | Ejecutar el integrado del corte acumulado con V8 y V9 cuando el dueño lo ordene. T-080 incorpora rutas privadas en Spring Security |
 
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de T-082 en MatiasNicolasAcevedo/devnotes. Sesión nueva, rama codex/t-082-free-notes-lists desde main actualizado.
+Actuá como frontera reviewer independiente de T-082 en MatiasNicolasAcevedo/devnotes. Sesión nueva, PR #85 contra main.
 
-LEER: AGENTS.md, client/AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-081-compact-daily-notes.md, docs/tasks/T-082-free-notes-lists.md y la sección Lista de docs/specs/S-114-writing-editor.md.
+LEER: AGENTS.md, client/AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/agents/merger.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-082-free-notes-lists.md y la sección Lista de docs/specs/S-114-writing-editor.md.
 
-PRECONDICIÓN: gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit debe confirmar MERGED con mergedAt y mergeCommit.oid válidos. Tras git fetch origin main, guardá mergeCommit.oid en $taskMergeOid y verificá con git merge-base --is-ancestor $taskMergeOid origin/main que main contiene el squash. Si falla la precondición, informá el estado comprobado y entregá el prompt vigente.
+PRECONDICIÓN: gh pr view 85 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo, base main@9e545c63a52415568dde2a548c999e1b27bd80ad y verify-required SUCCESS. Tras git fetch origin main codex/t-082-free-notes-lists, comprobá que headRefOid coincide con el HEAD remoto y es el cierre documental hijo de f82041276528bb555449886299191b02f2fca6cb. Si cambia HEAD o base, informá el estado real y revisá el gate antes de evaluar el merge.
 
-ACCIÓN: En el primer commit conciliá T-081 como done con el SHA confirmado y habilitá T-082. Implementá viñetas, casillas y numeración en Libres, con validación, conversión, teclado y deshacer. Verificá recarga y restauración XLSX v4, rechazo de anidación y compatibilidad del diario.
+ACCIÓN: Revisá el diff publicado en un checkout aislado y cotejá esquema de Libres, conversión y deshacer, casillas por teclado y toque, portapapeles, rechazo de anidación, diario previo y recarga/restauración XLSX v4 contra la evidencia por SHA. Repetí los dirigidos que pida el riesgo. Si hay hallazgos, dejá condiciones de cierre concretas. Si aprobás, publicá la transición a mergeable con el prompt de T-083 condicionado al merge, verificá CI del nuevo HEAD y hacé squash ligado al SHA aprobado según AUTONOMY.
 
-GATE: Backend y cliente dirigidos, typecheck, filtro «free-notes: lists» en desktop y mobile con namespaces propios y sintaxis --project desktop o --project mobile, docs-check y git diff --check. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: Pruebas dirigidas según riesgo, docs-check, git diff --check y verify-required del HEAD evaluado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: Publicá el PR contra main, registrá HEAD/base y evidencia de T-082, confirmá verify-required SUCCESS y dejá el único prompt de reviewer independiente en STATUS y al final de la respuesta. Preservá Render Auto-Deploy On Commit.
+SALIDA: Publicá el veredicto por HEAD/base. Si mergeás, confirmá state, mergedAt y mergeCommit.oid con gh pr view 85 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. Cerrá con el único prompt vigente de la sesión siguiente. Preservá Render Auto-Deploy On Commit.
 ```
