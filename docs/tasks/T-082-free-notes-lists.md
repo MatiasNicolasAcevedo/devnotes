@@ -1,6 +1,6 @@
 ---
 id: T-082
-status: draft
+status: in_progress
 priority: P1
 size: S
 milestone: M7
@@ -34,4 +34,4 @@ Casilla por teclado/toque, conversión y deshacer. Enter continúa y vacío sale
 
 ## Checkpoint vigente
 
-Habilitar en sesión nueva tras confirmar [T-081](T-081-compact-daily-notes.md) MERGED y conciliarla. Registrar el SHA/base y la evidencia efectivamente ejecutada.
+2026-11-22. Frontera implementer en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell y gh. T-081 conciliada tras comprobar MERGED en GitHub y ascendencia del squash en `origin/main` (exit 0). Base `9e545c63a52415568dde2a548c999e1b27bd80ad`. Pendiente: implementación y gate dirigido.

@@ -2,14 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-081](tasks/T-081-compact-daily-notes.md) · Diario compacto · [S-114](specs/S-114-writing-editor.md) |
-| Estado | `mergeable` |
-| Acción actual | Validar CI de transición y cerrar el PR #84 |
-| Rama / PR | `codex/t-081-compact-daily-notes` · [PR #84](https://github.com/MatiasNicolasAcevedo/devnotes/pull/84) |
+| Tarea y contrato | [T-082](tasks/T-082-free-notes-lists.md) · Listas en Libres · [S-114](specs/S-114-writing-editor.md) |
+| Estado | `in_progress` |
+| Acción actual | Implementar y verificar listas de Libres |
+| Rama / PR | `codex/t-082-free-notes-lists` |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
-El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-080 quedó mergeada y conciliada.
+El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-081 quedó mergeada y conciliada.
 
 ## Pendientes del dueño
 
