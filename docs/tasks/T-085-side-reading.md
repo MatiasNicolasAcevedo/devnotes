@@ -1,6 +1,6 @@
 ---
 id: T-085
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M7
@@ -33,7 +33,7 @@ Editor, scroll y borrador se conservan al cerrar/estrechar. Selector y panel no 
 
 ## Checkpoint vigente
 
-2026-11-22. Frontera reviewer independiente en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0 y Docker Desktop 28.5.1. [PR #88](https://github.com/MatiasNicolasAcevedo/devnotes/pull/88). Checkout aislado de `f129af592e5a5d7c6a743fc3b90c263db850dd94` contra `main@b1db344cca716bdde10bd61cbb6855cd34c76737`. Veredicto técnico conforme a S-115, sin cambios requeridos. Pendiente al publicar esta transición: comprobar la CI sobre su SHA, registrar el veredicto y confirmar el squash en GitHub.
+2026-11-22. Frontera reviewer independiente en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0 y Docker Desktop 28.5.1. [PR #88](https://github.com/MatiasNicolasAcevedo/devnotes/pull/88). Checkout aislado de `f129af592e5a5d7c6a743fc3b90c263db850dd94` contra `main@b1db344cca716bdde10bd61cbb6855cd34c76737`. Veredicto técnico conforme a S-115, sin cambios requeridos. Cierre conciliado por T-093. GitHub confirmó PR #88 MERGED el 2026-11-22T21:02:49Z con squash `f14701055cff6b13b710cf1d2e5e7b138edc3949`, ancestro de origin/main (exit 0).
 
 - Identidad del diff. `gh pr view 88 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup` y `git fetch origin main codex/t-085-side-reading` (exit 0). HEAD y base coinciden con las refs de origin; `git rev-parse HEAD^` dio `b14145fc884b9827613d49397c5345e09fe4084e`. `git diff --name-only HEAD^ HEAD` dio solo STATUS y T-085. `gh run view 45068909408 --repo MatiasNicolasAcevedo/devnotes --json headSha,event,status,conclusion` (exit 0) confirmó `verify-required` verde ligado al HEAD inicial en un evento `pull_request`. La consulta GraphQL devolvió cero hilos de revisión.
 - Comportamiento y UI. El ancho interno gobierna el umbral de 1.100 px y las columnas 60/40 con mínimos de 440 y 320 px. El selector separa versiones manuales y notas libres. Los lectores reutilizan los formatos de origen en solo lectura y permiten copiar. Foco, selección, scroll y borrador se conservan en los recorridos probados. Al estrechar, Ver consulta usa la navegación existente con guardia de cambios. Al ampliar, el lector reaparece y ofrece cambiar la fuente ante un 404.

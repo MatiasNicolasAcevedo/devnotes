@@ -2,14 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-085](tasks/T-085-side-reading.md) · Consulta al lado · [S-115](specs/S-115-side-reading.md) |
+| Tarea y contrato | [T-093](tasks/T-093-ai-media-plan.md) · Plan de IA y materiales finales |
 | Estado | `mergeable` |
-| Acción actual | Verificar la CI del HEAD de transición y hacer squash del PR #88 |
-| Rama / PR | `codex/t-085-side-reading` · [PR #88](https://github.com/MatiasNicolasAcevedo/devnotes/pull/88) |
+| Siguiente acción | Tras T-093 MERGED, implementar [T-094](tasks/T-094-ai-workspace.md) según [S-116](specs/S-116-ai-workspace.md) |
+| Rama / PR | `codex/t-093-ai-media-plan` · [PR #89](https://github.com/MatiasNicolasAcevedo/devnotes/pull/89) |
 
-Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
-
-El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-084 quedó mergeada y conciliada.
+Modo `FRONTERA_CONTINUA`. T-085 conciliada. La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con IA, tráiler v2 y demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
 ## Pendientes del dueño
 
@@ -27,22 +25,22 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 | Dato | Valor |
 |---|---|
 | Último integrado válido | FULL local del 2026-11-15 sobre `398801f` ([T-069](tasks/T-069-ocr-workspace.md#evidencia-del-full-de-cierre)); STARTER de T-068 conservado |
-| Mergeado desde entonces | T-070 (recorrido E2E de OCR), T-074 (navegación de Imagen), T-071 y T-092 (documentales), la adopción documental del flujo y el encadenamiento del lote hasta T-084 |
+| Mergeado desde entonces | T-070 (recorrido E2E de OCR), T-074 (navegación de Imagen), T-071 y T-092 (documentales), la adopción documental del flujo y el encadenamiento del lote hasta T-085 |
 | Corte acumulado | Desde `7aa8946` hasta el HEAD de `main` que indique el dueño ([TESTING](TESTING.md#corte-acumulado-vigente)). El FULL/STARTER de I5 sigue diferido |
 | Recomendación | Ejecutar el integrado del corte acumulado con V8 y V9 cuando el dueño lo ordene. T-080 incorpora rutas privadas en Spring Security |
 
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de T-086 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
+Actuá como frontera implementer de T-094 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-085-side-reading.md, docs/tasks/T-086-ai-groq-api.md y docs/specs/S-116-ai-workspace.md.
+Leé AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-094-ai-workspace.md y docs/specs/S-116-ai-workspace.md. Aplicá frontend-design y la sección IA de docs/design/WRITING-WORKSPACES.md.
 
-PRECONDICIÓN: gh pr view 88 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit debe confirmar MERGED, mergedAt válido y mergeCommit.oid válido. Tras git fetch origin main, comprobá con git merge-base --is-ancestor que ese SHA esté en origin/main. Si difiere, informá el estado real y entregá el prompt vigente.
+Verificá con gh pr view 89 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit que el plan T-093 está MERGED. Ejecutá git fetch origin main y git merge-base --is-ancestor SHA origin/main, reemplazando SHA por el oid devuelto. Si la precondición falla, informá el estado real.
 
-ACCIÓN: Partí de origin/main en codex/t-086-ai-groq-api. Conciliá T-085 a done con el merge confirmado en el primer commit. Implementá options/messages y Groq según T-086 y S-116, con habilitación cerrada por cuenta y proveedor y clave separada de Voz. Usá datos ficticios y el doble del proveedor. Publicá un solo PR contra main.
+Partí de origin/main en codex/t-094-ai-workspace. Conciliá T-093 en el primer commit. Implementá en un único PR los cuatro proveedores Free, el selector compacto del navbar, los modelos ligeros primero y la consulta explícita de fragmentos. Usá las claves solo desde el backend. Probá cada adaptador con doble y ejecutá la matriz de modelos de T-094 con muestras ficticias en el piloto Free.
 
-GATE: Desde server/ con Git Bash, JDK 21 y PostgreSQL Testcontainers, ejecutá ./mvnw -q verify -Dtest=GroqAiClientTest,AiMessageServiceTest -Dit.test=AiMessageApiIT,VoiceTranscriptionApiIT -Djacoco.skip=true. Registrá fases y cantidades, docs-check, git diff --check y verify-required del HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+Corré los comandos dirigidos de T-094, incluidos Failsafe/PostgreSQL, typecheck, E2E filtrado, docs-check y verify-required del HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO. Conservá Render Auto-Deploy On Commit.
 
-SALIDA: Registrá HEAD, base y evidencia en T-086. Dejá el prompt de una sesión nueva de frontera reviewer independiente en STATUS y completo al final de la respuesta. Preservá Render Auto-Deploy On Commit.
+Registrá resultados por proveedor/modelo, HEAD y base en T-094. Dejá en STATUS y al final de la respuesta el prompt completo para un frontera reviewer independiente.
 ```
