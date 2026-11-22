@@ -39,7 +39,7 @@ La primera entrega de [S-112](specs/S-112-screenshot-ocr.md) terminó en T-071. 
 
 ### Lote Imagen, Libres e IA
 
-[T-092](tasks/T-092-writing-workspaces-plan.md) quedó MERGED (PR75, `77cb710`) y T-073 está lista. Después, cada fila concilia el MERGED anterior y hace una entrega independiente. Ver [objetivos de salida](ROADMAP.md#i6i8--lote-imagen-libres-e-ia) y [aplazamiento de FULL/STARTER](TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16).
+[T-092](tasks/T-092-writing-workspaces-plan.md) quedó MERGED (PR75, `77cb710`) y habilitó T-073. Después, cada fila concilia el MERGED anterior y hace una entrega independiente. Ver [objetivos de salida](ROADMAP.md#i6i8--lote-imagen-libres-e-ia) y [aplazamiento de FULL/STARTER](TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16).
 
 | Orden | Tarea / resultado | Espera |
 |---|---|---|
@@ -56,12 +56,10 @@ La primera entrega de [S-112](specs/S-112-screenshot-ocr.md) terminó en T-071. 
 | 11 | [T-083](tasks/T-083-free-notes-code-blocks.md) · Bloques de código discretos para Libres | T-082 |
 | 12 | [T-084](tasks/T-084-free-notes-headings.md) · Tres niveles de título y negrita en Libres | T-083 |
 | 13 | [T-085](tasks/T-085-side-reading.md) · Leer una nota al lado mientras se escribe | T-084 |
-| 14 | [T-086](tasks/T-086-ai-groq-api.md) · API de IA con GroqCloud y cuota reciente | T-085 |
-| 15 | [T-087](tasks/T-087-ai-global-workspace.md) · Destino global IA en el shell | T-086 |
-| 16 | [T-088](tasks/T-088-ai-workers-provider.md) · Cloudflare Workers AI en el selector | T-087 |
-| 17 | [T-089](tasks/T-089-ai-gemini-provider.md) · Gemini Flash en el selector | T-088 |
-| 18 | [T-090](tasks/T-090-ai-openrouter-catalog.md) · Elegir un modelo gratuito de OpenRouter | T-089 |
-| 19 | [T-091](tasks/T-091-ai-note-context.md) · Previsualizar un fragmento de notas en IA | T-090 |
+| 14 | [T-093](tasks/T-093-ai-media-plan.md) · Plan de IA y materiales finales | T-085 |
+| 15 | [T-094](tasks/T-094-ai-workspace.md) · IA Free completa y prueba por proveedor | T-093 |
+| 16 | [T-095](tasks/T-095-trailer-v2.md) · Tráiler musical v2 en dos formatos | T-094 |
+| 17 | [T-096](tasks/T-096-narrated-demo.md) · Recorrido completo, guion, voz y SRT | T-095 |
 
 ### Pendientes tras T-071
 
@@ -69,7 +67,7 @@ La primera entrega de [S-112](specs/S-112-screenshot-ocr.md) terminó en T-071. 
 |---|---|
 | Precisión de OCR y recorrido físico | El dueño acepta cerrar el ensayo inicial con las limitaciones registradas. Cuando lo pida, evaluar un ajuste para capturas de letra chica y tokens técnicos, con las mismas muestras y cuota aprobada para el nuevo ensayo. `scale=true` es candidata. Completar la comprobación de copia de la muestra de navegador y el recorrido físico de Android en sus respectivas validaciones. [Resultado real](tasks/T-071-ocr-first-real-test.md#resultado-real-del-2026-11-16). |
 | Restauración del respaldo de Render | El dueño prueba en privado su exportación de producción en una cuenta local vacía antes de reemplazar PostgreSQL. La restauración en Render queda sin acreditar hasta completar importación y cotejo sobre la nueva base. [Procedimiento](DEPLOYMENT.md#respaldo-y-reemplazo-de-postgresql-free). |
-| Integraciones de IA después del lote | Acciones contextuales y preferencia de modelo en perfil, después de validar el destino global. [S-116](specs/S-116-ai-workspace.md). |
+| Integraciones de IA después del lote | Preferencia persistente de perfil y nuevos orígenes de texto, sujetos a una decisión posterior. Diario y Libres entran en T-094. [S-116](specs/S-116-ai-workspace.md). |
 
 ## Siguientes · plan del dueño del 2026-11-10, ajustado el 2026-11-11
 

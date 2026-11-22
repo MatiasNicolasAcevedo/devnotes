@@ -19,7 +19,7 @@ Frontera y Junie pueden leer Git/PR/CI, crear ramas, editar dentro del contrato,
 | 2026-11-16 | Flujo de tres roles: planner, implementer y reviewer que mergea. Correcciones en sesión implementer nueva sobre el mismo PR | Hasta nueva decisión |
 | 2026-11-16 | Gate diario con pruebas unitarias y E2E dirigidas. FULL, suite Playwright completa, STARTER, tooling, workflow remoto y cualquier corrida de más de 20–30 minutos quedan diferidos: permiso previo expreso del dueño en la sesión, también en hitos, cierres de lote y revisiones. Los agentes pueden recomendarlos, no iniciarlos ([TESTING](TESTING.md#gates-diferidos)) | Hasta nueva decisión |
 | 2026-11-16 | Toda sesión termina con el prompt de la siguiente en STATUS y completo en la respuesta final | Permanente |
-| 2026-11-16 | Lote Imagen, Libres e IA: T-073 a T-091 en la [secuencia fijada](BACKLOG.md#lote-imagen-libres-e-ia), una tarea y un PR por vez, cada implementer concilia lo mergeado antes de avanzar | Hasta T-091 MERGED |
+| 2026-11-22 | Tras T-085, el dueño encarga una sola implementación de IA Free con selección manual y ensayos ficticios. Después van tráiler musical v2 y demo narrada con créditos Starter disponibles. [Secuencia](BACKLOG.md#lote-imagen-libres-e-ia). El cron externo de DevNotes queda autorizado de 07:00 a 01:00 hora argentina. | Hasta T-096 MERGED o nueva decisión |
 | 2026-11-16 | Render Auto-Deploy **On Commit** para `main`, incluidos los merges documentales. Los merges no autorizan enviar datos reales, configurar proveedores o secretos, cambiar planes ni disparar deploys manuales | Hasta nueva decisión |
 | 2026-11-16 | El plan de un lote se publica en un PR solo documental; el planner lo mergea con la conformidad expresa del dueño en la sesión | Hasta nueva decisión |
 

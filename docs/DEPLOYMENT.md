@@ -142,3 +142,18 @@ Dimensionar CPU/RAM, disco, conexiones y margen del sistema/DB con la carga de l
 
 ## Cuando haya una aplicación para publicar
 Esta guía propone un camino; no incluye Compose de producción ni promete que desplegar sea solo cambiar una variable. Al llegar el momento reconsultar precio/stock/región, medir latencia, y el dueño elige proveedor, dominio y gasto. Preparar una tarea acotada de despliegue: Compose de infraestructura compartida y configuración por aplicación; imágenes fijadas, redes privadas, TLS/orígenes, secretos externos al repo, roles/DB separados, memoria/pools/health/restart y logs acotados. Ensayar dos apps ficticias con el mismo PostgreSQL, negativos de acceso cruzado, deploy/rollback de A sin afectar B ni DB, backup/restore y cleanup limitado a recursos propios. No ejecutar contra producción para probar esta receta.
+
+## Despertador externo de DevNotes
+
+El 22/11/2026 se editó el trabajo existente **Despertador Devnotes** en cron-job.org. Estaba inactivo, apuntaba a la portada en `devnotes-v2dx.onrender.com` y su última ejecución figuraba «Fallido (error HTTP)». El historial consultado no mostró el código de ese intento. El trabajo del TFI seguía respondiendo correctamente en su propia ruta `/api/health`.
+
+| Campo del trabajo | Valor verificado |
+|---|---|
+| URL pública | `https://devnotes-v2dx.onrender.com/actuator/health/readiness` |
+| Horario personalizado | `*/10 0,7-23 * * *`, todos los días, `America/Argentina/Cordoba` |
+| Ventana | Primer intento 07:00, último 00:50. Se omiten los disparos desde 01:00 hasta 06:59. |
+| Estado | Habilitado. Ejecución de prueba externa HTTP 200 OK; URL, horario y habilitación persistieron al recargar. |
+
+Para repetir el diagnóstico, comparar método GET y URL con la columna anterior y hacer una ejecución de prueba desde la consola. Una consulta directa a esa ruta dio HTTP 200 con tipo Actuator JSON. El host histórico `devnotes-pilot.onrender.com` devolvió 404 en esa misma ruta. Comprobar el host antes de reutilizar una guía antigua. En un arranque en frío, si la primera ejecución agota el plazo, revisar la siguiente ejecución programada y el estado de Render antes de modificar el intervalo.
+
+El cron inicia el despertar a las 07:00. El primer arranque puede tardar, y el tráfico real o la sonda interna pueden prolongar la actividad después de la 01:00. La ventana equivale a unas 558 horas en 31 días más las colas de inactividad. Render Free cuenta 750 horas por mes **por workspace**: si TFI y DevNotes comparten uno, sumar ambos usos. La prueba puntual acredita disponibilidad en ese momento. Para comprobar el ciclo diario revisar el historial después de las 07:00 y pasada la 01:00. Para pausar el despertador, desactivar únicamente ese trabajo. La sonda interna S-111 es independiente. [Límites de Render Free](https://render.com/docs/free#free-instance-hours).

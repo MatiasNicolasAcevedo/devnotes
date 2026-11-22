@@ -1,6 +1,6 @@
 # DevNotes · Diseño de Imagen, Notas e IA
 
-Referencia para la revisión de frontend de T-073…T-091. Parte de la PWA oscura de Windows del dueño. Las capturas adjuntas sirvieron para localizar el espacio antes de la primera línea y el listado bajo Notas. Todos los ejemplos de esta referencia son ficticios.
+Referencia para la revisión de frontend de T-073…T-085 y T-094. Parte de la PWA oscura de Windows del dueño. Las capturas adjuntas sirvieron para localizar el espacio antes de la primera línea y el listado bajo Notas. Todos los ejemplos de esta referencia son ficticios.
 
 ## Sistema visual
 
@@ -72,17 +72,20 @@ Conservar aproximadamente 60/40 desde 1.100 px útiles. El lector tiene scroll p
 ## IA
 
 ```text
-Trabajo ▾             navegación existente                ✦ IA  Cuenta
+Trabajo ▾           Notas · Voz · Referencias · Imagen · Historial      [✦ IA | ▾]  Cuenta
+                                                                            │
+                                                   Proveedor  [GroqCloud   ▾]
+                                                   Modelo     [GPT OSS 20B ▾]
+                                                              [Aplicar]
 
-IA                                   Proveedor y modelo
-                                     [GroqCloud · GPT OSS 20B ▾]
-¿Podés ordenar estos pasos de despliegue?
-Respuesta                                       GroqCloud · GPT OSS 20B
-1. Confirmá la versión en revisión.
-2. Comprobá readiness después de desplegar.               [Copiar texto]
-
-[Escribí un mensaje…                                                   ]
-[+ Añadir fragmento]                 Se enviará a GroqCloud.   [Enviar]
+IA    GroqCloud · GPT OSS 20B
+[Escribí un mensaje…                                               ]
+[Añadir fragmento]             Se enviará a GroqCloud · GPT OSS 20B
+                                                            [✦ Enviar]
 ```
 
-Lila reservado para el acceso y el botón principal de IA. Estrellas estáticas con brillo suave al enfocar o pasar el cursor, sin animación continua. En estrecho, etiqueta y dropdown a ancho completo, respuestas y compositor en flujo vertical y controles táctiles. Con OpenRouter se muestra otro selector justo debajo para el modelo gratuito, con filtro y refresco. Mostrar al lado del campo el destino antes de enviar. Después de un fallo, conservar el mensaje y dejar el cambio de proveedor al alcance del mismo selector. En cuota mostrar solo dato interpretado y su hora; las otras opciones llevan al sitio del proveedor si corresponde. El selector de notas y su vista exacta aparecen en T-091.
+**Un control de dos acciones en el navbar.** La parte «✦ IA» navega y recibe `aria-current` en /ai. La flecha tiene nombre accesible «Elegir proveedor y modelo», `aria-expanded` y devuelve el foco al cerrar con Escape. En el panel, Tab, flechas y Enter permiten recorrer y aplicar. El botón de destino del compositor abre el mismo selector. La etiqueta no crece con el nombre del modelo en la barra. En Diario y Libres, «✦ Consultar con IA» aparece con una selección válida y previsualiza antes del envío.
+
+**Tokens de DevNotes.** Fondo `#181a1b`, panel `#212324`, texto `#e1e3e6`, lila IA `#ceb3ff` y tinta oscura `#21182f` en el botón principal. Conservar ámbar para la navegación de notas y la tipografía del sistema del shell. El brillo de la estrella responde una sola vez al foco o la apertura, máximo 160 ms. Con movimiento reducido usar solo borde y color. Texto, icono y nombre accesible identifican la acción.
+
+**Ventana angosta y móvil.** Mantener el disparador junto a Cuenta, las dos áreas táctiles de al menos 44 px y los destinos existentes accesibles. Si el panel no cabe, abrirlo como hoja inferior con dos selectores de ancho completo, área segura y retorno de foco. Probar 360 px, cuarto de monitor y escritorio, zoom 200 %, navegación por teclado y texto largo. La vista conserva el borrador ante error y anuncia el estado mediante una región viva sin mover el foco. Verificar contraste ≥4,5:1 en textos y ≥3:1 en foco/controles contra el fondo real.
