@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-080](tasks/T-080-free-notes-workspace.md) · Libres desde Notas · [S-113](specs/S-113-free-notes.md) |
-| Estado | `changes_requested` |
-| Acción actual | Dueño autorizó reabrir el ciclo. Implementer independiente corrige la copia local tras un 409 |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente adicional autorizada por el dueño para la corrección de copia tras un 409 |
 | Rama / PR | `codex/t-080-free-notes-workspace` · [PR #83](https://github.com/MatiasNicolasAcevedo/devnotes/pull/83) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,15 +34,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de la corrección autorizada de T-080 en MatiasNicolasAcevedo/devnotes. Sesión nueva e independiente, mismo PR 83 y rama codex/t-080-free-notes-workspace.
+Actuá como frontera reviewer independiente de T-080 en MatiasNicolasAcevedo/devnotes. Sesión nueva, misma rama codex/t-080-free-notes-workspace y PR 83. El dueño autorizó una revisión adicional para cerrar el hallazgo de ronda 2.
 
-LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, el contrato de corrección en docs/tasks/T-080-free-notes-workspace.md y las secciones Almacenamiento y HTTP e Interacción de docs/specs/S-113-free-notes.md.
+LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-080-free-notes-workspace.md y las secciones Almacenamiento y HTTP e Interacción de docs/specs/S-113-free-notes.md.
 
-PRECONDICIÓN: gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid debe confirmar OPEN, listo y base main en 7a700175b98669c3a1d9457150df4230279f2c62. Verificá que el HEAD publicado coincide con git log -1 --format=%H -- docs/STATUS.md en la rama de la tarea, que T-080 figura changes_requested y que el checkpoint registra la autorización del dueño. Si cambió el estado, informá el dato comprobado y entregá el prompt vigente.
+PRECONDICIÓN: gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo, base main en 7a700175b98669c3a1d9457150df4230279f2c62 y verify-required SUCCESS para el HEAD. Comprobá que ese HEAD coincide con git log -1 --format=%H -- docs/STATUS.md en la rama publicada, que su padre es el SHA técnico del checkpoint y que T-080 figura in_review. Si cambió el estado, informá el dato comprobado y entregá el prompt vigente.
 
-ACCIÓN: Agregá al caso existente la edición del cuerpo después del 409 y la comparación exacta del portapapeles. Desde client/, ejecutá npm test -- --run src/features/free-notes/FreeNotesPage.test.tsx -t 'conserva el borrador ante refetch' y registrá el rojo por el texto anterior. Corregí la copia del cuerpo vigente y repetí el mismo comando para acreditar el verde. Conservá la confirmación de descarte, la reapertura y la revisión del guardado. Incorporá el caso desktop de recuperación con 409 real definido en la tarea.
+ACCIÓN: Revisá el diff publicado contra main y contrastá la corrección con la evidencia roja y verde. Verificá que «Copiar texto local» lee el cuerpo vigente, incluida la edición posterior al 409, y conserva el comportamiento de los otros botones de copia. Comprobá la confirmación de descarte, reapertura, recuperación con 409 real y guardado con la revisión recién cargada. Si queda un hallazgo bloqueante, documentá la evidencia y devolvé la decisión al dueño con el PR abierto.
 
-GATE: Corré las pruebas dirigidas de cliente y el typecheck, el E2E desktop filtrado con el caso de recuperación 409, docs-check, git diff --check y la clasificación informativa del diff según los comandos del contrato. Confirmá verify-required SUCCESS en el HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: Usá los comandos dirigidos de la tarea para copia y reapertura, y el E2E desktop filtrado con un namespace propio para recuperación 409. Comprobá docs-check y verify-required SUCCESS sobre el SHA que revises y sobre el HEAD final de transición si aprobás. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: Registrá evidencias y SHA/base en el checkpoint, publicá la corrección en la misma rama y dejá T-080 in_review con el único prompt para el reviewer independiente del PR #83. Mantené el PR abierto hasta una aprobación independiente y preservá Render Auto-Deploy On Commit. Terminá con ese prompt completo.
+SALIDA: Registrá el veredicto y la evidencia con HEAD/base. Si el gate está verde y se cumplen las condiciones de AUTONOMY, publicá la transición documental, aprobá su SHA y ejecutá squash merge con --match-head-commit. Confirmá MERGED, mergedAt y mergeCommit.oid con gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. Preservá Render Auto-Deploy On Commit. Terminá con el prompt completo que corresponda al estado comprobado.
 ```

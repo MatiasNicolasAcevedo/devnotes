@@ -1,6 +1,6 @@
 ---
 id: T-080
-status: changes_requested
+status: in_review
 priority: P1
 size: M
 milestone: M7
@@ -34,12 +34,14 @@ Crear, renombrar, recargar y borrar a 320/768. POST/PUT inválidos, revisión st
 
 ## Checkpoint vigente
 
-2026-11-22. Frontera a cargo de la decisión de cierre en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git, gh y Node. **El dueño autorizó expresamente reabrir el ciclo** en el mismo PR y rama, con el criterio de cierre de esta tarea. Esta sesión actualiza la documentación operativa. La corrección autorizada afecta el contenido copiado desde Libres tras un 409.
+2026-11-22. Frontera implementer en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git, gh, Git Bash, Node 24 y Docker Desktop. El dueño autorizó reabrir el ciclo en el mismo PR, mantener la solución acotada y hacer una revisión adicional. [PR #83](https://github.com/MatiasNicolasAcevedo/devnotes/pull/83), SHA técnico `4c080d80d2b860a1ed0c29b60a1f44bd8e658dbe`, base `main@7a700175b98669c3a1d9457150df4230279f2c62`. El cambio afecta la copia de texto en la interfaz de Libres y conserva API, permisos y datos persistidos.
 
-- `gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid` (exit 0 con acceso a GitHub) confirmó OPEN, listo, HEAD `0459d8e538c1d941971e2734fa57d7096ba02add` y base `main@7a700175b98669c3a1d9457150df4230279f2c62`. `git log -1 --format=%H -- docs/STATUS.md` (exit 0) devolvió ese HEAD, donde T-080 figura `changes_requested`. `git diff --name-only 710a225c..0459d8e` (exit 0) mostró solo tarea y STATUS. La consulta del `statusCheckRollup` (exit 0) confirmó `verify-required` SUCCESS en la corrida `44986722103` sobre el HEAD consultado.
-- Se corroboró en el código que «Copiar texto local» recibe una instantánea del cuerpo al renderizar. La reproducción roja, reapertura y recuperación se registran en la evidencia de ronda 2. La sesión implementer independiente ejecuta el gate de aplicación del contrato de corrección.
-- `node scripts/docs-check.mjs` en el árbol de trabajo (exit 1) detectó `trailer/CLAUDE.md` dentro de `trailer/`, un directorio preexistente sin seguimiento. El mismo script en una copia aislada de los archivos versionados, con esta transición documental (exit 0), pasó. `git diff --check 7a700175..HEAD` y `git diff --check` (exit 0).
-- A «¿Autorizás reabrir el ciclo de T-080 en el mismo PR para corregir la copia del borrador tras un 409 con el criterio de cierre documentado?», el dueño respondió «Sí, autorizo reabrir el ciclo». El PR sigue abierto con `changes_requested` hasta que el implementer publique la corrección para revisión independiente. FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit.
+- Precondición. `gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup` (exit 0) confirmó OPEN, listo, base esperada y `verify-required` SUCCESS sobre `27542456e7705e16e30e8fdee6b439f97ecf2c5b`. Ese SHA registró la autorización y coincidía con HEAD local y el último cambio de STATUS.
+- Desde `client/`, `npm test -- --run src/features/free-notes/FreeNotesPage.test.tsx -t 'conserva el borrador ante refetch'`: rojo (exit 1) sobre `2754245` con solo la regresión agregada. El editor mostraba el cuerpo corregido y el portapapeles tenía «Cuerpo local». Tras leer el texto al pulsar el botón, mismo comando verde (exit 0, 1 prueba). La copia deja un solo PUT observado y conserva la confirmación.
+- `npm test -- --run src/app/AppRoutes.test.tsx src/features/free-notes` (exit 0, 27 pruebas) y `npm run typecheck` (exit 0). Incluye reapertura, GET anterior retenido, segundo guardado y revisión 3 confirmada.
+- `STARTER_E2E_PROJECT=starter-e2e-t080-copy409-desktop bash scripts/e2e.sh --grep 'free-notes: lifecycle' --project desktop` (exit 0, 3/3). Dos pestañas de la misma cuenta ficticia, sesión OIDC local, API y PostgreSQL reales. Pasaron el PUT 409, cancelar sin perder el borrador, confirmar y cargar la versión remota, guardar con revisión esperada 2 y persistir tras recarga. Las consultas de cleanup por etiqueta exacta devolvieron cero contenedores, redes y volúmenes (exit 0 en las tres).
+- `node scripts/docs-check.mjs` en el árbol de trabajo (exit 1) detectó `trailer/CLAUDE.md` en el directorio preexistente sin seguimiento. Pasó en una copia aislada de los archivos versionados con el cierre (exit 0). `git diff --check origin/main...HEAD` (exit 0). `bash scripts/verify.sh --policy origin/main` con Git Bash y Node del host (exit 0, APPLICATION / FULL, solo clasificación). FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit.
+- Pendiente: veredicto de la revisión independiente adicional. El PR queda abierto.
 
 ### Evidencia de revisión independiente, ronda 2
 
@@ -57,7 +59,7 @@ Crear, renombrar, recargar y borrar a 320/768. POST/PUT inválidos, revisión st
 | Causa | Arreglo o acción | Prueba |
 |---|---|---|
 | Ronda 1. Una reapertura podía inicializarse con el detalle invalidado o con el resultado de un GET anterior al PUT. | Cancelar esa lectura y esperar el detalle vigente al montar. Conservar el borrador mientras el editor siga montado. | Corrección `92a7962002f3cb5b351fd2430ba77eb0bebb5c05`. Regresión y Playwright desktop aprobados. |
-| Ronda 2. El botón de copia recibe `editor.getText()` durante el render. Al cambiar el contenido tras el 409 con el formulario ya sucio, el botón conserva el valor anterior. | Corrección autorizada. Leer el contenido actual al ejecutar la acción de copia o suscribir esa acción a los cambios de contenido. Conservar confirmación y revisión. | Sonda Vitest roja sobre `710a225c8a50bca9619cb33bde7f49b5022fef4a`. |
+| Ronda 2. El botón de copia recibe `editor.getText()` durante el render. Al cambiar el contenido tras el 409 con el formulario ya sucio, el botón conserva el valor anterior. | El botón lee el contenido al pulsarlo y acepta el texto directo de los demás llamadores. Libres conserva el separador de bloques, confirmación y revisión. | Regresión roja sobre `2754245` con la aserción nueva, verde con la corrección `4c080d8`. |
 
 **[P2] «Copiar texto local» omite las ediciones hechas después del 409.** En `FreeNoteEditor.tsx:265`, el botón toma una instantánea del cuerpo al renderizar el aviso. Si la persona corrige el borrador antes de copiarlo y luego confirma que quiere abrir la revisión remota, la copia no permite recuperar la última edición. S-113 requiere ofrecer la copia del texto local como parte de la recuperación.
 
