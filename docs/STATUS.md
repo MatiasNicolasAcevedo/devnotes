@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-080](tasks/T-080-free-notes-workspace.md) · Libres desde Notas · [S-113](specs/S-113-free-notes.md) |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente adicional autorizada por el dueño para la corrección de copia tras un 409 |
+| Estado | `mergeable` |
+| Acción actual | Hallazgo de copia cerrado. Confirmar CI de la transición y squash del PR #83 |
 | Rama / PR | `codex/t-080-free-notes-workspace` · [PR #83](https://github.com/MatiasNicolasAcevedo/devnotes/pull/83) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,15 +34,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer independiente de T-080 en MatiasNicolasAcevedo/devnotes. Sesión nueva, misma rama codex/t-080-free-notes-workspace y PR 83. El dueño autorizó una revisión adicional para cerrar el hallazgo de ronda 2.
+Actuá como frontera implementer de T-081 en MatiasNicolasAcevedo/devnotes. Sesión nueva, rama codex/t-081-compact-daily-notes desde main actualizado.
 
-LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-080-free-notes-workspace.md y las secciones Almacenamiento y HTTP e Interacción de docs/specs/S-113-free-notes.md.
+LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-080-free-notes-workspace.md, docs/tasks/T-081-compact-daily-notes.md y las secciones del diario compacto de docs/specs/S-114-writing-editor.md.
 
-PRECONDICIÓN: gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo, base main en 7a700175b98669c3a1d9457150df4230279f2c62 y verify-required SUCCESS para el HEAD. Comprobá que ese HEAD coincide con git log -1 --format=%H -- docs/STATUS.md en la rama publicada, que su padre es el SHA técnico del checkpoint y que T-080 figura in_review. Si cambió el estado, informá el dato comprobado y entregá el prompt vigente.
+PRECONDICIÓN: gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit debe confirmar MERGED con mergedAt y mergeCommit.oid válidos. Verificá que main actualizado contiene ese squash antes de comenzar T-081. Si la precondición cambió, informá el estado comprobado y entregá el prompt vigente.
 
-ACCIÓN: Revisá el diff publicado contra main y contrastá la corrección con la evidencia roja y verde. Verificá que «Copiar texto local» lee el cuerpo vigente, incluida la edición posterior al 409, y conserva el comportamiento de los otros botones de copia. Comprobá la confirmación de descarte, reapertura, recuperación con 409 real y guardado con la revisión recién cargada. Si queda un hallazgo bloqueante, documentá la evidencia y devolvé la decisión al dueño con el PR abierto.
+ACCIÓN: En el primer commit conciliá T-080 como done con el SHA de squash verificado y habilitá T-081. Medí el diario antes y después según la tarea y compactá el diario y su espacio contextual conservando Libres, fecha, Hoy, enlaces, copiar y Guardar versión. Comprobá calendario, URL directa e Historial según la aceptación.
 
-GATE: Usá los comandos dirigidos de la tarea para copia y reapertura, y el E2E desktop filtrado con un namespace propio para recuperación 409. Comprobá docs-check y verify-required SUCCESS sobre el SHA que revises y sobre el HEAD final de transición si aprobás. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: Ejecutá el cliente dirigido, typecheck, el E2E filtrado de desktop y mobile con namespaces propios, docs-check y git diff --check según T-081. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: Registrá el veredicto y la evidencia con HEAD/base. Si el gate está verde y se cumplen las condiciones de AUTONOMY, publicá la transición documental, aprobá su SHA y ejecutá squash merge con --match-head-commit. Confirmá MERGED, mergedAt y mergeCommit.oid con gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. Preservá Render Auto-Deploy On Commit. Terminá con el prompt completo que corresponda al estado comprobado.
+SALIDA: Publicá un PR contra main, registrá HEAD/base y evidencia de T-081, confirmá verify-required SUCCESS y dejá un único prompt de reviewer independiente en STATUS y al final de la respuesta. Preservá Render Auto-Deploy On Commit.
 ```
