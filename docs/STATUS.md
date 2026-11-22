@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-083](tasks/T-083-free-notes-code-blocks.md) · Bloques de código en Libres · [S-114](specs/S-114-writing-editor.md) |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente del PR #86 |
+| Estado | `mergeable` |
+| Acción actual | Confirmar CI de la transición y cerrar el squash del PR #86 |
 | Rama / PR | `codex/t-083-free-notes-code-blocks` · [PR #86](https://github.com/MatiasNicolasAcevedo/devnotes/pull/86) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,15 +34,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer independiente de T-083 en MatiasNicolasAcevedo/devnotes. Sesión nueva, PR #86, rama codex/t-083-free-notes-code-blocks.
+Actuá como frontera implementer de T-084 en MatiasNicolasAcevedo/devnotes. Sesión nueva, rama codex/t-084-free-notes-headings.
 
-LEER: AGENTS.md, client/AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-083-free-notes-code-blocks.md y la sección Bloque de código de docs/specs/S-114-writing-editor.md.
+LEER: AGENTS.md, client/AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-083-free-notes-code-blocks.md, docs/tasks/T-084-free-notes-headings.md y la sección Formato de docs/specs/S-114-writing-editor.md.
 
-PRECONDICIÓN: gh pr view 86 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe mostrar OPEN, isDraft false, base main en 1b6ee91b2c5276e170da00aa0204d222892096c0 y verify-required exitoso para el HEAD publicado. Traé la rama y comprobá que el HEAD publicado coincide con el remoto y que el commit de entrega solo cambia la tarea y STATUS respecto de las fuentes probadas en 31b2d2ff3261858416f172c4ae724c8ac9bf19b9. Si difiere el HEAD técnico o la base, invalidá la evidencia afectada e informá el estado real.
+PRECONDICIÓN: gh pr view 86 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit debe confirmar MERGED con mergedAt y mergeCommit.oid válidos. Tomá mergeCommit.oid como $mergeOid. Ejecutá git fetch origin main y git merge-base --is-ancestor $mergeOid origin/main. Si falla una comprobación, informá el estado real y retomá T-083 antes de habilitar T-084.
 
-ACCIÓN: Revisá el diff sobre los SHA publicados y contrastá la evidencia de validación, guardado, copia exacta, deshacer, scroll, restauración XLSX v4 y compatibilidad de listas y diario. Si hay hallazgos, dejá la corrección en el mismo PR para una sesión implementer nueva. Si aprobás, seguí la transición y el squash por SHA de AUTONOMY.md. Confirmá MERGED con gh pr view 86 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit.
+ACCIÓN: Creá la rama desde main actualizado. Conciliá T-083 como done en el primer commit con el SHA y fecha confirmados, y habilitá T-084. Implementá el menú Formato con Párrafo, Título 1–3, Negrita y Quitar formato según S-114. Conservá texto, selección, foco y compatibilidad con listas, bloques de código y diario. Extendé validadores y restauración XLSX v4.
 
-GATE: Diario según riesgo, con E2E filtrado si corresponde y verify-required verde en el HEAD que se vaya a mergear. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: Ejecutá los dirigidos y typecheck de T-084, bash scripts/e2e.sh --grep 'free-notes: headings' --project desktop con un namespace propio, docs-check, git diff --check y verify-required sobre el HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: Veredicto con HEAD/base y evidencia, más el único prompt siguiente según el resultado. Preservá Render Auto-Deploy On Commit.
+SALIDA: Publicá un único PR contra main, guardá evidencia por HEAD/base y terminá con el único prompt de reviewer independiente en STATUS y en la respuesta final. Preservá Render Auto-Deploy On Commit.
 ```
