@@ -1,13 +1,13 @@
 ---
 id: T-079
-status: in_review
+status: changes_requested
 priority: P1
 size: M
 milestone: M7
 spec: S-113
 depends_on: [T-078]
 branch: codex/t-079-free-notes-xlsx
-role: reviewer
+role: implementer
 executor: frontier
 pr: 82
 ---
@@ -33,21 +33,20 @@ Restaurar v1/v2/v3 sin inventar Libres. Ida y vuelta v4 conserva título, saltos
 
 ## Checkpoint vigente
 
-2026-11-22. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git/gh, Git Bash, Java Corretto 21.0.9, Node 24.21.0 y Docker Desktop. [PR #82](https://github.com/MatiasNicolasAcevedo/devnotes/pull/82) contra `main@311e47c1ca6d64f81c3bc1950ec6687a3d418ea7`. Las fuentes probadas están en `23e3d6b1a1ae5e2fa5c7c14e2347ea137e7649c4`. El HEAD de entrega agrega este checkpoint y el prompt en STATUS. GitHub registra `verify-required` por HEAD publicado.
+2026-11-22. Ronda 1 de frontera reviewer independiente en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), con PowerShell, Git, gh, Git Bash, JDK 21, npm y Docker Desktop. **Cambios requeridos** en [PR #82](https://github.com/MatiasNicolasAcevedo/devnotes/pull/82), HEAD revisado `0b9c4f4b425d244957c4c3f2687152c2cb4d5f9b`, base `main@311e47c1ca6d64f81c3bc1950ec6687a3d418ea7`. La transición de esta ronda es documental.
 
-- Entrada y conciliación (exit 0). `gh pr view 81 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName`, `git fetch origin main`, `git merge-base --is-ancestor 311e47c1ca6d64f81c3bc1950ec6687a3d418ea7 origin/main` y consulta de PR abiertos. GitHub confirmó T-078 MERGED y no había otro PR abierto. El primer commit `d101f9fe448bf6befc0573b3e5c73a41773e7aa2` concilió T-078 a `done` y habilitó T-079.
-- Impacto. XLSX v4 agrega `notas_libres`, usa el validador de almacenamiento de Libres y conserva título, documento, fechas y espacio. Al restaurar regenera UUID v7 y fija revisión 1. La API informa `freeNotes` en vista previa e importación, total y por espacio. La presencia de Libres bloquea la importación a una cuenta ocupada bajo el lock de cuenta. v1/v2/v3 siguen admitidos y la colección de Imagen se conserva.
-- Backend desde `server/` (exit 0). `./mvnw -q spotless:apply` y `./mvnw -q verify -Dtest=XlsxFreeNotesRoundTripTest,XlsxImageTextsRoundTripTest,XlsxWorkbookReaderTest -Dit.test=PortabilityFreeNotesApiIT,PortabilityImageTextsApiIT,PortabilityImportServiceIT -Djacoco.skip=true`. Surefire: 14 + 13 + 138 = 165. Failsafe con PostgreSQL 18.6: 3 + 3 + 24 = 30. Cero fallos, errores u omitidos. El documento inválido deja todas las colecciones vacías. Un fallo forzado en el último lote confirma rollback tras insertar Libres, Imagen y las colecciones previas.
-- Cliente desde `client/` (exit 0). `npm test -- --run src/features/portability`: 92 pruebas en 2 archivos. `npm run typecheck`: correcto.
-- E2E desde raíz (exit 0). `STARTER_E2E_PROJECT=starter-e2e-t079-desktop bash scripts/e2e.sh --grep 'portability:' --project desktop`: 1/1. API, OIDC y PostgreSQL del stack de ensayo. La fixture XLSX v4 aporta Libres de ambos espacios e Imagen a A antes de exportar. B valida, importa y rechaza reimportar. Se comprobó por etiqueta exacta que quedaron cero contenedores, volúmenes y redes. El build E2E precedió el ajuste de una aserción unitaria Java sobre la versión futura. `git diff --exit-code e32b47a8d322b465745122058fccd7ca9e15f816 23e3d6b1a1ae5e2fa5c7c14e2347ea137e7649c4 -- server/src/main client e2e` vinculó las mismas fuentes de aplicación y E2E (exit 0).
-- Documentación y diff (exit 0). `node scripts/docs-check.mjs` en worktree aislado, `git diff --check origin/main HEAD`, y `bash scripts/verify.sh --policy origin/main` con perfil informativo APPLICATION / FULL.
+- Entrada. `gh pr view 82 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup` (exit 0 fuera del sandbox) confirmó OPEN, listo y [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/44979047330/job/137075292996) para ese HEAD. En worktree aislado, `git rev-parse HEAD^` devolvió `23e3d6b1a1ae5e2fa5c7c14e2347ea137e7649c4`, y `git diff --exit-code 23e3d6b1a1ae5e2fa5c7c14e2347ea137e7649c4 HEAD -- server client e2e` (exit 0) acreditó igualdad con las fuentes probadas por el implementer.
+- Impacto revisado. XLSX v4 agrega Libres con UUID v7 nuevos y revisión 1. v1 a Trabajo, v2 conserva espacios, v3 conserva Imagen, y los tres informan cero Libres. El documento usa el validador de almacenamiento. Preview e importación suman Libres en total, Trabajo y Personal. El lock de cuenta cubre el chequeo de cuenta vacía tras una creación concurrente. El documento inválido se rechaza antes de escribir y el fallo inyectado tras el lote de Libres revierte todas las colecciones. La transición de revisión solo cambia documentación.
+- Backend dirigido de esta tarea desde `server/`, exit 0. `./mvnw -q verify -Dtest=XlsxFreeNotesRoundTripTest,XlsxImageTextsRoundTripTest,XlsxWorkbookReaderTest -Dit.test=PortabilityFreeNotesApiIT,PortabilityImageTextsApiIT,PortabilityImportServiceIT -Djacoco.skip=true`. Surefire 165 y Failsafe 30 con PostgreSQL 18.6, cero fallos, errores u omitidos.
+- Backend adicional desde `server/`, exit 1. `./mvnw -q test -Dtest=XlsxSpacesRoundTripTest,XlsxWorkbookRoundTripTest,PortabilityExportServiceTest -Djacoco.skip=true` ejecutó 66, con dos fallos de aserción y sin errores u omisiones. Ver lista cerrada.
+- Integraciones adicionales, exit 0. `./mvnw -q verify -Dtest=XlsxWorkbookRoundTripTest -Dit.test=PortabilityExportApiIT,PortabilityImportApiIT,PortabilitySpacesApiIT -Djacoco.skip=true` ejecutó 23 IT con PostgreSQL 18.6, sin fallos, errores ni omisiones.
+- Cliente desde `client/`, exit 0. `npm ci --no-audit --no-fund`, `npm test -- --run src/features/portability` (92 en dos archivos) y `npm run typecheck`.
+- E2E desde raíz, exit 0. `STARTER_E2E_PROJECT=starter-e2e-t079-review-codex bash scripts/e2e.sh --grep 'portability:' --project desktop` pasó 1/1 contra API, PostgreSQL y OIDC del stack. Cero contenedores, volúmenes y redes tras consultar la etiqueta exacta.
+- Documentación, exit 0. `node scripts/docs-check.mjs`, `git diff --check 311e47c1ca6d64f81c3bc1950ec6687a3d418ea7 HEAD` y `bash scripts/verify.sh --policy origin/main` (APPLICATION / FULL informativo).
 
-| Causa o evidencia | Ajuste | Comprobación |
+| Hallazgo | Corrección suficiente | Cierre observable |
 |---|---|---|
-| `gh pr view` en sandbox no conectó con la API (exit 1). | Ejecutar gh en la superficie autorizada. | PR #81 MERGED y ascendencia en `origin/main` (exit 0). |
-| La firma de escritura cambió y las pruebas de versión futura todavía usaban v4. | Actualizar los dobles del escritor y usar v5 en los negativos de versión no admitida. | Compilación y gate backend (exit 0). |
-| Cliente conservaba el mensaje anterior en dos expectativas. | Actualizar las expectativas de versión compatible. | Vitest y typecheck (exit 0). |
-| El comando de la tarea usaba `--project=desktop`; el parser devolvió exit 2. | Corregir el contrato a `--project desktop`. | E2E 1/1 y limpieza por etiqueta exacta (exit 0). |
-| El `trailer/CLAUDE.md` no versionado del dueño falla la regla de docs-check (exit 1 en el checkout principal). | Ejecutar docs-check sobre el árbol versionado en worktree aislado. | docs-check (exit 0). |
+| `XlsxSpacesRoundTripTest.java:105`, `writerPreservesTheVersionTwoLayoutOfExistingSheets`: esperaba manifiesto v3, recibió v4. | Exigir v4 y conservar el resto de las aserciones de compatibilidad con el layout v2. | La prueba pasa y sigue comprobando las cabeceras, claves, espacios, datos y conteos existentes. |
+| `XlsxSpacesRoundTripTest.java:441`, `unknownVersionIsUnsupported`: v4 en un libro con esquema v2 produjo `IMPORT_INVALID_RECORD`, como corresponde a una versión conocida con esquema inválido. | Usar v5 como versión futura. Conservar las otras variantes y la cobertura de esquemas inválidos. | Las cinco variantes pasan con `IMPORT_UNSUPPORTED_FORMAT` y sin hoja ni fila. |
 
-Pendiente: revisión independiente. FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit.
+Pendiente: sesión implementer de corrección en el mismo PR y segunda revisión sobre el HEAD corregido. FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit.
