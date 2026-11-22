@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-081](tasks/T-081-compact-daily-notes.md) · Diario compacto · [S-114](specs/S-114-writing-editor.md) |
-| Estado | `changes_requested` |
-| Acción actual | Corregir reapertura de Herramientas al cambiar de ancho y comentarios CSS |
+| Estado | `in_review` |
+| Acción actual | Revisión independiente de la corrección de Herramientas y comentarios CSS |
 | Rama / PR | `codex/t-081-compact-daily-notes` · [PR #84](https://github.com/MatiasNicolasAcevedo/devnotes/pull/84) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,15 +34,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de corrección de T-081 en MatiasNicolasAcevedo/devnotes. Sesión nueva sobre el mismo PR #84 y la rama codex/t-081-compact-daily-notes.
+Actuá como frontera reviewer independiente de T-081 en MatiasNicolasAcevedo/devnotes. Sesión nueva sobre el PR #84.
 
-LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, el checkpoint de docs/tasks/T-081-compact-daily-notes.md y la sección del diario de docs/specs/S-114-writing-editor.md.
+LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-081-compact-daily-notes.md y la sección del diario de docs/specs/S-114-writing-editor.md.
 
-PRECONDICIÓN: gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo para revisión y base main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e. Tras git fetch, el HEAD debe coincidir con git log -1 --format=%H origin/codex/t-081-compact-daily-notes -- docs/STATUS.md y tener como padre a3cd8aa26d956a21c63c6222a6a41640ffbb2600, el HEAD revisado. Si cambió, informá el estado comprobado y entregá el prompt vigente.
+PRECONDICIÓN: gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo para revisión, verify-required SUCCESS y base main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e. Tras git fetch, headRefOid debe coincidir con git log -1 --format=%H origin/codex/t-081-compact-daily-notes -- docs/STATUS.md y tener como padre el commit técnico 2e5f37eda23195d923478cc3e21f0d2867c35370. Si cambió, informá el estado comprobado y entregá el prompt vigente.
 
-ACCIÓN: Cerrá los dos hallazgos del checkpoint. Primero reproducí en rojo el ciclo 375 → 1280 → 320 con Herramientas abierto al inicio, y corregí el estado del diálogo para que no se reabra solo y el editor conserve el foco al volver a 320. Verificá que la apertura deliberada, Escape, selección del enlace y Copiar nota sigan operativos. Restaurá los tres comentarios CSS dañados a su texto UTF-8 de la base.
+ACCIÓN: Revisá el diff publicado y el cierre de los dos hallazgos. Comprobá el cruce 375 → 1280 → 320 con Herramientas abierto al inicio, el foco del editor al volver a 320, la reapertura deliberada, Escape, el enlace sobre la selección y Copiar nota. Compará los tres comentarios CSS UTF-8 con la base.
 
-GATE: Ejecutá el cliente dirigido, typecheck y E2E filtrado de T-081 con namespaces propios. Incluí la regresión del cruce de ancho en el filtro móvil. Comprobá docs-check, git diff --check y verify-required SUCCESS del nuevo HEAD. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: Validá la evidencia del checkpoint y repetí los dirigidos que pida el riesgo con namespaces propios. Confirmá docs-check, git diff --check y verify-required SUCCESS sobre el HEAD que se vaya a aprobar. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: Publicá la corrección en el mismo PR, registrá rojo/verde y HEAD/base y dejá un único prompt para una nueva sesión de reviewer independiente. Preservá Render Auto-Deploy On Commit.
+SALIDA: Registrá el veredicto para el HEAD y la base comprobados. Si aprobás, seguí el protocolo de reviewer para squash merge y confirmá MERGED con gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. Preservá Render Auto-Deploy On Commit. Dejá un único prompt para la sesión siguiente según el resultado.
 ```
