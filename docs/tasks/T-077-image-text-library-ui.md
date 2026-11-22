@@ -1,6 +1,6 @@
 ---
 id: T-077
-status: draft
+status: in_progress
 priority: P1
 size: M
 milestone: M6
@@ -33,4 +33,6 @@ Guardar dos textos, abrir/copy, borrar uno y recargar. Guardado fallido conserva
 
 ## Checkpoint vigente
 
-Habilitar en sesión nueva tras confirmar [T-076](T-076-image-text-xlsx.md) MERGED y conciliarla. Registrar el SHA/base y la evidencia efectivamente ejecutada.
+2026-11-21. Frontera implementer en Codex Desktop, GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell y Git/gh. Base `edb27c87a1097e605d0ed9d0a8dd4327911a5187`. PR #79 confirmado MERGED y contenido en origin/main. `gh pr view`, `git fetch`, `git merge-base --is-ancestor` y `gh pr list` (exit 0). Pendientes API, interfaz, gate diario y PR.
+
+FULL/STARTER: DIFERIDO POR EL DUEÑO.

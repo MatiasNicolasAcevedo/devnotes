@@ -2,14 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-076](tasks/T-076-image-text-xlsx.md) · Recuperar textos de Imagen en XLSX v3 · [S-112](specs/S-112-screenshot-ocr.md) |
-| Estado | `mergeable` |
-| Acción actual | Frontera reviewer verifica el CI de la transición y ejecuta el squash del PR #79 |
-| Rama / PR | `codex/t-076-image-text-xlsx` · [PR #79](https://github.com/MatiasNicolasAcevedo/devnotes/pull/79) |
+| Tarea y contrato | [T-077](tasks/T-077-image-text-library-ui.md) · Guardar, abrir y borrar textos de Imagen · [S-112](specs/S-112-screenshot-ocr.md) |
+| Estado | `in_progress` |
+| Acción actual | Frontera implementer implementa y verifica Textos guardados |
+| Rama / PR | `codex/t-077-image-text-library-ui` · PR pendiente |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
-El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-075 quedó mergeada y conciliada.
+El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-076 quedó mergeada y conciliada.
 
 ## Pendientes del dueño
 

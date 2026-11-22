@@ -1,6 +1,6 @@
 ---
 id: T-076
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M6
@@ -40,7 +40,7 @@ Ida y vuelta v1/v2/v3, texto y fechas intactos, fragmentación y Unicode. Duplic
 - Desde `client/`, `npm ci --no-audit --no-fund`, `npm test -- --run src/features/portability` y `npm run typecheck` (0, 90/90). E2E desktop dirigido del autor (4/4) acreditado por igualdad de fuentes.
 - `node scripts/docs-check.mjs`, `git diff --check origin/main HEAD` y `bash scripts/verify.sh --policy origin/main` (0, perfil informativo APPLICATION / FULL). El primer intento de Git Bash en el sandbox falló con acceso denegado al objeto MSYS; la invocación con permisos de host pasó.
 
-Pendiente verificar igualdad de fuentes, docs-check y CI del commit de transición antes de publicar el veredicto y ejecutar el squash ligado a su SHA. FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente.
+Conciliación T-077. `gh pr view 79 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName` (exit 0) confirmó MERGED en main el 2026-11-22T00:12:11Z con squash `edb27c87a1097e605d0ed9d0a8dd4327911a5187`. `git fetch origin main` y `git merge-base --is-ancestor edb27c87a1097e605d0ed9d0a8dd4327911a5187 origin/main` (exit 0) confirmaron la base. FULL/STARTER: DIFERIDO POR EL DUEÑO. Render Auto-Deploy On Commit sigue vigente.
 
 ### Gate del implementer sobre las fuentes de T-076
 
