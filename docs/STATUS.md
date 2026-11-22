@@ -2,14 +2,14 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-080](tasks/T-080-free-notes-workspace.md) · Libres desde Notas · [S-113](specs/S-113-free-notes.md) |
+| Tarea y contrato | [T-081](tasks/T-081-compact-daily-notes.md) · Diario compacto · [S-114](specs/S-114-writing-editor.md) |
 | Estado | `mergeable` |
-| Acción actual | Hallazgo de copia cerrado. Confirmar CI de la transición y squash del PR #83 |
-| Rama / PR | `codex/t-080-free-notes-workspace` · [PR #83](https://github.com/MatiasNicolasAcevedo/devnotes/pull/83) |
+| Acción actual | Validar CI de transición y cerrar el PR #84 |
+| Rama / PR | `codex/t-081-compact-daily-notes` · [PR #84](https://github.com/MatiasNicolasAcevedo/devnotes/pull/84) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
-El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-079 quedó mergeada y conciliada.
+El [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia) encadena T-073 a T-091, una tarea y un PR por vez. T-080 quedó mergeada y conciliada.
 
 ## Pendientes del dueño
 
@@ -34,15 +34,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de T-081 en MatiasNicolasAcevedo/devnotes. Sesión nueva, rama codex/t-081-compact-daily-notes desde main actualizado.
+Actuá como frontera implementer de T-082 en MatiasNicolasAcevedo/devnotes. Sesión nueva, rama codex/t-082-free-notes-lists desde main actualizado.
 
-LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-080-free-notes-workspace.md, docs/tasks/T-081-compact-daily-notes.md y las secciones del diario compacto de docs/specs/S-114-writing-editor.md.
+LEER: AGENTS.md, client/AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-081-compact-daily-notes.md, docs/tasks/T-082-free-notes-lists.md y la sección Lista de docs/specs/S-114-writing-editor.md.
 
-PRECONDICIÓN: gh pr view 83 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit debe confirmar MERGED con mergedAt y mergeCommit.oid válidos. Verificá que main actualizado contiene ese squash antes de comenzar T-081. Si la precondición cambió, informá el estado comprobado y entregá el prompt vigente.
+PRECONDICIÓN: gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit debe confirmar MERGED con mergedAt y mergeCommit.oid válidos. Tras git fetch origin main, guardá mergeCommit.oid en $taskMergeOid y verificá con git merge-base --is-ancestor $taskMergeOid origin/main que main contiene el squash. Si falla la precondición, informá el estado comprobado y entregá el prompt vigente.
 
-ACCIÓN: En el primer commit conciliá T-080 como done con el SHA de squash verificado y habilitá T-081. Medí el diario antes y después según la tarea y compactá el diario y su espacio contextual conservando Libres, fecha, Hoy, enlaces, copiar y Guardar versión. Comprobá calendario, URL directa e Historial según la aceptación.
+ACCIÓN: En el primer commit conciliá T-081 como done con el SHA confirmado y habilitá T-082. Implementá viñetas, casillas y numeración en Libres, con validación, conversión, teclado y deshacer. Verificá recarga y restauración XLSX v4, rechazo de anidación y compatibilidad del diario.
 
-GATE: Ejecutá el cliente dirigido, typecheck, el E2E filtrado de desktop y mobile con namespaces propios, docs-check y git diff --check según T-081. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: Backend y cliente dirigidos, typecheck, filtro «free-notes: lists» en desktop y mobile con namespaces propios y sintaxis --project desktop o --project mobile, docs-check y git diff --check. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: Publicá un PR contra main, registrá HEAD/base y evidencia de T-081, confirmá verify-required SUCCESS y dejá un único prompt de reviewer independiente en STATUS y al final de la respuesta. Preservá Render Auto-Deploy On Commit.
+SALIDA: Publicá el PR contra main, registrá HEAD/base y evidencia de T-082, confirmá verify-required SUCCESS y dejá el único prompt de reviewer independiente en STATUS y al final de la respuesta. Preservá Render Auto-Deploy On Commit.
 ```

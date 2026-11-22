@@ -101,7 +101,7 @@ describe('Notas · una sola barra de herramientas (UI-05)', () => {
     expect(heading).toHaveStyle({ position: 'absolute', width: '1px', height: '1px' })
     expect(screen.queryByText(/Seleccioná texto y agregá un enlace/)).not.toBeInTheDocument()
     expect(screen.queryByText(/Arrastrá la esquina inferior derecha/)).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 2, name: 'Notas guardadas' })).toBeVisible()
+    expect(screen.queryByRole('heading', { name: 'Notas guardadas' })).not.toBeInTheDocument()
   })
 
   it('el botón de fecha abre el selector nativo del input', async () => {
@@ -139,21 +139,28 @@ describe('Notas · una sola barra de herramientas (UI-05)', () => {
     )
   })
 
-  it('en angosto Hoy, enlace y copiar son iconos con nombre accesible', async () => {
+  it('en angosto abre herramientas y devuelve el foco al botón al cerrar', async () => {
     setViewportWidth(NARROW_VIEWPORT)
-    const { toolbar } = await renderNotes()
+    const { user, toolbar } = await renderNotes()
 
     const today = within(toolbar).getByRole('link', { name: 'Ir a hoy' })
     expect(today).toHaveAttribute('href', '/notes?space=work')
     expect(today).toHaveTextContent('')
-    expect(within(toolbar).queryByRole('link', { name: 'Hoy' })).not.toBeInTheDocument()
-    const link = within(toolbar).getByRole('button', { name: 'Agregar enlace' })
-    expect(link).toHaveTextContent('')
+    expect(within(toolbar).getByRole('link', { name: 'Libres' })).toBeVisible()
     expect(
       within(toolbar).getByRole('button', { name: 'Cambiar fecha (15/06)' }),
     ).toHaveTextContent('15/06')
-    expect(within(toolbar).getByRole('button', { name: 'Copiar nota' })).toHaveTextContent('')
     expect(await within(toolbar).findByRole('button', { name: 'Guardar versión' })).toBeEnabled()
+
+    const tools = within(toolbar).getByRole('button', { name: 'Herramientas' })
+    expect(screen.queryByRole('button', { name: 'Copiar nota' })).not.toBeInTheDocument()
+    await user.click(tools)
+    const dialog = await screen.findByRole('dialog', { name: 'Herramientas' })
+    expect(within(dialog).getByRole('button', { name: 'Copiar nota' })).toBeEnabled()
+    expect(within(dialog).getByRole('button', { name: 'Agregar enlace' })).toBeDisabled()
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(dialog).not.toBeInTheDocument())
+    expect(tools).toHaveFocus()
   })
 
   it('el disquete confirma el reemplazo, guarda la versión y avisa en la fila inferior de la barra', async () => {

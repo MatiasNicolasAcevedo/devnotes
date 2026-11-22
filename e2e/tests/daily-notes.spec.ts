@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { test, expect, control, login, interactiveLogin, readiness, csrfHeaders, layout, logout } from './fixtures';
 
-import { writeWork, saveVersion, readVersion } from './daily-helpers';
+import { writeWork, saveVersion, readVersion, openDailyTools } from './daily-helpers';
 
 test.describe.configure({ timeout: 90_000 });
 
@@ -82,7 +82,8 @@ test('CA-01: text blocks, separator, empty lines are numbered consecutively; wra
   });
   const fill = await viewport.evaluate(element => {
     const box = element.getBoundingClientRect();
-    return { height: box.height, bottom: box.bottom, window: innerHeight, scrolled: scrollY };
+    const footerHeight = element.nextElementSibling?.getBoundingClientRect().height ?? 0;
+    return { height: box.height, bottom: box.bottom, footerHeight, window: innerHeight, scrolled: scrollY };
   });
   expect(fill.scrolled).toBe(0);
   expect(fill.height).toBeGreaterThanOrEqual(240);
@@ -93,7 +94,7 @@ test('CA-01: text blocks, separator, empty lines are numbered consecutively; wra
   // Los controles del editor y los márgenes ocupan el resto del espacio entre la cabecera y el límite disponible.
   expect(fill.height).toBeGreaterThanOrEqual(availableBottom - headerHeight - 110);
   expect(fill.bottom).toBeLessThanOrEqual(availableBottom);
-  expect(fill.bottom).toBeGreaterThanOrEqual(availableBottom - 20);
+  expect(fill.bottom).toBeGreaterThanOrEqual(availableBottom - fill.footerHeight - 20);
   await expect(page.locator('.daily-editor-toolbar')).toHaveCSS('position', 'sticky');
   await expect(page.getByText(/Arrastrá la esquina inferior derecha/)).toHaveCount(0);
 
@@ -127,13 +128,17 @@ test('T-020: visible link button keeps selection, opens safely, edits and clears
   await login(page, identity);
   await page.getByRole('link', { name: 'Notas', exact: true }).click();
   const editor = page.getByRole('textbox', { name: 'Editor de nota diaria' });
+  await expect(editor).toHaveAttribute('contenteditable', 'true');
+  await openDailyTools(page);
   const add = page.getByRole('button', { name: 'Agregar enlace', exact: true });
   await expect(add).toBeDisabled();
+  if (await page.getByRole('dialog', { name: 'Herramientas' }).isVisible()) await page.keyboard.press('Escape');
   await editor.click();
   await page.keyboard.type('Ticket 1279');
   await page.keyboard.down('Shift');
   for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowLeft');
   await page.keyboard.up('Shift');
+  await openDailyTools(page);
   await add.click();
   const dialog = page.getByRole('dialog');
   const input = dialog.getByRole('textbox', { name: 'URL', exact: true });
@@ -155,15 +160,18 @@ test('T-020: visible link button keeps selection, opens safely, edits and clears
   await popup.close();
   // El cursor dentro del enlace, sin seleccionar texto, permite editarlo completo.
   await page.keyboard.press('ArrowLeft');
+  await openDailyTools(page);
   await page.getByRole('button', { name: 'Editar enlace', exact: true }).click();
   await expect(input).toHaveValue('https://jira.ejemplo.test/browse/ABC-1279');
   await input.fill('https://jira.ejemplo.test/browse/ABC-9999');
   await dialog.getByRole('button', { name: 'Guardar', exact: true }).click();
   await expect(link).toHaveAttribute('href', 'https://jira.ejemplo.test/browse/ABC-9999');
+  await openDailyTools(page);
   await page.getByRole('button', { name: 'Editar enlace', exact: true }).click();
   await dialog.getByRole('button', { name: 'Quitar enlace', exact: true }).click();
   await expect(editor.locator('a')).toHaveCount(0);
   await expect(editor).toHaveText('Ticket 1279');
+  await openDailyTools(page);
   await add.click();
   await expect(input).toHaveValue('');
   await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();

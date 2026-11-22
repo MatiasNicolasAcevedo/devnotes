@@ -1,4 +1,4 @@
-import { chooseDate, saveVersion } from './daily-helpers';
+import { chooseDate, openDailyTools, saveVersion } from './daily-helpers';
 import { csrfHeaders, expect, keyboardActivate, layout, login, savedIndicator, test } from './fixtures';
 
 const sourceDate = '2026-11-13';
@@ -69,7 +69,9 @@ test('copy previous: preserves the source and versions and saves one reversible 
   };
 
   await expect(page.getByText(/última nota de Trabajo.*13\/11\/2026/)).toBeVisible();
+  await openDailyTools(page);
   await expect(page.getByRole('button', { name: 'Copiar nota', exact: true })).toBeVisible();
+  if (isMobile) await page.keyboard.press('Escape');
   await layout(page);
   const ack = await copy(targetDate, 'Copiar nota del 13/11/2026 a 16/11/2026 en Trabajo');
   expect(ack).toMatchObject({ id: before.id, date: targetDate, revision: before.revision + 1, content });

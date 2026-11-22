@@ -1,6 +1,6 @@
 ---
 id: T-080
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: M7
@@ -32,7 +32,11 @@ Crear, renombrar, recargar y borrar a 320/768. POST/PUT inválidos, revisión st
 - Desde raíz con Git Bash. `STARTER_E2E_PROJECT=starter-e2e-t080-mobile bash scripts/e2e.sh --grep 'free-notes: lifecycle' --project mobile`. Añadir o actualizar los casos bajo ese filtro. API propia y sesión reales con doble del tercero cuando corresponda. Registrar cleanup por label.
 - Cerrar con [pruebas dirigidas del lote](../TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16), docs-check y evidencia por HEAD/base.
 
-## Checkpoint vigente
+## Conciliación
+
+PR #83 confirmado `MERGED` el 2026-11-22T05:09:22Z. Squash `8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e`, comprobado en `origin/main` antes de habilitar T-081.
+
+## Evidencia de cierre
 
 2026-11-22. Frontera reviewer independiente, Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24 y Docker Desktop. Revisión adicional autorizada por el dueño. [PR #83](https://github.com/MatiasNicolasAcevedo/devnotes/pull/83), HEAD técnico revisado con cierre del implementer `71e2cd57cd6abe67d33a9570a305dad93d1031d1`, padre `4c080d80d2b860a1ed0c29b60a1f44bd8e658dbe` y base `main@7a700175b98669c3a1d9457150df4230279f2c62`. La corrección cambia el momento en que la interfaz de Libres lee el cuerpo para copiar. Se conserva el contrato de API, permisos y persistencia.
 
