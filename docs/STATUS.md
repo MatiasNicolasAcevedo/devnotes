@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-079](tasks/T-079-free-notes-xlsx.md) · Recuperar notas libres en XLSX v4 · [S-113](specs/S-113-free-notes.md) |
-| Estado | `in_review` |
-| Acción actual | Revisión independiente de la corrección XLSX v4 · ronda 2 |
+| Estado | `mergeable` |
+| Acción actual | Verificar CI de la transición documental y hacer squash del PR 82 |
 | Rama / PR | `codex/t-079-free-notes-xlsx` · [PR #82](https://github.com/MatiasNicolasAcevedo/devnotes/pull/82) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,11 +34,11 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer independiente de T-079 en MatiasNicolasAcevedo/devnotes. Sesión nueva, ronda 2 del PR 82.
+Actuá como frontera implementer de T-080 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-079-free-notes-xlsx.md, S-113, el documento de Libres en S-114, la portabilidad incremental de S-112 y los hallazgos de la ronda 1 del PR 82.
-PRECONDICIÓN: gh pr view 82 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo, base main en 311e47c1ca6d64f81c3bc1950ec6687a3d418ea7 y verify-required SUCCESS. En el checkout del HEAD remoto, comprobá que headRefOid coincide con git log -1 --format=%H -- docs/STATUS.md y que git rev-parse HEAD^ devuelve 63b4f5d032b4b07608cfb19aec9cb493ce3c1a9b.
-ACCIÓN: Revisá el diff publicado contra la base y verificá ambos cierres. El writer exige v4 y conserva todas las aserciones del layout v2. El lector rechaza v5 y las otras cuatro variantes con IMPORT_UNSUPPORTED_FORMAT, sin hoja ni fila. Verificá que las versiones conocidas con esquema inválido conservan sus negativos.
-GATE: Validá las 66 pruebas verdes del comando dirigido de la corrección, la igualdad de las fuentes que respaldan el resto del gate diario y docs-check. Repetí los dirigidos que exija el riesgo. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-SALIDA: Si aprobás, seguí el protocolo de reviewer y AUTONOMY para la transición documental, la CI del nuevo HEAD, el squash ligado al SHA aprobado y la confirmación de MERGED con fecha y merge SHA. Si queda un hallazgo, entregalo a frontera o al dueño con evidencia y condición de cierre. Conservá Render Auto-Deploy On Commit.
+LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-079-free-notes-xlsx.md, docs/tasks/T-080-free-notes-workspace.md, S-113 y el documento de Libres en S-114.
+PRECONDICIÓN: gh pr view 82 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName debe confirmar MERGED contra main con fecha y SHA válidos. Comprobá que el squash está incluido en origin/main antes de crear codex/t-080-free-notes-workspace.
+ACCIÓN: Conciliá T-079 a done con la fecha y el SHA del squash y habilitá T-080 en el primer commit de la rama nueva. Implementá REST y el recorrido privado de Libres desde Notas según el contrato. Conservá la fecha al volver al Diario, la guardia del borrador y el aislamiento por cuenta y espacio.
+GATE: Corré los dirigidos de T-080 con Failsafe en PostgreSQL, pruebas y typecheck del cliente, Playwright filtrado en desktop y mobile, docs-check y verify-required. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+SALIDA: Publicá un único PR para T-080 con evidencia por HEAD/base y dejá el prompt de revisión independiente en docs/STATUS.md y al final de la respuesta. Conservá Render Auto-Deploy On Commit.
 ```
