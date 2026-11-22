@@ -10,7 +10,14 @@ const storableText = z.string().refine((text) => {
   }
   return true
 })
-const textContent = z.array(z.strictObject({ type: z.literal('text'), text: storableText.min(1) }))
+const text = { type: z.literal('text'), text: storableText.min(1) }
+const plainTextContent = z.array(z.strictObject(text))
+const textContent = z.array(
+  z.strictObject({
+    ...text,
+    marks: z.tuple([z.strictObject({ type: z.literal('bold') })]).optional(),
+  }),
+)
 const paragraph = z.strictObject({ type: z.literal('paragraph'), content: textContent.optional() })
 const itemParagraph = z.tuple([paragraph])
 const listItem = z.strictObject({ type: z.literal('listItem'), content: itemParagraph })
@@ -22,9 +29,14 @@ const taskItem = z.strictObject({
 const block = z.discriminatedUnion('type', [
   paragraph,
   z.strictObject({
+    type: z.literal('heading'),
+    attrs: z.strictObject({ level: z.literal([1, 2, 3]) }),
+    content: textContent.optional(),
+  }),
+  z.strictObject({
     type: z.literal('codeBlock'),
     attrs: z.strictObject({ language: z.enum(codeLanguages) }),
-    content: textContent.optional(),
+    content: plainTextContent.optional(),
   }),
   z.strictObject({ type: z.literal('bulletList'), content: z.array(listItem).min(1) }),
   z.strictObject({
@@ -43,7 +55,7 @@ const documentSchema = z
     let length = 0
     for (const block of document.content) {
       const textBlocks =
-        block.type === 'paragraph' || block.type === 'codeBlock'
+        block.type === 'paragraph' || block.type === 'heading' || block.type === 'codeBlock'
           ? [block]
           : block.content.map((item) => item.content[0])
       for (const textBlock of textBlocks) {

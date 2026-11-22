@@ -109,7 +109,7 @@ final class XlsxText {
             }
             first = false;
             switch (block.path("type").asText()) {
-                case "paragraph", "codeBlock" -> appendTextBlock(out, block);
+                case "paragraph", "heading", "codeBlock" -> appendTextBlock(out, block);
                 case "bulletList", "orderedList", "taskList" -> appendList(out, block);
                 default -> {}
             }

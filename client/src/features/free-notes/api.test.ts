@@ -9,12 +9,40 @@ const codeBlock = {
   attrs: { language: 'json' },
   content: [{ type: 'text', text: '\n  {"incompleto":\t\r\n' }],
 }
+const markedText = { type: 'text', text: 'Detalle', marks: [{ type: 'bold' }] }
+const heading = { type: 'heading', attrs: { level: 2 }, content: [markedText] }
 
 function parse(...content: unknown[]) {
   return freeNoteInput.safeParse({ title: 'Listas', document: { type: 'doc', content } })
 }
 
 describe('free note document', () => {
+  it('preserves all heading levels and bold in prose and list paragraphs', () => {
+    const boldParagraph = { type: 'paragraph', content: [markedText] }
+    const content = [
+      ...[1, 2, 3].map((level) => ({ ...heading, attrs: { level } })),
+      boldParagraph,
+      { type: 'bulletList', content: [{ ...listItem, content: [boldParagraph] }] },
+      codeBlock,
+    ]
+    expect(parse(...content)).toMatchObject({ success: true, data: { document: { content } } })
+  })
+
+  it.each([
+    { type: 'heading' },
+    { ...heading, attrs: { level: '2' } },
+    { ...heading, attrs: { level: 4 } },
+    { ...heading, attrs: { level: 1.5 } },
+    { ...heading, attrs: { level: 2, extra: true } },
+    { ...heading, content: [{ ...markedText, marks: [{ type: 'italic' }] }] },
+    { ...heading, content: [{ ...markedText, marks: [{ type: 'bold', attrs: {} }] }] },
+    { ...heading, content: [{ ...markedText, marks: [...markedText.marks, ...markedText.marks] }] },
+    { ...codeBlock, content: [markedText] },
+    { type: 'bulletList', content: [{ ...listItem, content: [heading] }] },
+  ])('rejects invalid formatting in %j', (block) => {
+    expect(parse(block).success).toBe(false)
+  })
+
   it('keeps earlier paragraphs and preserves each supported list structure', () => {
     const content = [
       paragraph,
