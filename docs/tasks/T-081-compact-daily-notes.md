@@ -1,6 +1,6 @@
 ---
 id: T-081
-status: in_review
+status: changes_requested
 priority: P1
 size: S
 milestone: M7
@@ -32,6 +32,20 @@ Medidas pre/post a 768×559 en Chromium/PWA según spec, 320/375 y 1280 para ref
 - Cerrar con [pruebas dirigidas del lote](../TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16), docs-check y evidencia por HEAD/base.
 
 ## Checkpoint vigente
+
+2026-11-22. Frontera reviewer independiente, Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24 y Docker Desktop. [PR #84](https://github.com/MatiasNicolasAcevedo/devnotes/pull/84). **CAMBIOS REQUERIDOS**, primera ronda, sobre el HEAD publicado `a3cd8aa26d956a21c63c6222a6a41640ffbb2600`, padre técnico `7011d41cf6a36e90f936eff57e6b602e3fb8e672` y base `main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e`. Impacto en UI y foco del editor al cambiar de ancho. El diff conserva API, permisos, persistencia y formato de documento.
+
+| Hallazgo | Evidencia | Condición de cierre |
+|---|---|---|
+| Herramientas se reabre solo al volver a ancho estrecho. | Con el editor listo, abrir Herramientas a 375×559, cambiar a 1280×559, enfocar el editor y volver a 320×559. Playwright esperó cero diálogos y encontró uno. `DailyEditor.tsx` conserva `toolsAnchor` cuando desmonta el botón a ancho amplio y reaplica el ancla anterior al remontarlo. | Agregar regresión primero roja. Debe haber cero diálogos y conservarse el foco del editor al volver a 320. La apertura deliberada, Escape con retorno de foco, enlace con selección y Copiar nota deben seguir funcionando. |
+| Tres comentarios de `dailyEditor.css` quedan con codificación dañada. | El diff publicado transforma «numeración», «área», «página», «versión» y «números» en texto mal decodificado. Lectura explícita del archivo como UTF-8 (exit 0). | Restaurar el texto de los tres comentarios de la base y conservar las reglas CSS del diario compacto. |
+
+- Precondición. `gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup` y `git fetch origin main codex/t-081-compact-daily-notes` (exit 0) confirmaron PR abierto, listo, HEAD/base y padre esperados. [`verify-required` en SUCCESS para el SHA exacto](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/45032111093/job/137237763746), posterior a una corrida cancelada. Consulta de conversaciones (exit 0), cero.
+- Escritorio. `STARTER_E2E_PROJECT=starter-e2e-t081-review-desktop bash scripts/e2e.sh --grep 'multiline clipboard, persistence, scroll focus and compact layout|CA-04:|T-020:|copy previous: preserves|remove a link only' --project desktop` (exit 0, 7/7). Primera línea a 100,75 px en 768×559 y 1280×800. A 768×559 supera en 59,015625 px la medición de base documentada por el implementer (159,765625 px), y cumple el máximo de 110 px.
+- Móvil. `STARTER_E2E_PROJECT=starter-e2e-t081-review-mobile bash scripts/e2e.sh --grep 'multiline clipboard, persistence, scroll focus and compact layout|CA-04:|T-020:|free-notes: lifecycle returns to|T081 reviewer: tools reopen' --project mobile` (exit 1, 6/7). Primera línea a 116 px en 320×559 y 375×559, reflujo sin solapamiento y foco inicial comprobado a 320/375/1280. Pasaron Libres y vuelta a la fecha original, Hoy, enlace, copia, Guardar versión, borrador por calendario y URL, e Historial solo con versiones manuales. Falló exclusivamente la sonda temporal de cruce de ancho, en la comprobación de cero diálogos. La comprobación de foco posterior a ese cruce quedó sin ejecutar. Verificación por label exacto (exit 0): cero contenedores, redes y volúmenes en ambos proyectos.
+- `node scripts/docs-check.mjs` y `git diff --check 8f4ea2c...HEAD` (exit 0) en el checkout aislado. `bash scripts/verify.sh --policy origin/main` (exit 0, APPLICATION / FULL informativo). FULL/STARTER: DIFERIDO POR EL DUEÑO. PR abierto para corrección. Render Auto-Deploy On Commit.
+
+## Evidencia de implementación
 
 2026-11-22. Frontera implementer, Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24 y Docker Desktop. [PR #84](https://github.com/MatiasNicolasAcevedo/devnotes/pull/84), rama `codex/t-081-compact-daily-notes`, commit técnico `7011d41cf6a36e90f936eff57e6b602e3fb8e672`, base `main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e`. El HEAD de entrega es el commit documental posterior que contiene este checkpoint y STATUS. Se acredita en GitHub con `gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup`. Próximo paso: revisión independiente.
 
