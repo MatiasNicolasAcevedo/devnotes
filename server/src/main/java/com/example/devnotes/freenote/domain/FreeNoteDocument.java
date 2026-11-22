@@ -7,11 +7,12 @@ import com.fasterxml.jackson.databind.json.JsonMapper;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
-/** The paragraph-only ProseMirror document accepted by the free-note storage and codec. */
+/** The ProseMirror document accepted by the free-note storage and codec. */
 public final class FreeNoteDocument {
     private static final int MAX_TEXT_POINTS = 60_000;
     private static final int MAX_JSON_BYTES = 512 * 1024;
     private static final Set<String> BLOCK_FIELDS = Set.of("type", "content");
+    private static final Set<String> ATTRIBUTED_BLOCK_FIELDS = Set.of("type", "content", "attrs");
     private static final Set<String> TEXT_FIELDS = Set.of("type", "text");
     private static final JsonMapper MAPPER =
             JsonMapper.builder().enable(JsonNodeFeature.WRITE_PROPERTIES_SORTED).build();
@@ -20,31 +21,16 @@ public final class FreeNoteDocument {
 
     public static String validate(JsonNode document) {
         requireNode(document, "doc", BLOCK_FIELDS);
-        JsonNode paragraphs = document.path("content");
-        if (!paragraphs.isArray() || paragraphs.isEmpty()) {
-            throw new IllegalArgumentException("Free note document must contain at least one paragraph");
-        }
-        int textPoints = 0;
-        for (JsonNode paragraph : paragraphs) {
-            requireNode(paragraph, "paragraph", BLOCK_FIELDS);
-            JsonNode content = paragraph.get("content");
-            if (content == null) {
-                continue;
-            }
-            if (!content.isArray()) {
-                throw new IllegalArgumentException("Paragraph content must be an array");
-            }
-            for (JsonNode node : content) {
-                requireNode(node, "text", TEXT_FIELDS);
-                String text = node.path("text").textValue();
-                if (text == null || text.isEmpty()) {
-                    throw new IllegalArgumentException("Text nodes must contain a nonempty string");
-                }
-                requireStorableUnicode(text);
-                textPoints += text.codePointCount(0, text.length());
-                if (textPoints > MAX_TEXT_POINTS) {
-                    throw new IllegalArgumentException("Free note text exceeds 60000 code points");
-                }
+        long textPoints = 0;
+        for (JsonNode block : requireContent(document)) {
+            textPoints += switch (block.path("type").asText()) {
+                case "bulletList" -> listPoints(block, "bulletList", "listItem");
+                case "orderedList" -> listPoints(block, "orderedList", "listItem");
+                case "taskList" -> listPoints(block, "taskList", "taskItem");
+                default -> paragraphPoints(block);
+            };
+            if (textPoints > MAX_TEXT_POINTS) {
+                throw new IllegalArgumentException("Free note text exceeds 60000 code points");
             }
         }
         try {
@@ -56,6 +42,69 @@ public final class FreeNoteDocument {
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Invalid free note document", e);
         }
+    }
+
+    private static long listPoints(JsonNode list, String type, String itemType) {
+        boolean ordered = "orderedList".equals(type);
+        requireNode(list, type, ordered ? ATTRIBUTED_BLOCK_FIELDS : BLOCK_FIELDS);
+        if (ordered && list.has("attrs")) {
+            JsonNode start = requireAttribute(list, "start");
+            if (!start.isNumber() || start.decimalValue().compareTo(java.math.BigDecimal.ONE) != 0) {
+                throw new IllegalArgumentException("Ordered free note lists must start at 1");
+            }
+        }
+        long points = 0;
+        boolean task = "taskItem".equals(itemType);
+        for (JsonNode item : requireContent(list)) {
+            requireNode(item, itemType, task ? ATTRIBUTED_BLOCK_FIELDS : BLOCK_FIELDS);
+            if (task && item.has("attrs") && !requireAttribute(item, "checked").isBoolean()) {
+                throw new IllegalArgumentException("Free note checkboxes require a boolean checked state");
+            }
+            JsonNode content = requireContent(item);
+            if (content.size() != 1) {
+                throw new IllegalArgumentException("A free note list item must contain exactly one paragraph");
+            }
+            points += paragraphPoints(content.get(0));
+        }
+        return points;
+    }
+
+    private static long paragraphPoints(JsonNode paragraph) {
+        requireNode(paragraph, "paragraph", BLOCK_FIELDS);
+        JsonNode content = paragraph.get("content");
+        if (content == null) {
+            return 0;
+        }
+        if (!content.isArray()) {
+            throw new IllegalArgumentException("Paragraph content must be an array");
+        }
+        long points = 0;
+        for (JsonNode node : content) {
+            requireNode(node, "text", TEXT_FIELDS);
+            String text = node.path("text").textValue();
+            if (text == null || text.isEmpty()) {
+                throw new IllegalArgumentException("Text nodes must contain a nonempty string");
+            }
+            requireStorableUnicode(text);
+            points += text.codePointCount(0, text.length());
+        }
+        return points;
+    }
+
+    private static JsonNode requireContent(JsonNode node) {
+        JsonNode content = node.path("content");
+        if (!content.isArray() || content.isEmpty()) {
+            throw new IllegalArgumentException("Free note container must have nonempty content");
+        }
+        return content;
+    }
+
+    private static JsonNode requireAttribute(JsonNode node, String name) {
+        JsonNode attrs = node.path("attrs");
+        if (!attrs.isObject() || attrs.size() != 1 || !attrs.has(name)) {
+            throw new IllegalArgumentException("Unsupported attributes in free note document");
+        }
+        return attrs.get(name);
     }
 
     public static JsonNode read(String storedJson) {

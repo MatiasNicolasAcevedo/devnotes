@@ -15,15 +15,36 @@ const paragraph = z.strictObject({
     .array(z.strictObject({ type: z.literal('text'), text: storableText.min(1) }))
     .optional(),
 })
+const itemParagraph = z.tuple([paragraph])
+const listItem = z.strictObject({ type: z.literal('listItem'), content: itemParagraph })
+const taskItem = z.strictObject({
+  type: z.literal('taskItem'),
+  attrs: z.strictObject({ checked: z.boolean() }).optional(),
+  content: itemParagraph,
+})
+const block = z.discriminatedUnion('type', [
+  paragraph,
+  z.strictObject({ type: z.literal('bulletList'), content: z.array(listItem).min(1) }),
+  z.strictObject({
+    type: z.literal('orderedList'),
+    attrs: z.strictObject({ start: z.literal(1) }).optional(),
+    content: z.array(listItem).min(1),
+  }),
+  z.strictObject({ type: z.literal('taskList'), content: z.array(taskItem).min(1) }),
+])
 const documentSchema = z
   .strictObject({
     type: z.literal('doc'),
-    content: z.array(paragraph).min(1),
+    content: z.array(block).min(1),
   })
   .refine((document) => {
     let length = 0
-    for (const paragraph of document.content) {
-      for (const node of paragraph.content ?? []) length += Array.from(node.text).length
+    for (const block of document.content) {
+      const paragraphs =
+        block.type === 'paragraph' ? [block] : block.content.map((item) => item.content[0])
+      for (const paragraph of paragraphs) {
+        for (const node of paragraph.content ?? []) length += Array.from(node.text).length
+      }
     }
     return (
       length <= 60_000 && new TextEncoder().encode(JSON.stringify(document)).length <= 512 * 1024
