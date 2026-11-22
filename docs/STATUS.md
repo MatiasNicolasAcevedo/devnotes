@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-076](tasks/T-076-image-text-xlsx.md) · Recuperar textos de Imagen en XLSX v3 · [S-112](specs/S-112-screenshot-ocr.md) |
-| Estado | `in_progress` |
-| Acción actual | Frontera implementer implementa y verifica XLSX v3 |
+| Estado | `in_review` |
+| Acción actual | Frontera reviewer revisa el PR #79 |
 | Rama / PR | `codex/t-076-image-text-xlsx` · [PR #79](https://github.com/MatiasNicolasAcevedo/devnotes/pull/79) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
@@ -34,11 +34,11 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de T-076 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
+Actuá como frontera reviewer de T-076 en MatiasNicolasAcevedo/devnotes. Sesión nueva e independiente.
 
-LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md y docs/tasks/T-076-image-text-xlsx.md.
-PRECONDICIÓN: gh pr view 79 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefName,headRefOid,baseRefName,baseRefOid debe confirmar OPEN en codex/t-076-image-text-xlsx contra main.
-ACCIÓN: Retomá la evidencia del checkpoint de T-076 y cerrá el gate diario y la publicación del mismo PR.
+LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-076-image-text-xlsx.md y la sección Portabilidad incremental de Imagen y Libres de docs/specs/S-112-screenshot-ocr.md.
+PRECONDICIÓN: gh pr view 79 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefName,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN y listo para revisión desde codex/t-076-image-text-xlsx contra main@3318c1a05017e7faaea2294099274b8684a860c9, con verify-required SUCCESS. Actualizá origin/main y origin/codex/t-076-image-text-xlsx. El HEAD publicado debe coincidir con git rev-parse origin/codex/t-076-image-text-xlsx y con git log -1 --format=%H origin/codex/t-076-image-text-xlsx -- docs/STATUS.md. Vinculá el gate al HEAD comprobando con git diff --exit-code 96c33340fb391444a26eb016cdf1119dfbddfa70 origin/codex/t-076-image-text-xlsx -- server client e2e docs/DEPLOYMENT.md que las fuentes probadas coinciden.
+ACCIÓN: Revisá el diff publicado en un checkout aislado. Cotejá la lectura v1/v2/v3, el formato v3 estricto, los conteos, la propiedad y el lock de cuenta según el checkpoint. Si encontrás hallazgos, publicá CAMBIOS REQUERIDOS con HEAD/base y condición de cierre. Si aprobás, seguí la transición documental a mergeable, verificá el nuevo HEAD y su CI, hacé squash ligado al SHA aprobado y confirmá MERGED con gh pr view 79 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName.
 GATE: diario. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-SALIDA: T-076 in_review y prompt de frontera reviewer. Conservá Render Auto-Deploy On Commit.
+SALIDA: Veredicto ligado a HEAD y base. Tras MERGED confirmado, entregá el prompt de frontera implementer de T-077 para conciliar T-076. Conservá Render Auto-Deploy On Commit.
 ```
