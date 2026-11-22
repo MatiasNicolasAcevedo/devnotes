@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import { control, csrfHeaders, expect, interactiveLogin, login, test } from './fixtures';
+import { control, csrfHeaders, expect, login, readiness, test } from './fixtures';
 
 test('free-notes: lists support editing, clipboard, reload and XLSX v4 restore', async ({
   page, context, browser, identity, isMobile,
 }) => {
-  await login(page, identity);
+  const sourceUser = await login(page, identity);
   await page.goto('/free-notes/new?space=work');
   const title = page.getByRole('textbox', { name: 'Título' });
   const body = page.getByRole('textbox', { name: 'Contenido' });
@@ -112,11 +112,13 @@ test('free-notes: lists support editing, clipboard, reload and XLSX v4 restore',
   const workbook = await page.request.get('/api/v1/portability/export');
   expect(workbook.status()).toBe(200);
 
-  await control('reference-login');
+  const restoreIdentity = randomUUID();
+  await control('identity', restoreIdentity);
   const restore = await browser.newContext({ baseURL: 'http://localhost', viewport: page.viewportSize()! });
   try {
     const restored = await restore.newPage();
-    await interactiveLogin(restored, randomUUID());
+    await readiness(restored);
+    expect(await login(restored, restoreIdentity)).not.toBe(sourceUser);
     const file = {
       name: 'listas-v4.xlsx',
       mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
