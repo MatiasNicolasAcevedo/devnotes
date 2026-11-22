@@ -1,6 +1,6 @@
 ---
 id: T-081
-status: changes_requested
+status: in_review
 priority: P1
 size: S
 milestone: M7
@@ -33,16 +33,19 @@ Medidas pre/post a 768×559 en Chromium/PWA según spec, 320/375 y 1280 para ref
 
 ## Checkpoint vigente
 
-2026-11-22. Frontera, decisión de cierre en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git y gh. Con autorización del dueño, se habilita **una corrección acotada de altura móvil y una revisión independiente de cierre** tras la segunda ronda, en la misma rama y el PR #84. El cambio se limita al layout del diario y, si hace falta, al espacio que su ruta recibe del shell. Impacto previsto: área visible de escritura, reflujo y scroll. API, permisos y datos quedan fuera del alcance.
+2026-11-22. Frontera implementer de corrección en Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0 y Docker Desktop. [PR #84](https://github.com/MatiasNicolasAcevedo/devnotes/pull/84). Base `main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e`, entrada `29289826458033a8b0386b1e7161d9bcbef4c731`, cambio técnico `adb4f2445409f842ad5b5217bde40670f03e150e`. El HEAD de entrega es el hijo documental que contiene este checkpoint y STATUS. Impacto acotado al layout del diario. Se conserva el comportamiento de API, permisos, datos y persistencia. La decisión de entrada autoriza esta corrección y una revisión independiente de cierre.
 
-| Causa | Arreglo autorizado | Prueba de cierre |
+| Causa | Arreglo | Prueba |
 |---|---|---|
-| CA-01 móvil midió el borde del editor en 766 CSS px y la navegación comenzó en 763. El cálculo de alto parte de una estimación del espacio del shell. | Ajustar el diario al espacio disponible sobre la navegación, manteniendo el relleno vertical del editor y el acceso con viewport reducido. | CA-01 móvil verde con sus aserciones intactas, filtros originales de escritorio y móvil, medidas y regresiones de T-081. Revisión independiente y `verify-required SUCCESS` sobre el HEAD que se apruebe. |
+| CA-01 móvil midió el borde del editor en 766 CSS px y el inicio de navegación en 763. El alto del diario se calculaba con una estimación del espacio del shell. | La ruta del diario llena el espacio que el shell deja entre la cabecera y la navegación móvil. El editor crece dentro de ese espacio y conserva 220 px de mínimo con scroll de la página cuando el área disponible se reduce. | CA-01 móvil 1/1 en `adb4f24` con aserciones intactas. Los filtros de T-081 también confirmaron scroll, foco, reflujo y primera línea. |
 
-- `gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,headRefName,baseRefName,baseRefOid,statusCheckRollup,mergedAt,mergeCommit,url` (exit 0 con acceso de red) confirmó `OPEN`, `isDraft=false`, `verify-required SUCCESS`, HEAD de entrada `0bb5d92d5f0b4ede8e6b4fe23f78068129e82da2` y base `main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e`. El primer intento en el sandbox falló al conectar con `api.github.com` (exit 1).
-- `git fetch origin main codex/t-081-compact-daily-notes` (exit 0), `git rev-parse origin/main` y `git log -1 --format='%H %P' origin/codex/t-081-compact-daily-notes` (exit 0) confirmaron el HEAD de entrada y su padre `1b0d098cf0c4939109080024785a1a12dd985009`. `git diff --check 8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e...1b0d098cf0c4939109080024785a1a12dd985009` (exit 0).
-- `node scripts/docs-check.mjs` sobre una copia del árbol versionado con ambos documentos de la decisión, excluido el `trailer/` local preexistente, y `git diff --check` (exit 0). `bash scripts/verify.sh --policy origin/main` (exit 0 fuera del sandbox tras un error MSYS `0xC0000022`) informó APPLICATION / FULL para el PR acumulado.
-- Pendiente: aplicar la corrección en sesión implementer, comprobar el gate diario y entregar al reviewer independiente. T-082 sigue pendiente de `MERGED` confirmado. **FULL/STARTER: DIFERIDO POR EL DUEÑO**. Render Auto-Deploy On Commit.
+- Precondición. `gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup` y `git fetch origin main codex/t-081-compact-daily-notes` (exit 0 con acceso de red) confirmaron PR abierto, listo, `verify-required SUCCESS` de entrada y los SHA esperados. El primer intento de gh dentro del sandbox falló al conectar con `api.github.com` (exit 1). `git log -1 --format='%H %P' origin/codex/t-081-compact-daily-notes` (exit 0) confirmó que el padre de la entrada era `0bb5d92d5f0b4ede8e6b4fe23f78068129e82da2`.
+- Cliente. `npm test -- --run src/features/daily/DailyNotesPage.test.tsx src/features/daily/DailyNotesToolbar.test.tsx src/features/daily/DailyHistoryPage.test.tsx` (exit 0, 48/48), `npm run typecheck`, ESLint y Prettier de los dos archivos modificados (exit 0).
+- CA-01 móvil. `STARTER_E2E_PROJECT=starter-e2e-t081-height-ca01-1122 bash scripts/e2e.sh --grep 'CA-01:' --project mobile` (exit 0, 1/1). Referencia roja y contraste verde sobre main en la segunda revisión debajo. `git diff --exit-code 29289826458033a8b0386b1e7161d9bcbef4c731 -- e2e/tests/daily-notes.spec.ts` (exit 0).
+- Escritorio. `STARTER_E2E_PROJECT=starter-e2e-t081-height-desktop-1122 bash scripts/e2e.sh --grep 'multiline clipboard, persistence, scroll focus and compact layout|CA-04:|T-020:' --project desktop` (exit 0, 5/5). Primera línea a 768×559 dentro de 110 px y mejora de al menos 12 px respecto de main. Reflujo también a 1280×800.
+- Móvil. `STARTER_E2E_PROJECT=starter-e2e-t081-height-mobile-1122 bash scripts/e2e.sh --grep 'multiline clipboard, persistence, scroll focus and compact layout|CA-04:|T-020:|compact daily notes: tools stay closed' --project mobile` (exit 0, 6/6). Reflujo a 320 y 375 px y foco con viewport reducido a 320×380. Los tres E2E usaron sesión OIDC ficticia, API y PostgreSQL reales. `docker container ls -aq`, `docker network ls -q` y `docker volume ls -q` con el label exacto `com.docker.compose.project` (exit 0) devolvieron cero recursos en los tres namespaces.
+- Documentos y política. `node scripts/docs-check.mjs` sobre el árbol versionado de entrega y `git diff --check origin/main...HEAD` (exit 0). La copia del árbol excluye el `trailer/` local preexistente. `bash scripts/verify.sh --policy origin/main` (exit 0) informó APPLICATION / FULL. **FULL/STARTER: DIFERIDO POR EL DUEÑO**.
+- Pendiente: revisión independiente de cierre. La consulta de `verify-required` del HEAD publicado queda vinculada en la evidencia del PR. T-082 sigue pendiente de `MERGED` confirmado. Render Auto-Deploy On Commit.
 
 ## Evidencia de segunda revisión
 
