@@ -1,6 +1,6 @@
 ---
 id: T-081
-status: in_review
+status: changes_requested
 priority: P1
 size: S
 milestone: M7
@@ -32,6 +32,24 @@ Medidas pre/post a 768×559 en Chromium/PWA según spec, 320/375 y 1280 para ref
 - Cerrar con [pruebas dirigidas del lote](../TESTING.md#lote-imagen-libres-e-ia-del-2026-11-16), docs-check y evidencia por HEAD/base.
 
 ## Checkpoint vigente
+
+2026-11-22. Segunda ronda de frontera reviewer independiente, Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0 y Docker Desktop. **CAMBIOS REQUERIDOS** en el [PR #84](https://github.com/MatiasNicolasAcevedo/devnotes/pull/84). HEAD revisado `1b0d098cf0c4939109080024785a1a12dd985009`, padre técnico `2e5f37eda23195d923478cc3e21f0d2867c35370` y base `main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e`. Impacto observado en reflujo y foco del diario. El diff técnico se limita al cliente y sus E2E. Pendiente de decisión de frontera tras dos rondas. T-082 sigue pendiente del merge.
+
+| Hallazgo | Resultado y condición de cierre |
+|---|---|
+| Herramientas reaparecía al volver a angosto. | Cerrado en `2e5f37e`. Con Herramientas abierto a 375 px, desaparece a 1280 px. Tras enfocar el editor a 1280, a 320 px el editor conserva el foco y el diálogo sigue cerrado hasta activarlo. Escape devuelve el foco al botón. El enlace sobre la selección y Copiar nota pasaron. |
+| Tres comentarios CSS se habían recodificado. | Cerrado en `2e5f37e`. Comparación de los comentarios recuperados con `git show`, decodificación UTF-8 estricta y aserción de igualdad en Node, exit 0. |
+| El área de escritura excede el espacio vertical disponible en móvil. | Nuevo bloqueo reproducido. En `e2e/tests/daily-notes.spec.ts:96`, CA-01 midió `fill.bottom = 766` y el inicio de la navegación en `763` CSS px, dos veces en el HEAD. CA-01 pasó en main. Revisar el cálculo de altura de `DailyNotesPage.tsx` junto con el espacio real del shell. Cierre observable: CA-01 móvil verde con sus límites geométricos intactos, además de mantener el reflujo, el foco y la medida de primera línea exigidos por S-114. |
+
+- Precondición. `gh pr view 84 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup` y `git fetch origin main codex/t-081-compact-daily-notes` (exit 0) confirmaron PR abierto y listo, base y HEAD esperados y `verify-required SUCCESS`. `git log -1 --format='%H %P' origin/codex/t-081-compact-daily-notes -- docs/STATUS.md` (exit 0) confirmó el cierre documental y su padre técnico. La consulta de hilos del PR no devolvió conversaciones pendientes.
+- Cliente. Desde `client/`, `npm test -- --run --maxWorkers=1 src/features/daily/DailyNotesPage.test.tsx src/features/daily/DailyNotesToolbar.test.tsx src/features/daily/DailyHistoryPage.test.tsx src/features/daily/editor/DailyEditor.test.tsx src/features/daily/CopyPreviousNote.test.tsx` (exit 0, 86/86) y `npm run typecheck` (exit 0). La primera corrida con los mismos archivos sin `--maxWorkers=1` dio 85/86 (exit 1). El caso «descarta el ACK pendiente al cerrar sesión» no encontró la oferta a tiempo, también falló en main (exit 1) y pasó al aislarlo en el HEAD (exit 0).
+- Escritorio. `STARTER_E2E_PROJECT=starter-e2e-t081-review-desk-1122 bash scripts/e2e.sh --grep 'multiline clipboard, persistence, scroll focus and compact layout|CA-04:|T-020:' --project desktop` (exit 0, 5/5).
+- Móvil. `STARTER_E2E_PROJECT=starter-e2e-t081-review-mob-1122 bash scripts/e2e.sh --grep 'multiline clipboard, persistence, scroll focus and compact layout|CA-04:|T-020:|compact daily notes: tools stay closed' --project mobile` (exit 0, 6/6).
+- Complemento móvil. `STARTER_E2E_PROJECT=starter-e2e-t081-review-copy-1122 bash scripts/e2e.sh --grep 'copy previous: preserves|CA-01:' --project mobile` (exit 1, 1/2). Pasó Copiar nota anterior y falló CA-01. `STARTER_E2E_PROJECT=starter-e2e-t081-review-ca01-1122 bash scripts/e2e.sh --grep 'CA-01:' --project mobile` repitió el mismo fallo (exit 1, 0/1). `STARTER_E2E_PROJECT=starter-e2e-t081-review-ca01base-1122 bash scripts/e2e.sh --grep 'CA-01:' --project mobile` en main pasó (exit 0, 1/1).
+- E2E con OIDC ficticio, API y PostgreSQL reales. `docker ps -aq`, `docker network ls -q` y `docker volume ls -q`, filtrados por el label exacto `com.docker.compose.project`, devolvieron cero recursos en los cinco namespaces.
+- Documentos y política. `node scripts/docs-check.mjs` sobre el árbol versionado del HEAD revisado y `git diff --check 8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e...1b0d098cf0c4939109080024785a1a12dd985009` (exit 0). `bash scripts/verify.sh --policy origin/main` (exit 0, APPLICATION / FULL informativo). **FULL/STARTER: DIFERIDO POR EL DUEÑO**. Render Auto-Deploy On Commit.
+
+## Evidencia de corrección
 
 2026-11-22. Frontera implementer de corrección, Codex Desktop con GPT-6 (variante y esfuerzo sin dato expuesto), PowerShell, Git Bash, gh, Node 24.21.0 y Docker Desktop. [PR #84](https://github.com/MatiasNicolasAcevedo/devnotes/pull/84). Base `main@8f4ea2c3f32cff823b5a9e3d3ffd17b5217d4b6e`, HEAD revisado `a3cd8aa26d956a21c63c6222a6a41640ffbb2600`, entrada documental `5040a0804ea0864fe73a97674bd8d6fdda7df09c` y corrección técnica `2e5f37eda23195d923478cc3e21f0d2867c35370`. El HEAD de entrega es el commit documental hijo que contiene este checkpoint y STATUS. Impacto en UI y foco, con API, permisos, persistencia y formato del documento preservados.
 
