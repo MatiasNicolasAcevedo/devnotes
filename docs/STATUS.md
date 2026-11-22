@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-077](tasks/T-077-image-text-library-ui.md) · Guardar, abrir y borrar textos de Imagen · [S-112](specs/S-112-screenshot-ocr.md) |
-| Estado | `in_progress` |
-| Acción actual | Frontera implementer implementa y verifica Textos guardados |
-| Rama / PR | `codex/t-077-image-text-library-ui` · PR pendiente |
+| Estado | `in_review` |
+| Acción actual | Frontera reviewer revisa T-077 sobre el HEAD y la base publicados |
+| Rama / PR | `codex/t-077-image-text-library-ui` · [PR #80](https://github.com/MatiasNicolasAcevedo/devnotes/pull/80) |
 
 Modo `FRONTERA_CONTINUA`. El 2026-11-16 el dueño adoptó el [flujo de trabajo](WORKFLOW.md): planner, implementer y reviewer que mergea; gate diario con pruebas dirigidas; gates largos diferidos. Las decisiones vigentes están en [AUTONOMY](AUTONOMY.md#modo-y-decisiones-vigentes).
 
@@ -34,11 +34,11 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de T-077 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
+Actuá como frontera reviewer independiente de T-077 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-076-image-text-xlsx.md, docs/tasks/T-077-image-text-library-ui.md y la sección Biblioteca de Imagen de docs/specs/S-112-screenshot-ocr.md con su referencia visual.
-PRECONDICIÓN: gh pr view 79 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit,baseRefName debe confirmar MERGED en main, con mergedAt y mergeCommit.oid válidos. Actualizá origin/main y usá git merge-base --is-ancestor con el oid confirmado y origin/main para verificar que incluye ese squash. Si falla una comprobación, informá el estado real y entregá el prompt vigente.
-ACCIÓN: Abrí codex/t-077-image-text-library-ui desde origin/main actualizado. En el primer commit conciliá T-076 a done con el squash confirmado y habilitá T-077. Implementá la API y la interfaz de Textos guardados según la tarea, con las guardias de espacio y cuenta y los negativos de permiso, CSRF, doble clic y fallo. Publicá un solo PR contra main.
-GATE: diario según T-077, con backend dirigido, cliente y typecheck, E2E filtrado desktop con proyecto propio, docs-check y verify-required del HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-SALIDA: PR listo para revisión independiente y gate ligado a HEAD/base. Registrá checkpoint y terminá con el prompt de frontera reviewer en STATUS y completo en el chat. Conservá Render Auto-Deploy On Commit.
+LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-077-image-text-library-ui.md y la sección Biblioteca de Imagen de docs/specs/S-112-screenshot-ocr.md con su referencia visual.
+PRECONDICIÓN: gh pr view 80 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefName,baseRefOid,statusCheckRollup debe confirmar OPEN, listo para revisión, main en edb27c87a1097e605d0ed9d0a8dd4327911a5187 y verify-required SUCCESS. Tras git fetch origin main codex/t-077-image-text-library-ui, cotejá headRefOid con git log -1 --format=%H origin/codex/t-077-image-text-library-ui -- docs/STATUS.md y las fuentes probadas con el SHA del checkpoint. Si alguna comprobación falla, informá el estado real y entregá el prompt vigente.
+ACCIÓN: Revisá el diff publicado en un worktree aislado y cotejá el gate diario con el HEAD y la base. Verificá propiedad por cuenta y espacio, CSRF, idempotencia y reintentos, aislamiento del borrador y foco tras borrar. Si hay hallazgos, publicalos con su prueba de cierre y devolvé al implementer del mismo PR. Si aprobás, publicá la transición a mergeable, esperá verify-required en ese HEAD y ejecutá el squash ligado al SHA revisado según AUTONOMY.
+GATE: pruebas dirigidas de los riesgos encontrados, docs-check y verify-required del HEAD aprobado. FULL/STARTER: DIFERIDO POR EL DUEÑO. Conservá Render Auto-Deploy On Commit.
+SALIDA: Veredicto ligado a HEAD/base. Si mergeás, confirmá MERGED en main con mergedAt y mergeCommit.oid mediante gh pr view 80 con --repo explícito. Entregá el prompt vigente, el de T-078 solo tras MERGED confirmado.
 ```
