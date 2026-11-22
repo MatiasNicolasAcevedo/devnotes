@@ -16,11 +16,13 @@ import {
   type DragEvent,
 } from 'react'
 import { useCopyToClipboard } from '../../shared/ui/useCopyToClipboard'
-import type { Space } from '../spaces/space'
 import { extractScreenshot, extractionErrorMessage, validateScreenshot } from './api'
 import { DiscardImageChanges } from './DiscardImageChanges'
 import { ImageDraftContext } from './imageDraftContext'
+import { ImageTextLibrary } from './ImageTextLibrary'
+import { SaveImageText } from './SaveImageText'
 import { ocrActionSx } from './styles'
+import type { ImageTextScope } from './useImageTextScope'
 import './imageWorkspace.css'
 
 interface Screenshot {
@@ -65,7 +67,13 @@ function clipboardScreenshot(data: DataTransfer | null): File | undefined {
 const NO_CLIPBOARD_IMAGE =
   'No hay una imagen en el portapapeles. Copiá la captura o usá Elegir imagen.'
 
-export function ImageWorkspace({ space, canExtract }: { space: Space; canExtract: boolean }) {
+export function ImageWorkspace({
+  scope,
+  canExtract,
+}: {
+  scope: ImageTextScope
+  canExtract: boolean
+}) {
   const mobile = useMediaQuery('(pointer: coarse)', { noSsr: true })
   const previewId = useId()
   const pasteHelpId = useId()
@@ -272,7 +280,7 @@ export function ImageWorkspace({ space, canExtract }: { space: Space; canExtract
     setExtractionError(null)
     setExtracting(true)
     try {
-      const { text } = await extractScreenshot(space, current.file, controller.signal)
+      const { text } = await extractScreenshot(scope.space, current.file, controller.signal)
       if (request.current !== controller) return
       focusResult.current = !mobile && document.activeElement === extractButton.current
       setResult({ text, baseline: text })
@@ -486,20 +494,34 @@ export function ImageWorkspace({ space, canExtract }: { space: Space; canExtract
                 El texto aparecerá acá después de extraerlo.
               </Typography>
             )}
-            <Button
-              variant="contained"
-              onClick={() => void copyText()}
-              disabled={!result?.text.trim()}
-              sx={ocrActionSx}
-            >
-              Copiar texto
-            </Button>
+            <div className="ocr-image-actions">
+              <Button
+                variant="contained"
+                onClick={() => void copyText()}
+                disabled={!result?.text.trim()}
+                sx={{ ...ocrActionSx, alignSelf: 'start' }}
+              >
+                Copiar texto
+              </Button>
+              {result ? (
+                <SaveImageText
+                  scope={scope}
+                  text={result.text}
+                  onSaved={(text) => setResult((latest) => latest && { ...latest, baseline: text })}
+                />
+              ) : (
+                <Button variant="outlined" disabled sx={ocrActionSx}>
+                  Guardar
+                </Button>
+              )}
+            </div>
             {copyFailed && <Alert severity="error">Seleccioná y copiá el texto manualmente.</Alert>}
             {result && (
               <Typography variant="body2" color="text.secondary" role="status">
                 {copiedText === result.text ? 'Texto copiado' : 'Texto listo'}
               </Typography>
             )}
+            <ImageTextLibrary scope={scope} />
           </div>
         </div>
       </Box>

@@ -92,6 +92,15 @@ public class SecurityConfig {
                             .authenticated()
                             .requestMatchers(HttpMethod.POST, "/api/v1/ocr/extractions")
                             .authenticated()
+                            .requestMatchers(
+                                    HttpMethod.GET,
+                                    "/api/spaces/{space}/image-texts",
+                                    "/api/spaces/{space}/image-texts/{id}")
+                            .authenticated()
+                            .requestMatchers(HttpMethod.POST, "/api/spaces/{space}/image-texts")
+                            .authenticated()
+                            .requestMatchers(HttpMethod.DELETE, "/api/spaces/{space}/image-texts/{id}")
+                            .authenticated()
                             .requestMatchers(HttpMethod.GET, "/api/v1/voice-notes")
                             .authenticated()
                             .requestMatchers(HttpMethod.POST, "/api/v1/voice-notes")
