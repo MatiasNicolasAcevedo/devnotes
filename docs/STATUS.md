@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-093](tasks/T-093-ai-media-plan.md) · Plan de IA y materiales finales |
-| Estado | `in_review` |
+| Estado | `mergeable` |
 | Siguiente acción | Tras T-093 MERGED, implementar [T-094](tasks/T-094-ai-workspace.md) según [S-116](specs/S-116-ai-workspace.md) |
-| Rama | `codex/t-093-ai-media-plan` |
+| Rama / PR | `codex/t-093-ai-media-plan` · [PR #89](https://github.com/MatiasNicolasAcevedo/devnotes/pull/89) |
 
 Modo `FRONTERA_CONTINUA`. T-085 conciliada. La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con IA, tráiler v2 y demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
@@ -36,7 +36,7 @@ Actuá como frontera implementer de T-094 en MatiasNicolasAcevedo/devnotes. Sesi
 
 Leé AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-094-ai-workspace.md y docs/specs/S-116-ai-workspace.md. Aplicá frontend-design y la sección IA de docs/design/WRITING-WORKSPACES.md.
 
-Verificá con gh pr view codex/t-093-ai-media-plan --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit que el plan T-093 está MERGED. Ejecutá git fetch origin main y git merge-base --is-ancestor SHA origin/main, reemplazando SHA por el oid devuelto. Si la precondición falla, informá el estado real.
+Verificá con gh pr view 89 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit que el plan T-093 está MERGED. Ejecutá git fetch origin main y git merge-base --is-ancestor SHA origin/main, reemplazando SHA por el oid devuelto. Si la precondición falla, informá el estado real.
 
 Partí de origin/main en codex/t-094-ai-workspace. Conciliá T-093 en el primer commit. Implementá en un único PR los cuatro proveedores Free, el selector compacto del navbar, los modelos ligeros primero y la consulta explícita de fragmentos. Usá las claves solo desde el backend. Probá cada adaptador con doble y ejecutá la matriz de modelos de T-094 con muestras ficticias en el piloto Free.
 
