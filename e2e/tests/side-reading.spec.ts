@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { Page } from '@playwright/test';
-import { control, csrfHeaders, expect, login, logout, test } from './fixtures';
+import { control, csrfHeaders, expect, interactiveLogin, login, logout, readiness, test } from './fixtures';
 
 const date = '2026-11-20';
 const writingDate = '2026-11-21';
@@ -201,7 +201,9 @@ test('side reading: a deleted source can be replaced and consultations never cro
 test('side reading: signing out discards the consultation before a second account signs in', async ({
   page, identity,
 }) => {
-  const account = await login(page, identity);
+  await control('reference-login');
+  await readiness(page);
+  const account = await interactiveLogin(page, identity);
   await seedVersion(page);
   await page.setViewportSize({ width: 1280, height: 812 });
   await page.goto(`/notes/${writingDate}?space=work`);
@@ -214,9 +216,7 @@ test('side reading: signing out discards the consultation before a second accoun
   await expect(page).toHaveURL('http://localhost/login');
   await expect(savedReader).toHaveCount(0);
   expect((await page.request.get(`/api/v1/daily-versions/${date}?space=work`)).status()).toBe(401);
-  const secondIdentity = randomUUID();
-  await control('identity', secondIdentity);
-  expect(await login(page, secondIdentity)).not.toBe(account);
+  expect(await interactiveLogin(page, randomUUID())).not.toBe(account);
   await page.goto(`/notes/${writingDate}?space=work`);
   await expect(savedReader).toHaveCount(0);
   await openTools(page, 'Abrir al lado');
