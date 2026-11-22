@@ -48,10 +48,19 @@ test('free-notes: lifecycle with draft guard, space and diary date', async ({ pa
   await expect(title).toHaveValue('T-080 renombrada');
   await page.getByRole('link', { name: 'Libres', exact: true }).click();
 
+  await fresh.click();
+  await title.fill('T-080 posterior');
+  await page.getByRole('button', { name: 'Guardar', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Editar nota' })).toBeVisible();
+  await page.getByRole('link', { name: 'Libres', exact: true }).click();
+
   await page.getByRole('button', { name: 'Borrar T-080 renombrada' }).click();
   const deletion = page.getByRole('dialog', { name: '¿Borrar la nota libre?' });
   await deletion.getByRole('button', { name: 'Borrar', exact: true }).click();
   await expect(fresh).toBeFocused();
+  await expect(page.getByRole('link', { name: /T-080 posterior/ })).toBeVisible();
+  await page.getByRole('button', { name: 'Borrar T-080 posterior' }).click();
+  await deletion.getByRole('button', { name: 'Borrar', exact: true }).click();
   await expect(page.getByText('Todavía no hay notas libres')).toBeVisible();
   await page.reload();
   await expect(page.getByText('Todavía no hay notas libres')).toBeVisible();

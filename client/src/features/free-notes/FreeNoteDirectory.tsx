@@ -56,7 +56,7 @@ export function FreeNoteDirectory() {
       await scope.mutate((options) => deleteFreeNote(scope.space, selected, options))
       if (!scope.isCurrent()) return
       const index = items.findIndex((item) => item.id === selected.id)
-      focusAfterDelete.current = items[index + 1]?.id ?? items[index - 1]?.id ?? ''
+      focusAfterDelete.current = items[index + 1]?.id ?? ''
       setDeleted((previous) => new Set(previous).add(selected.id))
       setSelected(null)
       scope.invalidate(selected.id, true)
