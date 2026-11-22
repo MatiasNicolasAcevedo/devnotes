@@ -69,6 +69,9 @@ class SecurityConfigTest {
     @MockitoBean
     private OcrExtractionService ocrExtraction;
 
+    @MockitoBean
+    private com.example.devnotes.imagetext.application.ImageTextService imageTexts;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -265,6 +268,38 @@ class SecurityConfigTest {
         }
 
         verifyNoInteractions(voiceNotes);
+    }
+
+    @Test
+    void imageTextsExactMethodsAllowedAndOthersDenied() throws Exception {
+        var token = mockMvc.perform(get("/api/v1/auth/csrf"))
+                .andReturn()
+                .getResponse()
+                .getCookie("XSRF-TOKEN");
+        var user = oidcLogin().oidcUser(AuthFixtures.localUser("Demo", null, false));
+
+        // Uncontracted methods denied on collection and item
+        for (String path : new String[] {
+            "/api/spaces/work/image-texts", "/api/spaces/work/image-texts/01900000-0000-7000-8000-000000000001"
+        }) {
+            for (String method : new String[] {"PUT", "PATCH", "HEAD", "OPTIONS"}) {
+                mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request(
+                                        org.springframework.http.HttpMethod.valueOf(method), path)
+                                .with(user)
+                                .cookie(token)
+                                .header("X-XSRF-TOKEN", token.getValue()))
+                        .andExpect(status().isForbidden());
+            }
+        }
+
+        // Neighbour routes denied
+        for (String path : new String[] {
+            "/api/spaces/work/image-texts/01900000-0000-7000-8000-000000000001/child", "/api/spaces/work/image-texts/"
+        }) {
+            mockMvc.perform(get(path).with(user)).andExpect(status().isForbidden());
+        }
+
+        verifyNoInteractions(imageTexts);
     }
 
     @Test
