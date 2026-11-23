@@ -1,6 +1,6 @@
 ---
 id: T-097
-status: in_review
+status: mergeable
 priority: P2
 size: M
 milestone: M9
@@ -109,6 +109,26 @@ bash scripts/verify.sh --policy origin/main
 El último comando solo informa el perfil del diff. FULL/STARTER: DIFERIDO POR EL DUEÑO. `verify-required` verde sobre el HEAD publicado. Si una corrida E2E supera el presupuesto del gate diario, detenerla, registrar el comando y la duración, y acotar el filtro. Render despliega al mergear en `main`; no hay cambio de configuración ni de variables.
 
 ## Checkpoint vigente
+
+### Revisión independiente
+
+2026-11-23. Frontera reviewer, ronda 1, en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, Git, gh, Docker Desktop, Node 24 y el navegador integrado. Sesión nueva, distinta de la del implementer. **APROBADO**, estado `mergeable`. Revisado el HEAD publicado `22f7c0d7251b3687e8a241777159e766b1f99736` del [PR #94](https://github.com/MatiasNicolasAcevedo/devnotes/pull/94) sobre base `74ccaf6`: OPEN, no draft, `verify-required` success sobre ese SHA (una corrida previa del mismo SHA quedó `cancelled`, reemplazada). `git merge-base --is-ancestor 8efa323 22f7c0d` exit 0 y `git diff --name-only 8efa323 22f7c0d` lista solo `docs/STATUS.md` y esta tarea.
+
+**Contraste con el contrato.** El diff toca solo `client/src/{app,features/demo,shared/ui}`, `e2e/tests/` y documentos: sin servidor, `nginx.conf`, `vite.config.ts` ni CSP. AC-01/AC-02: `DemoPage` arranca con el tráiler, portada local y sin iframe; `embedUrl` en `videos.ts` es el único constructor de `youtube-nocookie.com/embed/<id>?autoplay=1&rel=0`; `key={selected.id}` evita reiniciar el video que suena. AC-03: `DemoLink` va tras `PrimaryNavigation` en escritorio y antes de `ServerStatus` en móvil, fuera de «Navegación principal», `aria-label="Demo"`, `DEMO_RED` en `theme.ts`, texto oculto por debajo de 360 px. AC-04: ruta `demo` sin guardia. Portadas idénticas a `media/demo/youtube/` (`cmp` exit 0). Correcciones de regresión aceptadas: T-064 refleja el orden de foco que impone el contrato (Demo entre selector y estado en angosto); T-050 a 48 px es coherente con `AppShell.tsx` (`daily ? 48 : 56`) y la ruta índice que redirige a `/notes`, falla previa demostrada con línea base roja sobre `origin/main`.
+
+| Comando | Exit | Resultado |
+|---|---|---|
+| `npm test -- --run src/features/demo src/app/AppShell.test.tsx src/app/AppRoutes.test.tsx` (client/) | 0 | 3 archivos, 34 pruebas |
+| `npm run typecheck` (client/) | 0 | |
+| `STARTER_E2E_PROJECT=starter-e2e-t097-review bash scripts/e2e.sh --grep "demo page:" --project mobile` | 0 | 2/2 (`visitor` y `layout`); stack retirado por el script |
+| `bash scripts/dev.sh up --mode local --proxy nginx --project starter-dev-local-nginx` | 0 | Stack local del dueño en `http://127.0.0.1:5175`, queda activo |
+| Prueba manual en `/demo` (visitante) | — | Sin iframe y cero recursos de `youtube`/`ytimg`/`googlevideo`/`doubleclick` antes del clic. «Reproducir Tráiler» monta un iframe y el video reproduce; clic en «Demo completa» deja un único iframe con `XAIHdmHAhA0`, reproduce con subtítulos, `aria-current` pasa al ítem y «Ver en YouTube» apunta a `https://youtu.be/XAIHdmHAhA0`. Único host de terceros contactado: `www.youtube-nocookie.com` |
+
+**Observación no bloqueante.** Las portadas traen un ícono de reproducción propio dibujado en la imagen, desplazado respecto del botón rojo de 64 px: en el estado inicial se ven dos símbolos de play. Cumple el contrato (portadas sin cambios); si molesta, una tarea futura puede usar una variante de la portada sin ese ícono.
+
+FULL/STARTER: DIFERIDO POR EL DUEÑO.
+
+### Implementación
 
 2026-11-23. Frontera implementer en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, gh, Node 24 y Docker Desktop. [PR #94](https://github.com/MatiasNicolasAcevedo/devnotes/pull/94), rama `codex/t-097-demo-page` sobre `origin/main` `74ccaf6`. Precondición: PR #93 `MERGED` (`2026-11-23T15:36:29Z`, `74ccaf61abcb69b805115e37cb3389fb4701b00d`) y `git merge-base --is-ancestor` exit 0. Commits: `5fe5bb3` (estado), `ac5154e` (implementación), `8efa323` (ajuste de regresiones, último commit técnico) y después solo commits documentales de checkpoint y STATUS; el último de ellos es el HEAD de entrega.
 
