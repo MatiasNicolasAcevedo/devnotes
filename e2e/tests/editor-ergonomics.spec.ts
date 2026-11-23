@@ -58,13 +58,21 @@ test('compact writing header: leaves more usable height in Diario and Libres', a
   await free.fill(Array.from({ length: 24 }, (_, index) => `Línea de prueba ${index + 1}`).join('\n'));
   await free.press('Control+Home');
   const form = free.locator('xpath=ancestor::form');
-  await form.evaluate(element => { element.scrollTop = 0; });
+  // Wait for the editor's caret scroll before measuring the initial form view.
+  await expect.poll(() => form.evaluate(async element => {
+    const main = element.closest('main')!;
+    element.scrollTop = 0;
+    main.scrollTop = 0;
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    return [element.scrollTop, main.scrollTop];
+  })).toEqual([0, 0]);
   const freeBox = (await free.boundingBox())!;
   const freeForm = (await form.boundingBox())!;
   const freeNav = (await nav.boundingBox())!;
   const freeHeader = (await banner.boundingBox())!.height;
   const freeBottom = Math.min(freeBox.y + freeBox.height, freeForm.y + freeForm.height, freeNav.y);
-  const freeVisible = freeBottom - Math.max(freeBox.y, freeForm.y);
+  expect(freeBox.y).toBeGreaterThan(freeForm.y);
+  const freeVisible = freeBottom - freeBox.y;
   await page.screenshot({ path: testInfo.outputPath('t098-libres.png'), animations: 'disabled' });
   await writeFile(testInfo.outputPath('t098-medidas.json'), JSON.stringify({
     diario: { header: dailyHeader, editor: dailyBox.height, bottom: dailyBox.y + dailyBox.height, nav: dailyNav.y },
