@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-094](tasks/T-094-ai-workspace.md) · [S-116](specs/S-116-ai-workspace.md) |
+| Tarea y contrato | [T-095](tasks/T-095-trailer-v2.md) |
 | Estado | `mergeable` |
-| Siguiente acción | APROBADO por reviewer independiente; squash del PR #90 y confirmación MERGED. Luego T-095 ([checkpoint](tasks/T-094-ai-workspace.md#checkpoint-vigente)) |
-| Rama / PR | `codex/t-094-ai-workspace` · [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90) |
+| Siguiente acción | Ronda 2 APROBADA y escucha completa del MP4 confirmada por el dueño; reviewer hace el squash merge del PR #91 y la sesión siguiente toma T-096 ([checkpoint](tasks/T-095-trailer-v2.md#checkpoint-vigente)) |
+| Rama / PR | `codex/t-095-trailer-v2` · [PR #91](https://github.com/MatiasNicolasAcevedo/devnotes/pull/91) |
 
-Modo `FRONTERA_CONTINUA`. T-093 conciliada. La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con IA, tráiler v2 y demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
+Modo `FRONTERA_CONTINUA`. T-094 conciliada ([PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90) MERGED, `076e4ed`). La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con el tráiler v2 y la demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
 Piloto aprobado con cinco destinos: Groq 20B/120B, Workers AI 20B/120B y Gemini 3.1 Flash-Lite. Gemini 3.8 Flash y OpenRouter Free quedan diferidos. El selector y el compositor muestran disponibilidad, fallos y cuota. El usuario elige y confirma otro destino. [Decisión y cierre observable](tasks/T-094-ai-workspace.md#decisión-de-alcance-del-dueño). FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
@@ -34,5 +34,5 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Frontera implementer de T-095 en MatiasNicolasAcevedo/devnotes. Leé AGENTS.md, STATUS, docs/agents/implementer.md y docs/tasks/T-095-trailer-v2.md. Precondición: PR 90 MERGED, comprobado con gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit (state MERGED, mergedAt y mergeCommit.oid válidos) y la ascendencia del squash en origin/main; si no, devolvé el paso vigente. Conciliá T-094 a done en codex/t-095-trailer-v2 en el primer commit. Partí del tráiler local y del producto probado, entregá los dos cortes con música, sus fuentes y el gate de T-095 en un PR. Cerrá con el prompt completo de reviewer independiente.
+Frontera implementer de T-096 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/agents/implementer.md y docs/tasks/T-096-narrated-demo.md. PRECONDICIÓN: gh pr view 91 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit devuelve MERGED con mergedAt y mergeCommit.oid válidos, y git merge-base --is-ancestor con ese mergeCommit.oid y origin/main sale con exit 0; si no, devolvé el paso vigente. ACCIÓN: creá codex/t-096-narrated-demo desde origin/main y en su primer commit conciliá T-095 a done con el SHA de merge en la tarea, STATUS y BACKLOG. Inventariá las funciones del SHA final y prepará recorrido, guion, captura, voz de Sofía y SRT según T-096, con pruebas dirigidas y el gate diario de docs/TESTING.md; trailer/ no se versiona ni modifica. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: PR de T-096 con la evidencia en la tarea y el prompt completo para reviewer independiente.
 ```

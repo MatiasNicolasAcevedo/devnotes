@@ -58,7 +58,7 @@ La primera entrega de [S-112](specs/S-112-screenshot-ocr.md) terminó en T-071. 
 | 13 | [T-085](tasks/T-085-side-reading.md) · Leer una nota al lado mientras se escribe | T-084 |
 | 14 | [T-093](tasks/T-093-ai-media-plan.md) · Plan de IA y materiales finales | T-085 |
 | 15 | [T-094](tasks/T-094-ai-workspace.md) · IA Free completa y prueba por proveedor | T-093 |
-| 16 | [T-095](tasks/T-095-trailer-v2.md) · Tráiler musical v2 en dos formatos | T-094 |
+| 16 | [T-095](tasks/T-095-trailer-v2.md) · Tráiler musical v2 de escritorio (16:9) | T-094 |
 | 17 | [T-096](tasks/T-096-narrated-demo.md) · Recorrido completo, guion, voz y SRT | T-095 |
 
 ### Pendientes tras T-071

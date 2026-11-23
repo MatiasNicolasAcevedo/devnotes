@@ -1,0 +1,1824 @@
+<!doctype html>
+<html lang="es" data-resolution="landscape">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=block"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      /* Tráiler v2 de escritorio. Identidad, paleta y tipografía de la v1 (trailer/landscape). */
+      :root {
+        --ground: #0b0c0d;
+        --paper: #212324;
+        --panel: #181a1b;
+        --ink: #e1e3e6;
+        --muted: #a6adb7;
+        --line: #393d42;
+        --blue: #8ab4f8;
+        --amber: #ffb74d;
+        --green: #91c9b0;
+        --space: #81c995;
+        --violet: #ceb3ff;
+        --cyan: #00ffff;
+        --red: #ff5252;
+        --font-display: 'Space Grotesk', 'Segoe UI', sans-serif;
+        --font-mono: 'Roboto Mono', Consolas, monospace;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: var(--ground);
+      }
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        font-family: var(--font-display);
+        color: var(--ink);
+      }
+      .clip {
+        position: absolute;
+        inset: 0;
+      }
+      .center {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Fondo */
+      #grid {
+        position: absolute;
+        inset: -80px;
+        background-image:
+          linear-gradient(rgba(138, 180, 248, 0.07) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(138, 180, 248, 0.07) 1px, transparent 1px);
+        background-size: 80px 80px;
+      }
+      .blob {
+        position: absolute;
+        width: 900px;
+        height: 900px;
+        border-radius: 50%;
+        filter: blur(140px);
+        opacity: 0.34;
+      }
+      #blobA {
+        left: -350px;
+        top: -200px;
+        background: var(--cyan);
+      }
+      #blobB {
+        right: -400px;
+        bottom: -250px;
+        background: var(--amber);
+        opacity: 0.26;
+      }
+      #vig {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.78) 100%);
+      }
+      #flash {
+        background: #eaffff;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* 1 · Gancho */
+      #s1in {
+        width: 100%;
+        padding: 0 0 0 500px;
+      }
+      .tline {
+        font-family: var(--font-mono);
+        font-weight: 700;
+        font-size: 70px;
+        line-height: 120px;
+        white-space: nowrap;
+      }
+      .pr {
+        color: var(--cyan);
+        margin-right: 26px;
+        text-shadow: 0 0 28px rgba(0, 255, 255, 0.8);
+      }
+      .hl {
+        color: var(--cyan);
+        text-shadow: 0 0 30px rgba(0, 255, 255, 0.7);
+      }
+      .cur {
+        display: inline-block;
+        width: 0.58em;
+        height: 1em;
+        margin-left: 6px;
+        vertical-align: -0.12em;
+        background: var(--cyan);
+        box-shadow: 0 0 24px rgba(0, 255, 255, 0.8);
+      }
+      .ch {
+        display: none;
+      }
+
+      /* Logo */
+      .icon {
+        width: 300px;
+        height: 300px;
+        border-radius: 68px;
+        background: #030303;
+        border: 2px solid rgba(0, 255, 255, 0.45);
+        box-shadow:
+          0 0 90px rgba(0, 255, 255, 0.5),
+          0 30px 80px rgba(0, 0, 0, 0.7);
+        overflow: hidden;
+      }
+      .icon svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .ring {
+        position: absolute;
+        left: calc(50% - 150px);
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        border: 6px solid var(--cyan);
+        opacity: 0;
+      }
+      .word {
+        font-size: 158px;
+        font-weight: 700;
+        letter-spacing: -0.045em;
+        line-height: 1;
+        margin-top: 56px;
+        white-space: nowrap;
+      }
+      .word span {
+        display: inline-block;
+      }
+      .word .n {
+        color: var(--cyan);
+        text-shadow: 0 0 44px rgba(0, 255, 255, 0.55);
+      }
+      .tag {
+        margin-top: 34px;
+        font-size: 46px;
+        font-weight: 500;
+        color: var(--muted);
+        text-align: center;
+        line-height: 1.25;
+      }
+
+      /* Titulares: columna izquierda */
+      .top {
+        position: absolute;
+        left: 110px;
+        top: 0;
+        width: 720px;
+        height: 1080px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .kicker {
+        font-family: var(--font-mono);
+        font-size: 30px;
+        font-weight: 500;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--amber);
+        margin-bottom: 20px;
+      }
+      .head {
+        font-size: 86px;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        line-height: 1.02;
+      }
+      .head .w {
+        display: inline-block;
+        margin-right: 0.24em;
+      }
+      .head .acc {
+        color: var(--blue);
+      }
+      .bot {
+        position: absolute;
+        left: 900px;
+        right: 60px;
+        top: 935px;
+        height: 130px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 22px;
+        flex-wrap: wrap;
+      }
+      .chipx {
+        font-family: var(--font-mono);
+        font-size: 32px;
+        font-weight: 500;
+        padding: 16px 28px;
+        border-radius: 999px;
+        border: 2px solid var(--line);
+        background: rgba(33, 35, 36, 0.9);
+        color: var(--ink);
+        white-space: nowrap;
+      }
+      .chipx b {
+        color: var(--cyan);
+        font-weight: 700;
+      }
+      .key {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 150px;
+        height: 150px;
+        padding: 0 40px;
+        font-family: var(--font-mono);
+        font-size: 64px;
+        font-weight: 700;
+        color: var(--ink);
+        border-radius: 28px;
+        background: linear-gradient(#34383c, #232628);
+        border: 2px solid #4b5158;
+        box-shadow:
+          0 14px 0 #121415,
+          0 26px 50px rgba(0, 0, 0, 0.6);
+      }
+      .key.sm {
+        min-width: 110px;
+        height: 100px;
+        padding: 0 28px;
+        font-size: 44px;
+        border-radius: 22px;
+      }
+      .plus {
+        font-size: 70px;
+        font-weight: 700;
+        color: var(--muted);
+        margin: 0 22px;
+      }
+      .keys {
+        display: flex;
+        align-items: center;
+        margin-bottom: 36px;
+      }
+      .sub {
+        font-size: 60px;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        line-height: 1.08;
+      }
+      .note {
+        font-size: 40px;
+        font-weight: 500;
+        color: var(--muted);
+        text-align: center;
+      }
+      .note b {
+        font-family: var(--font-mono);
+        color: var(--blue);
+      }
+
+      /* Ventana de la app (barra real: espacio, cinco destinos e IA) */
+      .win {
+        position: absolute;
+        left: 900px;
+        top: 130px;
+        width: 960px;
+        height: 730px;
+        border-radius: 30px;
+        background: var(--paper);
+        border: 2px solid var(--line);
+        box-shadow:
+          0 60px 140px rgba(0, 0, 0, 0.75),
+          0 0 0 1px rgba(138, 180, 248, 0.12),
+          0 0 120px rgba(138, 180, 248, 0.14);
+        overflow: hidden;
+      }
+      #edwin {
+        transform-origin: 50% 35%;
+      }
+      .bar {
+        position: relative;
+        height: 90px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0 18px;
+        background: var(--panel);
+        border-bottom: 2px solid var(--line);
+        font-size: 25px;
+        font-weight: 500;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+      .space {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 14px;
+        margin-right: 10px;
+        border-radius: 12px;
+        border: 2px solid var(--space);
+        color: var(--space);
+        font-weight: 700;
+      }
+      .space i {
+        width: 22px;
+        height: 18px;
+        border-radius: 4px;
+        background: var(--space);
+      }
+      .bar .tab {
+        padding: 8px 11px;
+        border-radius: 10px;
+      }
+      .bar .on {
+        background: rgba(255, 183, 77, 0.16);
+        color: var(--amber);
+      }
+      .aipill {
+        margin-left: auto;
+        padding: 6px 14px;
+        border-radius: 10px;
+        border: 2px solid rgba(206, 179, 255, 0.48);
+        color: var(--violet);
+        font-weight: 700;
+      }
+      .aipill.on {
+        background: rgba(206, 179, 255, 0.15);
+      }
+      .daterow {
+        position: relative;
+        height: 84px;
+        display: flex;
+        align-items: center;
+        gap: 26px;
+        padding: 0 30px;
+        border-bottom: 2px solid var(--line);
+        font-size: 28px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .daterow .lnk {
+        color: var(--blue);
+        font-size: 26px;
+      }
+      .cal {
+        width: 30px;
+        height: 30px;
+        border: 3px solid var(--ink);
+        border-top-width: 8px;
+        border-radius: 5px;
+      }
+      .state {
+        position: absolute;
+        right: 30px;
+        top: 17px;
+        height: 50px;
+        padding: 0 22px;
+        display: flex;
+        align-items: center;
+        border-radius: 999px;
+        font-size: 26px;
+        font-weight: 500;
+      }
+      #stSaving {
+        color: var(--amber);
+        background: rgba(255, 183, 77, 0.14);
+      }
+      #stSaved {
+        color: var(--space);
+        background: rgba(129, 201, 149, 0.14);
+        opacity: 0;
+      }
+      .lines {
+        padding-top: 22px;
+        font-family: var(--font-mono);
+        font-size: 42px;
+      }
+      .ln {
+        height: 80px;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+      }
+      .ln > b {
+        width: 86px;
+        margin-right: 26px;
+        text-align: right;
+        font-weight: 400;
+        color: #6b727c;
+      }
+      .ln .cur {
+        background: var(--blue);
+        box-shadow: none;
+        width: 4px;
+        height: 1.15em;
+        vertical-align: -0.2em;
+        margin-left: 2px;
+        display: none;
+      }
+      #tk {
+        display: inline-block;
+        border-radius: 6px;
+        border-bottom: 3px solid transparent;
+      }
+      .sep {
+        display: block;
+        width: 0;
+        height: 3px;
+        background: #929ba7;
+        box-shadow: 0 0 18px rgba(138, 180, 248, 0.7);
+      }
+      .sepw {
+        display: block;
+        height: 3px;
+        background: #929ba7;
+      }
+      .lk {
+        color: var(--blue);
+        border-bottom: 3px solid var(--blue);
+      }
+      #pop {
+        position: absolute;
+        left: 100px;
+        top: 372px;
+        width: 810px;
+        padding: 26px 28px 28px;
+        border-radius: 22px;
+        background: #2b2e31;
+        border: 2px solid #4b5158;
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+        opacity: 0;
+        transform-origin: 60% 0%;
+      }
+      #pop .lab {
+        font-family: var(--font-display);
+        font-size: 28px;
+        font-weight: 500;
+        color: var(--blue);
+        margin-bottom: 12px;
+      }
+      #pop .sel {
+        font-size: 24px;
+        color: var(--muted);
+        margin: -4px 0 14px;
+      }
+      #pop .inp {
+        height: 70px;
+        display: flex;
+        align-items: center;
+        padding: 0 18px;
+        border-radius: 12px;
+        border: 2px solid var(--blue);
+        font-family: var(--font-mono);
+        font-size: 28px;
+        white-space: nowrap;
+      }
+      .inp .cur,
+      .field .cur {
+        display: inline-block;
+        width: 3px;
+        height: 1.2em;
+        background: var(--ink);
+        box-shadow: none;
+      }
+
+      /* Botones con los rótulos reales */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        height: 64px;
+        padding: 0 28px;
+        border-radius: 12px;
+        font-size: 28px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .btn.fill {
+        color: #0b0c0d;
+        background: var(--blue);
+      }
+      .btn.ghost {
+        color: var(--blue);
+        border: 2px solid var(--blue);
+      }
+      .btn.off {
+        color: #8a9099;
+        background: #2b2e31;
+      }
+      .btn.vio {
+        color: #0b0c0d;
+        background: var(--violet);
+      }
+      .ok {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--space);
+        opacity: 0;
+      }
+      .okline {
+        margin-top: 14px;
+        width: max-content;
+        transform-origin: 0% 50%;
+      }
+
+      /* Voz */
+      #mic {
+        position: absolute;
+        left: 1250px;
+        top: 150px;
+        width: 260px;
+        height: 260px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #ff8a80, #e53935 70%);
+        box-shadow: 0 0 110px rgba(255, 82, 82, 0.75);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #mic svg {
+        width: 130px;
+        height: 130px;
+      }
+      .mring {
+        position: absolute;
+        left: 1250px;
+        top: 150px;
+        width: 260px;
+        height: 260px;
+        border-radius: 50%;
+        border: 5px solid var(--red);
+        opacity: 0;
+      }
+      #rec {
+        position: absolute;
+        left: 900px;
+        right: 60px;
+        top: 428px;
+        text-align: center;
+        font-family: var(--font-mono);
+        font-size: 38px;
+        font-weight: 700;
+        color: #ff9c9c;
+      }
+      #rec i {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        margin-right: 16px;
+        border-radius: 50%;
+        background: var(--red);
+        box-shadow: 0 0 18px var(--red);
+      }
+      #wave {
+        position: absolute;
+        left: 960px;
+        right: 120px;
+        top: 490px;
+        height: 150px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      #wave i {
+        display: block;
+        width: 14px;
+        height: 150px;
+        border-radius: 7px;
+        background: linear-gradient(var(--red), var(--amber));
+      }
+      #tcard {
+        position: absolute;
+        left: 900px;
+        right: 60px;
+        top: 672px;
+        padding: 36px 40px 38px;
+        border-radius: 28px;
+        background: var(--paper);
+        border: 2px solid var(--line);
+        box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
+      }
+      #ttext {
+        font-family: var(--font-mono);
+        font-size: 37px;
+        line-height: 1.5;
+      }
+      #ttext span {
+        display: inline-block;
+        margin-right: 0.55em;
+      }
+      .btnrow {
+        position: relative;
+        height: 68px;
+        margin-top: 26px;
+      }
+      .btnrow .vbtn {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 68px;
+        padding: 0 32px;
+        display: flex;
+        align-items: center;
+        border-radius: 14px;
+        font-size: 30px;
+        font-weight: 700;
+        color: #0b0c0d;
+        background: var(--blue);
+      }
+      #btnDone {
+        background: #81c995;
+        opacity: 0;
+      }
+
+      /* Imagen a texto */
+      #imwin {
+        top: 150px;
+        height: 700px;
+      }
+      .wbody {
+        padding: 26px 34px;
+      }
+      .wtitle {
+        font-size: 40px;
+        font-weight: 700;
+        margin-bottom: 18px;
+      }
+      .cols {
+        display: flex;
+        gap: 36px;
+      }
+      .col {
+        width: 428px;
+      }
+      .clab {
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+      .box {
+        position: relative;
+        height: 250px;
+        border-radius: 14px;
+        border: 2px solid var(--line);
+        background: var(--panel);
+        overflow: hidden;
+      }
+      #capbox {
+        border-color: var(--blue);
+      }
+      .ph {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0 30px;
+        font-size: 24px;
+        color: var(--muted);
+      }
+      #capimg {
+        position: absolute;
+        inset: 16px;
+        border-radius: 10px;
+        background: #050607;
+        border: 2px solid #2c3035;
+        padding: 18px 20px;
+        font-family: var(--font-mono);
+        font-size: 19px;
+        line-height: 1.75;
+        white-space: nowrap;
+        opacity: 0;
+      }
+      #capimg .g {
+        color: #81c995;
+      }
+      #capimg .r {
+        color: #ff8a80;
+      }
+      #capimg .y {
+        color: var(--amber);
+      }
+      #scan {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 6px;
+        background: var(--cyan);
+        box-shadow: 0 0 26px var(--cyan);
+        opacity: 0;
+      }
+      #ocrtext {
+        position: absolute;
+        inset: 0;
+        padding: 22px 22px;
+        font-family: var(--font-mono);
+        font-size: 19px;
+        line-height: 1.75;
+        white-space: nowrap;
+      }
+      .brow {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: 16px;
+      }
+      .hint {
+        margin-top: 14px;
+        font-size: 22px;
+        color: var(--muted);
+      }
+      .xbtn {
+        margin-top: 16px;
+      }
+
+      /* Libres y consulta al lado */
+      .tool {
+        position: relative;
+        height: 84px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 0 26px;
+        border-bottom: 2px solid var(--line);
+        font-size: 26px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .tool .lnk {
+        color: var(--blue);
+      }
+      .tool .ttl {
+        font-size: 32px;
+      }
+      .tool .rt {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+      .tool .btn {
+        height: 54px;
+        font-size: 24px;
+        padding: 0 22px;
+      }
+      #frmenu {
+        position: absolute;
+        right: 140px;
+        top: 74px;
+        width: 290px;
+        padding: 10px 0;
+        border-radius: 14px;
+        background: #2b2e31;
+        border: 2px solid #4b5158;
+        box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7);
+        font-size: 26px;
+        font-weight: 500;
+        opacity: 0;
+        transform-origin: 70% 0%;
+      }
+      #frmenu div {
+        padding: 12px 22px;
+      }
+      #frmenu .hit {
+        background: rgba(138, 180, 248, 0.18);
+        color: var(--blue);
+      }
+      .split {
+        display: flex;
+        height: 554px;
+      }
+      #frmain {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: 26px 30px;
+        overflow: hidden;
+      }
+      #frh1 {
+        font-size: 46px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        height: 62px;
+        white-space: nowrap;
+      }
+      .li {
+        font-size: 30px;
+        font-weight: 500;
+        line-height: 52px;
+        white-space: nowrap;
+        opacity: 0;
+      }
+      .li::before {
+        content: '•';
+        color: var(--muted);
+        margin: 0 16px 0 6px;
+      }
+      .code {
+        position: relative;
+        margin-top: 18px;
+        height: 76px;
+        padding: 0 22px;
+        display: flex;
+        align-items: center;
+        border-radius: 12px;
+        background: #121314;
+        border: 2px solid var(--line);
+        font-family: var(--font-mono);
+        font-size: 27px;
+        color: var(--green);
+        white-space: nowrap;
+        opacity: 0;
+      }
+      #frside {
+        flex: 0 0 auto;
+        width: 0;
+        overflow: hidden;
+        background: var(--panel);
+        border-left: 2px solid var(--line);
+      }
+      #frsidein {
+        width: 450px;
+        padding: 22px 24px;
+      }
+      .sidehd {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 22px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .sidehd span {
+        margin-left: auto;
+        color: var(--blue);
+        font-size: 20px;
+      }
+      .sideback {
+        margin-top: 8px;
+        color: var(--blue);
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .slines {
+        margin-top: 18px;
+        font-family: var(--font-mono);
+        font-size: 25px;
+      }
+      .slines .ln {
+        height: 48px;
+      }
+      .slines .ln > b {
+        width: 34px;
+        margin-right: 16px;
+      }
+
+      /* IA */
+      #aiB {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 90px;
+        bottom: 0;
+        padding: 20px 32px;
+        background: var(--paper);
+        opacity: 0;
+      }
+      .aihead {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        height: 60px;
+      }
+      .aihead h2 {
+        font-size: 40px;
+        font-weight: 700;
+      }
+      .dest {
+        padding: 8px 18px;
+        border-radius: 10px;
+        border: 2px solid rgba(206, 179, 255, 0.48);
+        color: var(--violet);
+        font-size: 24px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .flab {
+        margin-top: 14px;
+        font-size: 21px;
+        color: var(--muted);
+      }
+      .frag {
+        margin-top: 6px;
+        padding: 12px 18px;
+        border-left: 5px solid var(--violet);
+        background: rgba(206, 179, 255, 0.08);
+        font-family: var(--font-mono);
+        font-size: 26px;
+        white-space: nowrap;
+      }
+      .field {
+        margin-top: 6px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        padding: 0 18px;
+        border-radius: 10px;
+        border: 2px solid var(--line);
+        font-size: 26px;
+        white-space: nowrap;
+      }
+      .sendrow {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-top: 14px;
+        font-size: 21px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .sendrow .btn {
+        margin-left: auto;
+        height: 56px;
+        font-size: 25px;
+      }
+      #ans {
+        margin-top: 16px;
+        padding: 16px 20px;
+        border-radius: 14px;
+        border: 2px solid var(--line);
+        background: var(--panel);
+        opacity: 0;
+      }
+      #ans .cap {
+        font-size: 20px;
+        color: var(--muted);
+      }
+      #anstext {
+        margin-top: 6px;
+        font-size: 27px;
+        line-height: 1.4;
+      }
+      #anstext span {
+        display: inline-block;
+        margin-right: 0.3em;
+      }
+      #ans .brow {
+        margin-top: 10px;
+      }
+      #ans .btn {
+        height: 52px;
+        font-size: 23px;
+      }
+      #selhl {
+        background: rgba(138, 180, 248, 0);
+        border-radius: 6px;
+      }
+      #askBtn {
+        position: absolute;
+        left: 140px;
+        top: 470px;
+        padding: 12px 22px;
+        border-radius: 12px;
+        border: 2px solid rgba(206, 179, 255, 0.48);
+        color: var(--violet);
+        font-size: 30px;
+        font-weight: 700;
+        white-space: nowrap;
+        opacity: 0;
+      }
+
+      /* Diseño adaptable */
+      #adwin {
+        top: 150px;
+        height: 740px;
+      }
+      #adwin .lines {
+        font-size: 30px;
+      }
+      #adwin .ln {
+        height: 60px;
+      }
+      #adwin .ln > b {
+        width: 50px;
+        margin-right: 18px;
+      }
+      #dtabs {
+        display: flex;
+        gap: 4px;
+      }
+      #mnav {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 100px;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        background: var(--panel);
+        border-top: 2px solid var(--line);
+        opacity: 0;
+      }
+      #mnav div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 16px;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      #mnav i {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        border: 3px solid currentColor;
+      }
+      #mnav .on {
+        color: var(--amber);
+        background: rgba(255, 183, 77, 0.16);
+      }
+      #notch {
+        position: absolute;
+        left: 50%;
+        top: 0;
+        width: 150px;
+        height: 30px;
+        margin-left: -75px;
+        border-radius: 0 0 18px 18px;
+        background: #050505;
+        opacity: 0;
+      }
+
+      /* Tarjetas */
+      .card .num {
+        font-family: var(--font-mono);
+        font-size: 44px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        margin-bottom: 30px;
+      }
+      .card .big {
+        font-size: 150px;
+        font-weight: 700;
+        letter-spacing: -0.05em;
+        line-height: 0.95;
+        text-align: center;
+        white-space: nowrap;
+      }
+      .card .big em {
+        display: block;
+        font-style: normal;
+        color: var(--ink);
+      }
+      .card .rule {
+        width: 620px;
+        height: 10px;
+        border-radius: 5px;
+        margin-top: 50px;
+      }
+
+      /* Final */
+      #pill {
+        margin-top: 70px;
+        padding: 30px 46px;
+        border-radius: 999px;
+        border: 3px solid var(--cyan);
+        background: rgba(0, 255, 255, 0.08);
+        box-shadow: 0 0 70px rgba(0, 255, 255, 0.35);
+        font-family: var(--font-mono);
+        font-size: 41px;
+        font-weight: 700;
+        color: var(--cyan);
+        white-space: nowrap;
+      }
+      #cta {
+        margin-top: 44px;
+        font-size: 50px;
+        font-weight: 700;
+        color: var(--amber);
+        letter-spacing: -0.01em;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="46" data-width="1920" data-height="1080">
+      <div id="bg" class="clip" data-start="0" data-duration="46" data-track-index="0">
+        <div id="grid"></div>
+        <div id="blobA" class="blob" data-layout-allow-overflow></div>
+        <div id="blobB" class="blob" data-layout-allow-overflow></div>
+        <div id="vig"></div>
+      </div>
+
+      <!-- 1 · Gancho (0–4) -->
+      <div id="s1" class="clip center" data-start="0" data-duration="4" data-track-index="1">
+        <div id="s1in">
+          <div class="tline"><span class="pr">&gt;</span><span id="h1a"></span><span class="cur" id="cur1a"></span></div>
+          <div class="tline"><span class="pr">&gt;</span><span id="h1b"></span><span class="cur" id="cur1b"></span></div>
+        </div>
+      </div>
+
+      <!-- 2 · Logo (4–6) -->
+      <div id="s2" class="clip center" data-start="4" data-duration="2" data-track-index="1">
+        <div id="s2in" class="center" style="position: relative">
+          <div class="ring" id="ring2" data-layout-allow-overflow style="top: 0"></div>
+          <div class="icon" id="icon2">
+            <svg viewBox="0 0 16 16">
+              <path d="M3.5 3.75 7.6 8l-4.1 4.25" fill="none" stroke="#00ffff" stroke-width="1.35" stroke-linejoin="round" />
+              <path d="M9 12h4v1H9z" fill="#00ffff" />
+            </svg>
+          </div>
+          <div class="word" id="word2">
+            <span>D</span><span>e</span><span>v</span><span class="n">N</span><span class="n">o</span><span class="n">t</span
+            ><span class="n">e</span><span class="n">s</span>
+          </div>
+          <div class="tag" id="tag2">Notas a velocidad de código.</div>
+        </div>
+      </div>
+
+      <!-- 3–5 · Diario persistente (6–18) -->
+      <div id="ed" class="clip" data-start="6" data-duration="12" data-track-index="1">
+        <div id="edwin" class="win">
+          <div class="bar">
+            <span class="space"><i></i>Trabajo ▾</span><span class="tab">Voz</span><span class="tab on">Notas</span
+            ><span class="tab">Referencias</span><span class="tab">Imagen</span><span class="tab">Historial</span
+            ><span class="aipill">✦ IA ▾</span>
+          </div>
+          <div class="daterow" data-layout-allow-overlap>
+            <i class="cal"></i><span>23/11</span><span class="lnk">Libres</span><span class="lnk">Hoy</span>
+            <span class="state" id="stSaving">Guardando…</span><span class="state" id="stSaved">✓ Guardado</span>
+          </div>
+          <div class="lines" data-layout-allow-overlap>
+            <div class="ln"><b>1</b><span id="l1"></span><span class="cur" id="c1"></span></div>
+            <div class="ln">
+              <b>2</b><span id="l2"></span><span id="tk"></span><span class="cur" id="c2"></span>
+            </div>
+            <div class="ln"><b>3</b><span id="l3"></span><span class="cur" id="c3"></span></div>
+            <div class="ln">
+              <b>4</b><span id="l4"></span><span class="cur" id="c4"></span><i class="sep" id="sep4"></i>
+            </div>
+            <div class="ln"><b>5</b><span id="l5"></span><span class="cur" id="c5"></span></div>
+            <div class="ln">
+              <b>6</b><span id="l6"></span><span class="cur" id="c6"></span><i class="sep" id="sep6"></i>
+            </div>
+          </div>
+          <div id="pop" data-layout-allow-overlap>
+            <div class="lab">Agregar enlace</div>
+            <div class="sel">«1279»</div>
+            <div class="inp"><span id="url"></span><span class="cur"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="h3" class="clip" data-start="6" data-duration="4" data-track-index="2">
+        <div class="top">
+          <div class="kicker" id="h3k">Notas diarias</div>
+          <div class="head" id="h3h">
+            <span class="w">Escribe</span><span class="w">como</span><br /><span class="w">en</span><span class="w">tu</span
+            ><span class="w acc">editor.</span>
+          </div>
+        </div>
+        <div class="bot" id="h3b">
+          <span class="chipx">Tema oscuro</span><span class="chipx">Roboto Mono</span
+          ><span class="chipx"><b>Autoguardado</b></span>
+        </div>
+      </div>
+
+      <div id="h4" class="clip" data-start="10" data-duration="4" data-track-index="2">
+        <div class="top">
+          <div class="keys">
+            <span class="key" id="kCtrl">Ctrl</span><span class="plus" id="kPlus">+</span><span class="key" id="kK">K</span>
+          </div>
+          <div class="sub" id="h4s">Enlaces sin ensuciar el texto.</div>
+        </div>
+        <div class="bot">
+          <div class="note" id="h4n">El texto sigue diciendo <b>1279</b>.</div>
+        </div>
+      </div>
+
+      <div id="h5" class="clip" data-start="14" data-duration="4" data-track-index="2">
+        <div class="top">
+          <div class="kicker" id="h5k">Separadores</div>
+          <div class="head" id="h5h">
+            <span class="w">Ordena</span><span class="w">tu</span><span class="w">día</span><br /><span class="w">con</span
+            ><span class="w">un</span><span class="w acc">Enter.</span>
+          </div>
+        </div>
+        <div class="bot" id="h5b">
+          <span class="chipx"><b>--25</b></span><span class="chipx"><b>--50</b></span><span class="chipx"><b>--75</b></span
+          ><span class="chipx"><b>---</b></span><span class="key sm" id="kEnter">Enter</span>
+        </div>
+      </div>
+
+      <!-- 6 · Voz (18–22) -->
+      <div id="s6" class="clip" data-start="18" data-duration="4" data-track-index="1">
+        <div id="s6in" class="clip">
+          <div class="top">
+            <div class="kicker" id="h6k" style="color: var(--red)">Notas por voz</div>
+            <div class="head" id="h6h">
+              <span class="w">Habla.</span><br /><span class="w">DevNotes</span><span class="w acc">escribe.</span>
+            </div>
+          </div>
+          <div class="mring" id="mr1"></div>
+          <div class="mring" id="mr2"></div>
+          <div class="mring" id="mr3"></div>
+          <div id="mic">
+            <svg viewBox="0 0 24 24" fill="#fff">
+              <path
+                d="M12 15a3.5 3.5 0 0 0 3.5-3.5v-6a3.5 3.5 0 0 0-7 0v6A3.5 3.5 0 0 0 12 15zm6-3.5a6 6 0 0 1-12 0H4.5a7.5 7.5 0 0 0 6.75 7.46V22h1.5v-3.04A7.5 7.5 0 0 0 19.5 11.5z"
+              />
+            </svg>
+          </div>
+          <div id="rec"><i id="recDot"></i>Grabando</div>
+          <div id="wave"></div>
+          <div id="tcard">
+            <div id="ttext"></div>
+            <div class="btnrow" data-layout-allow-overlap>
+              <span class="vbtn" id="btnCopy">Copiar</span><span class="vbtn" id="btnDone">Copiado</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7 · Imagen a texto (22–26) -->
+      <div id="s9" class="clip" data-start="22" data-duration="4" data-track-index="1">
+        <div class="top" id="h9">
+          <div class="kicker" id="h9k" style="color: var(--cyan)">Imagen a texto</div>
+          <div class="head" id="h9h">
+            <span class="w">Pega</span><span class="w">una</span><span class="w">captura.</span><br /><span class="w">Copia</span
+            ><span class="w">el</span><span class="w acc">texto.</span>
+          </div>
+        </div>
+        <div id="imwin" class="win">
+          <div class="bar">
+            <span class="space"><i></i>Trabajo ▾</span><span class="tab">Voz</span><span class="tab">Notas</span
+            ><span class="tab">Referencias</span><span class="tab on">Imagen</span><span class="tab">Historial</span
+            ><span class="aipill">✦ IA ▾</span>
+          </div>
+          <div class="wbody">
+            <div class="wtitle">Imagen a texto</div>
+            <div class="cols">
+              <div class="col">
+                <div class="clab">Captura</div>
+                <div class="box" id="capbox" data-layout-allow-overlap>
+                  <div class="ph" id="capph">Pegá tu imagen acá</div>
+                  <div id="capimg">
+                    <div><span class="g">$</span> npm run export</div>
+                    <div><span class="r">ERROR 503</span> export no disponible</div>
+                    <div><span class="y">reintento</span> en 30 s</div>
+                  </div>
+                  <div id="scan"></div>
+                </div>
+                <div class="brow"><span class="btn ghost">Pegar</span><span class="btn ghost">Elegir imagen</span></div>
+                <div class="xbtn"><span class="btn off" id="xOn">Extraer texto</span></div>
+              </div>
+              <div class="col">
+                <div class="clab">Texto extraído</div>
+                <div class="box" data-layout-allow-overlap>
+                  <div class="ph" id="ocrph">El texto aparecerá acá después de extraerlo.</div>
+                  <div id="ocrtext"><div id="o1"></div><div id="o2"></div><div id="o3"></div></div>
+                </div>
+                <div class="brow">
+                  <span class="btn fill" id="imCopy">Copiar texto</span><span class="btn ghost">Guardar</span>
+                </div>
+                <div class="ok okline" id="imOk">Texto copiado</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bot" id="h9b">
+          <span class="key sm" id="kC2">Ctrl</span><span class="plus" id="kP2">+</span><span class="key sm" id="kV">V</span>
+        </div>
+      </div>
+
+      <!-- 8 · Libres y consulta al lado (26–30) -->
+      <div id="s10" class="clip" data-start="26" data-duration="4" data-track-index="1">
+        <div class="top" id="h10">
+          <div class="kicker" id="h10k" style="color: var(--blue)">Notas libres</div>
+          <div class="head" id="h10h">
+            <span class="w">Títulos,</span><span class="w">listas</span><br /><span class="w">y</span><span class="w">código.</span
+            ><br /><span class="w">Consulta</span><span class="w acc">al lado.</span>
+          </div>
+        </div>
+        <div id="frwin" class="win">
+          <div class="bar">
+            <span class="space"><i></i>Trabajo ▾</span><span class="tab">Voz</span><span class="tab on">Notas</span
+            ><span class="tab">Referencias</span><span class="tab">Imagen</span><span class="tab">Historial</span
+            ><span class="aipill">✦ IA ▾</span>
+          </div>
+          <div class="tool" data-layout-allow-overlap>
+            <span class="lnk">Libres</span><span class="ttl">Guía de deploy</span>
+            <span class="rt"><span class="lnk">Formato</span><span class="lnk" id="frTools">Herramientas</span><span class="btn fill">Guardar</span></span>
+            <div id="frmenu"><div>Bloque de código</div><div class="hit" id="frHit">Abrir al lado</div></div>
+          </div>
+          <div class="split">
+            <div id="frmain">
+              <div id="frh1"></div>
+              <div class="li" id="li1">Exportar respaldo .xlsx</div>
+              <div class="li" id="li2">Revisar ticket 1279</div>
+              <div class="code" id="code"><span id="codet"></span></div>
+            </div>
+            <div id="frside">
+              <div id="frsidein">
+                <div class="sidehd">Versión del 23/11/2026<span>Cambiar ×</span></div>
+                <div class="sideback">Volver a escribir</div>
+                <div class="slines">
+                  <div class="ln"><b>1</b>deploy del lunes</div>
+                  <div class="ln"><b>2</b>- revisar ticket&nbsp;<span class="lk">1279</span></div>
+                  <div class="ln"><b>3</b>- migrar datos .xlsx</div>
+                  <div class="ln"><b>4</b><i class="sepw" style="width: 170px"></i></div>
+                  <div class="ln"><b>5</b>notas del standup</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bot" id="h10b">
+          <span class="chipx">Título 1·2·3</span><span class="chipx">Listas</span><span class="chipx"><b>Abrir al lado</b></span>
+        </div>
+      </div>
+
+      <!-- 9 · IA (30–34) -->
+      <div id="s11" class="clip" data-start="30" data-duration="4" data-track-index="1">
+        <div class="top" id="h11">
+          <div class="kicker" id="h11k" style="color: var(--violet)">✦ IA</div>
+          <div class="head" id="h11h">
+            <span class="w">Pregunta</span><br /><span class="w">sin</span><span class="w">salir</span><span class="w">de</span
+            ><br /><span class="w">tus</span><span class="w acc" style="color: var(--violet)">notas.</span>
+          </div>
+        </div>
+        <div id="aiwin" class="win">
+          <div class="bar">
+            <span class="space"><i></i>Trabajo ▾</span><span class="tab">Voz</span><span class="tab on" id="aiNotes">Notas</span
+            ><span class="tab">Referencias</span><span class="tab">Imagen</span><span class="tab">Historial</span
+            ><span class="aipill" id="aiPill">✦ IA ▾</span>
+          </div>
+          <div id="aiA" data-layout-allow-overlap>
+            <div class="daterow">
+              <i class="cal"></i><span>23/11</span><span class="lnk">Libres</span><span class="lnk">Hoy</span>
+            </div>
+            <div class="lines">
+              <div class="ln"><b>1</b>deploy del lunes</div>
+              <div class="ln"><b>2</b>- revisar ticket&nbsp;<span class="lk">1279</span></div>
+              <div class="ln"><b>3</b><span id="selhl">bloqueo: acceso a la base</span></div>
+            </div>
+            <div id="askBtn">✦ Consultar con IA</div>
+          </div>
+          <div id="aiB">
+            <div class="aihead"><h2>IA</h2><span class="dest">GroqCloud · GPT OSS 20B ▾</span></div>
+            <div class="flab">Fragmento a compartir</div>
+            <div class="frag">bloqueo: acceso a la base</div>
+            <div class="flab">Mensaje</div>
+            <div class="field"><span id="msg"></span><span class="cur" id="msgCur"></span></div>
+            <div class="sendrow" data-layout-allow-overlap>
+              Se enviará a GroqCloud · GPT OSS 20B<span class="btn vio" id="sendBtn">✦ Enviar</span>
+            </div>
+            <div id="ans">
+              <div class="cap">GroqCloud · GPT OSS 20B</div>
+              <div id="anstext"></div>
+              <div class="brow"><span class="btn ghost" id="aiCopy">Copiar texto</span><span class="ok" id="aiOk">Copiado</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="bot" id="h11b">
+          <span class="chipx">GroqCloud</span><span class="chipx">Workers AI</span><span class="chipx">Gemini</span>
+        </div>
+      </div>
+
+      <!-- 10 · Diseño adaptable y móvil (34–38) -->
+      <div id="s12" class="clip" data-start="34" data-duration="4" data-track-index="1">
+        <div class="top" id="h12a">
+          <div class="kicker" id="h12k" style="color: var(--cyan)">Diseño adaptable</div>
+          <div class="head" id="h12ah">
+            <span class="w">Achica</span><span class="w">la</span><br /><span class="w acc">ventana.</span>
+          </div>
+        </div>
+        <div class="top" id="h12b">
+          <div class="kicker" style="color: var(--cyan)">Diseño adaptable</div>
+          <div class="head" id="h12bh">
+            <span class="w">También</span><span class="w">en</span><br /><span class="w">tu</span><span class="w acc">móvil.</span>
+          </div>
+        </div>
+        <div id="adwin" class="win" data-layout-allow-overflow>
+          <div class="bar">
+            <span class="space"><i></i>Trabajo ▾</span
+            ><span id="dtabs"><span class="tab">Voz</span><span class="tab on">Notas</span><span class="tab">Referencias</span
+            ><span class="tab">Imagen</span><span class="tab">Historial</span></span><span class="aipill">✦ IA ▾</span>
+          </div>
+          <div class="daterow">
+            <i class="cal"></i><span>23/11</span><span class="lnk">Libres</span>
+          </div>
+          <div class="lines">
+            <div class="ln"><b>1</b>deploy del lunes</div>
+            <div class="ln"><b>2</b>- revisar ticket&nbsp;<span class="lk">1279</span></div>
+            <div class="ln"><b>3</b>- migrar datos .xlsx</div>
+            <div class="ln"><b>4</b><i class="sepw" style="width: 190px"></i></div>
+            <div class="ln"><b>5</b>notas del standup</div>
+          </div>
+          <div id="mnav">
+            <div class="on"><i></i>Notas</div>
+            <div><i></i>Voz</div>
+            <div><i></i>Referencias</div>
+            <div><i></i>Imagen</div>
+            <div><i></i>Historial</div>
+          </div>
+          <div id="notch"></div>
+        </div>
+        <div class="bot" id="h12c">
+          <span class="chipx">Ventana angosta</span><span class="chipx">Barra inferior</span
+          ><span class="chipx"><b>Táctil</b></span>
+        </div>
+      </div>
+
+      <!-- 11 · Ráfaga (38–42) -->
+      <div id="k1" class="clip center card" data-start="38" data-duration="1" data-track-index="1">
+        <div class="center kin">
+          <div class="num" style="color: var(--amber)">01</div>
+          <div class="big" style="color: var(--amber)">TRABAJO<em>Y PERSONAL</em></div>
+          <div class="rule" style="background: var(--amber)"></div>
+        </div>
+      </div>
+      <div id="k2" class="clip center card" data-start="39" data-duration="1" data-track-index="1">
+        <div class="center kin">
+          <div class="num" style="color: var(--green)">02</div>
+          <div class="big" style="color: var(--green)">VERSIONES<em>POR DÍA</em></div>
+          <div class="rule" style="background: var(--green)"></div>
+        </div>
+      </div>
+      <div id="k3" class="clip center card" data-start="40" data-duration="1" data-track-index="1">
+        <div class="center kin">
+          <div class="num" style="color: var(--blue)">03</div>
+          <div class="big" style="color: var(--blue)">RESPALDO<em>EN .XLSX</em></div>
+          <div class="rule" style="background: var(--blue)"></div>
+        </div>
+      </div>
+      <div id="k4" class="clip center card" data-start="41" data-duration="1" data-track-index="1">
+        <div class="center kin">
+          <div class="num" style="color: var(--cyan)">04</div>
+          <div class="big" style="color: var(--cyan); font-size: 138px">INSTALABLE<em>COMO APP</em></div>
+          <div class="rule" style="background: var(--cyan)"></div>
+        </div>
+      </div>
+
+      <!-- 12 · Final (42–46) -->
+      <div id="s8" class="clip center" data-start="42" data-duration="4" data-track-index="1">
+        <div id="s8in" class="center" style="position: relative">
+          <div class="ring" id="ring8" data-layout-allow-overflow style="top: -25px"></div>
+          <div class="icon" id="icon8" style="width: 250px; height: 250px; border-radius: 58px">
+            <svg viewBox="0 0 16 16">
+              <path d="M3.5 3.75 7.6 8l-4.1 4.25" fill="none" stroke="#00ffff" stroke-width="1.35" stroke-linejoin="round" />
+              <path d="M9 12h4v1H9z" fill="#00ffff" />
+            </svg>
+          </div>
+          <div class="word" id="word8">
+            <span>D</span><span>e</span><span>v</span><span class="n">N</span><span class="n">o</span><span class="n">t</span
+            ><span class="n">e</span><span class="n">s</span>
+          </div>
+          <div class="tag" id="tag8" style="color: var(--ink); font-size: 56px; font-weight: 700">Tus notas. Tu ritmo.</div>
+          <div id="pill">devnotes-v2dx.onrender.com</div>
+          <div id="cta">Pruébalo ahora</div>
+        </div>
+      </div>
+
+      <div id="flash" class="clip" data-start="0" data-duration="46" data-track-index="3"></div>
+
+      <audio
+        id="music"
+        src="assets/soundtrack.wav"
+        data-start="0"
+        data-duration="46"
+        data-volume="1"
+        data-track-index="4"
+      ></audio>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const $ = (s) => document.querySelector(s);
+
+      // PRNG determinista (sin Math.random)
+      let seed = 4242;
+      const rnd = () => {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        return seed / 4294967296;
+      };
+
+      // Escribe `text` letra a letra dentro de `sel` desde t0.
+      function type(sel, text, t0, dt, cls) {
+        const el = $(sel);
+        [...text].forEach((c, i) => {
+          const s = document.createElement('span');
+          s.className = 'ch' + (cls ? ' ' + cls : '');
+          s.textContent = c === ' ' ? ' ' : c;
+          el.appendChild(s);
+          tl.set(s, { display: 'inline' }, t0 + i * dt);
+        });
+        return t0 + text.length * dt;
+      }
+      const flash = (t, peak) => {
+        tl.to('#flash', { opacity: peak, duration: 0.05, ease: 'none' }, t - 0.05);
+        tl.to('#flash', { opacity: 0, duration: 0.4, ease: 'power2.out' }, t);
+      };
+      const words = (sel, t) =>
+        tl.fromTo(
+          sel + ' .w',
+          { y: 90, opacity: 0, rotation: 4 },
+          { y: 0, opacity: 1, rotation: 0, duration: 0.5, ease: 'back.out(1.8)', stagger: 0.07 },
+          t,
+        );
+      const press = (sel, t) => {
+        tl.to(sel, { y: 12, scale: 0.94, duration: 0.07, ease: 'power2.in' }, t);
+        tl.to(sel, { y: 0, scale: 1, duration: 0.3, ease: 'elastic.out(1.1,0.45)' }, t + 0.07);
+      };
+      const out = (sel, t, d = 0.3) => tl.to(sel, { opacity: 0, y: -50, duration: d, ease: 'power2.in' }, t);
+      const kick = (sel, t) => tl.fromTo(sel, { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.4, ease: 'power3.out' }, t);
+      const winIn = (sel, t) =>
+        tl.fromTo(sel, { y: 1100, rotation: 6, opacity: 0 }, { y: 0, rotation: 0, opacity: 1, duration: 0.6, ease: 'expo.out' }, t);
+      const winOut = (sel, t) => tl.to(sel, { y: 1200, rotation: -6, opacity: 0, duration: 0.35, ease: 'power3.in' }, t);
+      const chips = (sel, t) =>
+        tl.fromTo(sel, { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.7)', stagger: 0.09 }, t);
+      const showOk = (sel, t) => {
+        tl.to(sel, { opacity: 1, duration: 0.1 }, t);
+        tl.fromTo(sel, { scale: 1.4 }, { scale: 1, duration: 0.4, ease: 'back.out(2.5)' }, t);
+      };
+
+      // ---------- Fondo ----------
+      tl.to('#blobA', { x: 420, y: 760, scale: 1.25, duration: 46, ease: 'sine.inOut' }, 0);
+      tl.to('#blobB', { x: -380, y: -820, scale: 1.2, duration: 46, ease: 'sine.inOut' }, 0);
+      tl.to('#grid', { y: 80, duration: 46, ease: 'none' }, 0);
+
+      // ---------- 1 · Gancho (0–4) ----------
+      tl.set('#cur1b', { display: 'none' }, 0);
+      [0.14, 0.28, 0.42].forEach((t, i) => tl.set('#cur1a', { opacity: i % 2 ? 1 : 0 }, t));
+      tl.set('#cur1a', { opacity: 1 }, 0.5);
+      type('#h1a', 'Tus notas técnicas', 0.5, 0.06);
+      tl.set('#cur1a', { display: 'none' }, 1.9);
+      tl.set('#cur1b', { display: 'inline-block' }, 1.9);
+      type('#h1b', 'merecen algo ', 2.0, 0.06);
+      type('#h1b', 'mejor.', 2.78, 0.06, 'hl');
+      tl.to('#s1in', { scale: 1.12, duration: 0.8, ease: 'power2.in' }, 3.2);
+      [3.3, 3.42, 3.52, 3.6, 3.68, 3.74, 3.8, 3.85, 3.9].forEach((t, i) =>
+        tl.set('#s1in', { x: (i % 2 ? -1 : 1) * (10 + i * 5), skewX: (i % 2 ? 1 : -1) * (2 + i) }, t),
+      );
+      tl.to('#s1in', { opacity: 0, duration: 0.12 }, 3.86);
+      flash(4, 0.95);
+
+      // ---------- 2 · Logo (4–6) ----------
+      tl.fromTo('#icon2', { scale: 3.4, opacity: 0, rotation: -18 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.45, ease: 'expo.out' }, 4);
+      tl.fromTo('#ring2', { scale: 0.6, opacity: 0.9 }, { scale: 5.5, opacity: 0, duration: 0.9, ease: 'power2.out' }, 4.05);
+      tl.fromTo('#word2 span', { y: 130, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'back.out(2)', stagger: 0.035 }, 4.2);
+      tl.fromTo('#tag2', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power3.out' }, 4.45);
+      tl.to('#icon2', { scale: 1.05, duration: 1.1, ease: 'sine.inOut' }, 4.5);
+      tl.to('#s2in', { y: -260, scale: 0.7, opacity: 0, duration: 0.35, ease: 'power3.in' }, 5.62);
+
+      // ---------- 3 · Diario (6–10) ----------
+      tl.fromTo('#edwin', { y: 1300, rotation: 7, opacity: 0 }, { y: 0, rotation: 0, opacity: 1, duration: 0.7, ease: 'expo.out' }, 6);
+      kick('#h3k', 6.1);
+      words('#h3h', 6.15);
+      chips('#h3b .chipx', 7.2);
+
+      tl.set('#c1', { display: 'inline-block' }, 6.7);
+      let t = type('#l1', 'deploy del lunes', 6.9, 0.04);
+      tl.set('#c1', { display: 'none' }, t);
+      tl.set('#c2', { display: 'inline-block' }, t);
+      t = type('#l2', '- revisar ticket ', t, 0.04);
+      t = type('#tk', '1279', t, 0.04);
+      tl.set('#c2', { display: 'none' }, t);
+      tl.set('#c3', { display: 'inline-block' }, t);
+      t = type('#l3', '- migrar datos .xlsx', t, 0.04);
+      tl.to('#stSaving', { opacity: 0, duration: 0.15 }, 9.5);
+      tl.to('#stSaved', { opacity: 1, duration: 0.15 }, 9.5);
+      tl.fromTo('#stSaved', { scale: 1.35 }, { scale: 1, duration: 0.4, ease: 'back.out(2)' }, 9.5);
+      out('#h3 .top', 9.7);
+      out('#h3b', 9.7);
+
+      // ---------- 4 · Ctrl+K (10–14) ----------
+      tl.set('#c3', { display: 'none' }, 10);
+      tl.to('#edwin', { scale: 1.1, y: 30, duration: 0.7, ease: 'power3.inOut' }, 9.9);
+      tl.fromTo('#kCtrl', { y: -160, opacity: 0, rotation: -14 }, { y: 0, opacity: 1, rotation: 0, duration: 0.5, ease: 'back.out(1.6)' }, 10.05);
+      tl.fromTo('#kPlus', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'back.out(2)' }, 10.25);
+      tl.fromTo('#kK', { y: -160, opacity: 0, rotation: 14 }, { y: 0, opacity: 1, rotation: 0, duration: 0.5, ease: 'back.out(1.6)' }, 10.2);
+      tl.fromTo('#h4s', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'power3.out' }, 10.4);
+      tl.to('#tk', { backgroundColor: '#375573', duration: 0.25, ease: 'power2.out' }, 10.55);
+      press('#kCtrl', 11.0);
+      press('#kK', 11.2);
+      tl.fromTo('#pop', { scale: 0.7, y: -20, opacity: 0 }, { scale: 1, y: 0, opacity: 1, duration: 0.35, ease: 'back.out(1.8)' }, 11.3);
+      type('#url', 'https://jira.ejemplo.test/browse/ABC-1279', 11.8, 0.025);
+      tl.to('#pop', { scale: 0.85, opacity: 0, duration: 0.2, ease: 'power2.in' }, 12.95);
+      tl.to('#tk', { backgroundColor: 'rgba(55,85,115,0)', color: '#8ab4f8', borderBottomColor: '#8ab4f8', duration: 0.2 }, 13.0);
+      tl.fromTo('#tk', { scale: 1.5 }, { scale: 1, duration: 0.6, ease: 'elastic.out(1.1,0.4)', immediateRender: false }, 13.0);
+      tl.fromTo('#h4n', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power3.out' }, 11.5);
+      out('#h4 .top', 13.7);
+      out('#h4n', 13.7);
+
+      // ---------- 5 · Separadores (14–18) ----------
+      tl.to('#edwin', { scale: 1, y: 0, duration: 0.6, ease: 'power3.inOut' }, 13.8);
+      kick('#h5k', 14.05);
+      words('#h5h', 14.1);
+      tl.fromTo('#h5b > *', { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.7)', stagger: 0.07 }, 14.3);
+      tl.set('#c4', { display: 'inline-block' }, 14.4);
+      type('#l4', '--50', 14.6, 0.1);
+      press('#kEnter', 15.2);
+      tl.set(['#l4', '#c4'], { display: 'none' }, 15.2);
+      tl.to('#sep4', { width: 424, duration: 0.45, ease: 'expo.out' }, 15.2);
+      tl.set('#c5', { display: 'inline-block' }, 15.2);
+      type('#l5', 'notas del standup', 15.6, 0.04);
+      tl.set('#c5', { display: 'none' }, 16.4);
+      tl.set('#c6', { display: 'inline-block' }, 16.4);
+      type('#l6', '---', 16.6, 0.1);
+      press('#kEnter', 17.0);
+      tl.set(['#l6', '#c6'], { display: 'none' }, 17.0);
+      tl.to('#sep6', { width: 848, duration: 0.5, ease: 'expo.out' }, 17.0);
+      out('#h5 .top', 17.6);
+      out('#h5b', 17.6);
+      tl.to('#edwin', { y: 1400, rotation: -6, opacity: 0, duration: 0.4, ease: 'power3.in' }, 17.6);
+      flash(18, 0.35);
+
+      // ---------- 6 · Voz (18–22) ----------
+      kick('#h6k', 18.05);
+      words('#h6h', 18.1);
+      tl.fromTo('#mic', { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2.2)' }, 18.15);
+      ['#mr1', '#mr2', '#mr3'].forEach((r, i) =>
+        tl.fromTo(r, { scale: 1, opacity: 0.75 }, { scale: 2.5, opacity: 0, duration: 1.2, ease: 'power1.out', repeat: 2 }, 18.3 + i * 0.4),
+      );
+      tl.fromTo('#rec', { opacity: 0 }, { opacity: 1, duration: 0.2 }, 18.3);
+      [18.8, 19.3, 19.8, 20.3].forEach((x) => {
+        tl.to('#recDot', { opacity: 0.15, duration: 0.2 }, x);
+        tl.to('#recDot', { opacity: 1, duration: 0.2 }, x + 0.25);
+      });
+      tl.to('#rec', { opacity: 0, duration: 0.25 }, 20.6);
+      const wave = $('#wave');
+      for (let i = 0; i < 38; i++) {
+        const b = document.createElement('i');
+        wave.appendChild(b);
+        tl.set(b, { scaleY: 0.06 }, 0);
+        const shape = 0.35 + 0.65 * Math.sin((i / 37) * Math.PI);
+        for (let k = 0; k < 15; k++) {
+          tl.to(b, { scaleY: 0.1 + rnd() * 0.9 * shape, duration: 0.15, ease: 'sine.inOut' }, 18.35 + k * 0.15);
+        }
+        tl.to(b, { scaleY: 0.06, duration: 0.3, ease: 'power2.out' }, 20.6);
+      }
+      tl.fromTo('#tcard', { y: 140, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'expo.out' }, 20.1);
+      const tt = $('#ttext');
+      'Refactorizar el servicio de exportación y cubrir la importación con pruebas.'.split(' ').forEach((w, i) => {
+        const s = document.createElement('span');
+        s.textContent = w;
+        tt.appendChild(s);
+        tl.fromTo(s, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.18, ease: 'power2.out' }, 20.35 + i * 0.07);
+      });
+      press('#btnCopy', 21.25);
+      tl.to('#btnDone', { opacity: 1, duration: 0.1 }, 21.3);
+      tl.fromTo('#btnDone', { scale: 1.3 }, { scale: 1, duration: 0.4, ease: 'back.out(2.5)' }, 21.3);
+      tl.to('#s6in', { scale: 1.25, opacity: 0, duration: 0.25, ease: 'power3.in' }, 21.75);
+
+      // ---------- 7 · Imagen a texto (22–26) ----------
+      flash(22, 0.3);
+      winIn('#imwin', 22.0);
+      kick('#h9k', 22.1);
+      words('#h9h', 22.15);
+      tl.fromTo('#h9b > *', { y: -120, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: 'back.out(1.6)', stagger: 0.06 }, 22.2);
+      press('#kC2', 22.55);
+      press('#kV', 22.6);
+      tl.to('#capph', { opacity: 0, duration: 0.1 }, 22.6);
+      tl.fromTo('#capimg', { opacity: 0, scale: 1.25 }, { opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(1.8)' }, 22.62);
+      tl.to('#xOn', { backgroundColor: '#8ab4f8', color: '#0b0c0d', duration: 0.15 }, 22.9);
+      press('#xOn', 23.3);
+      tl.set('#scan', { opacity: 1 }, 23.35);
+      tl.fromTo('#scan', { y: 0 }, { y: 244, duration: 0.6, ease: 'none', immediateRender: false }, 23.35);
+      tl.set('#scan', { opacity: 0 }, 23.95);
+      tl.to('#ocrph', { opacity: 0, duration: 0.1 }, 23.95);
+      t = type('#o1', '$ npm run export', 24.0, 0.015);
+      t = type('#o2', 'ERROR 503 export no disponible', t, 0.01);
+      type('#o3', 'reintento en 30 s', t, 0.01);
+      press('#imCopy', 25.0);
+      showOk('#imOk', 25.05);
+      out('#h9', 25.7);
+      out('#h9b', 25.7);
+      winOut('#imwin', 25.65);
+
+      // ---------- 8 · Libres y consulta al lado (26–30) ----------
+      flash(26, 0.3);
+      winIn('#frwin', 26.0);
+      kick('#h10k', 26.1);
+      words('#h10h', 26.15);
+      chips('#h10b > *', 27.0);
+      type('#frh1', 'Pasos del piloto', 26.45, 0.035);
+      tl.fromTo('#li1', { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.25, ease: 'power3.out' }, 27.0);
+      tl.fromTo('#li2', { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.25, ease: 'power3.out' }, 27.2);
+      tl.fromTo('#code', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.25, ease: 'power3.out' }, 27.35);
+      type('#codet', 'npm run build && npm test', 27.45, 0.015);
+      press('#frTools', 27.7);
+      tl.fromTo('#frmenu', { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.2, ease: 'back.out(1.8)' }, 27.75);
+      tl.fromTo('#frHit', { backgroundColor: 'rgba(138,180,248,0)' }, { backgroundColor: 'rgba(138,180,248,0.3)', duration: 0.15 }, 28.05);
+      tl.to('#frmenu', { opacity: 0, duration: 0.15 }, 28.3);
+      tl.to('#frside', { width: 450, duration: 0.5, ease: 'expo.out' }, 28.4);
+      out('#h10', 29.7);
+      out('#h10b', 29.7);
+      winOut('#frwin', 29.65);
+
+      // ---------- 9 · IA (30–34) ----------
+      flash(30, 0.3);
+      winIn('#aiwin', 30.0);
+      kick('#h11k', 30.1);
+      words('#h11h', 30.15);
+      chips('#h11b > *', 30.9);
+      tl.to('#selhl', { backgroundColor: 'rgba(138,180,248,0.38)', duration: 0.2 }, 30.55);
+      tl.fromTo('#askBtn', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.25, ease: 'back.out(2)' }, 30.65);
+      press('#askBtn', 31.0);
+      tl.set('#aiNotes', { attr: { class: 'tab' } }, 31.3);
+      tl.set('#aiPill', { attr: { class: 'aipill on' } }, 31.3);
+      tl.to('#aiA', { opacity: 0, x: -60, duration: 0.2, ease: 'power2.in' }, 31.15);
+      tl.fromTo('#aiB', { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.3, ease: 'power3.out' }, 31.3);
+      type('#msg', 'Resume en una línea.', 31.45, 0.02);
+      tl.set('#msgCur', { opacity: 0 }, 31.85);
+      press('#sendBtn', 31.9);
+      tl.fromTo('#ans', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3, ease: 'expo.out' }, 32.15);
+      const at = $('#anstext');
+      'Falta el acceso a la base de pruebas: pedirlo antes del deploy.'.split(' ').forEach((w, i) => {
+        const s = document.createElement('span');
+        s.textContent = w;
+        at.appendChild(s);
+        tl.fromTo(s, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.15, ease: 'power2.out' }, 32.25 + i * 0.07);
+      });
+      press('#aiCopy', 33.2);
+      showOk('#aiOk', 33.25);
+      out('#h11', 33.7);
+      out('#h11b', 33.7);
+      winOut('#aiwin', 33.65);
+
+      // ---------- 10 · Diseño adaptable y móvil (34–38) ----------
+      flash(34, 0.35);
+      tl.fromTo('#adwin', { y: 1100, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: 'expo.out' }, 34.0);
+      kick('#h12k', 34.1);
+      words('#h12ah', 34.15);
+      // La ventana se angosta: el centro queda fijo en x = 1380.
+      tl.to('#adwin', { width: 440, x: 260, duration: 1.1, ease: 'power2.inOut' }, 34.8);
+      tl.to('#dtabs', { opacity: 0, duration: 0.12 }, 35.45);
+      tl.set('#dtabs', { display: 'none' }, 35.57);
+      tl.fromTo('#mnav', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.3, ease: 'back.out(1.8)' }, 35.6);
+      out('#h12a', 35.95);
+      // Pasa a teléfono: marco, muesca y leve giro.
+      tl.to(
+        '#adwin',
+        { borderRadius: 62, borderWidth: 14, borderColor: '#050505', height: 820, y: -30, rotation: -3, duration: 0.5, ease: 'power3.inOut' },
+        36.25,
+      );
+      tl.to('#notch', { opacity: 1, duration: 0.2 }, 36.5);
+      words('#h12bh', 36.2);
+      tl.fromTo('#h12b .kicker', { opacity: 0 }, { opacity: 1, duration: 0.3 }, 36.15);
+      chips('#h12c > *', 36.5);
+      out('#h12b', 37.7);
+      out('#h12c', 37.7);
+      tl.to('#adwin', { y: 1200, opacity: 0, duration: 0.3, ease: 'power3.in' }, 37.7);
+
+      // ---------- 11 · Ráfaga (38–42) ----------
+      ['#k1', '#k2', '#k3', '#k4'].forEach((k, i) => {
+        const t0 = 38 + i;
+        flash(t0, 0.3);
+        tl.fromTo(k + ' .kin', { scale: 2.2, opacity: 0, rotation: i % 2 ? 5 : -5 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.16, ease: 'power4.out' }, t0);
+        tl.to(k + ' .kin', { scale: 1.08, duration: 0.84, ease: 'none' }, t0 + 0.16);
+        tl.fromTo(k + ' .rule', { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: 'expo.out' }, t0 + 0.05);
+      });
+
+      // ---------- 12 · Final (42–46) ----------
+      flash(42, 0.95);
+      tl.fromTo('#icon8', { scale: 3.2, opacity: 0, rotation: 16 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.45, ease: 'expo.out' }, 42);
+      tl.fromTo('#ring8', { scale: 0.6, opacity: 0.9 }, { scale: 6, opacity: 0, duration: 1, ease: 'power2.out' }, 42.05);
+      tl.fromTo('#word8 span', { y: 130, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'back.out(2)', stagger: 0.035 }, 42.2);
+      tl.fromTo('#tag8', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'power3.out' }, 42.7);
+      tl.fromTo('#pill', { y: 90, opacity: 0, scale: 0.8 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.8)' }, 43);
+      tl.fromTo('#cta', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out' }, 43.5);
+      flash(44, 0.3);
+      tl.fromTo('#ring8', { scale: 0.6, opacity: 0.9 }, { scale: 7, opacity: 0, duration: 1.2, ease: 'power2.out', immediateRender: false }, 44);
+      tl.to('#pill', { scale: 1.12, duration: 0.1, ease: 'power2.out' }, 44);
+      tl.to('#pill', { scale: 1, duration: 0.6, ease: 'elastic.out(1.1,0.4)' }, 44.1);
+      tl.to('#s8in', { scale: 1.05, duration: 4, ease: 'none' }, 42);
+
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
