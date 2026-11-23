@@ -1,6 +1,6 @@
 ---
 id: T-096
-status: in_review
+status: mergeable
 priority: P2
 size: M
 milestone: M9
@@ -30,6 +30,28 @@ Entregar, después del tráiler v2, un recorrido reproducible en español que en
 Toda función habilitada del SHA tiene una escena o una razón verificable de exclusión por entorno/permiso. La narración nombra el control cuando aparece, deja oír la explicación hasta el final y el resultado queda visible. Revisar reproducción completa con y sin audio, sincronía en cada cambio de capítulo, cues ordenados sin solapamiento ni texto cortado. Ejecutar `ffprobe -v error -show_entries stream=codec_type,width,height:format=duration -of json demo.mp4` y `ffprobe -v error -show_packets -select_streams s -show_entries packet=pts_time,duration_time -of csv demo.es.srt`. Cotejar último cue contra duración real y comprobar caracteres españoles en el reproductor. Gate documental, CI del HEAD y FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
 ## Checkpoint vigente
+
+### Revisión independiente
+
+2026-11-23. Frontera reviewer, ronda 1, en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, Git, gh, Docker Desktop, Node 24 y ffmpeg/ffprobe. Sesión nueva, distinta de la del implementer. **APROBADO**, estado `mergeable`. Revisado el HEAD publicado `ff98523beb8e7958696af3b3d2684d7df8cbc872` del [PR #92](https://github.com/MatiasNicolasAcevedo/devnotes/pull/92) sobre base `b0e46a3`: OPEN, no draft, `verify-required` verde y `24978e5` como ancestro. El diff toca solo `media/demo/`, `e2e/tests/demo-tour.spec.ts` y documentos; la matriz cubre todas las rutas de `AppRoutes.tsx` (`login`, `notes`, `free-notes`, `history`, `reference`, `image`, `voice`, `ai`, `data`) y justifica las exclusiones. El spec no usa `page.route` ni mockea la API propia.
+
+| Comando | Resultado |
+|---|---|
+| `bash scripts/e2e.sh --grep "demo tour" --project desktop` | exit 0, 1 passed |
+| `node scripts/voice.mjs plan` (en `media/demo`) | exit 0, `pendingCharacters: 0`, sin clips faltantes; no se consumieron caracteres |
+| `bash media/demo/scripts/capture.sh`, intento 1 | exit 1: S19 esperaba la selección «desplegar» y quedó «Antes de desplegar» (`demo-tour.spec.ts:509`) |
+| `bash media/demo/scripts/capture.sh`, intento 2 | exit 0, passed, 6684 cuadros; overruns de 0,3 a 3,2 s en S06, S15, S17, S19, S22 y S34 (la acción sigue tras la voz) |
+| `node media/demo/scripts/montage.mjs --burn` | exit 0, 354,80 s, 37 escenas con voz, 85 cues |
+| `ffprobe … -of json demo.mp4` | exit 0. Video 1920×1080, audio AAC, subtítulo `mov_text` `spa`; `354.800000` s |
+| `ffprobe … -of csv demo.es.srt` | exit 0, 85 paquetes; último `351.959`, duración `1.635` |
+| Cotejo del SRT | 85 cues numerados, sin solapamiento, máximo 2 líneas de 42 caracteres, UTF-8 sin BOM, 135 caracteres acentuados (á é í ó ú ñ « »). Último fin 353,594 s < 354,800 s. «contraseña» y «Continuar con Google» se leen bien en fotogramas de la copia quemada |
+| Índice | Sin MP4, WAV, MP3 ni `build/` versionados; `trailer/` y `plantilla/` sin versionar |
+
+**Confirmación del dueño al reviewer.** En el chat de esta sesión, sobre el `demo.mp4` regenerado: «Sí, visto y aprobado» (vio y escuchó el video completo con sonido; voz, recorrido, subtítulos y música bien).
+
+**Observaciones no bloqueantes.** (1) La captura con ritmo real es intermitente en S19: la selección programática de «desplegar» tras «Título 2» a veces la pisa el editor con toda la línea; el modo funcional pasa y un reintento produce los medios. Si se vuelve a grabar, esperar a que el editor asiente la selección o reintentarla dentro del `poll`. (2) En S20 el portapapeles ya contiene el SQL pegado, así que la aserción posterior a «Copiar código» no distingue la copia; vaciarlo antes del clic la haría significativa. (3) La observación del caret en el editor (abajo) sigue sin probarse con mouse físico.
+
+### Implementación
 
 2026-11-23. Frontera implementer en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, PowerShell, Git, gh, Docker Desktop, Node 24 y ffmpeg/ffprobe 9.0.2. Listo para revisión en el [PR #92](https://github.com/MatiasNicolasAcevedo/devnotes/pull/92). Commits técnicos `6ec874c` y `2aa948a` (demo) y `24978e5` (miniaturas) sobre `origin/main` `b0e46a3`. Impacto: solo `media/demo/`, el spec nuevo `e2e/tests/demo-tour.spec.ts` y documentos. Sin cambios de comportamiento, API, permisos, datos ni UI del producto. T-095 conciliada en `64fd9a1`.
 
