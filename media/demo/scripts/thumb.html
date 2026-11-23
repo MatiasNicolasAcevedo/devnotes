@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1280px; height: 720px; overflow: hidden; }
+  body {
+    font-family: 'Space Grotesk', sans-serif; color: #e1e3e6;
+    background: radial-gradient(ellipse at 18% 55%, rgba(0,160,160,.42), transparent 55%),
+      radial-gradient(ellipse at 95% 90%, rgba(255,183,77,.16), transparent 50%), #0b0c0d;
+    position: relative;
+  }
+  .grid { position: absolute; inset: 0; opacity: .07;
+    background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px);
+    background-size: 48px 48px; }
+  .left { position: absolute; left: 64px; top: 70px; width: 560px; }
+  .brand { display: flex; align-items: center; gap: 18px; }
+  .logo { width: 72px; height: 72px; border-radius: 16px; background: #050607; display: grid; place-items: center;
+    box-shadow: 0 0 34px rgba(0,255,255,.25); font-family: 'Roboto Mono', monospace; font-size: 34px; color: #00ffff; }
+  .name { font-size: 50px; font-weight: 700; letter-spacing: -1.5px; }
+  .name span { color: #00ffff; }
+  .kicker { margin-top: 56px; font-family: 'Roboto Mono', monospace; font-size: 22px; letter-spacing: 5px; color: #91c9b0; }
+  h1 { margin-top: 14px; font-size: 82px; line-height: .98; letter-spacing: -2.5px; font-weight: 700; }
+  h1 em { font-style: normal; color: #8ab4f8; }
+  .pills { margin-top: 34px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .pill { font-family: 'Roboto Mono', monospace; font-size: 20px; padding: 9px 16px; border-radius: 10px;
+    background: #181a1b; border: 1px solid #393d42; color: #e1e3e6; }
+  .pill.hi { color: #00ffff; border-color: rgba(0,255,255,.45); }
+  .shot { position: absolute; right: -40px; top: 92px; width: 700px; border-radius: 18px; overflow: hidden;
+    border: 2px solid #393d42; box-shadow: 0 30px 70px rgba(0,0,0,.65), 0 0 0 8px rgba(255,255,255,.03);
+    transform: perspective(1400px) rotateY(-9deg); }
+  .shot img { display: block; width: 100%; }
+  .play { position: absolute; right: 250px; top: 268px; width: 150px; height: 150px; border-radius: 50%;
+    background: #ff3b30; display: grid; place-items: center; box-shadow: 0 16px 50px rgba(255,59,48,.55), 0 0 0 10px rgba(255,59,48,.18); }
+  .play::after { content: ''; margin-left: 12px; border-left: 52px solid #fff; border-top: 32px solid transparent; border-bottom: 32px solid transparent; }
+</style></head>
+<body>
+  <div class="grid"></div>
+  <div class="shot"><img id="shot" alt=""></div>
+  <div class="play"></div>
+  <div class="left">
+    <div class="brand"><div class="logo">&gt;_</div><div class="name">Dev<span>Notes</span></div></div>
+    <div class="kicker" id="kicker"></div>
+    <h1 id="title"></h1>
+    <div class="pills" id="pills"></div>
+  </div>
+<script>
+  const p = new URLSearchParams(location.search);
+  document.getElementById('shot').src = p.get('img');
+  document.getElementById('kicker').textContent = p.get('kicker');
+  document.getElementById('title').innerHTML = p.get('title');
+  for (const [i, text] of p.get('pills').split('|').entries()) {
+    const el = document.createElement('div'); el.className = 'pill' + (i === 0 ? ' hi' : ''); el.textContent = text;
+    document.getElementById('pills').appendChild(el);
+  }
+</script>
+</body></html>
