@@ -1,6 +1,6 @@
 ---
 id: T-093
-status: mergeable
+status: done
 priority: P1
 size: S
 milestone: M8
@@ -19,6 +19,8 @@ pr: 89
 Publicar la [especificación de IA](../specs/S-116-ai-workspace.md) y tres tareas secuenciales. El cron externo se resuelve desde la consola del dueño y se documenta en [Despliegue](../DEPLOYMENT.md#despertador-externo-de-devnotes).
 
 ## Checkpoint vigente
+
+Conciliada el 2026-11-22 en la rama de T-094. `gh pr view 89 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit` devolvió `MERGED`, `2026-11-22T21:23:23Z` y `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`. `git fetch origin main` y `git merge-base --is-ancestor dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795 origin/main` dieron exit 0.
 
 2026-11-22. Frontera planner, Codex Desktop GPT-6, PowerShell, Git Bash, gh y navegador Brave. Base `f14701055cff6b13b710cf1d2e5e7b138edc3949`. `gh pr view 88 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit`, `git fetch origin main` y `git merge-base --is-ancestor f14701055cff6b13b710cf1d2e5e7b138edc3949 origin/main` dieron exit 0. Se retiraron los seis contratos pendientes, se revisaron catálogo/pasarela del TFI y fuentes locales del tráiler. Alcance del diff documental. Impacto operativo independiente: cambio del despertador externo sobre la lectura pública de salud. Implementación, prueba de claves y producción audiovisual corresponden a sesiones posteriores.
 

@@ -1,6 +1,6 @@
 ---
 id: T-094
-status: draft
+status: in_progress
 priority: P1
 size: L
 milestone: M8
@@ -50,7 +50,7 @@ Si cambia el doble compartido, ejecutar además `STARTER_E2E_PROJECT=starter-e2e
 
 ## Checkpoint vigente
 
-Contrato listo para ejecutar al confirmar T-093 MERGED. Sin ensayos de credenciales en la sesión de planificación.
+2026-11-22. Frontera implementer en Codex desktop (GPT-6, PowerShell). Base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`, PR #89 y ascendencia verificados. Impacto previsto: selección de IA en el navbar, API privada de texto y lectura autorizada de fragmentos guardados, sin persistencia nueva. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
 ## Prompts de salida
 

@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-093](tasks/T-093-ai-media-plan.md) · Plan de IA y materiales finales |
-| Estado | `mergeable` |
-| Siguiente acción | Tras T-093 MERGED, implementar [T-094](tasks/T-094-ai-workspace.md) según [S-116](specs/S-116-ai-workspace.md) |
-| Rama / PR | `codex/t-093-ai-media-plan` · [PR #89](https://github.com/MatiasNicolasAcevedo/devnotes/pull/89) |
+| Tarea y contrato | [T-094](tasks/T-094-ai-workspace.md) · [S-116](specs/S-116-ai-workspace.md) |
+| Estado | `in_progress` |
+| Siguiente acción | Implementar IA Free y ejecutar el gate dirigido y el piloto ficticio |
+| Rama / PR | `codex/t-094-ai-workspace` |
 
-Modo `FRONTERA_CONTINUA`. T-085 conciliada. La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con IA, tráiler v2 y demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
+Modo `FRONTERA_CONTINUA`. T-093 conciliada. La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con IA, tráiler v2 y demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
 ## Pendientes del dueño
 
