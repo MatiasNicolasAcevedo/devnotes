@@ -4,7 +4,7 @@
 |---|---|
 | Tarea y contrato | [T-094](tasks/T-094-ai-workspace.md) · [S-116](specs/S-116-ai-workspace.md) |
 | Estado | `changes_requested` |
-| Siguiente acción | Dueño o frontera decide el cierre tras dos rondas del PR #90 |
+| Siguiente acción | Frontera implementer corrige los dos hallazgos del PR #90 en una sesión nueva |
 | Rama / PR | `codex/t-094-ai-workspace` · [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90) |
 
 Modo `FRONTERA_CONTINUA`. T-093 conciliada. La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con IA, tráiler v2 y demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
@@ -34,15 +34,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como dueño o frontera para decidir el cierre de T-094 en MatiasNicolasAcevedo/devnotes. Sesión nueva, PR #90, rama codex/t-094-ai-workspace.
+Actuá como frontera implementer de corrección extraordinaria de T-094 en MatiasNicolasAcevedo/devnotes. Sesión nueva, PR #90, rama codex/t-094-ai-workspace.
 
-LEER: AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/agents/reviewer.md, docs/tasks/T-094-ai-workspace.md (checkpoint vigente) y docs/specs/S-116-ai-workspace.md.
+LEER: AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/agents/implementer.md, docs/tasks/T-094-ai-workspace.md (checkpoint y segunda revisión), docs/specs/S-116-ai-workspace.md, server/AGENTS.md y client/AGENTS.md.
 
-PRECONDICIÓN: ejecutá gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup y git fetch origin main codex/t-094-ai-workspace. Confirmá PR OPEN, isDraft=false, base dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795 y refs iguales a GitHub. Confirmá con git rev-parse origin/codex/t-094-ai-workspace^ que el padre del cierre documental es 4eaf719ae2023f0a6e05be1bee958567cae07e3c y con git diff --name-only 4eaf719ae2023f0a6e05be1bee958567cae07e3c..origin/codex/t-094-ai-workspace que el cierre solo cambia docs/STATUS.md y docs/tasks/T-094-ai-workspace.md. Si cambió la precondición, informá el estado real y entregá el prompt corregido.
+PRECONDICIÓN: ejecutá gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup y git fetch origin main codex/t-094-ai-workspace. Confirmá PR OPEN, isDraft=false, base dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795 y refs iguales a GitHub. Verificá con git rev-parse origin/codex/t-094-ai-workspace^ que el padre es e19dc465d72073f0a0d3af15c2ffe8d4587f7834 y que el HEAD publicado solo registra esta decisión en STATUS y T-094. Si cambió la precondición, informá el estado real y entregá el prompt corregido.
 
-ACCIÓN: se agotaron dos rondas. El catálogo de OpenRouter ofrece una ruta exacta con evidencia incompleta de privacidad y la UI informa cuota agotada para todo 429 externo. Leé los dos rojos y las condiciones de cierre en T-094. Decidí si autorizás una única corrección extraordinaria en el mismo PR, limitada a los dos hallazgos, con revisión independiente posterior, o si dejás el PR abierto con la tarea en espera. La propuesta de corrección exige evidencia positiva para la ruta exacta, cero despacho para evidencia insuficiente y una distinción verificable entre cuota, límite temporal y concurrencia local. Conservá los cinco destinos, los dos diferimientos, las muestras ficticias y Render Auto-Deploy On Commit. No habilites T-095 hasta confirmar MERGED de T-094 según AUTONOMY.
+ACCIÓN: resolvé solo los dos hallazgos en el mismo PR. En OpenRouter, exigí evidencia positiva de la política completa de S-116 y un identificador que restrinja la inferencia a la ruta exacta de la variante :free. Metadatos ausentes, indeterminados o ruta ambigua implican indisponibilidad y cero POST de inferencia. Cubrí esos negativos y el positivo con dobles. Para 429 remoto, usá «Límite temporal del proveedor» si el motivo es incierto y reservá «Cuota agotada» para una señal inequívoca comprobada. Separá la concurrencia local. Conservá borrador y fragmento, respetá Retry-After válido y permití rehabilitar el intento explícitamente si falta una espera válida. Solo Enviar con el destino confirmado hace una consulta. Reusá los flujos existentes y documentá las señales que siguen siendo inciertas.
 
-GATE: si autorizás corregir, exigir los negativos y el positivo con dobles, pruebas dirigidas, E2E filtrado, docs-check y verify-required sobre el HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: reproducí los dos rojos y aplicá el gate diario de T-094 con pruebas dirigidas, E2E filtrado, docs-check y verify-required verde sobre el HEAD publicado. Usá dobles externos y muestras ficticias. Conservá la evidencia real ya registrada para los cinco destinos, los dos diferimientos y Render Auto-Deploy On Commit. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: registrá la decisión, el alcance y el responsable del próximo paso en T-094 y STATUS. Terminá con el prompt vigente completo.
+SALIDA: publicá la corrección y su checkpoint en el PR #90. Dejá el prompt completo para un reviewer independiente centrado en ambos hallazgos y el gate. Si queda un hallazgo abierto, devolvé la evidencia a dueño o frontera. T-095 sigue condicionada a MERGED verificado según AUTONOMY.
 ```

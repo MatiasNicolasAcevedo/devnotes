@@ -65,6 +65,24 @@ Reactivación en una decisión posterior del dueño. Para Gemini 3.8 Flash, comp
 
 ## Checkpoint vigente
 
+2026-11-22. Frontera en rol de decisión de cierre, en Codex desktop (familia GPT-6, versión puntual no expuesta), PowerShell, Git y gh. El dueño pidió simplificar la salida y preservar el reintento manual. Se autoriza **una única corrección extraordinaria** de los dos hallazgos de la segunda revisión en el [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90). El próximo responsable es frontera implementer en sesión nueva. Después corresponde un reviewer independiente. Si persiste un hallazgo, el PR sigue abierto y vuelve al dueño o a frontera con la evidencia. T-095 sigue pendiente de MERGED verificado según [AUTONOMY](../AUTONOMY.md).
+
+| Hallazgo | Corrección mínima y prueba |
+|---|---|
+| OpenRouter Free admite evidencia incompleta | Reusar la comprobación compartida por catálogo y envío. Aceptar solo evidencia explícita de toda la política de S-116 para la variante `:free` exacta y un identificador de enrutamiento que circunscriba el POST a la ruta acreditada. Política ausente o indeterminada y ruta ambigua quedan indisponibles con cero inferencia en los negativos. El positivo con doble comprueba las restricciones del POST. OpenRouter sigue diferido en el piloto. |
+| Todo 429 remoto aparece como cuota agotada | Clasificar el 429 genérico como «Límite temporal del proveedor». Mostrar «Cuota agotada» solo con una señal inequívoca comprobada y conservar el estado propio de concurrencia local. Comprobar selector, compositor, borrador y fragmento con y sin espera válida. Cuando falte una espera válida, el usuario puede habilitar un intento manual. Elegir otro modelo, refrescar, rehabilitar o vencer la espera conserva el texto. Cada consulta exige Enviar con el destino confirmado. |
+
+Impacto previsto en API y UI para clasificar 429 y en la validación de privacidad previa a inferencia. Se conservan los cinco destinos, los dos diferimientos y Render Auto-Deploy On Commit. Las cinco respuestas reales registradas siguen siendo la evidencia del piloto. Un 429 genérico deja indeterminada su causa, incluido un posible consumo de cuota Free por pruebas anteriores. Esta corrección usa dobles y muestras ficticias, sin repetir inferencias reales. Gate pendiente del implementer: dos rojos y sus correcciones, pruebas dirigidas, E2E filtrado, docs-check y `verify-required` verde sobre el HEAD publicado. **FULL/STARTER: DIFERIDO POR EL DUEÑO.**
+
+| Comando | Resultado |
+|---|---|
+| `git status --short --branch` y `git log -1 --oneline` | Exit 0. Rama de T-094 en `e19dc465`, con `trailer/` local sin seguimiento, preservado. |
+| `gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup,mergedAt,mergeCommit` | Exit 1 por conexión en sandbox y exit 0 con red. OPEN, `isDraft=false`, HEAD `e19dc465d72073f0a0d3af15c2ffe8d4587f7834`, base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`, [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/45097634350/job/137440904418). |
+| `git fetch origin main codex/t-094-ai-workspace`, `git rev-parse HEAD origin/main origin/codex/t-094-ai-workspace 'origin/codex/t-094-ai-workspace^'` y `git diff --name-only 4eaf719ae2023f0a6e05be1bee958567cae07e3c..origin/codex/t-094-ai-workspace` | Exit 0. Los refs coinciden con GitHub, el padre es `4eaf719ae2023f0a6e05be1bee958567cae07e3c` y el cierre anterior solo cambió STATUS y T-094. |
+| `node scripts/docs-check.mjs` y `git diff --check` | Docs-check exit 1 en el workspace por `trailer/CLAUDE.md` sin seguimiento y exit 0 en un worktree limpio con los dos documentos de la decisión (154 Markdown, 91 tareas, HANDOFF 22/22). Diff check exit 0. |
+
+### Hallazgos y evidencia de la segunda revisión
+
 2026-11-22. Frontera reviewer independiente, segunda ronda, en Codex desktop (familia GPT-6, versión puntual no expuesta), PowerShell, Git y gh. **CAMBIOS REQUERIDOS** para el [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90), HEAD `4eaf719ae2023f0a6e05be1bee958567cae07e3c`, base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`. Impacto pendiente en validación previa a despacho externo y en la clasificación de 429 de la API y la UI. La segunda ronda termina sin aprobación y la decisión vuelve al dueño o a frontera.
 
 | Hallazgo | Evidencia sobre el HEAD revisado | Condición de cierre |
