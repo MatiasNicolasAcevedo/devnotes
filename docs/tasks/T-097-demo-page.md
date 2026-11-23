@@ -110,7 +110,7 @@ El último comando solo informa el perfil del diff. FULL/STARTER: DIFERIDO POR E
 
 ## Checkpoint vigente
 
-2026-11-23. Frontera implementer en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, gh, Node 24 y Docker Desktop. [PR #94](https://github.com/MatiasNicolasAcevedo/devnotes/pull/94), rama `codex/t-097-demo-page` sobre `origin/main` `74ccaf6`. Precondición: PR #93 `MERGED` (`2026-11-23T15:36:29Z`, `74ccaf61abcb69b805115e37cb3389fb4701b00d`) y `git merge-base --is-ancestor` exit 0. Commits: `5fe5bb3` (estado), `ac5154e` (implementación), `8efa323` (ajuste de regresiones) y el commit documental hijo con este checkpoint, que es el HEAD de entrega.
+2026-11-23. Frontera implementer en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, gh, Node 24 y Docker Desktop. [PR #94](https://github.com/MatiasNicolasAcevedo/devnotes/pull/94), rama `codex/t-097-demo-page` sobre `origin/main` `74ccaf6`. Precondición: PR #93 `MERGED` (`2026-11-23T15:36:29Z`, `74ccaf61abcb69b805115e37cb3389fb4701b00d`) y `git merge-base --is-ancestor` exit 0. Commits: `5fe5bb3` (estado), `ac5154e` (implementación), `8efa323` (ajuste de regresiones, último commit técnico) y después solo commits documentales de checkpoint y STATUS; el último de ellos es el HEAD de entrega.
 
 **Hecho.** Pasos 1 a 3 completos según el contrato: `DEMO_RED`, `PlayIcon`, `videos.ts` con `embedUrl` como único constructor de la URL del embed, portadas copiadas byte a byte (`cmp`) desde `media/demo/youtube/`, `DemoPage`, `DemoLink` fuera de «Navegación principal» (tras Historial en escritorio, antes del estado en móvil, solo ícono por debajo de 360 px), ruta pública `/demo`. Sin cambios de servidor, `nginx.conf`, `vite.config.ts` ni CSP. `trailer/` sigue sin versionar.
 
