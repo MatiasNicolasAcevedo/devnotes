@@ -1,6 +1,6 @@
 ---
 id: T-094
-status: in_review
+status: changes_requested
 priority: P1
 size: L
 milestone: M8
@@ -64,6 +64,29 @@ Si cambia el doble compartido, ejecutar además `STARTER_E2E_PROJECT=starter-e2e
 Reactivación en una decisión posterior del dueño. Para Gemini 3.8 Flash, comprobar acceso a texto Standard en el proyecto Free y obtener texto dentro de 30 s con una muestra ficticia T-072. Para OpenRouter, acreditar con metadatos vigentes una ruta compatible por cada ID exacto del ligero y una alternativa explícita Free y obtener texto real con ambos bajo la política completa y con muestras ficticias T-072. Completar la misma matriz en los dos casos.
 
 ## Checkpoint vigente
+
+2026-11-22. Frontera reviewer independiente en Codex desktop (familia GPT-6, versión puntual sin exponer), PowerShell, Git, gh, Maven y Node. **CAMBIOS REQUERIDOS** para el [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90), HEAD `718a3847a2bd60694b540a28a10e54abaf29451d`, base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`, padre técnico `4a99c87e29fb5477c6313ed47dadfbe2ef3ba1d3`. Impacto pendiente en la decisión de despacho del adaptador OpenRouter diferido y el aviso accesible de un 429. La sesión solo publica documentación de revisión.
+
+| Hallazgo | Evidencia y condición de cierre |
+|---|---|
+| P2 · Un estado de ruta fuera del rango de `long` se acepta como operativo | `OpenRouterCatalog.compatibleRoute` usa `status.longValue() == 0`. Con la ruta ficticia exacta y los demás campos válidos, el estado entero `18446744073709551616` se reduce a cero y `generate` llega al doble de inferencia. Exigir cero exacto sin conversión que trunque. El negativo debe observar opción indisponible, rechazo antes del despacho y cero llamadas al doble. La exclusión de OpenRouter del piloto contiene este caso en la aplicación vigente. |
+| P2 · Un 429 con `Retry-After: 0` pierde su aviso | `AiPage` genera un vencimiento inmediato y `AiProvider` borra el estado en el efecto de expiración. La sonda con el mismo destino confirmado y un único POST ficticio no encuentra «Límite temporal del proveedor». Mantener el anuncio accesible del rechazo y conservar borrador y fragmento. Para cero segundos, dejar disponible Enviar sin espera adicional y exigir otra pulsación deliberada. Cubrir límite temporal y cuota diaria, además de conservar los casos de espera positiva y rehabilitación manual. [RFC 9110 §10.2.3](https://www.rfc-editor.org/rfc/rfc9110.html#section-10.2.3). |
+
+| Comando o evidencia | Resultado |
+|---|---|
+| `gh pr view 90 --repo MatiasNicolasAcevedo/devnotes` con estado, refs, CI y datos de merge | Exit 1 en sandbox por conexión, exit 0 con red autorizada. OPEN, `isDraft=false`, HEAD/base indicados, sin merge y [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/45100543946/job/137450166436). Consulta GraphQL exit 0, cero hilos de revisión. |
+| `git fetch origin main codex/t-094-ai-workspace`, `git rev-parse HEAD origin/main origin/codex/t-094-ai-workspace 'origin/codex/t-094-ai-workspace^'`, `git diff --check origin/main...HEAD` | Exit 0. Los refs coinciden con GitHub, el padre técnico coincide y el HEAD solo agrega los dos archivos de continuidad. |
+| `mvnw.cmd -q test -Dtest=OpenRouterCatalogTest,OpenRouterAiClientTest,GroqAiClientTest,AiMessageServiceTest` | 31/31, exit 0, en el worktree del HEAD publicado. Confirma el ID exacto, precios y política, los negativos publicados de política y slug, las restricciones del POST, clasificación de 429 y concurrencia local. |
+| `npm.cmd ci --offline --no-audit --no-fund`, `npm.cmd test -- --run src/app/AppRoutes.test.tsx src/app/AppShell.test.tsx src/features/ai` y `npm.cmd run typecheck` | Exit 0. Vitest 38/38. Se cotejó el estado por destino, borrador, foco y cero reenvíos sin Enviar en los casos publicados. |
+| Sonda aislada `mvnw.cmd -q test -Dtest=OpenRouterCatalogTest#listsUnavailableAndRejectsBeforeInferenceWithIncompatibleEndpoints` | Exit 1, 1/16 falla con estado entero fuera de rango. El rechazo esperado no se produjo y la segunda sonda comprueba la llamada al doble. |
+| Sonda aislada `npm.cmd test -- --run src/features/ai/AiWorkspace.test.tsx -t 'confirma el modelo elegido'` | Exit 1, 1/1 falla por aviso temporal ausente con espera cero. El caso conserva el paso de confirmación y el POST deliberado. |
+| Dos GET públicos sin clave de OpenRouter y `node scripts/docs-check.mjs` | Exit 0. 476 modelos, 11 candidatos textuales Free de precio cero, 934 endpoints ZDR, cero coincidencias de ID exacto y cero endpoints que declaren recolección o BYOK. Docs-check en el worktree: 154 Markdown, 91 tareas y HANDOFF 22/22. |
+
+Se cotejaron las fuentes y el gate registrado del implementer para el padre técnico: rojos previos de OpenRouter y 429, Surefire 38/38, Failsafe 14/14 con PostgreSQL 18.6, Vitest 38/38 con typecheck, E2E IA escritorio 4/4, móvil 1/1 y OCR/Voz 7/7 tras repetir el mismo filtro sin concurrencia. Failsafe y los E2E se cotejaron con la evidencia del implementer. El IT conserva ambos 409 con cero llamadas externas en el piloto. El E2E publicado conserva fragmento, espera positiva y rehabilitación sin reenvío. El doble de OpenRouter verifica el ID `:free` y el slug único con ZDR, rechazo de recolección, parámetros exigidos, techo de precio cero y fallback desactivado. [Enrutamiento OpenRouter](https://openrouter.ai/docs/guides/routing/provider-selection) · [Índice ZDR](https://openrouter.ai/docs/api/api-reference/endpoints/list-endpoints-zdr) · [Límites Groq](https://console.groq.com/docs/rate-limits).
+
+Se mantienen cinco respuestas reales de la matriz, los dos destinos diferidos y Render Auto-Deploy On Commit. No hubo inferencia externa en esta revisión. **FULL/STARTER: DIFERIDO POR EL DUEÑO.** El dueño o frontera decide el siguiente paso. T-095 espera MERGED verificado.
+
+### Evidencia de la corrección extraordinaria
 
 2026-11-22. Frontera implementer en Codex desktop (familia GPT-6, versión puntual no expuesta), PowerShell, Git Bash, Git, gh y Docker Desktop. Corrección extraordinaria autorizada por el dueño en el [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90), commit técnico `4a99c87e29fb5477c6313ed47dadfbe2ef3ba1d3`, base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`. Impacto en el despacho externo de OpenRouter, el código de error de la API y el estado de selector y compositor. Se conservan los permisos, el almacenamiento, los cinco destinos del piloto, los dos diferimientos y Render Auto-Deploy On Commit. Pruebas nuevas con dobles y muestras ficticias. T-095 espera MERGED verificado.
 
