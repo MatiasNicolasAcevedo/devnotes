@@ -1,6 +1,6 @@
 ---
 id: T-097
-status: mergeable
+status: done
 priority: P2
 size: M
 milestone: M9
@@ -109,6 +109,10 @@ bash scripts/verify.sh --policy origin/main
 El último comando solo informa el perfil del diff. FULL/STARTER: DIFERIDO POR EL DUEÑO. `verify-required` verde sobre el HEAD publicado. Si una corrida E2E supera el presupuesto del gate diario, detenerla, registrar el comando y la duración, y acotar el filtro. Render despliega al mergear en `main`; no hay cambio de configuración ni de variables.
 
 ## Checkpoint vigente
+
+### Conciliación
+
+Conciliada el 2026-11-23 en la rama de planificación `codex/m9-close-plan`. `gh pr view 94 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit` devolvió `MERGED`, `2026-11-23T16:11:23Z` y `8b0ddd5c8079fe0f697cf8ece8f4a1e3bd018dc5`. `git fetch origin` y `git merge-base --is-ancestor 8b0ddd5c8079fe0f697cf8ece8f4a1e3bd018dc5 origin/main` dieron exit 0. Con T-097 cierra el M9 y el lote Imagen, Libres e IA. No hay tarea siguiente predefinida; la elige el dueño ([STATUS](../STATUS.md)).
 
 ### Revisión independiente
 
