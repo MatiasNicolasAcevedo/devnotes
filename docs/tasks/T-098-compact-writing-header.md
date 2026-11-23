@@ -1,6 +1,6 @@
 ---
 id: T-098
-status: in_progress
+status: in_review
 priority: P1
 size: S
 milestone: post-M9
@@ -9,7 +9,7 @@ depends_on: [T-097]
 branch: codex/t-098-compact-writing-header
 role: implementer
 executor: frontier
-pr: null
+pr: 97
 ---
 
 # T-098 · Recuperar alto de escritura en ventana chica
@@ -41,18 +41,38 @@ En Diario y Libres, leer y escribir más líneas al usar DevNotes con mouse o tr
 
 ## Checkpoint vigente
 
-2026-11-23. Frontera implementer en Codex Desktop con GPT-6, variante y esfuerzo sin dato expuesto. PowerShell, Git Bash, gh, Node 24.21.0 y Docker Desktop. Base `origin/main@80ca79c770590f2557a755a2971d08db5ffd5ac8`. Impacto en UI de Diario y Libres autenticados. La ruta, los permisos, la API y los datos conservan su contrato. Implementación y gate dirigidos en curso. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+2026-11-23. Frontera implementer en Codex Desktop con GPT-6, variante y esfuerzo sin dato expuesto. PowerShell, Git Bash, gh, Node 24.21.0 y Docker Desktop. Base `origin/main@80ca79c770590f2557a755a2971d08db5ffd5ac8`. [PR #97](https://github.com/MatiasNicolasAcevedo/devnotes/pull/97). SHA técnico `13b1f11086b0538bcc302c76c071a1dfba87fce5`. Impacto en UI de Diario y Libres autenticados. La ruta, los permisos, la API y los datos conservan su contrato. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
 | Comando | Exit y resultado |
 |---|---|
 | `gh pr view codex/t-098-compact-window-plan --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit` | 0 con red autorizada. PR #96 MERGED el 2026-11-23T18:49:03Z, squash `80ca79c770590f2557a755a2971d08db5ffd5ac8`. El primer intento dentro del sandbox dio 1 por conexión a GitHub. |
 | `git fetch origin main` y `git merge-base --is-ancestor 80ca79c770590f2557a755a2971d08db5ffd5ac8 origin/main` | 0 y 0. |
 | `STARTER_E2E_PROJECT=starter-e2e-t098-base-measure bash scripts/e2e.sh --grep 'compact writing header:' --project desktop` | 1 esperado sobre el cliente de base. La prueba esperaba 32 px y midió 48 y 56 px. |
+| `STARTER_E2E_PROJECT=starter-e2e-t098-desktop bash scripts/e2e.sh --grep 'compact writing header:\|T-064:\|SP-06/SP-07\|CA-01:\|ai workspace: navbar' --project desktop` | 1 en el primer candidato, 4/5. Solo CA-01 falló, con el borde a 803 px en un viewport de 800 px. |
+| `STARTER_E2E_PROJECT=starter-e2e-t098-mobile bash scripts/e2e.sh --grep 'T-064:\|SP-06/SP-07\|CA-01:' --project mobile` | 0 en el primer candidato, 3/3. |
+| `STARTER_E2E_PROJECT=starter-e2e-t098-ca01-base bash scripts/e2e.sh --grep 'CA-01:' --project desktop` | 1 sobre `80ca79c`. Reprodujo el borde a 803 px con viewport de 800 px. |
+| Mismos filtros de escritorio y móvil con `STARTER_E2E_PROJECT=starter-e2e-t098-desktop-final` y `starter-e2e-t098-mobile-final` | 0 y 0 en `f9fff20` (5/5 y 3/3). La captura de Libres empezaba desplazada y esa medición se descartó. |
+| Mismos filtros con `STARTER_E2E_PROJECT=starter-e2e-t098-desktop-stable` y `starter-e2e-t098-mobile-stable` | 1 y 0 en `13b1f11` (4/5 y 3/3). Las medidas coincidieron con la captura de Libres desde arriba. CA-01 pasó sus aserciones de geometría y falló más adelante al abrir el menú de cuenta durante el segundo login. |
+| `STARTER_E2E_PROJECT=starter-e2e-t098-desktop-confirm bash scripts/e2e.sh --grep 'compact writing header:\|T-064:\|SP-06/SP-07\|CA-01:\|ai workspace: navbar' --project desktop` | 0 en `13b1f11`, 5/5 con el filtro ejecutado en solitario. Repitió las mismas cuatro alturas a 640×480. |
+| `npm test -- --run src/app/AppShell.test.tsx src/features/spaces/SpaceSelector.test.tsx` y `npm run typecheck` | 0 (18/18) y 0. |
+| `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` | 0 y 0. |
+| `bash scripts/verify.sh --policy origin/main` | 0, clasificación APPLICATION / FULL. FULL/STARTER: DIFERIDO POR EL DUEÑO. |
+| `docker container ls -aq`, `docker network ls -q` y `docker volume ls -q` con `--filter label=com.docker.compose.project=<namespace>` | 0 y sin recursos en los 11 namespaces propios de T-098. |
 
-| Área, 640×480 CSS px | Cabecera base | Editor útil base |
-|---|---:|---:|
-| Diario, viewport de escritura vacío y enfocado | 48 | 296,23 |
-| Libres, parte visible del contenido de un borrador largo, desde el inicio del formulario | 56 | 183,08 |
+| Área, 640×480 CSS px | Cabecera antes → después | Editor útil antes → después | Ganancia | Borde inferior del editor / inicio de navegación |
+|---|---:|---:|---:|---:|
+| Diario, viewport de escritura vacío y enfocado | 48 → 32 | 296,23 → 312,23 | 16 | 392,98 / 431 |
+| Libres, parte visible del contenido de un borrador largo, desde el inicio del formulario | 56 → 32 | 183,08 → 207,08 | 24 | 428 / 431 |
+
+Capturas revisadas a 640×480 con la cuenta piloto ficticia, sin diálogos de identidad ni metadatos de texto. Copias locales en `.orchestrator/t098-evidence/`. La prueba genera los PNG y `t098-medidas.json` en `e2e/artifacts/<proyecto>/test-results/`.
+
+| Causa | Arreglo | Prueba |
+|---|---|---|
+| La cuenta ficticia estándar carecía de IA. La primera entrada piloto empezó antes de que terminara el reinicio del proveedor. | Reutilizar la sesión piloto interactiva y esperar readiness con el helper del harness antes de entrar. | Los dos primeros intentos de base devolvieron 1 antes de medir. Con el fixture listo, el rojo midió las dos cabeceras y el mismo caso pasó con IA visible. |
+| La altura del Diario ancho descontaba el padding del main, pero omitía los 8 px de separación antes de la tarjeta. | Descontar ambos espacios en el cálculo de escritorio. | CA-01 falló con 803/800 tanto en la base como en el primer candidato. Pasó con `f9fff20` y en la confirmación de `13b1f11` con las mismas aserciones. |
+| El movimiento del cursor en Libres podía desplazar el formulario después de pedir su posición inicial. | Esperar que el formulario y el main queden arriba y verificar que el contenido empiece debajo del encabezado del formulario antes de medir. | Dos mediciones iguales en `13b1f11`. Se descartó la medición intermedia, cuya captura mostraba la línea 8 al comienzo del formulario. |
+
+Pendiente la revisión independiente de [PR #97](https://github.com/MatiasNicolasAcevedo/devnotes/pull/97). El check `verify-required` correspondiente al HEAD de entrega queda en el PR. El commit con este checkpoint cambia solo documentación respecto del SHA técnico.
 
 ## Prompts de salida
 

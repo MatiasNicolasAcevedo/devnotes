@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-098](tasks/T-098-compact-writing-header.md) · [S-117](specs/S-117-compact-writing-header.md) |
-| Estado | `in_progress` |
-| Siguiente acción | Frontera implementer verifica la barra compacta y completa el gate dirigido. |
-| Rama / PR | `codex/t-098-compact-writing-header` · plan #96 MERGED |
+| Estado | `in_review` |
+| Siguiente acción | Frontera reviewer independiente verifica T-098 y, si aprueba, hace el squash y confirma MERGED. |
+| Rama / PR | `codex/t-098-compact-writing-header` · [PR #97](https://github.com/MatiasNicolasAcevedo/devnotes/pull/97) |
 
 Modo `FRONTERA_CONTINUA`. T-097 conciliada ([PR #94](https://github.com/MatiasNicolasAcevedo/devnotes/pull/94) MERGED, `8b0ddd5`): con ella cierran el M9 y el [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia). El dueño decidió el 2026-11-23 borrar la base Free actual y crear una nueva, sin respaldo: el proyecto todavía no se usa en producción y empieza a usarse con la base nueva. Los demás pendientes siguen abajo. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
@@ -34,5 +34,5 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Frontera implementer de T-098 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/specs/S-117-compact-writing-header.md y docs/tasks/T-098-compact-writing-header.md. PRECONDICIÓN: gh pr view codex/t-098-compact-window-plan --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit devuelve MERGED con fecha y oid válidos, y git merge-base --is-ancestor con ese oid y origin/main sale con exit 0. Si el plan está abierto, devolvé el estado y dejá la implementación pendiente de la conformidad del dueño y el merge documental. ACCIÓN: en codex/t-098-compact-writing-header desde origin/main, registrá el rojo y las medidas base a 640×480 CSS px. Implementá la fila superior de 32 px para Diario y Libres autenticados en ventana angosta con puntero fino, preservando el tamaño táctil y verificando que el espacio llegue al editor. Ejecutá el gate dirigido de T-098 y registrá medidas antes y después, comandos y exits. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: un PR de T-098 con verify-required verde y el prompt de reviewer independiente.
+Frontera reviewer independiente de T-098 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/specs/S-117-compact-writing-header.md y docs/tasks/T-098-compact-writing-header.md. PRECONDICIÓN: gh pr view 97 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup confirma OPEN, isDraft false, base 80ca79c770590f2557a755a2971d08db5ffd5ac8 y verify-required SUCCESS. El headRefOid debe coincidir con git ls-remote origin refs/heads/codex/t-098-compact-writing-header. En el checkout de ese HEAD, git diff --quiet 13b1f11086b0538bcc302c76c071a1dfba87fce5 HEAD -- client e2e debe salir con exit 0. Si falla la precondición, devolvé el estado vigente. ACCIÓN: revisá el diff y las medidas a 640×480 contra AC-01 a AC-03. Confirmá foco, tamaño táctil y el ajuste de CA-01 del Diario ancho. Cotejá el gate diario y corré el filtro de escritorio de T-098 con namespace propio. Si aprobás, seguí el protocolo reviewer, hacé el squash ligado al HEAD aprobado y confirmá MERGED con gh pr view 97 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: veredicto y prompt vigente.
 ```
