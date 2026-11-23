@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-097](tasks/T-097-demo-page.md) |
-| Estado | `ready` |
-| Siguiente acción | Contrato en el PR de planificación [PR #93](https://github.com/MatiasNicolasAcevedo/devnotes/pull/93). El dueño revisa el plan; con su conformidad expresa, el planner hace el squash y confirma `MERGED`. Después, frontera implementer de T-097 |
-| Rama / PR | `codex/t-097-demo-page-plan` · [PR #93](https://github.com/MatiasNicolasAcevedo/devnotes/pull/93) (planificación). La implementación va en `codex/t-097-demo-page` |
+| Estado | `in_progress` |
+| Siguiente acción | Frontera implementer en curso: página Demo, enlace rojo en la barra, ruta pública `/demo`, pruebas y gate diario. Al publicar, el PR queda listo para revisión |
+| Rama / PR | `codex/t-097-demo-page` · PR pendiente |
 
 Modo `FRONTERA_CONTINUA`. T-096 conciliada ([PR #92](https://github.com/MatiasNicolasAcevedo/devnotes/pull/92) MERGED, `5759658`). La [cola](BACKLOG.md#lote-imagen-libres-e-ia) termina con T-097: página Demo pública con el tráiler y la demo de YouTube, destino rojo en la barra superior también en móvil ([decisiones del dueño](tasks/T-097-demo-page.md#decisiones-del-dueño)). [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
