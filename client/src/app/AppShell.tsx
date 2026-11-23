@@ -253,9 +253,10 @@ function AppShellContent({
           spacing={1}
           sx={{
             height: daily && !desktop ? '100%' : undefined,
+            // En escritorio el Diario suma 8 px del main y 8 px de separación antes de la tarjeta.
             '--daily-editor-height':
               daily && desktop
-                ? `calc(100dvh - ${headerHeight}px - env(safe-area-inset-top) - 8px)`
+                ? `calc(100dvh - ${headerHeight}px - env(safe-area-inset-top) - 16px)`
                 : undefined,
             '--free-writing-height': desktop
               ? `calc(100dvh - ${headerHeight}px - env(safe-area-inset-top) - 24px)`
