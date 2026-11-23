@@ -1,6 +1,6 @@
 ---
 id: T-095
-status: in_review
+status: mergeable
 priority: P2
 size: M
 milestone: M9
@@ -34,29 +34,30 @@ Abrir imagen, tipografía y música con la misma identidad de la v1. Cada rótul
 
 ## Checkpoint vigente
 
-2026-11-23. Frontera implementer de corrección, ronda 1, en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, Git, gh, Node, HyperFrames 0.9.37 y ffmpeg/ffprobe. Sesión nueva, distinta de la del reviewer. **Listo para revisión de ronda 2** en el [PR #91](https://github.com/MatiasNicolasAcevedo/devnotes/pull/91). Commit técnico `d97fa93d6574a73b531df9fb1f186cf0f930a2f6` sobre el commit del reviewer con CAMBIOS REQUERIDOS, `6d7afbc`. Impacto: solo `media/trailer-v2/` (composición y storyboard) y documentos. Sin cambios de comportamiento, API, permisos ni datos del producto.
+2026-11-23. Frontera reviewer independiente, ronda 2 de 2, en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, Git, gh, Node, HyperFrames y ffmpeg/ffprobe. Sesión nueva, distinta de la del implementer. **APROBADO**, estado `mergeable`. Revisado el HEAD publicado `fa2620523b9336df6ec5b7e5e80cd2058ec4989c` del [PR #91](https://github.com/MatiasNicolasAcevedo/devnotes/pull/91), OPEN, no draft, `verify-required` verde, con `d97fa93` como ancestro. Impacto: solo `media/trailer-v2/` y documentos; sin cambios de comportamiento, API, permisos, datos ni UI del producto.
 
-**Correcciones.**
+**Cierre de hallazgos.**
 
-| # | Causa | Arreglo | Prueba |
-|---|---|---|---|
-| H1 | `#imOk` «Copiado» estaba en línea con los botones, fuera de la tarjeta, y se cortaba | Línea de estado «Texto copiado» debajo de «Copiar texto» y «Guardar», dentro de la columna «Texto extraído», como `ImageWorkspace.tsx:521`. El tiempo de `showOk` (25,05 s) no cambia | Fotograma en 25,6 s: «Texto copiado» entero dentro de la tarjeta. `d97fa93` |
-| H2 | El diálogo de Ctrl+K decía «Enlace para «1279»» | Título «Agregar enlace» y «1279» en una segunda línea atenuada dentro de `#pop`, como `LinkDialog.tsx:149-157`. Storyboard actualizado en las filas de 10–14 s y 22–26 s | Fotogramas en 11,5 s y 12,8 s: «Agregar enlace», «1279» y la URL legibles. `d97fa93` |
-
-Resto del montaje sin cambios. `trailer/` sigue sin versionar e idéntico: SHA-256 de sus archivos (sin `node_modules`) iguales antes y después del render. El índice no contiene WAV, MP4, `renders/`, `.hyperframes/` ni `node_modules/` (ignorados por `media/trailer-v2/.gitignore`). `git ls-files -- plantilla` vacío.
+| # | Comprobación | Resultado |
+|---|---|---|
+| H1 | Fotograma en 25,6 s contra `ImageWorkspace.tsx:521` | «Texto copiado» entero, debajo de «Copiar texto» y «Guardar», dentro de la tarjeta. Cerrado |
+| H2 | Fotograma en 11,5 s contra `LinkDialog.tsx:149-157` | Título «Agregar enlace» y «1279» atenuado debajo; campo de URL visible. Cerrado |
+| Resto | `git diff 6d7afbc..HEAD` | Solo `#pop` (`.sel`), `#imOk` (`.okline`), dos filas de `STORYBOARD.md`, la tarea y STATUS. Sin otros cambios de montaje, tiempos ni audio |
 
 | Comando | Resultado |
 |---|---|
-| `npm run check` en `media/trailer-v2` | exit 0. 0 errores; 18 avisos de Craft, como en la ronda 1. Layout: 0 avisos y 36 informativos; 17 de ellos son el diálogo sobre la línea 3, vacía, mientras se cierra a 12,8 s |
-| `npm run render` | exit 0. 21 091 154 bytes, `media/trailer-v2/renders/devnotes-trailer-v2-16x9.mp4` |
-| `ffprobe -v error -show_entries stream=codec_type,width,height:format=duration -of json devnotes-trailer-v2-16x9.mp4` en `renders/` | exit 0. Video 1920×1080, audio, `46.000000` s |
-| `sha256sum devnotes-trailer-v2-16x9.mp4` | `c14a86a54830da90762253c3416c0e7022253cd652da02ca06144802238920da` |
+| `npm run check` en `media/trailer-v2` | exit 0. 0 errores, 18 avisos de Craft (`line_unread`), como en la ronda 1. Audio: 0 errores, 0 avisos |
+| `npm run render` | exit 0. 20,1 MB, 46,0 s, `renders/devnotes-trailer-v2-16x9.mp4` |
+| `ffprobe -v error -show_entries stream=codec_type,width,height:format=duration -of json devnotes-trailer-v2-16x9.mp4` | exit 0. Video 1920×1080, audio, `46.000000` s |
+| `sha256sum devnotes-trailer-v2-16x9.mp4` | `999c7b1bcd86171a4e3cbb0be3ae171394b2183c72924135101324a290b01e7b`. Difiere del render del implementer (`c14a86a5…`): la captura por capturas de pantalla con GPU no es byte a byte determinista; la duración, los streams y los fotogramas coinciden |
 | `ffmpeg -ss 11.5 / 12.8 / 25.6 … -frames:v 1` | Fotogramas revisados: H1 y H2 cerrados |
-| `node scripts/docs-check.mjs` sobre `git archive d97fa93` | exit 0 (156 Markdown, 91 tareas). En el checkout falla solo por `trailer/CLAUDE.md`, que no está versionado |
+| SHA-256 de `trailer/` (sin `node_modules`, 44 archivos) antes y después de check+render | Idénticos. `git ls-files -- trailer` vacío |
+| `git ls-files` filtrado por WAV, MP3, MP4, `renders/`, `.hyperframes/`, `node_modules/` | Sin resultados. `git ls-files -- plantilla` vacío |
 | `git diff --check origin/main...HEAD` | exit 0 |
-| `bash scripts/verify.sh --policy origin/main` | Perfil informado `FULL`/`STARTER`; no ejecutado |
 
-**Pendiente del dueño, no defecto.** El dueño informó en el chat de esta sesión que el audio está correcto. El reviewer de ronda 2 debe pedir su confirmación explícita de haber escuchado el MP4 completo con sonido antes del merge.
+Hallazgo menor, no bloqueante: antes de copiar, el producto muestra «Texto listo» en esa línea y el tráiler la deja vacía. Es una simplificación aceptable del montaje.
+
+**Confirmación del dueño.** El 2026-11-23, en el chat de esta sesión, el dueño respondió «Sí, escuché todo» a la pregunta de si escuchó el MP4 completo con sonido y si el audio está bien para mergear.
 
 **FULL/STARTER: DIFERIDO POR EL DUEÑO.**
 
