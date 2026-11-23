@@ -1,0 +1,394 @@
+{
+  "title": "DevNotes · recorrido completo",
+  "language": "es",
+  "voice": {
+    "name": "Sofía",
+    "id": "h60rOzgfLmYsntfqgGu2",
+    "provider": "ElevenLabs",
+    "model": "eleven_turbo_v2_5",
+    "note": "Nombre público en la biblioteca: Sofía; en el espacio del dueño figura como Delfina"
+  },
+  "lead": 0.6,
+  "chapters": [
+    {
+      "id": "C1",
+      "title": "Ingreso",
+      "description": "Cuenta ficticia y espacios"
+    },
+    {
+      "id": "C2",
+      "title": "Diario",
+      "description": "Escribir, enlazar, separar y versionar"
+    },
+    {
+      "id": "C3",
+      "title": "Referencias",
+      "description": "Elementos propios y lectura al lado"
+    },
+    {
+      "id": "C4",
+      "title": "Libres",
+      "description": "Listas, títulos, negrita y código"
+    },
+    {
+      "id": "C5",
+      "title": "Voz",
+      "description": "Grabar, revisar y guardar"
+    },
+    {
+      "id": "C6",
+      "title": "Imagen",
+      "description": "De una captura a texto"
+    },
+    {
+      "id": "C7",
+      "title": "IA",
+      "description": "Proveedor, fragmento y respuesta"
+    },
+    {
+      "id": "C8",
+      "title": "Respaldo",
+      "description": "Exportar e importar en una cuenta vacía"
+    },
+    {
+      "id": "C9",
+      "title": "En el teléfono",
+      "description": "La misma nota en pantalla angosta"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "S01-bienvenida",
+      "chapter": "C1",
+      "route": "/login sin sesión",
+      "gesture": "Pantalla de ingreso quieta",
+      "dialogue": "Esto es DevNotes, un cuaderno de trabajo diario para quien programa. En esta demostración usamos una cuenta ficticia, con datos y proveedores de prueba.",
+      "result": "Título «Ingresar a DevNotes» y botón «Continuar con Google»",
+      "pause": 0.6
+    },
+    {
+      "id": "S02-ingreso",
+      "chapter": "C1",
+      "route": "/login",
+      "gesture": "Clic en «Continuar con Google»; el formulario del proveedor de prueba se corta del montaje",
+      "dialogue": "Tocás «Continuar con Google» y entrás. DevNotes no recibe tu contraseña y abre directo en Notas, en el día de hoy.",
+      "result": "Notas diarias de hoy, vacía, con «Guardado» en la barra",
+      "pause": 0.5
+    },
+    {
+      "id": "S03-navegacion",
+      "chapter": "C1",
+      "route": "/notes de hoy",
+      "gesture": "El cursor recorre Voz, Notas, Referencias, Imagen, Historial, el estado del servidor, IA y la cuenta",
+      "dialogue": "Arriba están los destinos: Voz, Notas, Referencias, Imagen e Historial. A la derecha, el estado del servidor, la IA y tu cuenta.",
+      "result": "Cada destino resaltado al pasar",
+      "pause": 0.4
+    },
+    {
+      "id": "S04-espacios",
+      "chapter": "C1",
+      "route": "/notes de hoy en Trabajo",
+      "gesture": "Abre «Espacio: Trabajo», elige Personal y vuelve a Trabajo",
+      "dialogue": "Todo vive en dos espacios: Trabajo y Personal. Cambiás con este selector, y cada espacio guarda sus propias notas.",
+      "result": "El selector muestra Personal y luego Trabajo",
+      "pause": 0.6
+    },
+    {
+      "id": "S05-fecha",
+      "chapter": "C2",
+      "route": "/notes de hoy",
+      "gesture": "Clic en el calendario y elección del día anterior",
+      "dialogue": "Empecemos por ayer. Con el calendario elegís cualquier día, y cada fecha tiene su propia nota diaria.",
+      "result": "La barra muestra la fecha de ayer y el editor vacío",
+      "pause": 0.4
+    },
+    {
+      "id": "S06-escribir",
+      "chapter": "C2",
+      "route": "/notes de ayer",
+      "gesture": "Escribe tres líneas",
+      "dialogue": "Escribís como en un editor de código: cada línea lleva su número, y el texto se guarda solo. Mirá el indicador: «Guardado».",
+      "result": "Tres líneas numeradas y «Guardado»",
+      "pause": 0.5
+    },
+    {
+      "id": "S07-enlace",
+      "chapter": "C2",
+      "route": "/notes de ayer",
+      "gesture": "Selecciona «1279», clic en «Enlace», escribe la URL y guarda",
+      "dialogue": "Para enlazar, seleccionás el texto y tocás «Enlace», o Control K. Pegás la dirección, y queda un enlace que se abre aparte.",
+      "result": "«1279» subrayado como enlace",
+      "pause": 0.5
+    },
+    {
+      "id": "S08-separador",
+      "chapter": "C2",
+      "route": "/notes de ayer",
+      "gesture": "Escribe --50 y Enter, luego --- y Enter",
+      "dialogue": "Para separar bloques, escribís dos guiones y un ancho, por ejemplo cincuenta, y al dar Enter aparece un separador. Con tres guiones ocupa todo el ancho.",
+      "result": "Separador al 50 % y separador completo",
+      "pause": 0.5
+    },
+    {
+      "id": "S09-version",
+      "chapter": "C2",
+      "route": "/notes de ayer",
+      "gesture": "Clic en «Guardar versión»",
+      "dialogue": "Al cerrar el día, «Guardar versión» deja una copia fija de la nota en el historial.",
+      "result": "Aviso «Versión guardada correctamente.»",
+      "pause": 0.6
+    },
+    {
+      "id": "S10-copiar-anterior",
+      "chapter": "C2",
+      "route": "/notes de ayer",
+      "gesture": "Clic en «Hoy» y luego en «Copiar nota anterior»",
+      "dialogue": "Volvés a hoy con «Hoy». La nota está vacía, y DevNotes ofrece copiar la nota anterior: un toque y tenés la base del día.",
+      "result": "La nota de hoy con el contenido de ayer y «Guardado»",
+      "pause": 0.5
+    },
+    {
+      "id": "S11-ajustar",
+      "chapter": "C2",
+      "route": "/notes de hoy",
+      "gesture": "Agrega una línea nueva y clic en «Copiar nota»",
+      "dialogue": "Ajustás lo que cambió, y con el botón de copiar llevás la nota entera al portapapeles, para pegarla en el chat del equipo.",
+      "result": "Línea nueva numerada y aviso de copia",
+      "pause": 0.5
+    },
+    {
+      "id": "S12-historial",
+      "chapter": "C2",
+      "route": "/history",
+      "gesture": "Clic en «Historial» y en la versión de ayer",
+      "dialogue": "En Historial están las versiones guardadas. Abrís una y la leés en modo de solo lectura, sin riesgo de cambiarla.",
+      "result": "«Versión de solo lectura» con las líneas de ayer",
+      "pause": 0.6
+    },
+    {
+      "id": "S13-referencia-crear",
+      "chapter": "C3",
+      "route": "/reference",
+      "gesture": "Clic en «Referencias», «Crear elemento», completa Título y Descripción y guarda",
+      "dialogue": "En Referencias guardás lo que consultás seguido: runbooks, comandos o enlaces. Creás un elemento con título y descripción.",
+      "result": "El elemento aparece en la lista",
+      "pause": 0.5
+    },
+    {
+      "id": "S14-referencia-acciones",
+      "chapter": "C3",
+      "route": "/reference",
+      "gesture": "El cursor recorre copiar título, copiar descripción, editar y eliminar; copia la descripción",
+      "dialogue": "Cada elemento se copia con un toque, y desde acá también lo editás o lo eliminás.",
+      "result": "Aviso de copia",
+      "pause": 0.4
+    },
+    {
+      "id": "S15-referencia-insertar",
+      "chapter": "C3",
+      "route": "/notes de hoy",
+      "gesture": "Escribe @, busca «Runbook», lo inserta y abre su vista previa",
+      "dialogue": "Desde la nota, escribís arroba y buscás la referencia. Queda insertada, y al tocarla ves su contenido sin salir de la nota.",
+      "result": "Chip de la referencia y vista previa abierta",
+      "pause": 0.5
+    },
+    {
+      "id": "S16-lectura-al-lado",
+      "chapter": "C3",
+      "route": "/notes de hoy",
+      "gesture": "«Herramientas», «Abrir al lado» y elige la versión de ayer",
+      "dialogue": "Y si necesitás leer otra nota mientras escribís, «Abrir al lado» la muestra junto al editor, en solo lectura.",
+      "result": "La versión de ayer a la derecha y el editor de hoy a la izquierda",
+      "pause": 0.6
+    },
+    {
+      "id": "S17-libres-crear",
+      "chapter": "C4",
+      "route": "/notes de hoy",
+      "gesture": "Cierra la consulta, clic en «Libres» y «Nueva nota»; escribe título y líneas",
+      "dialogue": "Para lo que no pertenece a un día en particular están las notas Libres. Creás una nueva con título y contenido.",
+      "result": "Editor de nota libre con título y tres líneas",
+      "pause": 0.4
+    },
+    {
+      "id": "S18-libres-listas",
+      "chapter": "C4",
+      "route": "/free-notes/new",
+      "gesture": "Selecciona las líneas, «Lista», «Casillas» y tilda la primera",
+      "dialogue": "Con «Lista» convertís líneas en viñetas, en una lista numerada o en casillas que podés tildar.",
+      "result": "Tres casillas, la primera tildada",
+      "pause": 0.4
+    },
+    {
+      "id": "S19-libres-formato",
+      "chapter": "C4",
+      "route": "/free-notes/new",
+      "gesture": "Escribe un encabezado, «Formato», «Título 2» y negrita",
+      "dialogue": "«Formato» suma tres niveles de título y negrita, para ordenar las notas largas.",
+      "result": "Título de nivel 2 con una palabra en negrita",
+      "pause": 0.4
+    },
+    {
+      "id": "S20-libres-codigo",
+      "chapter": "C4",
+      "route": "/free-notes/new",
+      "gesture": "«Herramientas», «Bloque de código», «SQL», pega una consulta y clic en «Copiar código»",
+      "dialogue": "En «Herramientas» insertás bloques de código, con colores según el lenguaje, y los copiás con un solo botón.",
+      "result": "Bloque SQL resaltado y aviso de copia",
+      "pause": 0.5
+    },
+    {
+      "id": "S21-libres-guardar",
+      "chapter": "C4",
+      "route": "/free-notes/new",
+      "gesture": "«Guardar», vuelve a «Libres», abre el borrado y cancela",
+      "dialogue": "Guardás, y la nota aparece en la lista de Libres. Desde ahí la abrís, la editás o la borrás, siempre con confirmación.",
+      "result": "Lista con la nota y diálogo «¿Borrar la nota libre?» cancelado",
+      "pause": 0.5
+    },
+    {
+      "id": "S22-voz-grabar",
+      "chapter": "C5",
+      "route": "/voice",
+      "gesture": "Clic en «Voz», «Grabar», espera el contador y «Detener»",
+      "dialogue": "En Voz grabás una idea al vuelo. Tocás «Grabar», hablás, y al detener el audio se transcribe.",
+      "result": "Contador, barras de nivel y luego el texto transcripto",
+      "pause": 0.4
+    },
+    {
+      "id": "S23-voz-guardar",
+      "chapter": "C5",
+      "route": "/voice",
+      "gesture": "Agrega una línea al texto, «Copiar» y «Guardar»",
+      "dialogue": "El texto queda editable antes de guardarlo. Lo corregís, lo copiás si lo necesitás en otro lado, y con «Guardar» queda en tus notas de voz.",
+      "result": "La nota aparece en «Notas guardadas»",
+      "pause": 0.5
+    },
+    {
+      "id": "S24-imagen-extraer",
+      "chapter": "C6",
+      "route": "/image",
+      "gesture": "Clic en «Imagen», pega una captura y clic en «Extraer texto»",
+      "dialogue": "Con Imagen pasás una captura a texto. Pegás la imagen con Control V, revisás la vista previa y tocás «Extraer texto».",
+      "result": "Vista previa y texto extraído",
+      "pause": 0.4
+    },
+    {
+      "id": "S25-imagen-guardar",
+      "chapter": "C6",
+      "route": "/image",
+      "gesture": "Corrige el texto, «Copiar texto» y «Guardar»",
+      "dialogue": "El resultado se puede corregir, copiar y guardar. Los textos guardados quedan debajo, listos para copiar o borrar.",
+      "result": "«Texto copiado» y el texto en «Textos guardados»",
+      "pause": 0.5
+    },
+    {
+      "id": "S26-ia-selector",
+      "chapter": "C7",
+      "route": "/image",
+      "gesture": "Abre «Elegir proveedor y modelo», elige Cloudflare Workers AI y GPT OSS 120B y aplica",
+      "dialogue": "La IA usa proveedores gratuitos. En este selector elegís proveedor y modelo, ves el estado de cada uno y aplicás tu elección.",
+      "result": "Diálogo «Proveedor y modelo» con el estado por modelo",
+      "pause": 0.4
+    },
+    {
+      "id": "S27-ia-fragmento",
+      "chapter": "C7",
+      "route": "/notes de hoy",
+      "gesture": "Selecciona una línea de la nota y clic en «Consultar con IA»",
+      "dialogue": "Desde una nota, seleccionás un fragmento y tocás «Consultar con IA». Antes de enviar, ves exactamente qué vas a compartir.",
+      "result": "Página IA con «Fragmento a compartir»",
+      "pause": 0.4
+    },
+    {
+      "id": "S28-ia-enviar",
+      "chapter": "C7",
+      "route": "/ai",
+      "gesture": "Escribe el pedido, «Enviar» y «Copiar texto» sobre la respuesta",
+      "dialogue": "Escribís tu pedido, tocás «Enviar», y la respuesta aparece debajo, lista para copiar. Nada sale sin que lo confirmes.",
+      "result": "Respuesta del proveedor de prueba y aviso de copia",
+      "pause": 0.4
+    },
+    {
+      "id": "S29-ia-anadir",
+      "chapter": "C7",
+      "route": "/ai",
+      "gesture": "«Añadir fragmento», origen Libres, elige la nota y añade la selección",
+      "dialogue": "Con «Añadir fragmento» también traés texto de una nota guardada, del diario o de Libres.",
+      "result": "El fragmento de la nota libre listo para compartir",
+      "pause": 0.6
+    },
+    {
+      "id": "S30-exportar",
+      "chapter": "C8",
+      "route": "/ai",
+      "gesture": "Menú de la cuenta, «Datos de la cuenta» y «Descargar Excel»",
+      "dialogue": "Tus datos son tuyos. En el menú de la cuenta, «Datos de la cuenta» descarga un respaldo en Excel con los dos espacios.",
+      "result": "«Descarga lista» con el nombre del archivo",
+      "pause": 0.5
+    },
+    {
+      "id": "S31-otra-cuenta",
+      "chapter": "C8",
+      "route": "/data",
+      "gesture": "«Cerrar sesión» y entra otra cuenta ficticia vacía; el proveedor de prueba se corta del montaje",
+      "dialogue": "Ahora cerramos la sesión y entramos con otra cuenta ficticia, todavía vacía.",
+      "result": "Notas de hoy vacía con la otra cuenta",
+      "pause": 0.4
+    },
+    {
+      "id": "S32-importar-vista",
+      "chapter": "C8",
+      "route": "/data de la cuenta vacía",
+      "gesture": "«Datos de la cuenta» y elige el archivo descargado",
+      "dialogue": "En la cuenta nueva elegís el archivo, y DevNotes muestra qué contiene antes de escribir nada.",
+      "result": "Región «Contenido del archivo» con totales por espacio",
+      "pause": 0.5
+    },
+    {
+      "id": "S33-importar",
+      "chapter": "C8",
+      "route": "/data",
+      "gesture": "«Importar» y «Confirmar importación»",
+      "dialogue": "Confirmás, y se importa todo o nada: si algo falla, no queda nada a medias.",
+      "result": "Importación terminada",
+      "pause": 0.5
+    },
+    {
+      "id": "S34-recuperado",
+      "chapter": "C8",
+      "route": "/notes de hoy",
+      "gesture": "Recorre Notas, Libres, Voz, Imagen y Referencias",
+      "dialogue": "Y ahí está todo lo que creamos: la nota del día, la nota libre, la voz, el texto de la imagen y la referencia.",
+      "result": "Cada pantalla con el contenido restaurado",
+      "pause": 0.6
+    },
+    {
+      "id": "S35-movil",
+      "chapter": "C9",
+      "route": "/notes de hoy",
+      "gesture": "La ventana pasa a 390 px; la navegación baja a cinco destinos",
+      "dialogue": "DevNotes también funciona en el teléfono. La navegación pasa abajo, con cinco destinos al alcance del pulgar.",
+      "result": "La misma nota en vista angosta con la barra inferior",
+      "pause": 0.4
+    },
+    {
+      "id": "S36-movil-herramientas",
+      "chapter": "C9",
+      "route": "/notes de hoy en 390 px",
+      "gesture": "Clic en «Herramientas» y luego en «Voz» desde la barra inferior",
+      "dialogue": "Las herramientas del editor se agrupan en un menú, y la IA y tu cuenta siguen arriba, siempre a mano.",
+      "result": "Diálogo «Herramientas» y luego Voz en móvil",
+      "pause": 0.5
+    },
+    {
+      "id": "S37-creditos",
+      "chapter": "C9",
+      "route": "/voice en 390 px",
+      "gesture": "Tarjeta final de créditos",
+      "dialogue": "Esto fue DevNotes. Voz de Sofía, generada con ElevenLabs. Música original sintetizada para este recorrido. Gracias por mirar.",
+      "result": "Tarjeta final con logo y créditos",
+      "pause": 1.5
+    }
+  ]
+}

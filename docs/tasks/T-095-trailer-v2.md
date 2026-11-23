@@ -1,6 +1,6 @@
 ---
 id: T-095
-status: mergeable
+status: done
 priority: P2
 size: M
 milestone: M9
@@ -33,6 +33,10 @@ Ampliar la pieza musical cuando la entrega de IA esté probada y mergeada. La v1
 Abrir imagen, tipografía y música con la misma identidad de la v1. Cada rótulo corresponde a una acción comprobada en el producto. Revisar a tamaño de escritorio y en una ventana reducida a la mitad: cortes sincronizados, sin narración, pantalla en negro accidental, texto tapado ni URL antigua. El tramo adaptable muestra la misma nota en ventana ancha y angosta, con la navegación inferior de cinco destinos. Ver el MP4 completo con sonido. En `media/trailer-v2` ejecutar `npm run check` y `npm run render` con la versión de HyperFrames fijada por el original (0.9.37). Desde `media/trailer-v2/renders` ejecutar `ffprobe -v error -show_entries stream=codec_type,width,height:format=duration -of json devnotes-trailer-v2-16x9.mp4`. Registrar dimensiones, audio, duración, ruta, SHA-256 del MP4 y SHA de fuentes. Gate documental, CI del HEAD y FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
 ## Checkpoint vigente
+
+Conciliada el 2026-11-23 en la rama de T-096. `gh pr view 91 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit` devolvió `MERGED`, `2026-11-23T04:47:33Z` y `b0e46a353743db5fb30ca35556358b68715850ee`. `git fetch origin` y `git merge-base --is-ancestor b0e46a3 origin/main` dieron exit 0.
+
+### Revisión de la ronda 2
 
 2026-11-23. Frontera reviewer independiente, ronda 2 de 2, en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, Git, gh, Node, HyperFrames y ffmpeg/ffprobe. Sesión nueva, distinta de la del implementer. **APROBADO**, estado `mergeable`. Revisado el HEAD publicado `fa2620523b9336df6ec5b7e5e80cd2058ec4989c` del [PR #91](https://github.com/MatiasNicolasAcevedo/devnotes/pull/91), OPEN, no draft, `verify-required` verde, con `d97fa93` como ancestro. Impacto: solo `media/trailer-v2/` y documentos; sin cambios de comportamiento, API, permisos, datos ni UI del producto.
 
