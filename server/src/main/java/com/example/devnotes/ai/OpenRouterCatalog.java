@@ -121,7 +121,7 @@ final class OpenRouterCatalog implements AiClient {
                 && byok.isBoolean()
                 && !byok.booleanValue()
                 && status.isIntegralNumber()
-                && status.longValue() == 0
+                && status.bigIntegerValue().signum() == 0
                 && zeroPrice(endpoint.path("pricing"))
                 && contains(endpoint.path("supported_parameters"), "max_tokens");
     }

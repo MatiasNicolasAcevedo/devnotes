@@ -6,9 +6,20 @@ export const AI_INK = '#21182f'
 
 export type ModelIssue =
   | { kind: 'unavailable' | 'unresponsive'; reason: string }
-  | { kind: 'limited'; quotaExhausted: boolean; reason: string; retryAt: number | null }
+  | {
+      kind: 'limited'
+      quotaExhausted: boolean
+      reason: string
+      retryAt: number | null
+      // Zero wait: keep the notice but let a deliberate Enviar go through.
+      ready?: boolean
+    }
 
-export type ModelStatus = { label: string; reason?: string; tone: 'success' | 'error' | 'info' }
+export type ModelStatus = {
+  label: string
+  reason?: string
+  tone: 'success' | 'warning' | 'error' | 'info'
+}
 
 export function destinationKey({ provider, model }: Destination) {
   return JSON.stringify([provider, model])
@@ -37,7 +48,7 @@ export function modelStatus(
       return {
         label: issue.quotaExhausted ? 'Cuota agotada' : 'Límite temporal del proveedor',
         reason: issue.reason,
-        tone: 'error',
+        tone: issue.ready ? 'warning' : 'error',
       }
     }
     const label = issue.kind === 'unresponsive' ? 'No responde' : 'No disponible'

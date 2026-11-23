@@ -87,7 +87,11 @@ class OpenRouterCatalogTest {
                 "base-slug",
                 "duplicate-slug",
                 "prefix-slug",
-                "unknown-slug"
+                "unknown-slug",
+                "status-overflow",
+                "status-decimal",
+                "status-negative",
+                "status-absent"
             })
     void listsUnavailableAndRejectsBeforeInferenceWithIncompatibleEndpoints(String reason) throws Exception {
         var client = mock(OpenRouterAiClient.class);
@@ -113,6 +117,10 @@ class OpenRouterCatalogTest {
                         + ROUTE.replace("fixture/text/us", "fixture/text/us/east")
                                 .replace("\"deny\"", "\"allow\"");
             case "unknown-slug" -> ROUTE + "," + ROUTE.replace("\"tag\":\"fixture/text/us\",", "");
+            case "status-overflow" -> ROUTE.replace("\"status\":0", "\"status\":18446744073709551616");
+            case "status-decimal" -> ROUTE.replace("\"status\":0", "\"status\":0.5");
+            case "status-negative" -> ROUTE.replace("\"status\":0", "\"status\":-1");
+            case "status-absent" -> ROUTE.replace("\"status\":0,", "");
             default -> throw new AssertionError(reason);
         };
         when(client.zdrEndpoints(any())).thenReturn(JSON.readTree("{\"data\":[" + endpoint + "]}"));

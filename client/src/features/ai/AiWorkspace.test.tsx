@@ -86,6 +86,45 @@ describe('IA', () => {
   })
 
   it.each([
+    ['ai-rate-limit', 'Límite temporal del proveedor'],
+    ['ai-quota', 'Cuota agotada'],
+  ])('conserva el aviso %s con Retry-After: 0 y solo reenvía con Enviar', async (code, label) => {
+    const turns: unknown[] = []
+    server.use(
+      http.post('/api/spaces/work/ai/messages', async ({ request }) => {
+        turns.push(await request.json())
+        return HttpResponse.json(
+          { status: 429, code, detail: 'El proveedor limitó la consulta.', retryAfter: 0 },
+          {
+            status: 429,
+            headers: { 'Content-Type': 'application/problem+json', 'Retry-After': '0' },
+          },
+        )
+      }),
+    )
+    const { user } = initial()
+    const draft = await screen.findByRole('textbox', { name: 'Mensaje' })
+    await user.type(draft, 'Borrador ficticio')
+    const send = screen.getByRole('button', { name: /^Enviar$/ })
+    await user.click(send)
+    const state = screen.getByRole('status', { name: 'Estado del destino de IA' })
+    await waitFor(() => expect(state).toHaveTextContent(label))
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(state).toHaveTextContent(label)
+    expect(send).toBeEnabled()
+    expect(draft).toHaveValue('Borrador ficticio')
+    expect(turns).toHaveLength(1)
+    await user.click(screen.getByRole('button', { name: 'Elegir otro modelo' }))
+    const selector = within(screen.getByRole('dialog', { name: 'Proveedor y modelo' }))
+    expect(selector.getByRole('status')).toHaveTextContent(label)
+    await user.keyboard('{Escape}')
+    expect(turns).toHaveLength(1)
+    await user.click(send)
+    await waitFor(() => expect(turns).toHaveLength(2))
+    expect(draft).toHaveValue('Borrador ficticio')
+  })
+
+  it.each([
     [504, 'ai-timeout', 'No responde'],
     [429, 'ai-quota', 'Cuota agotada'],
     [429, 'ai-rate-limit', 'Límite temporal del proveedor'],

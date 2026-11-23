@@ -30,10 +30,14 @@ function issueFrom(error: unknown): ModelIssue | null {
       return {
         kind: 'limited',
         quotaExhausted: api.problem.code === 'ai-quota',
-        retryAt: validWait ? Date.now() + wait * 1000 : null,
-        reason: validWait
-          ? `Esperá ${wait} s desde el aviso para volver a enviar.`
-          : 'El proveedor limitó la consulta. Consultá su consola o habilitá un intento manual.',
+        retryAt: validWait && wait > 0 ? Date.now() + wait * 1000 : null,
+        ready: wait === 0,
+        reason:
+          wait === 0
+            ? 'Podés volver a enviar con Enviar.'
+            : validWait
+              ? `Esperá ${wait} s desde el aviso para volver a enviar.`
+              : 'El proveedor limitó la consulta. Consultá su consola o habilitá un intento manual.',
       }
     }
     case 'ai-model':
@@ -93,7 +97,7 @@ function Composer() {
   const model = provider?.models.find((item) => item.id === destination?.model)
   const issue = destination ? ai?.issues[destinationKey(destination)] : undefined
   const status = modelStatus(ai?.options, Boolean(ai?.failed), destination ?? null, issue)
-  const allowed = status.tone === 'success'
+  const allowed = status.tone === 'success' || status.tone === 'warning'
   useLayoutEffect(() => {
     const request = pendingRequest.current
     if (request && (request.destination !== destination || !allowed || logoutPending)) {
@@ -123,6 +127,7 @@ function Composer() {
       !(message.trim() || excerpt?.text.trim())
     )
       return
+    if (issue?.kind === 'limited' && issue.ready) ai?.setIssue(destination, null)
     const controller = new AbortController()
     const request = { controller, destination }
     pendingRequest.current = request
@@ -324,7 +329,7 @@ function Composer() {
                 provider?.available &&
                 model?.available &&
                 (issue?.kind === 'unresponsive' ||
-                  (issue?.kind === 'limited' && issue.retryAt === null)) && (
+                  (issue?.kind === 'limited' && issue.retryAt === null && !issue.ready)) && (
                   <Button
                     onClick={() => {
                       ai.setIssue(destination, null)

@@ -1,7 +1,7 @@
 import { Typography } from '@mui/material'
 import type { ModelStatus } from './aiContext'
 
-const symbols = { success: '✓', error: '⚠', info: '◷' }
+const symbols = { success: '✓', warning: '⚠', error: '⚠', info: '◷' }
 
 export function AiModelStatus({ status }: { status: ModelStatus }) {
   return (
