@@ -11,6 +11,7 @@ import java.net.http.HttpTimeoutException;
 import java.nio.ByteBuffer;
 import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
@@ -29,7 +30,7 @@ final class AiHttp {
         this.clock = clock;
     }
 
-    record Response(JsonNode body, java.net.http.HttpHeaders headers) {}
+    record Response(JsonNode body, java.net.http.HttpHeaders headers, Instant observedAt) {}
 
     Response exchange(URI uri, String header, String credential, Map<String, ?> body, Duration remaining) {
         if (remaining.isNegative() || remaining.isZero()) {
@@ -59,6 +60,7 @@ final class AiHttp {
                 Thread.currentThread().interrupt();
                 throw AiFailure.Reason.TIMEOUT.failure();
             }
+            Instant observedAt = clock.instant();
             if (response.statusCode() == 429) {
                 Long retryAfter = response.headers()
                         .firstValue("retry-after")
@@ -76,7 +78,7 @@ final class AiHttp {
             if (parsed == null || !parsed.isObject()) {
                 throw AiFailure.Reason.REMOTE.failure();
             }
-            return new Response(parsed, response.headers());
+            return new Response(parsed, response.headers(), observedAt);
         } catch (ExecutionException e) {
             if (e.getCause() instanceof HttpTimeoutException) {
                 throw AiFailure.Reason.TIMEOUT.failure();

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.time.Duration;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class GroqAiClientTest extends AiClientTestSupport {
@@ -25,8 +26,20 @@ class GroqAiClientTest extends AiClientTestSupport {
         assertThat(reply.text()).isEqualTo("Respuesta 🧪");
         assertThat(reply.servedModel()).isEqualTo("fixture/served");
         assertThat(reply.quota()).containsEntry("inputTokens", 8L).containsEntry("outputTokens", 4L);
+        assertThat(reply.quota()).doesNotContainKeys("observedAtEpochMillis");
         assertChatRequest("max_completion_tokens");
         assertThat(payload.path("reasoning_effort").textValue()).isEqualTo("low");
+    }
+
+    @Test
+    void recordsObservationTimeForAValidZeroCounter() {
+        chatResponse();
+        responseHeaders = Map.of("x-ratelimit-remaining-requests", "0", "x-ratelimit-remaining-tokens", "invalid");
+        var reply = client().generate(model(), "Muestra", TIMEOUT);
+        assertThat(reply.quota())
+                .containsEntry("remainingRequestsPerDay", 0L)
+                .containsKey("observedAtEpochMillis")
+                .doesNotContainKey("remainingTokensPerMinute");
     }
 
     @Test

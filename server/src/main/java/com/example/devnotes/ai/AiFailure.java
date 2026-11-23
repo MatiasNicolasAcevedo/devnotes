@@ -57,8 +57,8 @@ final class AiFailure extends RuntimeException {
                 return Long.parseLong(header);
             }
             var deadline = ZonedDateTime.parse(header, DateTimeFormatter.RFC_1123_DATE_TIME);
-            return Math.max(
-                    0, Duration.between(clock.instant(), deadline.toInstant()).toSeconds());
+            var wait = Duration.between(clock.instant(), deadline.toInstant());
+            return wait.isNegative() ? 0 : wait.toSeconds() + (wait.getNano() == 0 ? 0 : 1);
         } catch (DateTimeParseException e) {
             return null;
         }

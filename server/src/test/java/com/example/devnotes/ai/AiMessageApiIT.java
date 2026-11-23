@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpResponse;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -41,6 +43,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
             "DEVNOTES_AI_ENABLED=true",
             "DEVNOTES_AI_GROQ_ENABLED=true",
             "GROQ_AI_API_KEY=fictitious-text-key",
+            "DEVNOTES_AI_GEMINI_ENABLED=true",
+            "GEMINI_API_KEY=fictitious-gemini-key",
+            "DEVNOTES_AI_WORKERS_ENABLED=true",
+            "CLOUDFLARE_ACCOUNT_ID=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "CLOUDFLARE_API_TOKEN=fictitious-workers-key",
+            "DEVNOTES_AI_OPENROUTER_ENABLED=true",
+            "OPENROUTER_API_KEY=fictitious-openrouter-key",
             "DEVNOTES_AI_GROQ_EXCERPT_SCOPES=work/daily,work/free,personal/daily"
         })
 class AiMessageApiIT {
@@ -93,6 +102,7 @@ class AiMessageApiIT {
                         .path("id")
                         .asText())
                 .isEqualTo(MODEL);
+        assertPilotDestinations(pilot);
 
         saveDaily(other, "2026-11-21", 0);
         saveDaily(pilot, DATE, 0);
@@ -103,12 +113,20 @@ class AiMessageApiIT {
 
         URI upstream = URI.create("https://api.groq.com/openai/v1/chat/completions");
         when(remote.exchange(eq(upstream), eq("Authorization"), eq("Bearer fictitious-text-key"), any(), any()))
-                .thenReturn(new AiHttp.Response(JSON.readTree("""
+                .thenReturn(new AiHttp.Response(
+                        JSON.readTree("""
                         {"model":"openai/gpt-oss-20b","choices":[{"message":{"content":"Resultado 🧪"}}]}
-                        """), HttpHeaders.of(Map.of(), (key, value) -> true)));
+                        """),
+                        HttpHeaders.of(Map.of("x-ratelimit-remaining-requests", List.of("0")), (key, value) -> true),
+                        Instant.parse("2026-11-22T23:50:00Z")));
         var response = write(pilot, WORK, "POST", input(DATE, 1));
         accepts(response, 200);
         assertThat(JSON.readTree(response.body()).path("text").asText()).isEqualTo("Resultado 🧪");
+        var quota = JSON.readTree(response.body()).path("quota");
+        assertThat(quota.path("observedAtEpochMillis").asLong())
+                .isEqualTo(Instant.parse("2026-11-22T23:50:00Z").toEpochMilli());
+        assertThat(quota.path("remainingRequestsPerDay").asLong(-1)).isZero();
+        assertThat(quota.has("remainingTokensPerMinute")).isFalse();
         verify(remote)
                 .exchange(
                         eq(upstream),
@@ -167,6 +185,39 @@ class AiMessageApiIT {
         verify(remote, org.mockito.Mockito.times(2))
                 .exchange(eq(upstream), eq("Authorization"), eq("Bearer fictitious-text-key"), any(), any());
         verifyNoMoreInteractions(remote);
+    }
+
+    private void assertPilotDestinations(OidcHttpBrowser pilot) throws Exception {
+        var options = JSON.readTree(pilot.get(OPTIONS + "?refresh=true").body());
+        var available = new ArrayList<String>();
+        for (var provider : options) {
+            for (var model : provider.path("models")) {
+                if (model.path("available").asBoolean())
+                    available.add(model.path("id").asText());
+            }
+        }
+        assertThat(available)
+                .containsExactly(
+                        "openai/gpt-oss-20b",
+                        "openai/gpt-oss-120b",
+                        "@cf/openai/gpt-oss-20b",
+                        "@cf/openai/gpt-oss-120b",
+                        "gemini-3.1-flash-lite");
+        assertThat(options.path(2).path("models").path(1).path("reason").asText())
+                .contains("Diferido");
+        assertThat(options.path(3).path("reason").asText()).contains("Diferido");
+        for (var pair : Map.of("gemini", "gemini-3.8-flash", "openrouter", "openai/gpt-oss-20b:free")
+                .entrySet()) {
+            var denied = write(
+                    pilot,
+                    WORK,
+                    "POST",
+                    JSON.writeValueAsString(Map.of(
+                            "provider", pair.getKey(), "model", pair.getValue(), "message", "Muestra ficticia")));
+            accepts(denied, 409);
+            assertThat(JSON.readTree(denied.body()).path("code").asText()).isEqualTo("ai-model");
+        }
+        org.mockito.Mockito.verifyNoInteractions(remote);
     }
 
     private OidcHttpBrowser login() throws Exception {

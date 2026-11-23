@@ -1,11 +1,11 @@
 import { Alert, Box, Button, Divider, Paper, Stack, TextField, Typography } from '@mui/material'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
-import { ApiError } from '../../services/http'
+import { ApiError, NetworkError } from '../../services/http'
 import { CopyButton } from '../../shared/ui/CopyButton'
 import { useSession } from '../auth/sessionContext'
 import { useOptionalActiveSpace } from '../spaces/spaceContext'
-import { AI_ACCENT, AI_INK, useAi } from './aiContext'
+import { AI_ACCENT, AI_INK, destinationKey, modelStatus, useAi, type ModelIssue } from './aiContext'
 import {
   countPoints,
   MAX_POINTS,
@@ -15,8 +15,36 @@ import {
   type Excerpt,
 } from './api'
 import { AiFragmentDialog } from './AiFragmentDialog'
+import { AiModelStatus } from './AiModelStatus'
 
 type Turn = { message: string; excerpt: Excerpt | null; answer: AiOutput; key: string }
+
+function issueFrom(error: unknown): ModelIssue | null {
+  const api = error instanceof ApiError ? error : null
+  const reason = api?.problem?.detail
+  switch (api?.problem?.code) {
+    case 'ai-quota': {
+      const wait = api.problem.retryAfter
+      const validWait = typeof wait === 'number' && Number.isInteger(wait) && wait >= 0
+      return {
+        kind: 'quota',
+        retryAt: validWait ? Date.now() + wait * 1000 : null,
+        reason: validWait
+          ? `Esperá ${wait} s desde el aviso para volver a enviar.`
+          : 'El proveedor limitó la consulta. Consultá su consola o habilitá un intento manual.',
+      }
+    }
+    case 'ai-model':
+      return { kind: 'unavailable', reason: 'Actualizá el catálogo o elegí otro modelo.' }
+  }
+  if (error instanceof NetworkError || (api && api.status >= 500)) {
+    return {
+      kind: 'unresponsive',
+      reason: `${reason ?? 'La consulta falló temporalmente.'} Podés elegir otro modelo y confirmar Enviar.`,
+    }
+  }
+  return null
+}
 
 export function AiPage() {
   const { user } = useSession()
@@ -41,7 +69,6 @@ function Composer() {
   const [picking, setPicking] = useState(false)
   const [notice, setNotice] = useState('')
   const [inFlight, setInFlight] = useState(false)
-  const [requiresChoice, setRequiresChoice] = useState<Destination | null>(null)
   const pendingRequest = useRef<{ controller: AbortController; destination: Destination }>(null)
   const currentSession = useRef(false)
   const input = useRef<HTMLTextAreaElement>(null)
@@ -61,8 +88,10 @@ function Composer() {
 
   const destination = ai?.destination
   const provider = ai?.options?.find((item) => item.id === destination?.provider)
-  const model = provider?.models.find((item) => item.id === destination?.model && item.available)
-  const allowed = Boolean(provider?.available && model && destination !== requiresChoice)
+  const model = provider?.models.find((item) => item.id === destination?.model)
+  const issue = destination ? ai?.issues[destinationKey(destination)] : undefined
+  const status = modelStatus(ai?.options, Boolean(ai?.failed), destination ?? null, issue)
+  const allowed = status.tone === 'success'
   useLayoutEffect(() => {
     const request = pendingRequest.current
     if (request && (request.destination !== destination || !allowed || logoutPending)) {
@@ -118,14 +147,13 @@ function Composer() {
         setNotice('Consulta cancelada. Podés volver a enviar el borrador.')
         return
       }
-      const retry = error instanceof ApiError ? error.problem?.retryAfter : null
-      const retired = error instanceof ApiError && error.problem?.code === 'ai-model'
-      if (retired) setRequiresChoice(destination)
+      const issue = issueFrom(error)
+      if (issue) ai?.setIssue(destination, issue)
       setNotice(
-        error instanceof ApiError && error.problem?.detail
-          ? error.problem.detail +
-              (typeof retry === 'number' ? ` Esperá ${retry} s para volver a enviar.` : '')
-          : 'No se pudo completar la consulta. El borrador sigue disponible.',
+        issue
+          ? ''
+          : (error instanceof ApiError && error.problem?.detail) ||
+              'No se pudo completar la consulta. El borrador sigue disponible.',
       )
     } finally {
       if (pendingRequest.current === request) {
@@ -161,19 +189,9 @@ function Composer() {
             overflowWrap: 'anywhere',
           }}
         >
-          {allowed ? `${provider?.label} · ${model?.label}` : 'Elegir proveedor y modelo'}
+          {provider && model ? `${provider.label} · ${model.label}` : 'Elegir proveedor y modelo'}
         </Button>
       </Stack>
-      {!ai.options && (
-        <Alert severity="info">
-          {ai.failed
-            ? 'No se pudo acceder al catálogo de IA para esta cuenta.'
-            : 'Cargando destinos de IA…'}
-        </Alert>
-      )}
-      {ai.options && !allowed && (
-        <Alert severity="warning">Elegí un modelo disponible para enviar.</Alert>
-      )}
       {turns.map((turn) => (
         <Paper
           key={turn.key}
@@ -203,14 +221,7 @@ function Composer() {
               {turn.answer.servedModel ? ` · Servido ${turn.answer.servedModel}` : ''}
             </Typography>
             <Typography sx={{ whiteSpace: 'pre-wrap' }}>{turn.answer.text}</Typography>
-            {turn.answer.quota && (
-              <Typography variant="caption" color="text.secondary">
-                {turn.answer.quota.remainingRequestsPerDay !== undefined &&
-                  `${turn.answer.quota.remainingRequestsPerDay} solicitudes restantes hoy. `}
-                {turn.answer.quota.remainingTokensPerMinute !== undefined &&
-                  `${turn.answer.quota.remainingTokensPerMinute} tokens restantes por minuto.`}
-              </Typography>
-            )}
+            {turn.answer.provider === 'groq' && <GroqQuota quota={turn.answer.quota} />}
             <Box>
               <CopyButton text={turn.answer.text} aria-label="Copiar texto">
                 Copiar texto
@@ -286,9 +297,46 @@ function Composer() {
               </Button>
             )}
           </Stack>
-          <Typography role="status" aria-live="polite" variant="body2">
-            {notice}
-          </Typography>
+          <Stack
+            role="status"
+            aria-label="Estado del destino de IA"
+            aria-live="polite"
+            aria-atomic="true"
+            spacing={0.5}
+          >
+            <AiModelStatus status={status} />
+            {notice && <Typography variant="body2">{notice}</Typography>}
+          </Stack>
+          {(issue || ai.failed || (ai.options && !allowed)) && (
+            <Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap' }}>
+              <Button aria-haspopup="dialog" onClick={(event) => ai.open(event.currentTarget)}>
+                Elegir otro modelo
+              </Button>
+              {(ai.failed || issue?.kind === 'unavailable') && (
+                <Button loading={ai.refreshing} onClick={() => void ai.refresh()}>
+                  Actualizar catálogo
+                </Button>
+              )}
+              {destination &&
+                !ai.failed &&
+                provider?.available &&
+                model?.available &&
+                (issue?.kind === 'unresponsive' ||
+                  (issue?.kind === 'quota' && issue.retryAt === null)) && (
+                  <Button
+                    onClick={() => {
+                      ai.setIssue(destination, null)
+                      setNotice(
+                        'Destino habilitado. Confirmá con Enviar para compartir el borrador.',
+                      )
+                      input.current?.focus()
+                    }}
+                  >
+                    Volver a intentar
+                  </Button>
+                )}
+            </Stack>
+          )}
         </Stack>
       </Paper>
       {picking && (
@@ -301,6 +349,26 @@ function Composer() {
         />
       )}
     </Stack>
+  )
+}
+
+function GroqQuota({ quota }: { quota: AiOutput['quota'] }) {
+  const observed = quota?.observedAtEpochMillis
+  const requests = quota?.remainingRequestsPerDay
+  const tokens = quota?.remainingTokensPerMinute
+  if (observed === undefined || (requests === undefined && tokens === undefined)) return null
+  const date = new Date(observed)
+  if (Number.isNaN(date.getTime())) return null
+  return (
+    <Typography variant="caption" color="text.secondary">
+      {requests !== undefined && `${requests} solicitudes restantes por día. `}
+      {tokens !== undefined && `${tokens} tokens restantes por minuto. `}
+      Cuota observada a las{' '}
+      <time dateTime={date.toISOString()} title={date.toLocaleString()}>
+        {date.toLocaleTimeString()}
+      </time>
+      .
+    </Typography>
   )
 }
 

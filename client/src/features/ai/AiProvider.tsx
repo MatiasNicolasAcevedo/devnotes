@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useSession } from '../auth/sessionContext'
 import { useOptionalActiveSpace } from '../spaces/spaceContext'
-import { AiContext, firstModel } from './aiContext'
+import { AiContext, destinationKey, firstModel, type ModelIssue } from './aiContext'
 import { getAiOptions, type Destination, type Excerpt } from './api'
 import { AiDestinationDialog } from './AiDestinationDialog'
 
@@ -16,6 +16,7 @@ export function AiProvider({ children }: { children: ReactNode }) {
   const [pending, setPending] = useState<{ key: string; excerpt: Excerpt } | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [refreshError, setRefreshError] = useState(false)
+  const [issues, setIssues] = useState<Record<string, ModelIssue>>({})
   const refreshingRef = useRef<string | null>(null)
   const queryClient = useQueryClient()
   const key = useMemo(() => ['ai', user?.id, space, 'options'] as const, [user?.id, space])
@@ -36,7 +37,32 @@ export function AiProvider({ children }: { children: ReactNode }) {
     setPending(null)
     setRefreshing(false)
     setRefreshError(false)
+    setIssues({})
   }
+  useEffect(() => {
+    let timer: number
+    function schedule() {
+      const now = Date.now()
+      const waits = Object.entries(issues).flatMap(([key, issue]) =>
+        issue.kind === 'quota' && issue.retryAt !== null ? [{ key, at: issue.retryAt }] : [],
+      )
+      const expired = waits.filter(({ at }) => at <= now)
+      if (expired.length) {
+        setIssues((previous) => {
+          const next = { ...previous }
+          for (const { key } of expired) {
+            if (next[key] === issues[key]) delete next[key]
+          }
+          return next
+        })
+      } else if (waits.length) {
+        const wait = Math.min(...waits.map(({ at }) => at)) - now
+        timer = window.setTimeout(schedule, Math.min(wait, 2_147_483_647))
+      }
+    }
+    schedule()
+    return () => window.clearTimeout(timer)
+  }, [issues])
   const query = useQuery({
     enabled: Boolean(owner && space && status === 'authenticated'),
     queryKey: key,
@@ -65,6 +91,13 @@ export function AiProvider({ children }: { children: ReactNode }) {
         retry: false,
         staleTime: 0,
       })
+      if (current.current === scope) {
+        setIssues((previous) =>
+          Object.fromEntries(
+            Object.entries(previous).filter(([, issue]) => issue.kind !== 'unavailable'),
+          ),
+        )
+      }
     } catch {
       if (current.current === scope) setRefreshError(true)
     } finally {
@@ -82,6 +115,16 @@ export function AiProvider({ children }: { children: ReactNode }) {
     refresh,
     destination: choice ?? defaultChoice,
     apply: setChoice,
+    issues,
+    setIssue: (destination: Destination, issue: ModelIssue | null) => {
+      const key = destinationKey(destination)
+      setIssues((previous) => {
+        const next = { ...previous }
+        if (issue) next[key] = issue
+        else delete next[key]
+        return next
+      })
+    },
     anchor,
     open: (element: HTMLElement) => {
       element.focus({ preventScroll: true })

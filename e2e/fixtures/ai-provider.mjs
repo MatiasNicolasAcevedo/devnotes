@@ -55,9 +55,28 @@ async function reply(req, res, config, gemini) {
     json(res, 429, { error: 'private fixture' }, { 'Retry-After': '17' });
     return;
   }
+  if (prompt.includes('[cuota-sin-espera]')) {
+    json(res, 429, { error: 'private fixture' });
+    return;
+  }
+  if (prompt.includes('[sin-respuesta]')) {
+    json(res, 503, { error: 'private fixture' });
+    return;
+  }
   if (prompt.includes('[tarde]')) await new Promise(resolve => setTimeout(resolve, 1200));
   const answer = 'Resultado ficticio ' + model + ': ' + prompt;
+  let headers = {};
+  if (provider === 'groq-text') {
+    if (prompt.includes('[parcial]')) headers = { 'x-ratelimit-remaining-tokens': '71' };
+    else if (prompt.includes('[inválida]')) headers = {
+      'x-ratelimit-remaining-requests': '-1', 'x-ratelimit-remaining-tokens': 'desconocido',
+    };
+    else if (!prompt.includes('[ausente]')) headers = {
+      'x-ratelimit-remaining-requests': model === 'openai/gpt-oss-20b' ? '12' : '0',
+      'x-ratelimit-remaining-tokens': model === 'openai/gpt-oss-20b' ? '500' : 'desconocido',
+    };
+  }
   json(res, 200, gemini
     ? { modelVersion: model, candidates: [{ content: { parts: [{ text: answer }] } }] }
-    : { model, choices: [{ message: { content: answer } }] });
+    : { model, choices: [{ message: { content: answer } }] }, headers);
 }

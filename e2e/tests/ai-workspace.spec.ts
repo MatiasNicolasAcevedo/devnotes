@@ -91,7 +91,7 @@ test('ai workspace: navbar keeps its keyboard and narrow layout contract', async
   expect(turns).toEqual([]);
 });
 
-test('ai workspace: sends one text turn through each provider with no automatic resend', async ({ page, context }) => {
+test('ai workspace: sends one confirmed turn to each pilot destination and blocks deferred destinations', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   const turns = aiRequests(page);
   await page.getByRole('link', { name: 'IA', exact: true }).click();
@@ -100,19 +100,41 @@ test('ai workspace: sends one text turn through each provider with no automatic 
   const api = await (await page.request.get('/api/docs/openapi')).json();
   expect(api.paths[OPTIONS].get.security).toEqual([{ sessionCookie: [] }]);
   expect(api.paths['/api/spaces/{space}/ai/messages'].post.security).toEqual([{ sessionCookie: [], csrfHeader: [] }]);
-  for (const [provider, model] of [
+  const destinations = [
     ['groq', 'openai/gpt-oss-20b'],
+    ['groq', 'openai/gpt-oss-120b'],
     ['workers', '@cf/openai/gpt-oss-20b'],
+    ['workers', '@cf/openai/gpt-oss-120b'],
     ['gemini', 'gemini-3.1-flash-lite'],
+  ];
+  const catalog: { id: string; models: { id: string; available: boolean }[] }[] = await options.json();
+  const available = catalog.flatMap(({ id, models }) =>
+    models.filter(({ available }) => available).map(model => [id, model.id]));
+  expect(available).toEqual(destinations);
+  for (const [provider, model] of [
+    ['gemini', 'gemini-3.8-flash'],
     ['openrouter', 'openai/gpt-oss-20b:free'],
   ]) {
     const dialog = await openSelector(page);
     await dialog.getByLabel('Proveedor', { exact: true }).selectOption(provider);
-    await expect(dialog.getByLabel('Modelo', { exact: true })).toHaveValue(model);
-    if (provider === 'openrouter') {
-      await expect(dialog.getByRole('option', { name: 'Precio desconocido' })).toHaveCount(0);
-      await expect(dialog.getByRole('option', { name: 'Costo por solicitud' })).toHaveCount(0);
+    await expect(dialog.getByRole('status')).toContainText('Diferido en este piloto');
+    if (provider === 'gemini') {
+      await expect(dialog.getByRole('option', { name: 'Gemini 3.8 Flash' })).toBeDisabled();
+    } else {
+      await expect(dialog.getByRole('button', { name: 'Aplicar' })).toBeDisabled();
     }
+    await page.keyboard.press('Escape');
+    const rejected = await page.request.post(MESSAGES, {
+      headers: await csrfHeaders(page),
+      data: { provider, model, message: fixture },
+    });
+    expect(rejected.status()).toBe(409);
+    expect(await rejected.json()).toMatchObject({ code: 'ai-model' });
+  }
+  for (const [provider, model] of destinations) {
+    const dialog = await openSelector(page);
+    await dialog.getByLabel('Proveedor', { exact: true }).selectOption(provider);
+    await dialog.getByLabel('Modelo', { exact: true }).selectOption(model);
     await dialog.getByRole('button', { name: 'Aplicar' }).click();
     await page.getByRole('textbox', { name: 'Mensaje' }).fill(fixture);
     await page.getByRole('button', { name: 'Enviar', exact: true }).click();
@@ -121,12 +143,69 @@ test('ai workspace: sends one text turn through each provider with no automatic 
     await page.getByRole('button', { name: 'Copiar texto' }).last().click();
     await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(answer);
   }
-  expect(turns).toHaveLength(4);
-  await page.getByRole('textbox', { name: 'Mensaje' }).fill('[cuota] borrador ficticio');
-  await page.getByRole('button', { name: 'Enviar', exact: true }).click();
-  await expect(page.getByText(/Esperá 17 s/)).toBeVisible();
-  await expect(page.getByRole('textbox', { name: 'Mensaje' })).toHaveValue('[cuota] borrador ficticio');
   expect(turns).toHaveLength(5);
+  const observations = page.getByText(/Cuota observada a las/);
+  await expect(observations).toHaveCount(2);
+  await expect(observations.nth(0)).toContainText('12 solicitudes restantes por día. 500 tokens restantes por minuto.');
+  await expect(observations.nth(1)).toContainText('0 solicitudes restantes por día.');
+  await expect(observations.nth(1)).not.toContainText('tokens restantes');
+  await expect(observations.nth(0).locator('time')).toHaveAttribute('datetime', /T.*Z$/);
+});
+
+test('ai workspace: announces provider failures and resumes only after deliberate confirmation', async ({ page }) => {
+  await page.clock.install();
+  const turns = aiRequests(page);
+  await page.getByRole('link', { name: 'IA', exact: true }).click();
+  const draft = page.getByRole('textbox', { name: 'Mensaje' });
+  const send = page.getByRole('button', { name: 'Enviar', exact: true });
+  const state = page.locator('form').getByRole('status');
+  await expect(state).toContainText('Disponible para intentar');
+  await draft.fill('[sin-respuesta] borrador ficticio');
+  await send.click();
+  await expect(state).toContainText('No responde');
+  await expect(send).toBeDisabled();
+  await expect(draft).toHaveValue('[sin-respuesta] borrador ficticio');
+  const change = page.getByRole('button', { name: 'Elegir otro modelo' });
+  await change.focus();
+  await page.keyboard.press('Enter');
+  const selector = page.getByRole('dialog', { name: 'Proveedor y modelo' });
+  await expect(selector.getByRole('status')).toContainText('No responde');
+  await expect(selector.getByRole('status')).toContainText('Disponible para intentar');
+  await selector.getByRole('button', { name: 'Actualizar catálogo' }).click();
+  await expect(selector.getByRole('status')).toContainText('No responde');
+  expect(turns).toHaveLength(1);
+  await selector.getByLabel('Modelo', { exact: true }).selectOption('openai/gpt-oss-120b');
+  await selector.getByRole('button', { name: 'Aplicar' }).click();
+  await expect(send).toBeEnabled();
+  expect(turns).toHaveLength(1);
+
+  await draft.fill('[cuota] borrador ficticio');
+  await send.click();
+  await expect(state).toContainText('Esperá 17 s');
+  await expect(send).toBeDisabled();
+  await page.clock.fastForward(17_100);
+  await expect(send).toBeEnabled();
+  expect(turns).toHaveLength(2);
+
+  await draft.fill('[cuota-sin-espera] borrador ficticio');
+  await send.click();
+  await expect(state).toContainText('Consultá su consola');
+  await expect(state).not.toContainText('Esperá');
+  await expect(send).toBeDisabled();
+  await page.getByRole('button', { name: 'Volver a intentar' }).click();
+  await expect(draft).toBeFocused();
+  await expect(send).toBeEnabled();
+  expect(turns).toHaveLength(3);
+
+  for (const sample of ['[parcial]', '[ausente]', '[inválida]']) {
+    await draft.fill(sample);
+    await send.click();
+    await expect(page.getByText(`Resultado ficticio openai/gpt-oss-120b: ${sample}`)).toBeVisible();
+  }
+  await expect(page.getByText(/Cuota observada a las/)).toHaveCount(1);
+  await expect(page.getByText(/Cuota observada a las/)).toContainText('71 tokens restantes por minuto.');
+  await expect(page.getByText(/Cuota observada a las/)).not.toContainText('solicitudes restantes');
+  expect(turns).toHaveLength(6);
 });
 
 test('ai workspace: previews saved daily and free fragments before explicit sending', async ({ page, identity }) => {

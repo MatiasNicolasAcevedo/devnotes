@@ -43,10 +43,11 @@ class AiConfiguration {
             AiProperties properties, AiNoteContext context, AiHttp http, Clock clock, Environment env) {
         boolean useDouble = properties.testProvider() && env.acceptsProfiles(Profiles.of("e2e & !google"));
         var workers = properties.provider(AiOptions.WORKERS);
-        var openRouter = new OpenRouterAiClient(
+        var openRouterClient = new OpenRouterAiClient(
                 http,
                 base(useDouble, "https://openrouter.ai"),
                 properties.provider(AiOptions.OPENROUTER).key());
+        var openRouter = new OpenRouterCatalog(openRouterClient, clock);
         var clients = Map.<String, AiClient>of(
                 AiOptions.GROQ,
                         new GroqAiClient(
@@ -65,12 +66,7 @@ class AiConfiguration {
                                 base(useDouble, "https://generativelanguage.googleapis.com"),
                                 properties.provider(AiOptions.GEMINI).key()),
                 AiOptions.OPENROUTER, openRouter);
-        return new AiMessageService(
-                properties,
-                new AiOptions(properties, new OpenRouterCatalog(openRouter, clock)),
-                context,
-                clients,
-                useDouble);
+        return new AiMessageService(properties, new AiOptions(properties, openRouter), context, clients, useDouble);
     }
 
     private static URI base(boolean useDouble, String production) {

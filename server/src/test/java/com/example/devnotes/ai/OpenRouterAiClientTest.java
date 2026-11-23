@@ -7,7 +7,23 @@ import org.junit.jupiter.api.Test;
 class OpenRouterAiClientTest extends AiClientTestSupport {
     @Override
     AiClient client() {
-        return new OpenRouterAiClient(http, base, KEY);
+        return new OpenRouterCatalog(new OpenRouterAiClient(http, base, KEY), java.time.Clock.systemUTC());
+    }
+
+    @Override
+    String metadata(String path) {
+        return switch (path) {
+            case "/api/v1/key" -> """
+                    {"data":{"is_free_tier":true,"byok_usage":0}}
+                    """;
+            case "/api/v1/models" -> """
+                    {"data":[{"id":"openai/gpt-oss-20b:free","architecture":{"input_modalities":["text"],"output_modalities":["text"]},"pricing":{"prompt":"0","completion":"0"}}]}
+                    """;
+            case "/api/v1/endpoints/zdr" -> """
+                    {"data":[{"model_id":"openai/gpt-oss-20b:free","tag":"fixture/text","pricing":{"prompt":"0","completion":"0","request":"0"},"supported_parameters":["max_tokens"],"status":0}]}
+                    """;
+            default -> super.metadata(path);
+        };
     }
 
     @Override
@@ -30,6 +46,7 @@ class OpenRouterAiClientTest extends AiClientTestSupport {
         assertThat(route.path("zdr").booleanValue()).isTrue();
         assertThat(route.path("allow_fallbacks").booleanValue()).isFalse();
         assertThat(route.path("require_parameters").booleanValue()).isTrue();
+        assertThat(route.path("only").path(0).asText()).isEqualTo("fixture/text");
         var prices = route.path("max_price");
         assertThat(prices.size()).isEqualTo(3);
         assertThat(prices).allSatisfy(value -> assertThat(value.intValue()).isZero());

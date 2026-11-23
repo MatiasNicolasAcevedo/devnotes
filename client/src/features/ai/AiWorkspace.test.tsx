@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it } from 'vitest'
 import { AppRoutes } from '../../app/AppRoutes'
@@ -51,7 +51,7 @@ describe('IA', () => {
         expect(request.headers.get('X-XSRF-TOKEN')).toMatch(/^csrf-ficticio-/)
         turns.push(await request.json())
         return HttpResponse.json(
-          { status: 429, detail: 'Cuota agotada.', retryAfter: 17 },
+          { status: 429, code: 'ai-quota', detail: 'Cuota agotada.', retryAfter: 17 },
           { status: 429, headers: { 'Content-Type': 'application/problem+json' } },
         )
       }),
@@ -69,13 +69,114 @@ describe('IA', () => {
     expect(screen.getByText('Se enviará a Gemini · Gemini 3.1 Flash-Lite')).toBeVisible()
     expect(turns).toEqual([])
     await user.click(screen.getByRole('button', { name: /^Enviar$/ }))
-    expect(
-      await screen.findByText('Cuota agotada. Esperá 17 s para volver a enviar.'),
-    ).toBeVisible()
+    expect(await screen.findByText('Cuota agotada')).toBeVisible()
+    expect(screen.getByRole('status', { name: 'Estado del destino de IA' })).toHaveTextContent(
+      'Esperá 17 s',
+    )
     expect(draft).toHaveValue('Prueba ficticia 🧪')
+    expect(screen.getByRole('button', { name: /^Enviar$/ })).toBeDisabled()
     expect(turns).toEqual([
       { provider: 'gemini', model: 'gemini-3.1-flash-lite', message: 'Prueba ficticia 🧪' },
     ])
+  })
+
+  it.each([
+    [504, 'ai-timeout', 'No responde'],
+    [429, 'ai-quota', 'Cuota agotada'],
+    [429, 'ai-busy', 'Ya hay una consulta en curso.'],
+  ])('recupera un fallo %s %s sin reenviar', async (status, code, label) => {
+    let sends = 0
+    server.use(
+      http.post('/api/spaces/work/ai/messages', () => {
+        sends++
+        if (sends === 1)
+          return HttpResponse.json(
+            { status, code, detail: code === 'ai-busy' ? label : 'El proveedor demoró.' },
+            { status, headers: { 'Content-Type': 'application/problem+json' } },
+          )
+        return HttpResponse.json({
+          text: 'Resultado',
+          provider: 'groq',
+          requestedModel: 'openai/gpt-oss-20b',
+        })
+      }),
+    )
+    const { user } = initial()
+    const draft = await screen.findByRole('textbox', { name: 'Mensaje' })
+    const send = screen.getByRole('button', { name: /^Enviar$/ })
+    await user.type(draft, 'Borrador ficticio')
+    await user.click(send)
+    const state = screen.getByRole('status', { name: 'Estado del destino de IA' })
+    await waitFor(() => expect(state).toHaveTextContent(label))
+    expect(draft).toHaveValue('Borrador ficticio')
+    if (code !== 'ai-busy') {
+      expect(send).toBeDisabled()
+      const choose = screen.getByRole('button', { name: 'Elegir otro modelo' })
+      choose.focus()
+      await user.keyboard('{Enter}')
+      const selector = within(screen.getByRole('dialog', { name: 'Proveedor y modelo' }))
+      expect(selector.getByRole('status')).toHaveTextContent(label)
+      await user.keyboard('{Escape}')
+      expect(choose).toHaveFocus()
+      if (code === 'ai-quota') expect(state).toHaveTextContent('Consultá su consola')
+      await user.click(screen.getByRole('button', { name: 'Volver a intentar' }))
+    } else {
+      expect(screen.queryByText('Cuota agotada')).not.toBeInTheDocument()
+    }
+    expect(send).toBeEnabled()
+    expect(sends).toBe(1)
+    await user.click(send)
+    expect(await screen.findByText('Resultado')).toBeVisible()
+    expect(sends).toBe(2)
+  })
+
+  it.each([
+    [
+      {
+        remainingRequestsPerDay: 12,
+        remainingTokensPerMinute: 500,
+        observedAtEpochMillis: 1795391400000,
+      },
+      '12 solicitudes restantes por día. 500 tokens restantes por minuto.',
+    ],
+    [
+      { remainingRequestsPerDay: 0, observedAtEpochMillis: 1795391400000 },
+      '0 solicitudes restantes por día.',
+    ],
+    [
+      { remainingTokensPerMinute: 0, observedAtEpochMillis: 1795391400000 },
+      '0 tokens restantes por minuto.',
+    ],
+    [{ inputTokens: 12, outputTokens: 500 }, null],
+  ])('muestra únicamente cuota observada para %j', async (quota, expected) => {
+    server.use(
+      http.post('/api/spaces/work/ai/messages', () =>
+        HttpResponse.json({
+          text: 'Resultado',
+          provider: 'groq',
+          requestedModel: 'openai/gpt-oss-20b',
+          quota,
+        }),
+      ),
+    )
+    const { user } = initial()
+    await user.type(await screen.findByRole('textbox', { name: 'Mensaje' }), 'Borrador')
+    await user.click(screen.getByRole('button', { name: /^Enviar$/ }))
+    await screen.findByText('Resultado')
+    if (expected) {
+      const observation = screen.getByText(/Cuota observada a las/)
+      expect(observation).toHaveTextContent(expected)
+      expect(observation.querySelector('time')).toHaveAttribute(
+        'datetime',
+        new Date(1795391400000).toISOString(),
+      )
+      if (!('remainingRequestsPerDay' in quota))
+        expect(observation).not.toHaveTextContent('solicitudes')
+      if (!('remainingTokensPerMinute' in quota))
+        expect(observation).not.toHaveTextContent('tokens')
+    } else {
+      expect(screen.queryByText(/Cuota observada a las/)).not.toBeInTheDocument()
+    }
   })
 
   it('cancela por cambio de destino e ignora la respuesta tardía del envío anterior', async () => {

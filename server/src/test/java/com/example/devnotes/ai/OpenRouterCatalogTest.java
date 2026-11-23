@@ -1,8 +1,10 @@
 package com.example.devnotes.ai;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -14,9 +16,19 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class OpenRouterCatalogTest {
     private static final ObjectMapper JSON = new ObjectMapper();
+    private static final String MODEL = "org/a:free";
+    private static final Duration BUDGET = Duration.ofSeconds(1);
+    private static final String CATALOG = """
+            {"data":[{"id":"org/a:free","architecture":{"input_modalities":["text"],"output_modalities":["text"]},"pricing":{"prompt":"0","completion":"0"}}]}
+            """;
+    private static final String ROUTE = """
+            {"model_id":"org/a:free","tag":"fixture/text","data_collection":"deny","pricing":{"prompt":"0","completion":"0","request":"0"},"supported_parameters":["max_tokens"]}
+            """;
 
     @Test
     void acceptsOnlyExplicitZeroPricedTextModelsAndOrdersKnownLightFirst() throws Exception {
@@ -42,19 +54,52 @@ class OpenRouterCatalogTest {
     void deduplicatesRefreshAndNeverServesAnExpiredSnapshotAfterFailure() throws Exception {
         var client = mock(OpenRouterAiClient.class);
         when(client.freeKey(any())).thenReturn(true);
-        var valid = JSON.readTree("""
-                {"data":[{"id":"org/a:free","architecture":{"input_modalities":["text"],"output_modalities":["text"]},"pricing":{"prompt":"0","completion":"0"}}]}
-                """);
+        var valid = JSON.readTree(CATALOG);
         when(client.models(any())).thenReturn(valid).thenThrow(AiFailure.Reason.REMOTE.failure());
+        when(client.zdrEndpoints(any())).thenReturn(JSON.readTree("{\"data\":[" + ROUTE + "]}"));
         var clock = new MutableClock();
         var catalog = new OpenRouterCatalog(client, clock);
-        assertThat(catalog.options(false, Duration.ofSeconds(1)::toNanos)).hasSize(1);
-        assertThat(catalog.options(true, Duration.ofSeconds(1)::toNanos)).hasSize(1);
+        assertThat(catalog.options(false, BUDGET::toNanos)).singleElement().matches(AiOptions.Model::available);
+        assertThat(catalog.options(true, BUDGET::toNanos)).hasSize(1);
         verify(client, times(1)).models(any());
+        verify(client, times(1)).zdrEndpoints(any());
         clock.now = clock.now.plus(Duration.ofMinutes(5));
-        assertThat(catalog.options(false, Duration.ofSeconds(1)::toNanos)).isEmpty();
-        assertThat(catalog.options(true, Duration.ofSeconds(1)::toNanos)).isEmpty();
+        assertThat(catalog.options(false, BUDGET::toNanos)).isEmpty();
+        assertThat(catalog.options(true, BUDGET::toNanos)).isEmpty();
+        rejectsBeforeInference(client, catalog);
         verify(client, times(2)).models(any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"missing", "other-variant", "unknown-price", "nonzero", "collection", "non-zdr", "byok"})
+    void listsUnavailableAndRejectsBeforeInferenceWithIncompatibleEndpoints(String reason) throws Exception {
+        var client = mock(OpenRouterAiClient.class);
+        when(client.freeKey(any())).thenReturn(true);
+        when(client.models(any())).thenReturn(JSON.readTree(CATALOG));
+        String endpoint = switch (reason) {
+            case "missing" -> "";
+            case "other-variant" -> ROUTE.replace(MODEL, "org/a");
+            case "unknown-price" -> ROUTE.replace("\"completion\":\"0\"", "\"completion\":null");
+            case "nonzero" -> ROUTE.replace("\"request\":\"0\"", "\"request\":\"1\"");
+            case "collection" -> ROUTE.replace("\"deny\"", "\"allow\"");
+            case "non-zdr" -> ROUTE.replace("{\"model_id\"", "{\"zdr\":false,\"model_id\"");
+            case "byok" -> ROUTE.replace("{\"model_id\"", "{\"byok\":true,\"model_id\"");
+            default -> throw new AssertionError(reason);
+        };
+        when(client.zdrEndpoints(any())).thenReturn(JSON.readTree("{\"data\":[" + endpoint + "]}"));
+        var catalog = new OpenRouterCatalog(client, new MutableClock());
+        assertThat(catalog.options(false, BUDGET::toNanos)).singleElement().satisfies(model -> {
+            assertThat(model.available()).isFalse();
+            assertThat(model.reason()).isEqualTo("Sin ruta Free compatible");
+        });
+        rejectsBeforeInference(client, catalog);
+    }
+
+    private static void rejectsBeforeInference(OpenRouterAiClient client, OpenRouterCatalog catalog) {
+        assertThatExceptionOfType(AiFailure.class)
+                .isThrownBy(() -> catalog.generate(MODEL, "Ficticio", BUDGET))
+                .satisfies(error -> assertThat(error.reason).isEqualTo(AiFailure.Reason.MODEL));
+        verify(client, never()).generate(any(), any(), any(), any());
     }
 
     private static final class MutableClock extends Clock {

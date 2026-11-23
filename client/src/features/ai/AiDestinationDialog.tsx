@@ -1,5 +1,6 @@
 import {
   Button,
+  Box,
   Dialog,
   DialogActions,
   DialogContent,
@@ -9,8 +10,9 @@ import {
   useMediaQuery,
 } from '@mui/material'
 import { useId, useState } from 'react'
-import { AI_ACCENT, firstModel, useAi } from './aiContext'
+import { AI_ACCENT, destinationKey, firstModel, modelStatus, useAi } from './aiContext'
 import type { AiProviderOption } from './api'
+import { AiModelStatus } from './AiModelStatus'
 
 export function AiDestinationDialog({ anchor }: { anchor: HTMLElement }) {
   const ai = useAi()
@@ -33,7 +35,14 @@ export function AiDestinationDialog({ anchor }: { anchor: HTMLElement }) {
         `${item.label} ${item.id}`.toLowerCase().includes(filter.toLowerCase().trim()),
     ) ?? []
   const rect = anchor.getBoundingClientRect()
-  const valid = option?.available && candidates.some((item) => item.id === model && item.available)
+  const issues = ai.issues
+  const issueFor = (id: string) => issues[destinationKey({ provider, model: id })]
+  const valid =
+    !ai.failed &&
+    option?.available &&
+    candidates.some(
+      (item) => item.id === model && item.available && issueFor(item.id)?.kind !== 'unavailable',
+    )
   const groups = [
     ['light', 'Ligero'],
     ['alternative', 'Alternativas'],
@@ -114,7 +123,13 @@ export function AiDestinationDialog({ anchor }: { anchor: HTMLElement }) {
               choices.length > 0 && (
                 <optgroup key={category} label={label}>
                   {choices.map((item) => (
-                    <option key={item.id} value={item.id} disabled={!item.available}>
+                    <option
+                      key={item.id}
+                      value={item.id}
+                      disabled={
+                        ai.failed || !item.available || issueFor(item.id)?.kind === 'unavailable'
+                      }
+                    >
                       {item.label}
                     </option>
                   ))}
@@ -132,18 +147,38 @@ export function AiDestinationDialog({ anchor }: { anchor: HTMLElement }) {
             onChange={(event) => setFilter(event.target.value)}
           />
         )}
-        {ai.failed && (
-          <Typography role="status" variant="body2">
-            No se pudo actualizar el catálogo.
-          </Typography>
-        )}
+        <Box role="status" aria-live="polite">
+          {candidates.length ? (
+            <Box
+              component="ul"
+              aria-label="Estado por modelo"
+              sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gap: 0.75 }}
+            >
+              {candidates.map((item) => (
+                <Box key={item.id} component="li" sx={{ overflowWrap: 'anywhere' }}>
+                  <Typography component="div" variant="caption" color="text.secondary">
+                    {item.label}
+                  </Typography>
+                  <AiModelStatus
+                    status={modelStatus(
+                      ai.options,
+                      ai.failed,
+                      { provider, model: item.id },
+                      issueFor(item.id),
+                    )}
+                  />
+                </Box>
+              ))}
+            </Box>
+          ) : (
+            <AiModelStatus status={modelStatus(ai.options, ai.failed, { provider, model })} />
+          )}
+        </Box>
       </DialogContent>
       <DialogActions>
-        {provider === 'openrouter' && (
-          <Button size="small" loading={ai.refreshing} onClick={() => void ai.refresh()}>
-            Actualizar catálogo
-          </Button>
-        )}
+        <Button size="small" loading={ai.refreshing} onClick={() => void ai.refresh()}>
+          Actualizar catálogo
+        </Button>
         <Button onClick={ai.close}>Cerrar</Button>
         <Button
           disabled={!valid}

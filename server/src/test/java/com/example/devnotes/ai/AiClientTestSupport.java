@@ -12,6 +12,7 @@ import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +32,7 @@ abstract class AiClientTestSupport {
     protected volatile String body;
     protected volatile int status = 200;
     protected volatile long delay;
+    protected Map<String, String> responseHeaders = Map.of();
     protected final AtomicInteger requests = new AtomicInteger();
     private HttpServer server;
 
@@ -40,10 +42,16 @@ abstract class AiClientTestSupport {
         base = URI.create("http://127.0.0.1:" + server.getAddress().getPort());
         server.createContext("/", exchange -> {
             try (exchange) {
-                requests.incrementAndGet();
                 path = exchange.getRequestURI().getPath();
                 authorization = exchange.getRequestHeaders().getFirst("Authorization");
                 googleKey = exchange.getRequestHeaders().getFirst("x-goog-api-key");
+                if ("GET".equals(exchange.getRequestMethod())) {
+                    byte[] bytes = metadata(path).getBytes(StandardCharsets.UTF_8);
+                    exchange.sendResponseHeaders(200, bytes.length);
+                    exchange.getResponseBody().write(bytes);
+                    return;
+                }
+                requests.incrementAndGet();
                 payload = new ObjectMapper().readTree(exchange.getRequestBody());
                 if (delay > 0) {
                     try {
@@ -54,6 +62,7 @@ abstract class AiClientTestSupport {
                     }
                 }
                 exchange.getResponseHeaders().set("Content-Type", "application/json");
+                responseHeaders.forEach(exchange.getResponseHeaders()::set);
                 if (status == 429) exchange.getResponseHeaders().set("Retry-After", "17");
                 if (status == 307) exchange.getResponseHeaders().set("Location", base + "/redirect");
                 if (status == 200) {
@@ -76,6 +85,10 @@ abstract class AiClientTestSupport {
     abstract AiClient client();
 
     abstract String model();
+
+    String metadata(String path) {
+        throw new AssertionError("Unexpected metadata request: " + path);
+    }
 
     @Test
     void quotaIsSaneAndNeverRetried() {

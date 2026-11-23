@@ -7,12 +7,14 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.LongSupplier;
 
-final class OpenRouterCatalog {
+final class OpenRouterCatalog implements AiClient {
     private static final Duration TTL = Duration.ofMinutes(5);
     private static final Duration REFRESH_INTERVAL = Duration.ofSeconds(15);
     // Gemma 26B activates 3.8B parameters per token. LFM3 is a 1.7B text model.
@@ -21,7 +23,7 @@ final class OpenRouterCatalog {
 
     private final OpenRouterAiClient client;
     private final Clock clock;
-    private volatile Snapshot snapshot = new Snapshot(Instant.MIN, Instant.MIN, List.of());
+    private volatile Snapshot snapshot = new Snapshot(Instant.MIN, Instant.MIN, List.of(), Map.of());
 
     OpenRouterCatalog(OpenRouterAiClient client, Clock clock) {
         this.client = client;
@@ -29,27 +31,88 @@ final class OpenRouterCatalog {
     }
 
     List<AiOptions.Model> options(boolean refresh, LongSupplier remainingNanos) {
+        return current(refresh, remainingNanos).modelsAt(clock.instant());
+    }
+
+    @Override
+    public Result generate(String model, String prompt, Duration remaining) {
+        long started = System.nanoTime();
+        LongSupplier budget = () -> remaining.toNanos() - (System.nanoTime() - started);
+        var current = current(false, budget);
+        String route = current.routes().get(model);
+        if (route == null || !clock.instant().isBefore(current.expiresAt())) {
+            throw AiFailure.Reason.MODEL.failure();
+        }
+        return client.generate(model, route, prompt, Duration.ofNanos(budget.getAsLong()));
+    }
+
+    private Snapshot current(boolean refresh, LongSupplier remainingNanos) {
         Instant now = clock.instant();
         Snapshot current = snapshot;
         if (!needsRefresh(current, now, refresh)) {
-            return current.modelsAt(now);
+            return current;
         }
         synchronized (this) {
             now = clock.instant();
             current = snapshot;
             if (needsRefresh(current, now, refresh)) {
                 try {
-                    var models = client.freeKey(Duration.ofNanos(remainingNanos.getAsLong()))
-                            ? filter(client.models(Duration.ofNanos(remainingNanos.getAsLong())))
-                            : List.<AiOptions.Model>of();
-                    Instant fetched = clock.instant();
-                    snapshot = new Snapshot(fetched, fetched.plus(TTL), models);
+                    snapshot = fetch(now, remainingNanos);
                 } catch (AiFailure failure) {
-                    snapshot = new Snapshot(now, current.expiresAt(), current.models());
+                    snapshot = new Snapshot(now, current.expiresAt(), current.models(), current.routes());
                 }
             }
-            return snapshot.modelsAt(clock.instant());
+            return snapshot;
         }
+    }
+
+    private Snapshot fetch(Instant observed, LongSupplier budget) {
+        if (!client.freeKey(Duration.ofNanos(budget.getAsLong()))) {
+            return new Snapshot(observed, observed.plus(TTL), List.of(), Map.of());
+        }
+        var models = filter(client.models(Duration.ofNanos(budget.getAsLong())));
+        var routes = models.isEmpty()
+                ? Map.<String, String>of()
+                : routes(client.zdrEndpoints(Duration.ofNanos(budget.getAsLong())));
+        var options = models.stream()
+                .map(model -> routes.containsKey(model.id())
+                        ? model
+                        : new AiOptions.Model(
+                                model.id(), model.label(), model.category(), false, "Sin ruta Free compatible"))
+                .toList();
+        var eligible = new HashMap<String, String>();
+        for (var model : options) {
+            if (model.available()) {
+                eligible.put(model.id(), routes.get(model.id()));
+            }
+        }
+        return new Snapshot(observed, observed.plus(TTL), options, Map.copyOf(eligible));
+    }
+
+    private static Map<String, String> routes(JsonNode endpoints) {
+        var data = endpoints.path("data");
+        if (!data.isArray()) {
+            throw AiFailure.Reason.REMOTE.failure();
+        }
+        var routes = new HashMap<String, String>();
+        for (var endpoint : data) {
+            var policy = endpoint.path("data_collection");
+            String tag = endpoint.path("tag").asText("");
+            var status = endpoint.path("status");
+            // Membership in the ZDR list establishes retention policy. Honor stricter endpoint metadata when present.
+            if ((!policy.isMissingNode() && !"deny".equals(policy.textValue()))
+                    || (endpoint.has("zdr") && !endpoint.path("zdr").booleanValue())
+                    || (endpoint.has("byok") && !endpoint.path("byok").isBoolean())
+                    || endpoint.path("byok").booleanValue()
+                    || (endpoint.has("status") && (!status.isIntegralNumber() || status.asInt() != 0))
+                    || !tag.matches("[a-zA-Z0-9_.-]+(?:/[a-zA-Z0-9_.-]+)?")
+                    || !zeroPrice(endpoint.path("pricing"))
+                    || !contains(endpoint.path("supported_parameters"), "max_tokens")) {
+                continue;
+            }
+            routes.merge(endpoint.path("model_id").asText(""), tag, (a, b) -> a.compareTo(b) <= 0 ? a : b);
+        }
+        return routes;
     }
 
     private static boolean needsRefresh(Snapshot value, Instant now, boolean refresh) {
@@ -69,11 +132,9 @@ final class OpenRouterCatalog {
             var architecture = item.path("architecture");
             var pricing = item.path("pricing");
             if (!id.matches("[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+:free")
-                    || !textModality(architecture.path("input_modalities"))
-                    || !textModality(architecture.path("output_modalities"))
-                    || !zero(pricing.path("prompt"))
-                    || !zero(pricing.path("completion"))
-                    || (pricing.has("request") && !zero(pricing.path("request")))
+                    || !contains(architecture.path("input_modalities"), "text")
+                    || !contains(architecture.path("output_modalities"), "text")
+                    || !zeroPrice(pricing)
                     || !seen.add(id)) {
                 continue;
             }
@@ -88,13 +149,22 @@ final class OpenRouterCatalog {
         return List.copyOf(models);
     }
 
-    private static boolean textModality(JsonNode modalities) {
-        for (JsonNode modality : modalities) {
-            if ("text".equals(modality.textValue())) {
+    private static boolean contains(JsonNode values, String expected) {
+        if (!values.isArray()) {
+            return false;
+        }
+        for (JsonNode value : values) {
+            if (expected.equals(value.textValue())) {
                 return true;
             }
         }
         return false;
+    }
+
+    private static boolean zeroPrice(JsonNode pricing) {
+        return zero(pricing.path("prompt"))
+                && zero(pricing.path("completion"))
+                && (!pricing.has("request") || zero(pricing.path("request")));
     }
 
     private static boolean zero(JsonNode price) {
@@ -108,7 +178,8 @@ final class OpenRouterCatalog {
         }
     }
 
-    private record Snapshot(Instant attemptedAt, Instant expiresAt, List<AiOptions.Model> models) {
+    private record Snapshot(
+            Instant attemptedAt, Instant expiresAt, List<AiOptions.Model> models, Map<String, String> routes) {
         List<AiOptions.Model> modelsAt(Instant now) {
             return now.isBefore(expiresAt) ? models : List.of();
         }

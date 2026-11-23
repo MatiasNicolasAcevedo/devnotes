@@ -3,11 +3,11 @@ package com.example.devnotes.ai;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
-record OpenRouterAiClient(AiHttp http, URI base, String key) implements AiClient {
-    @Override
-    public Result generate(String model, String prompt, Duration remaining) {
+record OpenRouterAiClient(AiHttp http, URI base, String key) {
+    AiClient.Result generate(String model, String route, String prompt, Duration remaining) {
         var response = http.exchange(
                 base.resolve("/api/v1/chat/completions"),
                 "Authorization",
@@ -18,7 +18,7 @@ record OpenRouterAiClient(AiHttp http, URI base, String key) implements AiClient
                         "messages",
                         AiClient.userTurn(prompt),
                         "max_tokens",
-                        MAX_TOKENS,
+                        AiClient.MAX_TOKENS,
                         "stream",
                         false,
                         "provider",
@@ -31,10 +31,12 @@ record OpenRouterAiClient(AiHttp http, URI base, String key) implements AiClient
                                 true,
                                 "require_parameters",
                                 true,
+                                "only",
+                                List.of(route),
                                 "max_price",
                                 Map.of("prompt", 0, "completion", 0, "request", 0))),
                 remaining);
-        return new Result(
+        return new AiClient.Result(
                 AiClient.chatText(response.body()),
                 response.body().path("model").textValue(),
                 AiClient.chatUsage(response.body()));
@@ -42,6 +44,11 @@ record OpenRouterAiClient(AiHttp http, URI base, String key) implements AiClient
 
     JsonNode models(Duration remaining) {
         return http.exchange(base.resolve("/api/v1/models"), "Authorization", "Bearer " + key, null, remaining)
+                .body();
+    }
+
+    JsonNode zdrEndpoints(Duration remaining) {
+        return http.exchange(base.resolve("/api/v1/endpoints/zdr"), "Authorization", "Bearer " + key, null, remaining)
                 .body();
     }
 

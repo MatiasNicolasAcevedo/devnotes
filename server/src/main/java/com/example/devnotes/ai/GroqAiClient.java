@@ -34,6 +34,9 @@ record GroqAiClient(AiHttp http, URI base, String key) implements AiClient {
                             unit.equals("requests") ? "remainingRequestsPerDay" : "remainingTokensPerMinute",
                             Long.parseLong(value)));
         }
+        if (quota.containsKey("remainingRequestsPerDay") || quota.containsKey("remainingTokensPerMinute")) {
+            quota.put("observedAtEpochMillis", response.observedAt().toEpochMilli());
+        }
         return new Result(
                 AiClient.chatText(response.body()),
                 response.body().path("model").textValue(),
