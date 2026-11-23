@@ -67,6 +67,8 @@ Tokens: superficie `#212324`, fondo `#181a1b`, texto `#e1e3e6`; Trabajo `#86efac
 
 La altura del editor responde a `100dvh` y al teclado de Android; el cursor y los botones de confirmación siguen visibles. No forzar autofocus en cada cambio de espacio. En móvil, al editar con teclado visible, priorizar el área de escritura y evitar barras superpuestas; no ocultar acciones por una detección de navegador. Verificar con teclado real del dueño además de emulación. Respetar zoom 200 %, nombres accesibles, lector de pantalla y reduced-motion; no animar el contenido entre espacios.
 
+La densidad alternativa propuesta para Diario y Libres en ventanas angostas con puntero fino se especifica en [S-117](S-117-compact-writing-header.md). Los mínimos táctiles de este contrato siguen vigentes.
+
 Fuentes de diseño consultadas 2026-11-12: [NN/g, etiquetas en íconos](https://www.nngroup.com/articles/icon-usability/), [WCAG 2.2, tamaño de objetivo mínimo](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html). Las áreas de 44/48 px son una decisión de comodidad de esta UI, no una cita del mínimo AA de 24 px.
 
 ## Datos y migración
