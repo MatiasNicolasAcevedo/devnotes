@@ -2,6 +2,7 @@ import '@fontsource/roboto-mono'
 import './dailyEditor.css'
 
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react'
+import { ConsultAiButton, type SavedExcerptSource } from '../../ai/ConsultAiButton'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
@@ -60,6 +61,7 @@ export interface DailyEditorProps {
   confirmedCopyContent?: DailyContent
   /** El área de escritura ocupa el alto libre del contenedor en lugar de una altura fija redimensionable. */
   fillHeight?: boolean
+  saveAiSource?: () => Promise<SavedExcerptSource | null>
 }
 
 export function DailyEditor({
@@ -75,6 +77,7 @@ export function DailyEditor({
   toolsTriggerRef,
   confirmedCopyContent,
   fillHeight = false,
+  saveAiSource,
 }: DailyEditorProps) {
   const narrow = useIsNarrow()
   const groupTools = narrow && narrowTools != null
@@ -506,6 +509,7 @@ export function DailyEditor({
           {toolbarEnd}
         </div>
       )}
+      {!readOnly && saveAiSource && <ConsultAiButton editor={editor} save={saveAiSource} />}
       {pasteError && (
         <div role="alert" className="daily-editor-error">
           El texto supera los límites de la nota y no se pegó.

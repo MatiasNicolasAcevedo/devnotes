@@ -9,7 +9,7 @@ depends_on: [T-093]
 branch: codex/t-094-ai-workspace
 role: implementer
 executor: frontier
-pr: null
+pr: 90
 ---
 
 # T-094 · Elegir y probar IA gratuita desde DevNotes
@@ -50,7 +50,31 @@ Si cambia el doble compartido, ejecutar además `STARTER_E2E_PROJECT=starter-e2e
 
 ## Checkpoint vigente
 
-2026-11-22. Frontera implementer en Codex desktop (GPT-6, PowerShell). Base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`, PR #89 y ascendencia verificados. Impacto previsto: selección de IA en el navbar, API privada de texto y lectura autorizada de fragmentos guardados, sin persistencia nueva. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+2026-11-22. Frontera implementer en Codex desktop (GPT-6, PowerShell y Git Bash). [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90), base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`. T-093 conciliada en `d039bae038eebff069012d15ea23488ee09e4b1d` tras verificar PR #89 y ascendencia.
+
+Impacto en UI, API y permisos. Selector en memoria por cuenta y espacio, dos rutas privadas, envío con sesión y CSRF, y selección exacta de Diario y Libres reconstruida en el backend. Cambios de revisión o del texto visible invalidan el fragmento. Conversación y preferencia son efímeras. Claves y flags por proveedor se configuran en el backend. Los permisos sobre fragmentos empiezan vacíos y requieren habilitación por proveedor, espacio y origen. El piloto usa texto ficticio. Render conserva Auto-Deploy On Commit.
+
+### Piloto Free del 2026-11-22
+
+Proceso Java aislado con los adaptadores de T-094, variables inyectadas desde el entorno local y primer ejemplo ficticio de T-072. El dueño confirmó las cuentas Free y el nombre original de la variable de Groq. El ensayo inicial de Groq quedó bloqueado por ausencia de `GROQ_AI_API_KEY`. Se inyectó temporalmente el mismo valor como variable de IA solo en el proceso del piloto. El dueño luego agregó la variable de IA a su entorno. Voz conserva `GROQ_API_KEY`.
+
+| Proveedor y modelo pedido | Evidencia Free | Hora AR | Resultado y modelo servido | Duración | Consumo o cuota informados |
+|---|---|---|---|---:|---|
+| Groq `openai/gpt-oss-20b` | Proyecto Free confirmado por el dueño | 21:51:50 | Texto, `openai/gpt-oss-20b`, 2/3 términos exactos | 1.384 ms | 104 entrada, 164 salida, 6 razonamiento. 999 solicitudes/día y 7.570 tokens/min restantes |
+| Groq `openai/gpt-oss-120b` | Proyecto Free confirmado por el dueño | 21:51:52 | Texto, `openai/gpt-oss-120b`, 1/3 términos exactos | 900 ms | 104 entrada, 251 salida, 22 razonamiento. 999 solicitudes/día y 7.424 tokens/min restantes |
+| Workers AI `@cf/openai/gpt-oss-20b` | Workers Free confirmado por el dueño | 21:44:00 | Texto, `@cf/openai/gpt-oss-20b`, 2/3 términos exactos | 4.939 ms | 102 tokens de entrada y 453 de salida. Neurons pendientes de consola |
+| Workers AI `@cf/openai/gpt-oss-120b` | Workers Free confirmado por el dueño | 21:44:05 | Texto, `@cf/openai/gpt-oss-120b`, 1/3 términos exactos | 8.757 ms | 100 tokens de entrada y 495 de salida. Neurons pendientes de consola |
+| Gemini `gemini-3.1-flash-lite` | Proyecto Free confirmado por el dueño | 21:44:13 | Texto, `gemini-3.1-flash-lite`, 3/3 términos exactos | 1.930 ms | 42 entrada, 180 salida, 139 razonamiento |
+| Gemini `gemini-3.8-flash` | Proyecto Free confirmado por el dueño | 21:44:15 | Plazo de 30 s agotado | 30.019 ms | Sin medición |
+| OpenRouter `baidu/ernie-5.5-flash-preview:free` | `is_free_tier` y uso BYOK declarado 0 | 21:44:47 | Modelo no disponible | 40 ms | Sin medición |
+| OpenRouter `google/gemma-4-26b-a4b-it:free` (ligero) | `is_free_tier` y uso BYOK declarado 0 | 21:47:53 | Modelo no disponible | 152 ms | Sin medición |
+| OpenRouter `google/gemma-4-31b-it:free` | `is_free_tier` y uso BYOK declarado 0 | 21:47:53 | Modelo no disponible | 112 ms | Sin medición |
+
+OpenRouter: 11 modelos de texto de 441 cumplieron el filtro local. El catálogo ZDR devolvió 934 endpoints y cero coincidencias por ID `:free` exacto con esos 11. Las solicitudes conservaron ZDR, rechazo de recolección, techo de precio cero y fallback desactivado. Se observaron respuestas reales de Groq, Workers AI y Gemini Flash-Lite. La aceptación integral del piloto sigue pendiente por Gemini 3.8 Flash y OpenRouter.
+
+Referencias consultadas para formatos y límites. [Groq](https://console.groq.com/docs/rate-limits) · [Workers AI](https://developers.cloudflare.com/workers-ai/configuration/open-ai-compatibility/) · [Gemini](https://ai.google.dev/gemini-api/docs/pricing) · [OpenRouter](https://openrouter.ai/docs/guides/routing/provider-selection) · [Endpoints ZDR](https://openrouter.ai/docs/api/api-reference/endpoints/list-endpoints-zdr).
+
+FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
 ## Prompts de salida
 

@@ -92,6 +92,10 @@ public class SecurityConfig {
                             .authenticated()
                             .requestMatchers(HttpMethod.POST, "/api/v1/ocr/extractions")
                             .authenticated()
+                            .requestMatchers(HttpMethod.GET, "/api/ai/options")
+                            .authenticated()
+                            .requestMatchers(HttpMethod.POST, "/api/spaces/{space}/ai/messages")
+                            .authenticated()
                             .requestMatchers(
                                     HttpMethod.GET,
                                     "/api/spaces/{space}/image-texts",

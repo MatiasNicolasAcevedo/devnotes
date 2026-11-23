@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router'
+import { AiPage } from '../features/ai/AiPage'
 import { AuthSessionProvider } from '../features/auth/AuthSessionProvider'
 import { DailyNotesPage } from '../features/daily/DailyNotesPage'
 import { DailyHistoryPage } from '../features/daily/DailyHistoryPage'
@@ -29,6 +30,7 @@ export function AppRoutes() {
           <Route path="reference" element={<ReferencePage />} />
           <Route path="image" element={<ImagePage />} />
           <Route path="voice" element={<VoicePage />} />
+          <Route path="ai" element={<AiPage />} />
           <Route path="data" element={<DataPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>

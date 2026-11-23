@@ -69,6 +69,7 @@ const SPACE_ROUTES = [
   '/reference',
   '/voice',
   '/image',
+  '/ai',
 ]
 
 export function isSpaceRoute(pathname: string): boolean {

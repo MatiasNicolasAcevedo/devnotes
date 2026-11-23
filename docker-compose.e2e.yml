@@ -14,6 +14,21 @@ services:
       DEVNOTES_OCR_ENABLED: "true"
       DEVNOTES_OCR_ALLOWED_SPACES: "work,personal"
       OCR_SPACE_API_KEY: "fictitious-e2e-ocr-key"
+      DEVNOTES_AI_ENABLED: "true"
+      DEVNOTES_AI_TEST_PROVIDER: "true"
+      DEVNOTES_AI_GROQ_ENABLED: "true"
+      DEVNOTES_AI_GROQ_EXCERPT_SCOPES: "work/daily,work/free"
+      DEVNOTES_AI_WORKERS_ENABLED: "true"
+      DEVNOTES_AI_WORKERS_EXCERPT_SCOPES: "work/daily,work/free"
+      DEVNOTES_AI_GEMINI_ENABLED: "true"
+      DEVNOTES_AI_GEMINI_EXCERPT_SCOPES: "work/daily,work/free"
+      DEVNOTES_AI_OPENROUTER_ENABLED: "true"
+      DEVNOTES_AI_OPENROUTER_EXCERPT_SCOPES: "work/daily,work/free"
+      GROQ_AI_API_KEY: "fictitious-e2e-groq-text-key"
+      CLOUDFLARE_ACCOUNT_ID: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      CLOUDFLARE_API_TOKEN: "fictitious-e2e-workers-key"
+      GEMINI_API_KEY: "fictitious-e2e-gemini-key"
+      OPENROUTER_API_KEY: "fictitious-e2e-openrouter-key"
   client:
     ports: !reset []
     environment:
@@ -29,6 +44,7 @@ services:
     command: ["node", "/app/voice-provider.mjs"]
     volumes:
       - ./e2e/fixtures/voice-provider.mjs:/app/voice-provider.mjs:ro
+      - ./e2e/fixtures/ai-provider.mjs:/app/ai-provider.mjs:ro
       - ./e2e/fixtures/ocr:/app/ocr:ro
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8091/healthz"]
