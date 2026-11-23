@@ -112,7 +112,7 @@ class AiMessageApiIT {
         accepts(pilot.request(WORK, "POST", Map.of("Content-Type", "application/json"), input(DATE, 1)), 403);
 
         URI upstream = URI.create("https://api.groq.com/openai/v1/chat/completions");
-        when(remote.exchange(eq(upstream), eq("Authorization"), eq("Bearer fictitious-text-key"), any(), any()))
+        when(remote.exchange(eq(upstream), eq("Authorization"), eq("Bearer fictitious-text-key"), any(), any(), any()))
                 .thenReturn(new AiHttp.Response(
                         JSON.readTree("""
                         {"model":"openai/gpt-oss-20b","choices":[{"message":{"content":"Resultado 🧪"}}]}
@@ -145,6 +145,7 @@ class AiMessageApiIT {
                                 false,
                                 "stream",
                                 false)),
+                        any(),
                         any());
 
         saveDaily(pilot, DATE, 1);
@@ -183,7 +184,7 @@ class AiMessageApiIT {
         accepts(write(pilot, "/api/spaces/work/free-notes/" + freeId + "?expectedRevision=1", "DELETE", ""), 204);
         accepts(write(pilot, WORK, "POST", freeInput), 404);
         verify(remote, org.mockito.Mockito.times(2))
-                .exchange(eq(upstream), eq("Authorization"), eq("Bearer fictitious-text-key"), any(), any());
+                .exchange(eq(upstream), eq("Authorization"), eq("Bearer fictitious-text-key"), any(), any(), any());
         verifyNoMoreInteractions(remote);
     }
 

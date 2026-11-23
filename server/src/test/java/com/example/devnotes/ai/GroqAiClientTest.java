@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import java.time.Duration;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class GroqAiClientTest extends AiClientTestSupport {
     @Override
@@ -40,6 +42,39 @@ class GroqAiClientTest extends AiClientTestSupport {
                 .containsEntry("remainingRequestsPerDay", 0L)
                 .containsKey("observedAtEpochMillis")
                 .doesNotContainKey("remainingTokensPerMinute");
+    }
+
+    @Test
+    void confirmsQuotaExhaustionOnlyFromZeroDailyRequests() {
+        status = 429;
+        responseHeaders = Map.of("x-ratelimit-remaining-requests", "0");
+        assertThatExceptionOfType(AiFailure.class)
+                .isThrownBy(() -> client().generate(model(), "Muestra", TIMEOUT))
+                .satisfies(error -> {
+                    assertThat(error.reason).isEqualTo(AiFailure.Reason.QUOTA);
+                    assertThat(error.retryAfter).isNull();
+                });
+        assertThat(requests).hasValue(1);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"12", "desconocido", "0, 12"})
+    void keepsAnUnprovenQuotaAsTemporaryEvenWithMinuteTokensAtZero(String remainingRequests) {
+        status = 429;
+        responseHeaders = Map.of(
+                "x-ratelimit-remaining-requests",
+                remainingRequests,
+                "x-ratelimit-remaining-tokens",
+                "0",
+                "Retry-After",
+                "desconocido");
+        assertThatExceptionOfType(AiFailure.class)
+                .isThrownBy(() -> client().generate(model(), "Muestra", TIMEOUT))
+                .satisfies(error -> {
+                    assertThat(error.reason).isEqualTo(AiFailure.Reason.RATE_LIMIT);
+                    assertThat(error.retryAfter).isNull();
+                });
+        assertThat(requests).hasValue(1);
     }
 
     @Test

@@ -51,12 +51,16 @@ async function reply(req, res, config, gemini) {
     res.writeHead(400).end();
     return;
   }
-  if (prompt.includes('[cuota]')) {
+  if (prompt.includes('[limite-temporal]')) {
     json(res, 429, { error: 'private fixture' }, { 'Retry-After': '17' });
     return;
   }
   if (prompt.includes('[cuota-sin-espera]')) {
-    json(res, 429, { error: 'private fixture' });
+    json(res, 429, { error: 'private fixture' }, { 'x-ratelimit-remaining-requests': '0' });
+    return;
+  }
+  if (prompt.includes('[limite-sin-espera]')) {
+    json(res, 429, { error: 'private fixture' }, { 'Retry-After': 'desconocido' });
     return;
   }
   if (prompt.includes('[sin-respuesta]')) {

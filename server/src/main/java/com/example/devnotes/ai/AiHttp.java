@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpTimeoutException;
@@ -19,6 +20,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Flow;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Predicate;
 
 final class AiHttp {
     private final HttpClient client;
@@ -30,9 +32,19 @@ final class AiHttp {
         this.clock = clock;
     }
 
-    record Response(JsonNode body, java.net.http.HttpHeaders headers, Instant observedAt) {}
+    record Response(JsonNode body, HttpHeaders headers, Instant observedAt) {}
 
     Response exchange(URI uri, String header, String credential, Map<String, ?> body, Duration remaining) {
+        return exchange(uri, header, credential, body, remaining, headers -> false);
+    }
+
+    Response exchange(
+            URI uri,
+            String header,
+            String credential,
+            Map<String, ?> body,
+            Duration remaining,
+            Predicate<HttpHeaders> quotaExhausted) {
         if (remaining.isNegative() || remaining.isZero()) {
             throw AiFailure.Reason.TIMEOUT.failure();
         }
@@ -66,7 +78,9 @@ final class AiHttp {
                         .firstValue("retry-after")
                         .map(value -> AiFailure.retryAfter(value, clock))
                         .orElse(null);
-                throw new AiFailure(AiFailure.Reason.QUOTA, retryAfter);
+                var reason =
+                        quotaExhausted.test(response.headers()) ? AiFailure.Reason.QUOTA : AiFailure.Reason.RATE_LIMIT;
+                throw new AiFailure(reason, retryAfter);
             }
             if (response.statusCode() == 404 && body != null) {
                 throw AiFailure.Reason.MODEL.failure();

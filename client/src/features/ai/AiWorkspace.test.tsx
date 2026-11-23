@@ -44,14 +44,19 @@ function initial() {
 }
 
 describe('IA', () => {
-  it('confirma el modelo elegido sin enviar hasta pulsar Enviar y conserva el borrador al agotar la cuota', async () => {
+  it('confirma el modelo elegido sin enviar hasta pulsar Enviar y conserva el borrador ante un límite temporal', async () => {
     const turns: unknown[] = []
     server.use(
       http.post('/api/spaces/work/ai/messages', async ({ request }) => {
         expect(request.headers.get('X-XSRF-TOKEN')).toMatch(/^csrf-ficticio-/)
         turns.push(await request.json())
         return HttpResponse.json(
-          { status: 429, code: 'ai-quota', detail: 'Cuota agotada.', retryAfter: 17 },
+          {
+            status: 429,
+            code: 'ai-rate-limit',
+            detail: 'El proveedor limitó temporalmente la consulta.',
+            retryAfter: 17,
+          },
           { status: 429, headers: { 'Content-Type': 'application/problem+json' } },
         )
       }),
@@ -69,7 +74,7 @@ describe('IA', () => {
     expect(screen.getByText('Se enviará a Gemini · Gemini 3.1 Flash-Lite')).toBeVisible()
     expect(turns).toEqual([])
     await user.click(screen.getByRole('button', { name: /^Enviar$/ }))
-    expect(await screen.findByText('Cuota agotada')).toBeVisible()
+    expect(await screen.findByText('Límite temporal del proveedor')).toBeVisible()
     expect(screen.getByRole('status', { name: 'Estado del destino de IA' })).toHaveTextContent(
       'Esperá 17 s',
     )
@@ -83,6 +88,7 @@ describe('IA', () => {
   it.each([
     [504, 'ai-timeout', 'No responde'],
     [429, 'ai-quota', 'Cuota agotada'],
+    [429, 'ai-rate-limit', 'Límite temporal del proveedor'],
     [429, 'ai-busy', 'Ya hay una consulta en curso.'],
   ])('recupera un fallo %s %s sin reenviar', async (status, code, label) => {
     let sends = 0
@@ -118,10 +124,11 @@ describe('IA', () => {
       expect(selector.getByRole('status')).toHaveTextContent(label)
       await user.keyboard('{Escape}')
       expect(choose).toHaveFocus()
-      if (code === 'ai-quota') expect(state).toHaveTextContent('Consultá su consola')
+      if (status === 429) expect(state).toHaveTextContent('Consultá su consola')
       await user.click(screen.getByRole('button', { name: 'Volver a intentar' }))
     } else {
       expect(screen.queryByText('Cuota agotada')).not.toBeInTheDocument()
+      expect(screen.queryByText('Límite temporal del proveedor')).not.toBeInTheDocument()
     }
     expect(send).toBeEnabled()
     expect(sends).toBe(1)

@@ -13,10 +13,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.LongSupplier;
+import java.util.regex.Pattern;
 
 final class OpenRouterCatalog implements AiClient {
     private static final Duration TTL = Duration.ofMinutes(5);
     private static final Duration REFRESH_INTERVAL = Duration.ofSeconds(15);
+    private static final String SLUG_SEGMENT = "[a-z0-9][a-z0-9_.-]*";
+    private static final Pattern PROVIDER_SLUG = Pattern.compile(SLUG_SEGMENT + "(?:/" + SLUG_SEGMENT + "){0,3}");
     // Gemma 26B activates 3.8B parameters per token. LFM3 is a 1.7B text model.
     private static final Set<String> LIGHT =
             Set.of("openai/gpt-oss-20b:free", "google/gemma-4-26b-a4b-it:free", "liquid/lfm-3-1.7b:free");
@@ -94,25 +97,52 @@ final class OpenRouterCatalog implements AiClient {
         if (!data.isArray()) {
             throw AiFailure.Reason.REMOTE.failure();
         }
-        var routes = new HashMap<String, String>();
+        var byModel = new HashMap<String, List<JsonNode>>();
         for (var endpoint : data) {
-            var policy = endpoint.path("data_collection");
-            String tag = endpoint.path("tag").asText("");
-            var status = endpoint.path("status");
-            // Membership in the ZDR list establishes retention policy. Honor stricter endpoint metadata when present.
-            if ((!policy.isMissingNode() && !"deny".equals(policy.textValue()))
-                    || (endpoint.has("zdr") && !endpoint.path("zdr").booleanValue())
-                    || (endpoint.has("byok") && !endpoint.path("byok").isBoolean())
-                    || endpoint.path("byok").booleanValue()
-                    || (endpoint.has("status") && (!status.isIntegralNumber() || status.asInt() != 0))
-                    || !tag.matches("[a-zA-Z0-9_.-]+(?:/[a-zA-Z0-9_.-]+)?")
-                    || !zeroPrice(endpoint.path("pricing"))
-                    || !contains(endpoint.path("supported_parameters"), "max_tokens")) {
-                continue;
-            }
-            routes.merge(endpoint.path("model_id").asText(""), tag, (a, b) -> a.compareTo(b) <= 0 ? a : b);
+            byModel.computeIfAbsent(endpoint.path("model_id").asText(""), ignored -> new ArrayList<>())
+                    .add(endpoint);
         }
+        var routes = new HashMap<String, String>();
+        byModel.forEach((model, candidates) -> candidates.stream()
+                .filter(OpenRouterCatalog::compatibleRoute)
+                .map(OpenRouterCatalog::routeTag)
+                .filter(tag -> tag.contains("/") && uniquelyRoutable(tag, candidates))
+                .min(Comparator.naturalOrder())
+                .ifPresent(tag -> routes.put(model, tag)));
         return routes;
+    }
+
+    private static boolean compatibleRoute(JsonNode endpoint) {
+        var byok = endpoint.path("byok");
+        var status = endpoint.path("status");
+        // The ZDR index proves retention policy. Collection and BYOK need their own evidence.
+        return "deny".equals(endpoint.path("data_collection").textValue())
+                && (!endpoint.has("zdr") || endpoint.path("zdr").booleanValue())
+                && byok.isBoolean()
+                && !byok.booleanValue()
+                && status.isIntegralNumber()
+                && status.longValue() == 0
+                && zeroPrice(endpoint.path("pricing"))
+                && contains(endpoint.path("supported_parameters"), "max_tokens");
+    }
+
+    private static String routeTag(JsonNode endpoint) {
+        return endpoint.path("tag").asText("");
+    }
+
+    private static boolean uniquelyRoutable(String tag, List<JsonNode> candidates) {
+        // A routing slug also matches descendants, including regional variants.
+        int matches = 0;
+        for (var candidate : candidates) {
+            String other = routeTag(candidate);
+            if (!PROVIDER_SLUG.matcher(other).matches()) {
+                return false;
+            }
+            if (other.equals(tag) || other.startsWith(tag + "/")) {
+                matches++;
+            }
+        }
+        return matches == 1;
     }
 
     private static boolean needsRefresh(Snapshot value, Instant now, boolean refresh) {

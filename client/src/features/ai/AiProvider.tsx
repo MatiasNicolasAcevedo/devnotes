@@ -44,7 +44,7 @@ export function AiProvider({ children }: { children: ReactNode }) {
     function schedule() {
       const now = Date.now()
       const waits = Object.entries(issues).flatMap(([key, issue]) =>
-        issue.kind === 'quota' && issue.retryAt !== null ? [{ key, at: issue.retryAt }] : [],
+        issue.kind === 'limited' && issue.retryAt !== null ? [{ key, at: issue.retryAt }] : [],
       )
       const expired = waits.filter(({ at }) => at <= now)
       if (expired.length) {

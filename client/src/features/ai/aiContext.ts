@@ -6,7 +6,7 @@ export const AI_INK = '#21182f'
 
 export type ModelIssue =
   | { kind: 'unavailable' | 'unresponsive'; reason: string }
-  | { kind: 'quota'; reason: string; retryAt: number | null }
+  | { kind: 'limited'; quotaExhausted: boolean; reason: string; retryAt: number | null }
 
 export type ModelStatus = { label: string; reason?: string; tone: 'success' | 'error' | 'info' }
 
@@ -33,12 +33,14 @@ export function modelStatus(
     }
   }
   if (issue) {
-    const label =
-      issue.kind === 'quota'
-        ? 'Cuota agotada'
-        : issue.kind === 'unresponsive'
-          ? 'No responde'
-          : 'No disponible'
+    if (issue.kind === 'limited') {
+      return {
+        label: issue.quotaExhausted ? 'Cuota agotada' : 'Límite temporal del proveedor',
+        reason: issue.reason,
+        tone: 'error',
+      }
+    }
+    const label = issue.kind === 'unresponsive' ? 'No responde' : 'No disponible'
     return { label, reason: issue.reason, tone: 'error' }
   }
   return { label: 'Disponible para intentar', tone: 'success' }

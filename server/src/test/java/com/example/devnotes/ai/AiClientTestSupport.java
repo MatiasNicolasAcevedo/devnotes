@@ -63,7 +63,6 @@ abstract class AiClientTestSupport {
                 }
                 exchange.getResponseHeaders().set("Content-Type", "application/json");
                 responseHeaders.forEach(exchange.getResponseHeaders()::set);
-                if (status == 429) exchange.getResponseHeaders().set("Retry-After", "17");
                 if (status == 307) exchange.getResponseHeaders().set("Location", base + "/redirect");
                 if (status == 200) {
                     byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
@@ -91,12 +90,13 @@ abstract class AiClientTestSupport {
     }
 
     @Test
-    void quotaIsSaneAndNeverRetried() {
+    void remoteLimitIsSaneAndNeverRetried() {
         status = 429;
+        responseHeaders = Map.of("Retry-After", "17");
         assertThatExceptionOfType(AiFailure.class)
                 .isThrownBy(() -> client().generate(model(), "Muestra", TIMEOUT))
                 .satisfies(error -> {
-                    assertThat(error.reason).isEqualTo(AiFailure.Reason.QUOTA);
+                    assertThat(error.reason).isEqualTo(AiFailure.Reason.RATE_LIMIT);
                     assertThat(error.retryAfter).isEqualTo(17);
                 });
         assertThat(requests).hasValue(1);

@@ -2,6 +2,7 @@ package com.example.devnotes.ai;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 
 record GroqAiClient(AiHttp http, URI base, String key) implements AiClient {
@@ -24,7 +25,8 @@ record GroqAiClient(AiHttp http, URI base, String key) implements AiClient {
                         false,
                         "stream",
                         false),
-                remaining);
+                remaining,
+                headers -> headers.allValues("x-ratelimit-remaining-requests").equals(List.of("0")));
         var quota = AiClient.chatUsage(response.body());
         for (String unit : new String[] {"requests", "tokens"}) {
             response.headers()

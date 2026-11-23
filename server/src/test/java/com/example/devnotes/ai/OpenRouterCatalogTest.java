@@ -27,7 +27,7 @@ class OpenRouterCatalogTest {
             {"data":[{"id":"org/a:free","architecture":{"input_modalities":["text"],"output_modalities":["text"]},"pricing":{"prompt":"0","completion":"0"}}]}
             """;
     private static final String ROUTE = """
-            {"model_id":"org/a:free","tag":"fixture/text","data_collection":"deny","pricing":{"prompt":"0","completion":"0","request":"0"},"supported_parameters":["max_tokens"]}
+            {"model_id":"org/a:free","tag":"fixture/text/us","data_collection":"deny","byok":false,"status":0,"pricing":{"prompt":"0","completion":"0","request":"0"},"supported_parameters":["max_tokens"]}
             """;
 
     @Test
@@ -71,7 +71,24 @@ class OpenRouterCatalogTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"missing", "other-variant", "unknown-price", "nonzero", "collection", "non-zdr", "byok"})
+    @ValueSource(
+            strings = {
+                "missing",
+                "other-variant",
+                "unknown-price",
+                "nonzero",
+                "collection",
+                "collection-absent",
+                "collection-unknown",
+                "non-zdr",
+                "byok",
+                "byok-absent",
+                "byok-unknown",
+                "base-slug",
+                "duplicate-slug",
+                "prefix-slug",
+                "unknown-slug"
+            })
     void listsUnavailableAndRejectsBeforeInferenceWithIncompatibleEndpoints(String reason) throws Exception {
         var client = mock(OpenRouterAiClient.class);
         when(client.freeKey(any())).thenReturn(true);
@@ -82,8 +99,20 @@ class OpenRouterCatalogTest {
             case "unknown-price" -> ROUTE.replace("\"completion\":\"0\"", "\"completion\":null");
             case "nonzero" -> ROUTE.replace("\"request\":\"0\"", "\"request\":\"1\"");
             case "collection" -> ROUTE.replace("\"deny\"", "\"allow\"");
+            case "collection-absent" -> ROUTE.replace("\"data_collection\":\"deny\",", "");
+            case "collection-unknown" -> ROUTE.replace("\"deny\"", "null");
             case "non-zdr" -> ROUTE.replace("{\"model_id\"", "{\"zdr\":false,\"model_id\"");
-            case "byok" -> ROUTE.replace("{\"model_id\"", "{\"byok\":true,\"model_id\"");
+            case "byok" -> ROUTE.replace("\"byok\":false", "\"byok\":true");
+            case "byok-absent" -> ROUTE.replace("\"byok\":false,", "");
+            case "byok-unknown" -> ROUTE.replace("\"byok\":false", "\"byok\":\"false\"");
+            case "base-slug" -> ROUTE.replace("fixture/text/us", "fixture");
+            case "duplicate-slug" -> ROUTE + "," + ROUTE.replace("\"deny\"", "\"allow\"");
+            case "prefix-slug" ->
+                ROUTE
+                        + ","
+                        + ROUTE.replace("fixture/text/us", "fixture/text/us/east")
+                                .replace("\"deny\"", "\"allow\"");
+            case "unknown-slug" -> ROUTE + "," + ROUTE.replace("\"tag\":\"fixture/text/us\",", "");
             default -> throw new AssertionError(reason);
         };
         when(client.zdrEndpoints(any())).thenReturn(JSON.readTree("{\"data\":[" + endpoint + "]}"));

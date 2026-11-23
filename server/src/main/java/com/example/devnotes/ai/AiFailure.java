@@ -17,6 +17,7 @@ final class AiFailure extends RuntimeException {
         MODEL(HttpStatus.CONFLICT, "Modelo no disponible. Elegí otro destino."),
         BUSY(HttpStatus.TOO_MANY_REQUESTS, "Ya hay una consulta en curso."),
         QUOTA(HttpStatus.TOO_MANY_REQUESTS, "Cuota agotada. Consultá la consola del proveedor."),
+        RATE_LIMIT(HttpStatus.TOO_MANY_REQUESTS, "El proveedor limitó temporalmente la consulta."),
         REMOTE(HttpStatus.BAD_GATEWAY, "El proveedor no devolvió una respuesta de texto válida."),
         TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "El proveedor superó el plazo de la consulta.");
 
@@ -44,7 +45,8 @@ final class AiFailure extends RuntimeException {
 
     ProblemDetail problem() {
         var problem = ProblemDetail.forStatusAndDetail(reason.status, reason.detail);
-        problem.setProperty("code", "ai-" + reason.name().toLowerCase(java.util.Locale.ROOT));
+        problem.setProperty(
+                "code", "ai-" + reason.name().toLowerCase(java.util.Locale.ROOT).replace('_', '-'));
         if (retryAfter != null) {
             problem.setProperty("retryAfter", retryAfter);
         }

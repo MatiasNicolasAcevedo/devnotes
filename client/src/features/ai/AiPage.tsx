@@ -23,11 +23,13 @@ function issueFrom(error: unknown): ModelIssue | null {
   const api = error instanceof ApiError ? error : null
   const reason = api?.problem?.detail
   switch (api?.problem?.code) {
-    case 'ai-quota': {
+    case 'ai-quota':
+    case 'ai-rate-limit': {
       const wait = api.problem.retryAfter
       const validWait = typeof wait === 'number' && Number.isInteger(wait) && wait >= 0
       return {
-        kind: 'quota',
+        kind: 'limited',
+        quotaExhausted: api.problem.code === 'ai-quota',
         retryAt: validWait ? Date.now() + wait * 1000 : null,
         reason: validWait
           ? `Esperá ${wait} s desde el aviso para volver a enviar.`
@@ -322,7 +324,7 @@ function Composer() {
                 provider?.available &&
                 model?.available &&
                 (issue?.kind === 'unresponsive' ||
-                  (issue?.kind === 'quota' && issue.retryAt === null)) && (
+                  (issue?.kind === 'limited' && issue.retryAt === null)) && (
                   <Button
                     onClick={() => {
                       ai.setIssue(destination, null)

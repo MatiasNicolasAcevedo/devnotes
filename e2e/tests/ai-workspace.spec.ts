@@ -179,21 +179,25 @@ test('ai workspace: announces provider failures and resumes only after deliberat
   await expect(send).toBeEnabled();
   expect(turns).toHaveLength(1);
 
-  await draft.fill('[cuota] borrador ficticio');
+  await draft.fill('[limite-temporal] borrador ficticio');
   await send.click();
+  await expect(state).toContainText('Límite temporal del proveedor');
   await expect(state).toContainText('Esperá 17 s');
   await expect(send).toBeDisabled();
+  await expect(draft).toHaveValue('[limite-temporal] borrador ficticio');
   await page.clock.fastForward(17_100);
   await expect(send).toBeEnabled();
   expect(turns).toHaveLength(2);
 
   await draft.fill('[cuota-sin-espera] borrador ficticio');
   await send.click();
+  await expect(state).toContainText('Cuota agotada');
   await expect(state).toContainText('Consultá su consola');
   await expect(state).not.toContainText('Esperá');
   await expect(send).toBeDisabled();
   await page.getByRole('button', { name: 'Volver a intentar' }).click();
   await expect(draft).toBeFocused();
+  await expect(draft).toHaveValue('[cuota-sin-espera] borrador ficticio');
   await expect(send).toBeEnabled();
   expect(turns).toHaveLength(3);
 
@@ -218,11 +222,27 @@ test('ai workspace: previews saved daily and free fragments before explicit send
   await page.getByRole('button', { name: 'Consultar con IA' }).click();
   await expect(page.getByRole('textbox', { name: 'Fragmento a compartir' })).toHaveValue(fixture);
   expect(turns).toHaveLength(0);
-  await page.getByRole('textbox', { name: 'Mensaje' }).fill('Resumí');
-  await page.getByRole('button', { name: 'Enviar', exact: true }).click();
+  const draft = page.getByRole('textbox', { name: 'Mensaje' });
+  const send = page.getByRole('button', { name: 'Enviar', exact: true });
+  await draft.fill('[limite-sin-espera] Resumí');
+  await send.click();
+  const state = page.locator('form').getByRole('status');
+  await expect(state).toContainText('Límite temporal del proveedor');
+  await expect(state).toContainText('Consultá su consola');
+  await expect(send).toBeDisabled();
+  await expect(draft).toHaveValue('[limite-sin-espera] Resumí');
+  await expect(page.getByRole('textbox', { name: 'Fragmento a compartir' })).toHaveValue(fixture);
+  await page.getByRole('button', { name: 'Volver a intentar' }).click();
+  await expect(draft).toBeFocused();
+  expect(turns).toHaveLength(1);
+  await draft.fill('Resumí');
+  await send.click();
   await expect(page.getByText(/Resultado ficticio.*Resumí/)).toBeVisible();
-  expect(JSON.parse(turns[0]).excerpt).toMatchObject({ source: 'daily', start: 0, end: Array.from(fixture).length });
-  expect(turns[0]).not.toContain(fixture);
+  expect(turns).toHaveLength(2);
+  for (const turn of turns) {
+    expect(JSON.parse(turn).excerpt).toMatchObject({ source: 'daily', start: 0, end: Array.from(fixture).length });
+    expect(turn).not.toContain(fixture);
+  }
 
   const data = { type: 'doc', content: [{ type: 'paragraph', content: [{ type: 'text', text: fixture }] }] };
   const saved = await page.request.post('/api/spaces/work/free-notes', {
@@ -249,5 +269,5 @@ test('ai workspace: previews saved daily and free fragments before explicit send
   await stored.press('Control+a');
   await dialog.getByRole('button', { name: 'Añadir la selección' }).click();
   await expect(page.getByRole('textbox', { name: 'Fragmento a compartir' })).toHaveValue(fixture);
-  expect(turns).toHaveLength(1);
+  expect(turns).toHaveLength(2);
 });
