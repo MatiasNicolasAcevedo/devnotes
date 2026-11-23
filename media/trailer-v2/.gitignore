@@ -1,0 +1,5 @@
+# Generados localmente: banda sonora (npm run soundtrack), renders y cachés de HyperFrames.
+assets/soundtrack.wav
+renders/
+.hyperframes/
+node_modules/

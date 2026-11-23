@@ -1,0 +1,14 @@
+{
+  "name": "devnotes-trailer-v2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "soundtrack": "node scripts/make-soundtrack.mjs",
+    "predev": "npm run soundtrack",
+    "dev": "npx --yes hyperframes@0.9.37 preview",
+    "precheck": "npm run soundtrack",
+    "check": "npx --yes hyperframes@0.9.37 check",
+    "prerender": "npm run soundtrack",
+    "render": "npx --yes hyperframes@0.9.37 render -o renders/devnotes-trailer-v2-16x9.mp4"
+  }
+}
