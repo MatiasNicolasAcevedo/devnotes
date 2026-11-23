@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-094](tasks/T-094-ai-workspace.md) · [S-116](specs/S-116-ai-workspace.md) |
-| Estado | `in_progress` |
-| Siguiente acción | Implementar IA Free y ejecutar el gate dirigido y el piloto ficticio |
+| Estado | `in_review` |
+| Siguiente acción | Revisión independiente del PR #90 y de la aceptación pendiente del piloto Free |
 | Rama / PR | `codex/t-094-ai-workspace` · [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90) |
 
 Modo `FRONTERA_CONTINUA`. T-093 conciliada. La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con IA, tráiler v2 y demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
@@ -27,20 +27,18 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 | Último integrado válido | FULL local del 2026-11-15 sobre `398801f` ([T-069](tasks/T-069-ocr-workspace.md#evidencia-del-full-de-cierre)); STARTER de T-068 conservado |
 | Mergeado desde entonces | T-070 (recorrido E2E de OCR), T-074 (navegación de Imagen), T-071 y T-092 (documentales), la adopción documental del flujo y el encadenamiento del lote hasta T-085 |
 | Corte acumulado | Desde `7aa8946` hasta el HEAD de `main` que indique el dueño ([TESTING](TESTING.md#corte-acumulado-vigente)). El FULL/STARTER de I5 sigue diferido |
-| Recomendación | Ejecutar el integrado del corte acumulado con V8 y V9 cuando el dueño lo ordene. T-080 incorpora rutas privadas en Spring Security |
+| Recomendación | Ejecutar el integrado del corte acumulado con V8 y V9 cuando el dueño lo ordene. T-094 incorpora rutas privadas y cambia Compose |
 
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de T-094 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
+Actuá como frontera reviewer independiente de T-094 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
-Leé AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-094-ai-workspace.md y docs/specs/S-116-ai-workspace.md. Aplicá frontend-design y la sección IA de docs/design/WRITING-WORKSPACES.md.
+Leé AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-094-ai-workspace.md, docs/specs/S-116-ai-workspace.md y la sección IA de docs/design/WRITING-WORKSPACES.md.
 
-Verificá con gh pr view 89 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit que el plan T-093 está MERGED. Ejecutá git fetch origin main y git merge-base --is-ancestor SHA origin/main, reemplazando SHA por el oid devuelto. Si la precondición falla, informá el estado real.
+Ejecutá gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup y git fetch origin main codex/t-094-ai-workspace. Verificá PR OPEN, base dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795 y HEAD igual a origin/codex/t-094-ai-workspace. Comprobá que el HEAD contiene cd0076b70fc81f75bc126800747b14fb016ca677 y que los commits posteriores solo actualizan el checkpoint. Si la precondición falla, informá el estado real y entregá el prompt corregido.
 
-Partí de origin/main en codex/t-094-ai-workspace. Conciliá T-093 en el primer commit. Implementá en un único PR los cuatro proveedores Free, el selector compacto del navbar, los modelos ligeros primero y la consulta explícita de fragmentos. Usá las claves solo desde el backend. Probá cada adaptador con doble y ejecutá la matriz de modelos de T-094 con muestras ficticias en el piloto Free.
+Revisá el diff publicado, los cuatro adaptadores, la selección y el consentimiento, el acceso a los fragmentos y la evidencia por modelo y por fase del gate. Contrastá el fallo remoto de Gemini 3.8 Flash y la falta de ruta OpenRouter Free compatible con ZDR contra la aceptación de S-116. Si sigue faltando evidencia, registrá el hallazgo y devolvé al dueño o a un implementer nuevo el mismo PR con la condición de cierre. Conservá las restricciones de privacidad y precio.
 
-Corré los comandos dirigidos de T-094, incluidos Failsafe/PostgreSQL, typecheck, E2E filtrado, docs-check y verify-required del HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO. Conservá Render Auto-Deploy On Commit.
-
-Registrá resultados por proveedor/modelo, HEAD y base en T-094. Dejá en STATUS y al final de la respuesta el prompt completo para un frontera reviewer independiente.
+FULL/STARTER: DIFERIDO POR EL DUEÑO. Conservá Render Auto-Deploy On Commit. Si se satisface la aceptación y aprobás de forma independiente con verify-required verde, hacé el squash ligado al SHA revisado y confirmá MERGED, mergedAt y mergeCommit.oid. Cerrá con el prompt completo de la sesión siguiente.
 ```

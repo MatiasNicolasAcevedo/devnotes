@@ -1,13 +1,13 @@
 ---
 id: T-094
-status: in_progress
+status: in_review
 priority: P1
 size: L
 milestone: M8
 spec: S-116
 depends_on: [T-093]
 branch: codex/t-094-ai-workspace
-role: implementer
+role: reviewer
 executor: frontier
 pr: 90
 ---
@@ -66,7 +66,7 @@ Proceso Java aislado con los adaptadores de T-094, variables inyectadas desde el
 | Workers AI `@cf/openai/gpt-oss-120b` | Workers Free confirmado por el dueño | 21:44:05 | Texto, `@cf/openai/gpt-oss-120b`, 1/3 términos exactos | 8.757 ms | 100 tokens de entrada y 495 de salida. Neurons pendientes de consola |
 | Gemini `gemini-3.1-flash-lite` | Proyecto Free confirmado por el dueño | 21:44:13 | Texto, `gemini-3.1-flash-lite`, 3/3 términos exactos | 1.930 ms | 42 entrada, 180 salida, 139 razonamiento |
 | Gemini `gemini-3.8-flash` | Proyecto Free confirmado por el dueño | 21:44:15 | Plazo de 30 s agotado | 30.019 ms | Sin medición |
-| Gemini `gemini-3.8-flash`, repetición manual | Proyecto Free confirmado por el dueño | 22:03:05 | Fallo remoto saneado (502 de DevNotes) | 5.561 ms | Sin medición |
+| Gemini `gemini-3.8-flash`, repetición manual | Proyecto Free confirmado por el dueño | 22:03:05 | Fallo remoto saneado, categoría HTTP 502 de DevNotes | 5.561 ms | Sin medición |
 | OpenRouter `baidu/ernie-5.5-flash-preview:free` | `is_free_tier` y uso BYOK declarado 0 | 21:44:47 | Modelo no disponible | 40 ms | Sin medición |
 | OpenRouter `google/gemma-4-26b-a4b-it:free` (ligero) | `is_free_tier` y uso BYOK declarado 0 | 21:47:53 | Modelo no disponible | 152 ms | Sin medición |
 | OpenRouter `google/gemma-4-31b-it:free` | `is_free_tier` y uso BYOK declarado 0 | 21:47:53 | Modelo no disponible | 112 ms | Sin medición |
@@ -74,6 +74,35 @@ Proceso Java aislado con los adaptadores de T-094, variables inyectadas desde el
 OpenRouter: 11 modelos de texto de 441 cumplieron el filtro local. El catálogo ZDR devolvió 934 endpoints y cero coincidencias por ID `:free` exacto con esos 11. Las solicitudes conservaron ZDR, rechazo de recolección, techo de precio cero y fallback desactivado. Se observaron respuestas reales de Groq, Workers AI y Gemini Flash-Lite. La aceptación integral del piloto sigue pendiente por Gemini 3.8 Flash y OpenRouter.
 
 Referencias consultadas para formatos y límites. [Groq](https://console.groq.com/docs/rate-limits) · [Workers AI](https://developers.cloudflare.com/workers-ai/configuration/open-ai-compatibility/) · [Gemini](https://ai.google.dev/gemini-api/docs/pricing) · [OpenRouter](https://openrouter.ai/docs/guides/routing/provider-selection) · [Endpoints ZDR](https://openrouter.ai/docs/api/api-reference/endpoints/list-endpoints-zdr).
+
+### Gate dirigido y correcciones
+
+Los comandos exactos están en [Aceptación y pruebas](#aceptación-y-pruebas). Base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`. Candidato técnico `cd0076b70fc81f75bc126800747b14fb016ca677`.
+
+| Fase | Evidencia |
+|---|---|
+| Surefire, los siete tests de IA del comando | Exit 0, 18 casos, 5,58 s de suites. Los cuatro clientes hablaron HTTP con un doble local. |
+| Failsafe `AiMessageApiIT,VoiceTranscriptionApiIT,FreeNoteApiIT` | Exit 0, 14 casos, 49,62 s de suites. PostgreSQL 18.6, Flyway hasta V9 y OIDC ficticio real para dos actores. |
+| Cliente, `npm run typecheck` y lint dirigido | Exit 0 sobre el candidato técnico. |
+| Cliente, Vitest de rutas, shell y feature | 30/30, 19,68 s, exit 0. Un intento durante las construcciones paralelas quedó en 29/30. La repetición conservó el filtro y los tiempos del runner. |
+| E2E escritorio `ai workspace:` | 3/3, exit 0, 252,4 s en `starter-e2e-t094-desktop`. Cuatro adaptadores, copia, cuota sin reenvío y fragmentos de Diario y Libres. Navbar a 1280 px, cuarto de pantalla (480 px) y zoom 200 % simulado con 640 px a DPR 2. |
+| E2E móvil `ai workspace: navbar` | 1/1, exit 0, 169,8 s en `starter-e2e-t094-mobile`. Selector, foco, navegación y ancho de 360 px. |
+| E2E regresión `screenshot OCR:\|voice` | 479,6 s, exit 1 inicial por tres aserciones de OCR sobre el menú. Los cuatro casos de Voz y aislamiento pasaron. |
+| E2E corrección `screenshot OCR:` en `starter-e2e-t094-ocr-check` | 175,5 s, exit 0, 3/3. El diff de `40cecba` a `cd0076b` conserva backend, Compose, dobles y specs de Voz y Espacios. |
+| Contraste de tokens | Lila sobre fondo 9,58:1 y sobre panel 8,66:1, tinta sobre lila 9,31:1, texto sobre panel 12,27:1. |
+| Clasificación `bash scripts/verify.sh --policy origin/main` | Exit 0, política FULL y perfil STARTER por las rutas técnicas, incluido Compose. |
+| Documentación y CI | `node scripts/docs-check.mjs` sobre el árbol versionado, 154 Markdown y 91 tareas, exit 0. `git diff --check origin/main...HEAD`, exit 0. `verify-required` SUCCESS sobre `cd0076b70fc81f75bc126800747b14fb016ca677` con base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`. [Run del candidato técnico](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/45092728647). El commit de transición es solo documental y tiene su propio run. |
+
+| Causa | Arreglo | Comprobación |
+|---|---|---|
+| La identidad o el espacio desmontaban el navbar y una referencia de prueba quedaba desconectada. | Mantener el navbar montado y limpiar la preferencia de IA al confirmar el nuevo contexto. Los providers de borrador conservan su clave de cuenta por debajo de la barra. | `AppShell.test.tsx` cubre siete anchos. |
+| El doble OIDC se iniciaba con callback automático y la primera prueba esperaba el formulario interactivo. | Activar el modo interactivo como preparación ficticia de la sesión piloto. | E2E de navbar y proveedores alcanza el producto. |
+| El selector de Testing Library usaba una opción de Playwright que TypeScript rechaza. | Usar patrones de nombre accesible anclados para las consultas de Testing Library. | `npm run typecheck`. |
+| La selección de teclado del fixture no se acreditaba en el editor de Diario. | Guardar el fixture y verificar una selección de texto real con Range y el control Enlace habilitado antes de consultar. | E2E de fragmentos de Diario y Libres. |
+| OCR buscaba ausencia de Herramientas, aunque el menú de Diario ahora incluye acciones de nota en la base. | Conservar el negativo funcional y comprobar que Herramientas carece de una entrada de OCR antes de navegar por Imagen. | Tres casos OCR verdes, `cd0076b`. |
+| Spotless reformateó dos archivos de Libres heredados durante la primera compilación. | Aplicar solo el formato que requiere `spotless:check` en el gate. | Maven `verify`, exit 0. |
+
+Los scripts cerraron sus proyectos aislados. La aceptación del piloto queda en revisión independiente con los fallos remotos indicados arriba.
 
 FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
