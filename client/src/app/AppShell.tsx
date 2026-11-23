@@ -13,6 +13,7 @@ import { Link as RouterLink, matchPath, useLocation } from 'react-router'
 import { SessionAlerts } from '../features/auth/SessionAlerts'
 import { AiNavbar } from '../features/ai/AiNavbar'
 import { AiProvider } from '../features/ai/AiProvider'
+import { DemoLink } from '../features/demo/DemoLink'
 import { SessionControls } from '../features/auth/SessionControls'
 import { useSession } from '../features/auth/sessionContext'
 import { DailyDraftWorkspace } from '../features/daily/DailyDraftNavigation'
@@ -205,11 +206,13 @@ function AppShellContent({
         >
           <SpaceSelector />
           {desktop && <PrimaryNavigation mobile={false} />}
+          {desktop && <DemoLink />}
           <Stack
             direction="row"
             spacing={desktop ? 1 : 0.5}
             sx={{ ml: 'auto', flexShrink: 0, alignItems: 'center' }}
           >
+            {!desktop && <DemoLink />}
             <ServerStatus compact={!desktop} />
             <AiNavbar />
             <SessionControls menuContainer={menuContainer} />

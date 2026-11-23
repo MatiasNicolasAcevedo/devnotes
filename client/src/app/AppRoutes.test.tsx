@@ -113,6 +113,22 @@ describe('AppRoutes', () => {
   })
 })
 
+describe('Página /demo', () => {
+  it('es pública: un visitante ve la página y puede reproducir, sin aviso de iniciar sesión', async () => {
+    installAuthBackend()
+    renderWithProviders(<AppRoutes />, { route: '/demo' })
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Demo' })).toBeVisible()
+    expect(await screen.findByRole('link', { name: 'Ingresar' })).toHaveAttribute('href', '/login')
+    expect(screen.getByRole('button', { name: 'Reproducir Tráiler' })).toBeVisible()
+    expect(within(screen.getByRole('banner')).getByRole('link', { name: 'Demo' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(screen.queryByText(/Inicia sesión para/)).not.toBeInTheDocument()
+  })
+})
+
 describe('Estado del servidor en la barra', () => {
   it('muestra «Online» junto a las pestañas en cualquier pantalla', async () => {
     installAuthBackend()

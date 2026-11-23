@@ -17,6 +17,8 @@ test('T-050: visitor navigation fits on one row while readiness is pending', asy
     const connecting = serverStatus(page, 'Conectando con el servidor');
     const login = banner.getByRole('link', { name: 'Ingresar', exact: true });
     const brand = banner.getByRole('link', { name: 'DevNotes', exact: true });
+    // T-097: Demo va fuera de «Navegación principal»: tras las pestañas en escritorio, antes del estado en móvil.
+    const demo = banner.getByRole('link', { name: 'Demo', exact: true });
     const tabs = ['Voz', 'Notas', 'Referencias', 'Imagen', 'Historial'];
 
     for (const width of [360, 375, 390, 767, 768, 1280]) {
@@ -26,7 +28,7 @@ test('T-050: visitor navigation fits on one row while readiness is pending', asy
         await expect(brand).toHaveCount(0);
         await expect(connecting).toHaveText(narrow ? '' : 'Conectando');
         const links = tabs.map(name => nav.getByRole('link', { name, exact: true }));
-        const controls = [...(narrow ? [] : links), connecting, login];
+        const controls = [...(narrow ? [] : links), demo, connecting, login];
         const order = narrow ? ['Notas', 'Voz', 'Referencias', 'Imagen', 'Historial'] : tabs;
         await expect(nav.getByRole('link')).toHaveText(order);
         if (narrow) {

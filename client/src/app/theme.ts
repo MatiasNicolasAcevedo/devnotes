@@ -4,6 +4,9 @@ import { esES } from '@mui/material/locale'
 /** Ámbar de acento: pestaña activa, puntero sobre una pestaña y «Guardar versión». Único lugar donde se define. */
 export const AMBER = '#ffb74d'
 
+/** Rojo del destino Demo en la barra superior: 5,6:1 sobre el fondo de la barra (`#212324`). */
+export const DEMO_RED = '#ff6b6b'
+
 /** Tema oscuro único de DevNotes. Textos internos de MUI en español. */
 export const theme = createTheme(
   {
