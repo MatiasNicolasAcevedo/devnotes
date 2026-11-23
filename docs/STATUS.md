@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-095](tasks/T-095-trailer-v2.md) |
-| Estado | `mergeable` |
-| Siguiente acción | Ronda 2 APROBADA y escucha completa del MP4 confirmada por el dueño; reviewer hace el squash merge del PR #91 y la sesión siguiente toma T-096 ([checkpoint](tasks/T-095-trailer-v2.md#checkpoint-vigente)) |
-| Rama / PR | `codex/t-095-trailer-v2` · [PR #91](https://github.com/MatiasNicolasAcevedo/devnotes/pull/91) |
+| Tarea y contrato | [T-096](tasks/T-096-narrated-demo.md) |
+| Estado | `in_progress` |
+| Siguiente acción | Frontera implementer prepara inventario, guion, captura, voz de Sofía, música suave y SRT ([checkpoint](tasks/T-096-narrated-demo.md#checkpoint-vigente)) |
+| Rama / PR | `codex/t-096-narrated-demo` · PR pendiente |
 
-Modo `FRONTERA_CONTINUA`. T-094 conciliada ([PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90) MERGED, `076e4ed`). La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con el tráiler v2 y la demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
+Modo `FRONTERA_CONTINUA`. T-095 conciliada ([PR #91](https://github.com/MatiasNicolasAcevedo/devnotes/pull/91) MERGED, `b0e46a3`). La [cola](BACKLOG.md#lote-imagen-libres-e-ia) termina con la demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
 Piloto aprobado con cinco destinos: Groq 20B/120B, Workers AI 20B/120B y Gemini 3.1 Flash-Lite. Gemini 3.8 Flash y OpenRouter Free quedan diferidos. El selector y el compositor muestran disponibilidad, fallos y cuota. El usuario elige y confirma otro destino. [Decisión y cierre observable](tasks/T-094-ai-workspace.md#decisión-de-alcance-del-dueño). FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
