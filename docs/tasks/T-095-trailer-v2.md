@@ -1,6 +1,6 @@
 ---
 id: T-095
-status: in_review
+status: changes_requested
 priority: P2
 size: M
 milestone: M9
@@ -34,35 +34,34 @@ Abrir imagen, tipografía y música con la misma identidad de la v1. Cada rótul
 
 ## Checkpoint vigente
 
-2026-11-23. Frontera implementer en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, Git, gh, Docker Desktop, Node, HyperFrames 0.9.37, ffmpeg/ffprobe y Edge sin interfaz con Playwright de `e2e/`. Listo para revisión en el [PR #91](https://github.com/MatiasNicolasAcevedo/devnotes/pull/91). Base `076e4ed32f82fd2ee9fbd25ee7de4d743ecd2e9c`. Commit técnico `027f02d`. Impacto: fuentes nuevas en `media/trailer-v2/` y documentos. Sin cambios de comportamiento, API, permisos, datos ni UI del producto.
+2026-11-23. Frontera reviewer independiente en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, Git, gh, Node, HyperFrames 0.9.37 y ffmpeg/ffprobe; sesión distinta de la del implementer. **CAMBIOS REQUERIDOS** (ronda 1 de 2) para el [PR #91](https://github.com/MatiasNicolasAcevedo/devnotes/pull/91): HEAD revisado `3e714f119eb24be68a280ef3eda60e0877b6fd02`, base `076e4ed32f82fd2ee9fbd25ee7de4d743ecd2e9c`, commit técnico `027f02d` contenido. `verify-required` verde sobre ese HEAD. Impacto: solo `media/trailer-v2/` y documentos.
 
-**Hecho.** Precondición comprobada: `gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit` devolvió `MERGED`, `2026-11-23T03:11:08Z` y `076e4ed32f82fd2ee9fbd25ee7de4d743ecd2e9c`; `git merge-base --is-ancestor 076e4ed origin/main` dio exit 0. T-094 quedó conciliada en `f202846`. La decisión del dueño se registró en `1a936fa`. Las fuentes de la v2 están en `027f02d`: [README](../../media/trailer-v2/README.md) y [storyboard con evidencia por rótulo](../../media/trailer-v2/STORYBOARD.md). `trailer/` sigue sin versionar ni modificar.
-
-**Verificación en el producto.** Stack propio `starter-dev-t095-trailer` (`bash scripts/dev.sh up --mode local --proxy nginx --project starter-dev-t095-trailer`, exit 0) con sesión del proveedor ficticio y datos ficticios. Se capturaron Diario con Ctrl+K, enlace y separador, «Abrir al lado» con la versión del día, Libres con Formato (Título 1–3, Negrita) y Herramientas (Bloque de código, Abrir al lado), Imagen a texto, Voz, Referencias, Historial, Datos y anchos de 1280/960/780/700/430/390 px sin desborde horizontal. La barra inferior de cinco destinos aparece por debajo de 768 px. En local `/api/ai/options` responde 403 `ai-forbidden`, así que IA se respalda en T-094 MERGED y en los rótulos de `AiPage.tsx`, `ConsultAiButton.tsx` y `AiOptions.java`. Readiness de `devnotes-v2dx.onrender.com` dio HTTP 200 y el host de la v1 `devnotes-pilot.onrender.com` dio 404. Limpieza: `dev.sh down` exit 0 y después `docker volume rm starter-dev-t095-trailer_db-data` más `docker rmi` de las dos imágenes del proyecto, por nombre exacto. Las capturas quedaron solo en el scratchpad de la sesión.
+**Comprobado.** Alcance conforme a la decisión del dueño: un único corte 16:9, tramo «Achica la ventana» con la misma nota de 960 a 440 px y la barra inferior de cinco destinos en el orden real de `AppShell.tsx` (Notas, Voz, Referencias, Imagen, Historial), y «También en tu móvil» como función. Rótulos del storyboard cotejados con `ConsultAiButton.tsx`, `AiPage.tsx` («Fragmento a compartir», «Se enviará a»), `AiOptions.java` («GPT OSS 20B»), `ImageWorkspace.tsx`, `FreeNoteEditor.tsx`, `ReadingWorkspace.tsx` («Abrir al lado», «Versión del…», «Volver a escribir»), `SaveStatusIndicator.tsx` y `manifest.json` (`standalone`). URL de cierre vigente. Sin pantalla negra ni silencios. Revisión visual completa a 2 fps más fotogramas a resolución completa. `trailer/` sin versionar e idéntico (SHA-256 de sus 15 archivos antes y después del render). El árbol del HEAD no contiene WAV, MP4, `renders/`, `.hyperframes/` ni `node_modules/`.
 
 | Comando | Resultado |
 |---|---|
-| `npm run check` en `media/trailer-v2` | exit 0. Check passed con 0 errores y 232/232 contrastes AA. Avisos de lectura breve y de tipografía bajo el piso de teléfono, que no aplica a un corte de escritorio |
-| `npm run render` | exit 0. `renders/devnotes-trailer-v2-16x9.mp4`, 21 081 265 bytes. HyperFrames bajó la mezcla 2,7 dB por techo de entrega |
-| `ffprobe -v error -show_entries stream=codec_type,width,height:format=duration -of json devnotes-trailer-v2-16x9.mp4` en `renders/` | exit 0. Video 1920×1080, audio y `46.000000` s |
-| `sha256sum devnotes-trailer-v2-16x9.mp4` | `e00367b97ff7a638faba05df0e4eab35bc2b3abfb3e08f6463943b92485c083e` |
-| `ffmpeg … blackdetect=d=0.1:pic_th=0.98, silencedetect=n=-45dB:d=0.4, ebur128=peak=true` | exit 0. Sin tramos negros ni silencios. −14,9 LUFS integrados, LRA 4,3 LU, pico real −2,2 dBFS |
-| `node scripts/docs-check.mjs` sobre `git archive HEAD` | exit 0 (156 Markdown, 91 tareas). En el workspace completo da exit 1 solo por `trailer/CLAUDE.md`, que es local y sin seguimiento |
+| `npm run check` en `media/trailer-v2` | exit 0. 0 errores, 18 avisos (lectura breve y piso de teléfono) |
+| `npm run render` | exit 0. 21 080 859 bytes, SHA-256 `67d1d560cb6856ceebb8ac0a8c068bbb1c969fa7d8797b2fdc72d69b54a1c9ca`. El render no es byte a byte idéntico al del implementer |
+| `ffprobe -v error -show_entries stream=codec_type,width,height:format=duration -of json devnotes-trailer-v2-16x9.mp4` en `renders/` | exit 0. Video 1920×1080, audio, `46.000000` s |
+| `ffmpeg … blackdetect, silencedetect, ebur128` | Sin negros ni silencios. −14,9 LUFS, LRA 4,3 LU, pico −2,2 dBFS |
+| `node scripts/docs-check.mjs` sobre `git archive HEAD` | exit 0 (156 Markdown, 91 tareas) |
 | `git diff --check origin/main...HEAD` | exit 0 |
-| `bash scripts/verify.sh --policy origin/main` | exit 0. `policy=FULL`, `profile=STARTER` (8 rutas técnicas en `media/`) |
 
-**FULL/STARTER: DIFERIDO POR EL DUEÑO.** **Pendiente:** veredicto del reviewer independiente, incluida la escucha completa del MP4 con sonido, que el implementer no pudo hacer y midió solo con ffmpeg. Además, `verify-required` verde sobre el HEAD publicado.
+**Hallazgos (lista cerrada).**
 
-| Corrección | Arreglo | Comprobación |
-|---|---|---|
-| `check` marcó como error las animaciones `left`/`top` de la ventana adaptable | Se reemplazaron por `x`/`y` y se mantuvo el ancho | `npm run check` exit 0 |
-| Botón «Extraer texto» duplicado y oculto, con contraste 2,81:1 | Un solo botón que cambia de color y gris deshabilitado `#8a9099` | 232/232 contrastes AA |
-| «ticket1279» sin espacio, heredado de la v1, y chips del móvil en dos líneas | Espacio duro en el tipeo y chips más cortos | Snapshots 9,6 s y 37,4 s |
+| # | Evidencia | Corrección suficiente | Cierre observable |
+|---|---|---|---|
+| H1 | De 25,05 s al fin de la escena de Imagen (~26 s) el `#imOk` «Copiado» queda a la derecha de «Guardar», fuera de la tarjeta, y se lee «Cop» (`index.html:1294`, `showOk('#imOk', 25.05)`). Viola «sin texto tapado» | Mostrarlo como en el producto: una línea de estado «Texto copiado» debajo de los botones de «Texto extraído» y dentro de la tarjeta (`ImageWorkspace.tsx:521`). No tocar el resto del montaje | Fotograma en 25,6 s con «Texto copiado» entero dentro de la tarjeta; `npm run check` exit 0 |
+| H2 | El diálogo de Ctrl+K dice «Enlace para «1279»» (`index.html:1178`). El producto titula «Agregar enlace» con «1279» debajo (`LinkDialog.tsx:149-157`) | Rótulo «Agregar enlace» y «1279» en una segunda línea, dentro de `#pop` | Fotograma en 11,5 s con «Agregar enlace» y «1279» legibles |
+
+**Pendiente del dueño, no defecto.** Ningún agente puede escuchar audio: el reviewer midió la banda con ffmpeg, igual que el implementer. La escucha completa del MP4 con sonido queda para el dueño antes del merge de la ronda 2.
+
+**FULL/STARTER: DIFERIDO POR EL DUEÑO.**
 
 ## Prompts de salida
 
 ```text
-Frontera reviewer independiente de T-095 en MatiasNicolasAcevedo/devnotes, en sesión distinta de la del implementer. Leé AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/tasks/T-095-trailer-v2.md y media/trailer-v2/STORYBOARD.md. PRECONDICIÓN: gh pr view 91 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup devuelve OPEN, no draft, base main con 076e4ed32f82fd2ee9fbd25ee7de4d743ecd2e9c como ancestro y el commit técnico 027f02d contenido en el HEAD; si no, devolvé el paso vigente. ACCIÓN: revisá el diff contra la decisión del dueño del 2026-11-23 (un único corte de escritorio 16:9, ventana que se achica y móvil como función), el storyboard y cada rótulo frente al producto. En media/trailer-v2 ejecutá npm run check y npm run render (HyperFrames 0.9.37). Desde renders ejecutá ffprobe -v error -show_entries stream=codec_type,width,height:format=duration -of json devnotes-trailer-v2-16x9.mp4 y mirá el MP4 completo con sonido, que el implementer no pudo escuchar. Confirmá que trailer/ sigue sin versionar ni modificar y que no se versionan WAV, MP4 ni cachés. FULL/STARTER: DIFERIDO POR EL DUEÑO. Ante hallazgos devolvé el mismo PR con la lista y el prompt de corrección. SALIDA: si aprobás y verify-required está verde sobre el HEAD, hacé squash ligado a ese HEAD según docs/AUTONOMY.md, verificá MERGED con gh pr view 91 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit y entregá completo el prompt de T-096 de la tarea con el oid real.
+Frontera implementer de corrección de T-095, ronda 1, en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/tasks/T-095-trailer-v2.md (Checkpoint vigente, hallazgos H1 y H2) y media/trailer-v2/STORYBOARD.md. PRECONDICIÓN: gh pr view 91 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid devuelve OPEN y no draft, con el commit de CAMBIOS REQUERIDOS del reviewer como HEAD o ancestro; si no, devolvé el paso vigente. ACCIÓN: en codex/t-095-trailer-v2 corregí solo H1 («Copiado» de Imagen recortado: pasarlo a una línea «Texto copiado» dentro de la tarjeta, como ImageWorkspace.tsx) y H2 (diálogo de enlace con «Agregar enlace» y «1279» debajo, como LinkDialog.tsx), en index.html y, si cambia un rótulo, en STORYBOARD.md. En media/trailer-v2 ejecutá npm run check y npm run render; desde renders, ffprobe -v error -show_entries stream=codec_type,width,height:format=duration -of json devnotes-trailer-v2-16x9.mp4, sha256sum y fotogramas en 11,5 s y 25,6 s. Confirmá trailer/ sin versionar ni modificar y sin WAV/MP4/cachés en el índice. Reemplazá el checkpoint con la tabla de correcciones, STATUS a in_review, commit y push con rutas explícitas. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: PR 91 actualizado con verify-required verde y el prompt completo de reviewer independiente de ronda 2, que pida además la confirmación del dueño de haber escuchado el MP4 completo con sonido antes del merge.
 ```
 
 ```text
