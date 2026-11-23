@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-094](tasks/T-094-ai-workspace.md) · [S-116](specs/S-116-ai-workspace.md) |
-| Estado | `in_review` |
-| Siguiente acción | Frontera reviewer independiente revisa el PR #90 y su gate |
+| Estado | `changes_requested` |
+| Siguiente acción | Dueño o frontera decide el cierre tras dos rondas del PR #90 |
 | Rama / PR | `codex/t-094-ai-workspace` · [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90) |
 
 Modo `FRONTERA_CONTINUA`. T-093 conciliada. La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con IA, tráiler v2 y demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
@@ -34,19 +34,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer independiente de T-094 en MatiasNicolasAcevedo/devnotes. Sesión nueva, PR #90 y rama codex/t-094-ai-workspace.
+Actuá como dueño o frontera para decidir el cierre de T-094 en MatiasNicolasAcevedo/devnotes. Sesión nueva, PR #90, rama codex/t-094-ai-workspace.
 
-LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-094-ai-workspace.md, docs/specs/S-116-ai-workspace.md, la sección IA de docs/design/WRITING-WORKSPACES.md y la muestra ficticia citada de T-072.
+LEER: AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/agents/reviewer.md, docs/tasks/T-094-ai-workspace.md (checkpoint vigente) y docs/specs/S-116-ai-workspace.md.
 
-PRECONDICIÓN: ejecutá gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup y git fetch origin main codex/t-094-ai-workspace. Confirmá OPEN, isDraft=false, verify-required SUCCESS, base dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795 y refs de origin iguales a GitHub. El HEAD de revisión es el único commit sobre 15e94c4f69d5e2f172627a262f440f7ad3f1a331 que publica este checkpoint. Verificalo con git rev-parse origin/codex/t-094-ai-workspace^ y git diff --name-only 15e94c4f69d5e2f172627a262f440f7ad3f1a331..origin/codex/t-094-ai-workspace, cuyo resultado debe limitarse a docs/STATUS.md y docs/tasks/T-094-ai-workspace.md. Si cambió la precondición o no se puede verificar, informá el estado real y entregá el prompt corregido.
+PRECONDICIÓN: ejecutá gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup y git fetch origin main codex/t-094-ai-workspace. Confirmá PR OPEN, isDraft=false, base dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795 y refs iguales a GitHub. Confirmá con git rev-parse origin/codex/t-094-ai-workspace^ que el padre del cierre documental es 4eaf719ae2023f0a6e05be1bee958567cae07e3c y con git diff --name-only 4eaf719ae2023f0a6e05be1bee958567cae07e3c..origin/codex/t-094-ai-workspace que el cierre solo cambia docs/STATUS.md y docs/tasks/T-094-ai-workspace.md. Si cambió la precondición, informá el estado real y entregá el prompt corregido.
 
-ACCIÓN
-1. Revisá en un worktree aislado el diff publicado contra esa base y cotejá cada condición de S-116/T-094 con el código y el gate. Acreditá cinco destinos elegibles, ambos diferidos rechazados por POST sin inferencia, acceso a fragmentos y cuatro adaptadores conservados.
-2. Verificá la comprobación compartida de ruta Free exacta, negativos de cero despacho, vencimiento y refresco deduplicado, y el positivo restringido de OpenRouter con el doble. Cotejá la cuota observada de Groq, los estados accesibles, el borrador, 429, timeout y que seleccionar, refrescar o habilitar un intento no envía texto.
-3. Cotejá las cinco respuestas reales de la muestra ficticia que el dueño aceptó, la evidencia pública de metadatos de OpenRouter y las dos condiciones de reactivación. Conservá los datos reales fuera del piloto y Render Auto-Deploy On Commit.
-4. Si hay hallazgos, registralos con SHA, evidencia y condición de cierre según el protocolo y el límite de rondas. Si aprobás, publicá la transición documental, confirmá la nueva CI y el veredicto sobre el SHA revisado final, hacé el squash según AUTONOMY y verificá MERGED, mergedAt y mergeCommit.oid con gh pr view y --repo explícito.
+ACCIÓN: se agotaron dos rondas. El catálogo de OpenRouter ofrece una ruta exacta con evidencia incompleta de privacidad y la UI informa cuota agotada para todo 429 externo. Leé los dos rojos y las condiciones de cierre en T-094. Decidí si autorizás una única corrección extraordinaria en el mismo PR, limitada a los dos hallazgos, con revisión independiente posterior, o si dejás el PR abierto con la tarea en espera. La propuesta de corrección exige evidencia positiva para la ruta exacta, cero despacho para evidencia insuficiente y una distinción verificable entre cuota, límite temporal y concurrencia local. Conservá los cinco destinos, los dos diferimientos, las muestras ficticias y Render Auto-Deploy On Commit. No habilites T-095 hasta confirmar MERGED de T-094 según AUTONOMY.
 
-GATE: comprobá el gate diario del implementer y corré solo pruebas dirigidas de los riesgos encontrados y docs-check. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: si autorizás corregir, exigir los negativos y el positivo con dobles, pruebas dirigidas, E2E filtrado, docs-check y verify-required sobre el HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: entregá el veredicto sustentado y terminá con el prompt vigente completo según el cierre.
+SALIDA: registrá la decisión, el alcance y el responsable del próximo paso en T-094 y STATUS. Terminá con el prompt vigente completo.
 ```

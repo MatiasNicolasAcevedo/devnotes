@@ -1,6 +1,6 @@
 ---
 id: T-094
-status: in_review
+status: changes_requested
 priority: P1
 size: L
 milestone: M8
@@ -64,6 +64,28 @@ Si cambia el doble compartido, ejecutar además `STARTER_E2E_PROJECT=starter-e2e
 Reactivación en una decisión posterior del dueño. Para Gemini 3.8 Flash, comprobar acceso a texto Standard en el proyecto Free y obtener texto dentro de 30 s con una muestra ficticia T-072. Para OpenRouter, acreditar con metadatos vigentes una ruta compatible por cada ID exacto del ligero y una alternativa explícita Free y obtener texto real con ambos bajo la política completa y con muestras ficticias T-072. Completar la misma matriz en los dos casos.
 
 ## Checkpoint vigente
+
+2026-11-22. Frontera reviewer independiente, segunda ronda, en Codex desktop (familia GPT-6, versión puntual no expuesta), PowerShell, Git y gh. **CAMBIOS REQUERIDOS** para el [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90), HEAD `4eaf719ae2023f0a6e05be1bee958567cae07e3c`, base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`. Impacto pendiente en validación previa a despacho externo y en la clasificación de 429 de la API y la UI. La segunda ronda termina sin aprobación y la decisión vuelve al dueño o a frontera.
+
+| Hallazgo | Evidencia sobre el HEAD revisado | Condición de cierre |
+|---|---|---|
+| P1 · OpenRouter acepta evidencia incompleta de la ruta Free | `OpenRouterCatalog.routes` admite ausencia de `data_collection` y conserva solo el `tag`. El positivo de `OpenRouterAiClientTest` omite ese dato. En la sonda, al quitarlo de la única ruta ficticia exacta, el catálogo devolvió `available=true`. El envío consulta ese mismo snapshot antes del POST. La guía del proveedor distingue ZDR y recolección. Un slug general también puede abarcar varios endpoints. [Enrutamiento de OpenRouter](https://openrouter.ai/docs/guides/routing/provider-selection). | Acreditar con metadatos vigentes que la variante `:free` exacta y la ruta seleccionable cumplen toda la política de S-116, incluida la exclusión de recolección y BYOK. Emitir el POST solo si el identificador enviado restringe el despacho a la ruta acreditada. Agregar negativos de política ausente o indeterminada y ruta ambigua con cero POST de inferencia, y un positivo con doble que acredite las condiciones y las restricciones del cuerpo. Conservar el rechazo del piloto. |
+| P2 · La UI atribuye todo 429 remoto a cuota agotada | `AiHttp.exchange` clasifica cualquier 429 remoto como `QUOTA` a partir del estado HTTP y un `Retry-After` opcional. `modelStatus` anuncia siempre «Cuota agotada» para ese código. El doble E2E devuelve 429 con un cuerpo genérico. La sonda de componente esperó el estado temporal con espera válida y falló. | Reservar «Cuota agotada» para evidencia de cuota y usar «Límite temporal del proveedor» cuando el remoto solo acredita limitación. Probar ambos estados accesibles en selector y compositor, 429 con y sin espera válida, concurrencia local diferenciada, borrador/fragmento conservados y cero reenvíos al seleccionar, actualizar, vencer la espera o rehabilitar. |
+
+| Comando o evidencia | Resultado |
+|---|---|
+| `gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup` | Exit 1 por conexión en sandbox y exit 0 con red. OPEN, `isDraft=false`, HEAD y base esperados, [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/45096999731/job/137438905661). |
+| `git fetch origin main codex/t-094-ai-workspace`, `git rev-parse origin/main origin/codex/t-094-ai-workspace 'origin/codex/t-094-ai-workspace^'` y `git diff --name-only 15e94c4f69d5e2f172627a262f440f7ad3f1a331..origin/codex/t-094-ai-workspace` | Exit 0. Remotos iguales a GitHub. Padre técnico `15e94c4f69d5e2f172627a262f440f7ad3f1a331`. El checkpoint cambia solo STATUS y T-094. |
+| `git worktree add --detach`, `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` | Creación en sandbox exit 128 por restricción de escritura de Git y exit 0 con autorización. Docs-check sobre el worktree con 154 Markdown, 91 tareas y HANDOFF 22/22, exit 0. Diff check exit 0. |
+| `mvnw.cmd -q test -Dtest=OpenRouterCatalogTest,OpenRouterAiClientTest,GroqAiClientTest` | Exit 1 en sandbox por bloqueo de la caché Maven y exit 0 en entorno autorizado. Sonda aislada `-Dtest=OpenRouterCatalogTest#listsUnavailableAndRejectsBeforeInferenceWithIncompatibleEndpoints` con caso adicional sin `data_collection`: exit 1, 1/8 falló por disponibilidad verdadera. |
+| `npm.cmd ci --offline --no-audit --no-fund` y `npm.cmd test -- --run src/features/ai/AiWorkspace.test.tsx` | Exit 0 ambos, 9/9 pruebas vigentes. Sonda aislada con `-t 'confirma el modelo elegido'`: exit 1 al esperar «Límite temporal del proveedor» para el 429 temporal ficticio. Se restauraron las fuentes de ambas sondas. |
+| `GET /api/v1/models` y `GET /api/v1/endpoints/zdr` públicos | Exit 0. 476 modelos, 11 candidatos Free de texto a precio cero, 934 endpoints ZDR y 0 coincidencias por ID exacto. Coincide con la matriz histórica de esta ronda. [Catálogo de OpenRouter](https://openrouter.ai/docs/api/api-reference/models/list-all-models-and-their-properties). |
+
+El gate del implementer corresponde al padre técnico. Registró Surefire 26/26, Failsafe 14/14 en PostgreSQL 18.6, Vitest 37/37 tras repetir un fallo de carga del editor, typecheck verde, E2E IA escritorio 4/4 y móvil 1/1, y regresión OCR/Voz 7/7. La revisión cotejó el IT de cinco destinos y dos rechazos 409 con cero llamadas al tercero, sesión y CSRF, propietario, espacio, origen, revisión, rango y digest en ambos editores, y los cuatro adaptadores. Se constató el plazo, la caché de cinco minutos y el refresco deduplicado en los casos ya cubiertos. La hora y las unidades de Groq concuerdan con las cabeceras válidas. Las pruebas vigentes verifican timeout, recuperación de borrador, 429 local, espera y ausencia de reenvío automático. [Cabeceras de Groq](https://console.groq.com/docs/rate-limits).
+
+La matriz registra texto real para los cinco destinos con el primer ejemplo ficticio de T-072, según la aceptación del dueño. Las condiciones de reactivación de Gemini 3.8 Flash y OpenRouter Free siguen documentadas. Esta sesión usó dobles y lecturas públicas de metadatos, sin repetir inferencia real ni los E2E del implementer. Render conserva Auto-Deploy On Commit. **FULL/STARTER: DIFERIDO POR EL DUEÑO.** Se mantiene la recomendación de integrado acumulado por Compose y las rutas privadas.
+
+### Evidencia de la corrección del implementer
 
 2026-11-22. Frontera implementer de corrección en Codex desktop (GPT-6, versión puntual no expuesta, PowerShell, Git Bash, Git, gh y Docker). [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90), base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`, candidato técnico `15e94c4f69d5e2f172627a262f440f7ad3f1a331`. El siguiente commit documenta este gate. El impacto abarca elegibilidad de destinos en API, comprobación de la ruta externa, cuota observada y recuperación en la UI. Se conservaron sesión/CSRF, propiedad de los fragmentos, límites del turno, los cuatro adaptadores y Render Auto-Deploy On Commit. El dueño confirmó usar [las cinco respuestas reales documentadas](#piloto-free-del-2026-11-22). Pendiente el veredicto del reviewer independiente.
 
