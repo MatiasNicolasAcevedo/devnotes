@@ -66,6 +66,7 @@ Proceso Java aislado con los adaptadores de T-094, variables inyectadas desde el
 | Workers AI `@cf/openai/gpt-oss-120b` | Workers Free confirmado por el dueño | 21:44:05 | Texto, `@cf/openai/gpt-oss-120b`, 1/3 términos exactos | 8.757 ms | 100 tokens de entrada y 495 de salida. Neurons pendientes de consola |
 | Gemini `gemini-3.1-flash-lite` | Proyecto Free confirmado por el dueño | 21:44:13 | Texto, `gemini-3.1-flash-lite`, 3/3 términos exactos | 1.930 ms | 42 entrada, 180 salida, 139 razonamiento |
 | Gemini `gemini-3.8-flash` | Proyecto Free confirmado por el dueño | 21:44:15 | Plazo de 30 s agotado | 30.019 ms | Sin medición |
+| Gemini `gemini-3.8-flash`, repetición manual | Proyecto Free confirmado por el dueño | 22:03:05 | Fallo remoto saneado (502 de DevNotes) | 5.561 ms | Sin medición |
 | OpenRouter `baidu/ernie-5.5-flash-preview:free` | `is_free_tier` y uso BYOK declarado 0 | 21:44:47 | Modelo no disponible | 40 ms | Sin medición |
 | OpenRouter `google/gemma-4-26b-a4b-it:free` (ligero) | `is_free_tier` y uso BYOK declarado 0 | 21:47:53 | Modelo no disponible | 152 ms | Sin medición |
 | OpenRouter `google/gemma-4-31b-it:free` | `is_free_tier` y uso BYOK declarado 0 | 21:47:53 | Modelo no disponible | 112 ms | Sin medición |

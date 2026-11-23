@@ -1,9 +1,11 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
+import { writeWork } from './daily-helpers';
 import { control, csrfHeaders, expect, interactiveLogin, readiness, test as base } from './fixtures';
 
 const OPTIONS = '/api/ai/options';
 const MESSAGES = '/api/spaces/work/ai/messages';
 const fixture = '🧪 Texto seleccionado';
+const date = '2026-11-22';
 
 const test = base.extend<{ pilotSession: void }>({
   pilotSession: [async ({ page, identity }, use) => {
@@ -28,7 +30,22 @@ async function openSelector(page: Page) {
   return page.getByRole('dialog', { name: 'Proveedor y modelo' });
 }
 
-test('ai workspace: navbar keeps its keyboard and narrow layout contract', async ({ page, isMobile }) => {
+async function selectEditorLine(editor: Locator) {
+  await expect(editor).toHaveAttribute('contenteditable', 'true');
+  await editor.evaluate(element => {
+    element.focus();
+    const paragraph = element.querySelector('p');
+    if (!paragraph) throw new Error('Expected a paragraph in the fixture document');
+    const range = document.createRange();
+    range.selectNodeContents(paragraph);
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+  });
+  await expect.poll(() => editor.evaluate(() => window.getSelection()?.toString())).toBe(fixture);
+}
+
+test('ai workspace: navbar keeps its keyboard and narrow layout contract', async ({ page, context, isMobile }) => {
   if (isMobile) await page.setViewportSize({ width: 360, height: 700 });
   const turns = aiRequests(page);
   const toggle = page.getByRole('button', { name: 'Elegir proveedor y modelo', exact: true });
@@ -56,6 +73,20 @@ test('ai workspace: navbar keeps its keyboard and narrow layout contract', async
     await expect(compact.getByLabel('Proveedor', { exact: true })).toBeVisible();
     await page.keyboard.press('Escape');
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(480);
+    await page.setViewportSize({ width: 640, height: 384 });
+    const cdp = await context.newCDPSession(page);
+    try {
+      await cdp.send('Emulation.setDeviceMetricsOverride', {
+        width: 640, height: 384, deviceScaleFactor: 2, mobile: false,
+      });
+      await expect.poll(() => page.evaluate(() => [innerWidth, devicePixelRatio])).toEqual([640, 2]);
+      await expect(await openSelector(page)).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(640);
+      await page.keyboard.press('Escape');
+    } finally {
+      await cdp.send('Emulation.clearDeviceMetricsOverride');
+      await cdp.detach();
+    }
   }
   expect(turns).toEqual([]);
 });
@@ -100,10 +131,11 @@ test('ai workspace: sends one text turn through each provider with no automatic 
 
 test('ai workspace: previews saved daily and free fragments before explicit sending', async ({ page, identity }) => {
   const turns = aiRequests(page);
+  await page.goto(`/notes/${date}?space=work`);
   const editor = page.getByRole('textbox', { name: 'Editor de nota diaria' });
-  await editor.fill(fixture);
-  await editor.press('Home');
-  await editor.press('Shift+End');
+  await writeWork(page, date, fixture);
+  await selectEditorLine(editor);
+  await expect(page.getByRole('button', { name: 'Agregar enlace' })).toBeEnabled();
   await page.getByRole('button', { name: 'Consultar con IA' }).click();
   await expect(page.getByRole('textbox', { name: 'Fragmento a compartir' })).toHaveValue(fixture);
   expect(turns).toHaveLength(0);
@@ -122,8 +154,7 @@ test('ai workspace: previews saved daily and free fragments before explicit send
   const { id } = await saved.json();
   await page.goto(`/free-notes/${id}?space=work`);
   const free = page.locator('.tiptap[contenteditable=true]');
-  await free.press('Home');
-  await free.press('Shift+End');
+  await selectEditorLine(free);
   await page.getByRole('button', { name: 'Consultar con IA' }).click();
   await expect(page.getByRole('textbox', { name: 'Fragmento a compartir' })).toHaveValue(fixture);
   await expect(page.getByText(/Resultado ficticio/)).toHaveCount(0);
@@ -136,8 +167,7 @@ test('ai workspace: previews saved daily and free fragments before explicit send
   await dialog.getByLabel('Nota guardada').selectOption(id);
   const stored = dialog.getByRole('textbox', { name: 'Texto guardado' });
   await stored.focus();
-  await stored.press('Home');
-  await stored.press('Shift+End');
+  await stored.press('Control+a');
   await dialog.getByRole('button', { name: 'Añadir la selección' }).click();
   await expect(page.getByRole('textbox', { name: 'Fragmento a compartir' })).toHaveValue(fixture);
   expect(turns).toHaveLength(1);

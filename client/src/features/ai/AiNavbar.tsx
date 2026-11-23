@@ -19,6 +19,15 @@ export function AiNavbar() {
         borderColor: 'rgba(206,179,255,.48)',
         borderRadius: 1.25,
         color: AI_ACCENT,
+        '@keyframes aiStarFocus': {
+          from: { filter: `drop-shadow(0 0 4px ${AI_ACCENT})` },
+          to: { filter: 'none' },
+        },
+        '@media (prefers-reduced-motion: no-preference)': {
+          '&:focus-within [data-ai-star], &:has([aria-expanded="true"]) [data-ai-star]': {
+            animation: 'aiStarFocus 160ms ease-out',
+          },
+        },
       }}
     >
       <Link
@@ -41,7 +50,10 @@ export function AiNavbar() {
           ...focus,
         }}
       >
-        <span aria-hidden="true">✦</span> IA
+        <span aria-hidden="true" data-ai-star="">
+          ✦
+        </span>{' '}
+        IA
       </Link>
       <IconButton
         aria-label="Elegir proveedor y modelo"

@@ -20,7 +20,16 @@ function result(image: Locator) {
 }
 
 async function openImage(page: Page, mobile: boolean, space: string) {
-  await expect(page.getByRole('button', { name: 'Herramientas', exact: true })).toHaveCount(0);
+  // The diary tools now contain note actions. Image extraction still has a single entry in the navbar.
+  const tools = page.getByRole('button', { name: 'Herramientas', exact: true });
+  await expect(tools).toHaveCount(1);
+  await tools.click();
+  const noteTools = page.getByRole('dialog', { name: 'Herramientas', exact: true });
+  await expect(noteTools).toBeVisible();
+  await expect(noteTools.getByRole('link', { name: /imagen/i })).toHaveCount(0);
+  await expect(noteTools.getByRole('button', { name: /imagen|extraer texto/i })).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(noteTools).toHaveCount(0);
   const link = page.getByRole('link', { name: 'Imagen', exact: true });
   await expect(link).toHaveAttribute('href', `/image?space=${space}`);
   if (mobile) await link.tap();
