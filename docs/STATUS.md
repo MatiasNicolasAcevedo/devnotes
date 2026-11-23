@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-094](tasks/T-094-ai-workspace.md) · [S-116](specs/S-116-ai-workspace.md) |
-| Estado | `in_review` |
-| Siguiente acción | Frontera reviewer independiente da el veredicto sobre la corrección limitada del PR #90 ([checkpoint](tasks/T-094-ai-workspace.md#checkpoint-vigente)) |
+| Estado | `mergeable` |
+| Siguiente acción | APROBADO por reviewer independiente; squash del PR #90 y confirmación MERGED. Luego T-095 ([checkpoint](tasks/T-094-ai-workspace.md#checkpoint-vigente)) |
 | Rama / PR | `codex/t-094-ai-workspace` · [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90) |
 
 Modo `FRONTERA_CONTINUA`. T-093 conciliada. La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con IA, tráiler v2 y demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
@@ -34,13 +34,5 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer independiente de la corrección limitada de T-094 en MatiasNicolasAcevedo/devnotes. Sesión nueva, distinta de la del implementer, PR #90, rama codex/t-094-ai-workspace. Registrá rol, herramienta y modelo realmente expuestos.
-
-LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/TESTING.md#gate-diario, el checkpoint vigente de docs/tasks/T-094-ai-workspace.md y los hallazgos de la revisión de la corrección extraordinaria, y docs/specs/S-116-ai-workspace.md.
-
-PRECONDICIÓN: gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup,mergedAt,mergeCommit y git fetch origin main codex/t-094-ai-workspace. Exigí OPEN, isDraft=false, base dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795, HEAD igual a origin/codex/t-094-ai-workspace, el commit técnico 176f66c como ancestro del HEAD y verify-required SUCCESS sobre ese HEAD. Si difiere, registrá el hecho y devolvé el paso vigente sin mergear.
-
-ACCIÓN: 1) Revisá el diff de 239fff8 a HEAD: OpenRouterCatalog.compatibleRoute con bigIntegerValue().signum() == 0, los cuatro casos nuevos de estado en OpenRouterCatalogTest, y en el cliente el flag ready del issue limited (aiContext, AiPage, AiModelStatus) con el caso de Vitest para Retry-After: 0. 2) Corré lo mínimo para el veredicto: ./mvnw -q test -Dtest=OpenRouterCatalogTest,OpenRouterAiClientTest -Djacoco.skip=true en server/, y npm test -- --run src/features/ai más npm run typecheck en client/. Cotejá Failsafe y E2E con la evidencia registrada sin repetirlos, salvo que el diff lo exija. 3) Veredicto sobre los dos P2 y el gate. FULL/STARTER: DIFERIDO POR EL DUEÑO.
-
-SALIDA: si aprobás, gh pr merge 90 --repo MatiasNicolasAcevedo/devnotes --squash --match-head-commit <HEAD revisado>, sin --admin, y confirmá MERGED con gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit (state, mergedAt y mergeCommit.oid válidos). El prompt de la siguiente sesión es el de T-095 de la tarea, entregado en el chat. Si persiste un hallazgo, dejá el PR abierto, registrá la evidencia en la tarea y entregá un prompt al dueño con la pregunta exacta. T-095 sigue condicionada a MERGED confirmado. Terminá con el prompt completo.
+Frontera implementer de T-095 en MatiasNicolasAcevedo/devnotes. Leé AGENTS.md, STATUS, docs/agents/implementer.md y docs/tasks/T-095-trailer-v2.md. Precondición: PR 90 MERGED, comprobado con gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit (state MERGED, mergedAt y mergeCommit.oid válidos) y la ascendencia del squash en origin/main; si no, devolvé el paso vigente. Conciliá T-094 a done en codex/t-095-trailer-v2 en el primer commit. Partí del tráiler local y del producto probado, entregá los dos cortes con música, sus fuentes y el gate de T-095 en un PR. Cerrá con el prompt completo de reviewer independiente.
 ```

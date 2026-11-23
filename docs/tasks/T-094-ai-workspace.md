@@ -1,6 +1,6 @@
 ---
 id: T-094
-status: in_review
+status: mergeable
 priority: P1
 size: L
 milestone: M8
@@ -64,6 +64,24 @@ Si cambia el doble compartido, ejecutar además `STARTER_E2E_PROJECT=starter-e2e
 Reactivación en una decisión posterior del dueño. Para Gemini 3.8 Flash, comprobar acceso a texto Standard en el proyecto Free y obtener texto dentro de 30 s con una muestra ficticia T-072. Para OpenRouter, acreditar con metadatos vigentes una ruta compatible por cada ID exacto del ligero y una alternativa explícita Free y obtener texto real con ambos bajo la política completa y con muestras ficticias T-072. Completar la misma matriz en los dos casos.
 
 ## Checkpoint vigente
+
+2026-11-23. Frontera reviewer independiente en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, Git, gh, Maven y Node; sesión distinta de la del implementer. **APROBADO** para el [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90): HEAD técnico revisado `80d0826cd108276e48bb4c7add57c2982201119b`, base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`, commit técnico `176f66c` ancestro. Estado `mergeable`; el squash va ligado al HEAD de este commit de transición tras `verify-required` verde. T-095 sigue condicionada a MERGED confirmado con `gh pr view` y `--repo` explícito.
+
+| Hallazgo | Veredicto |
+|---|---|
+| P2 · estado de ruta fuera de rango | Cerrado. `status.isIntegralNumber() && status.bigIntegerValue().signum() == 0` exige cero exacto sin truncar y es la misma comprobación para GET y POST. Los casos `status-overflow`, `status-decimal`, `status-negative` y `status-absent` verifican opción indisponible, rechazo `MODEL` y `never()` sobre `generate`. La sustitución de cada caso se autovalida: si no aplicara, la ruta positiva quedaría disponible y el caso fallaría. |
+| P2 · `Retry-After: 0` pierde el aviso | Cerrado. Espera cero produce `limited` con `ready: true` y `retryAt: null`, así que `AiProvider` no lo expira; tono `warning` con icono y etiqueta, Enviar habilitado, sin botón de rehabilitación manual, y el aviso se limpia solo al iniciar un Enviar deliberado. Espera positiva, ausente o inválida conservan su camino previo. Vitest cubre `ai-rate-limit` y `ai-quota`: aviso en región viva y selector, borrador intacto, 1 POST sin reenvío y 2 tras Enviar. |
+
+| Comando | Resultado |
+|---|---|
+| `gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup,mergedAt,mergeCommit`, `git fetch origin main codex/t-094-ai-workspace`, `git merge-base --is-ancestor 176f66c origin/codex/t-094-ai-workspace` | Exit 0. OPEN, `isDraft=false`, HEAD `80d0826` igual al remoto, base `dee843c` igual a `origin/main`, ancestro OK, `verify-required` SUCCESS sobre `80d0826` |
+| `./mvnw -q test -Dtest=OpenRouterCatalogTest,OpenRouterAiClientTest -Djacoco.skip=true` | Exit 0. 21/21 y 3/3 |
+| `npm test -- --run src/features/ai` y `npm run typecheck` | Exit 0, 12/12 · exit 0 |
+| Failsafe 14/14 y E2E IA 4/4 escritorio, 1/1 móvil | Cotejados con la evidencia del implementer, no repetidos: el diff no toca IT, API, doble compartido ni E2E |
+
+Render Auto-Deploy On Commit desplegará el squash; sin cambios de configuración ni datos reales. Recomendación de gate integrado: T-094 agrega rutas privadas y cambia Compose. **FULL/STARTER: DIFERIDO POR EL DUEÑO.**
+
+### Evidencia de la corrección limitada
 
 2026-11-23. Frontera implementer de corrección limitada en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, Git, gh, Maven, Node y Docker. Se aplicaron los dos P2 de la [revisión de la corrección extraordinaria](#hallazgos-de-la-revisión-de-la-corrección-extraordinaria) en el [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90), dentro del contrato cerrado. Commit técnico `176f66c`. Próximo responsable: frontera reviewer independiente. T-095 espera MERGED verificado con `gh pr view` y `--repo` explícito.
 
