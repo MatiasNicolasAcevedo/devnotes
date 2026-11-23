@@ -65,6 +65,25 @@ Reactivación en una decisión posterior del dueño. Para Gemini 3.8 Flash, comp
 
 ## Checkpoint vigente
 
+2026-11-22. Frontera planner de cierre en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, Git y gh. Decisión del dueño en la sesión, respuesta «Autorizo la corrección»: se autoriza **una corrección limitada** de los dos P2 de la [revisión de la corrección extraordinaria](#hallazgos-de-la-revisión-de-la-corrección-extraordinaria) en el mismo [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90). Próximo responsable: frontera implementer en sesión nueva. Después, reviewer independiente. Si persiste un hallazgo, el PR sigue abierto y vuelve al dueño. T-095 espera MERGED verificado con `gh pr view` y `--repo` explícito.
+
+Contrato cerrado. No cambia otra regla, ruta, permiso, dato ni dependencia. Se conservan los cinco destinos del piloto, los dos diferimientos (Gemini 3.8 Flash y OpenRouter Free), los cuatro adaptadores, las cinco respuestas reales registradas y Render Auto-Deploy On Commit. Solo dobles y muestras ficticias, sin inferencia real.
+
+| Hallazgo | Corrección exigida | Rojo previo y prueba de cierre |
+|---|---|---|
+| P2 · Estado de ruta fuera de rango de `long` aceptado como operativo | En `OpenRouterCatalog.compatibleRoute`, aceptar solo un estado entero que sea exactamente cero sin conversión que trunque o redondee (por ejemplo comparar `canConvertToLong()` y el valor, o `bigIntegerValue().signum() == 0`). Cualquier estado ausente, no entero, fuera de rango o distinto de cero deja la ruta incompatible. La misma comprobación rige GET y POST. | Rojo: `OpenRouterCatalogTest#listsUnavailableAndRejectsBeforeInferenceWithIncompatibleEndpoints` con el estado `18446744073709551616` en la ruta exacta y los demás campos válidos, exit 1 antes del arreglo. Cierre: opción indisponible con motivo, rechazo antes del despacho y **cero llamadas** al doble de inferencia para ese caso y para un estado decimal o negativo. El positivo existente sigue verde. |
+| P2 · Un 429 con `Retry-After: 0` pierde el aviso | En `AiPage`/`AiProvider`, una espera válida de cero no debe borrar el estado en el mismo ciclo. Conservar el anuncio accesible del rechazo («Límite temporal del proveedor» o «Cuota agotada» según `ai-rate-limit`/`ai-quota`) en selector, compositor y región viva hasta el siguiente envío deliberado o un cambio de destino. Con espera cero, Enviar queda habilitado sin espera adicional, sin rehabilitación manual obligatoria y sin reenvío automático. Borrador y fragmento intactos. | Rojo: `AiWorkspace.test.tsx -t 'confirma el modelo elegido'` con `Retry-After: 0`, exit 1 antes del arreglo. Cierre en Vitest: ambos códigos con espera cero muestran el aviso accesible, Enviar habilitado, borrador y fragmento conservados, un único POST hasta una nueva pulsación de Enviar y exactamente dos tras ella. Se conservan espera positiva, ausencia de espera con rehabilitación manual y concurrencia local `ai-busy`. |
+
+Gate del implementer: ambos rojos y su paso a verde, los comandos de [Aceptación y pruebas](#aceptación-y-pruebas) (Maven `verify` dirigido con Failsafe sobre PostgreSQL 18.6, Vitest y typecheck, E2E `ai workspace:` escritorio y móvil con dobles; la regresión OCR/Voz solo si cambia el doble compartido), cleanup por label exacto, docs-check y `verify-required` verde sobre el HEAD publicado. `bash scripts/verify.sh --policy origin/main` solo informa. **FULL/STARTER: DIFERIDO POR EL DUEÑO.**
+
+| Comando | Resultado |
+|---|---|
+| `gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup,mergedAt,mergeCommit` | Exit 0. OPEN, `isDraft=false`, HEAD `d502efa5e1cb2dc1b503c200c5e144782461c7d8`, base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`, sin merge, [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/45101835114/job/137454218727). |
+| `git fetch origin main codex/t-094-ai-workspace` y `git rev-parse HEAD origin/codex/t-094-ai-workspace origin/main` | Exit 0. HEAD local igual a remoto, `origin/main` igual a la base. |
+| `git diff --exit-code 4a99c87e29fb5477c6313ed47dadfbe2ef3ba1d3 origin/codex/t-094-ai-workspace -- . ':(exclude)docs/STATUS.md' ':(exclude)docs/tasks/T-094-ai-workspace.md'` | Exit 0. El árbol técnico publicado es el revisado. |
+
+### Hallazgos de la revisión de la corrección extraordinaria
+
 2026-11-22. Frontera reviewer independiente en Codex desktop (familia GPT-6, versión puntual sin exponer), PowerShell, Git, gh, Maven y Node. **CAMBIOS REQUERIDOS** para el [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90), HEAD `718a3847a2bd60694b540a28a10e54abaf29451d`, base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`, padre técnico `4a99c87e29fb5477c6313ed47dadfbe2ef3ba1d3`. Impacto pendiente en la decisión de despacho del adaptador OpenRouter diferido y el aviso accesible de un 429. La sesión solo publica documentación de revisión.
 
 | Hallazgo | Evidencia y condición de cierre |
