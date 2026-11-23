@@ -362,7 +362,7 @@ test('spaces: SP-05 cancel, discard and save voice drafts before switching', asy
   expect(await counts(page, 'personal')).toEqual(none);
 });
 
-test('spaces: SP-06/SP-07 responsive navigation, history, tabs and logout preference', async ({ page, context, identity }, testInfo) => {
+test('spaces: SP-06/SP-07 responsive navigation, history, tabs and logout preference', async ({ page, context, identity, isMobile }, testInfo) => {
   const owner = await login(page, identity);
   const preference = 'devnotes:last-space:' + owner;
   await openNote(page, 'work');
@@ -373,7 +373,7 @@ test('spaces: SP-06/SP-07 responsive navigation, history, tabs and logout prefer
     await expect(banner.getByRole('link', { name: 'DevNotes', exact: true })).toHaveCount(0);
     await expect(selector(page, 'work')).toHaveText('Trabajo');
     await expect(selector(page, 'work')).toHaveCSS('color', 'rgb(134, 239, 172)');
-    expect((await selector(page, 'work').boundingBox())!.height).toBeGreaterThanOrEqual(44);
+    expect((await selector(page, 'work').boundingBox())!.height).toBeGreaterThanOrEqual(!isMobile && width < 768 ? 28 : 44);
     await expect(banner.getByRole('navigation')).toHaveCount(width >= 768 ? 1 : 0);
     for (const name of ['Notas', 'Voz', 'Referencias', 'Historial']) {
       const link = nav.getByRole('link', { name, exact: true });

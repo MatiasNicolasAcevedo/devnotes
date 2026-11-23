@@ -1,6 +1,6 @@
 ---
 id: T-098
-status: ready
+status: in_progress
 priority: P1
 size: S
 milestone: post-M9
@@ -41,14 +41,18 @@ En Diario y Libres, leer y escribir más líneas al usar DevNotes con mouse o tr
 
 ## Checkpoint vigente
 
-2026-11-23. Frontera planner en Codex Desktop con GPT-6, variante y esfuerzo sin dato expuesto. Revisión de captura, skill frontend-design, shell, controles y regresiones; contrato propuesto de UI y pruebas. Base `origin/main@6482556c8a02b607970f4c73d68b55d1de2d210d`. Pendientes: conformidad del dueño, merge del PR documental y, en otra sesión, implementación con medidas de navegador. La operación de PostgreSQL del dueño se sigue registrando en STATUS.
+2026-11-23. Frontera implementer en Codex Desktop con GPT-6, variante y esfuerzo sin dato expuesto. PowerShell, Git Bash, gh, Node 24.21.0 y Docker Desktop. Base `origin/main@80ca79c770590f2557a755a2971d08db5ffd5ac8`. Impacto en UI de Diario y Libres autenticados. La ruta, los permisos, la API y los datos conservan su contrato. Implementación y gate dirigidos en curso. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
 | Comando | Exit y resultado |
 |---|---|
-| `gh pr view 95 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit` | 0 con red autorizada. MERGED el 2026-11-23T16:20:27Z, squash `6482556c8a02b607970f4c73d68b55d1de2d210d`. La consulta inicial dentro del sandbox dio 1 por conexión a GitHub. |
-| `git merge-base --is-ancestor 6482556c8a02b607970f4c73d68b55d1de2d210d origin/main` | 0. |
-| `node scripts/docs-check.mjs` | 0 en worktree aislado, 163 Markdown y 93 tareas. |
-| `git diff --check` | 0. |
+| `gh pr view codex/t-098-compact-window-plan --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit` | 0 con red autorizada. PR #96 MERGED el 2026-11-23T18:49:03Z, squash `80ca79c770590f2557a755a2971d08db5ffd5ac8`. El primer intento dentro del sandbox dio 1 por conexión a GitHub. |
+| `git fetch origin main` y `git merge-base --is-ancestor 80ca79c770590f2557a755a2971d08db5ffd5ac8 origin/main` | 0 y 0. |
+| `STARTER_E2E_PROJECT=starter-e2e-t098-base-measure bash scripts/e2e.sh --grep 'compact writing header:' --project desktop` | 1 esperado sobre el cliente de base. La prueba esperaba 32 px y midió 48 y 56 px. |
+
+| Área, 640×480 CSS px | Cabecera base | Editor útil base |
+|---|---:|---:|
+| Diario, viewport de escritura vacío y enfocado | 48 | 296,23 |
+| Libres, parte visible del contenido de un borrador largo, desde el inicio del formulario | 56 | 183,08 |
 
 ## Prompts de salida
 

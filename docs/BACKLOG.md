@@ -2,7 +2,7 @@
 
 Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este índice solo cambia al cambiar la cola o sus dependencias.
 
-## Listas
+## Tarea actual
 
 | Tarea | Resultado | Entrada |
 |---|---|---|

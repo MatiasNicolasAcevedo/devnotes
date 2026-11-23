@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-098](tasks/T-098-compact-writing-header.md) · [S-117](specs/S-117-compact-writing-header.md) |
-| Estado | `ready` |
-| Siguiente acción | El dueño revisa el plan de la barra compacta. Tras su conformidad y el merge documental, frontera implementer aplica T-098 en sesión nueva. |
-| Rama / PR | Plan `codex/t-098-compact-window-plan` · implementación `codex/t-098-compact-writing-header` |
+| Estado | `in_progress` |
+| Siguiente acción | Frontera implementer verifica la barra compacta y completa el gate dirigido. |
+| Rama / PR | `codex/t-098-compact-writing-header` · plan #96 MERGED |
 
 Modo `FRONTERA_CONTINUA`. T-097 conciliada ([PR #94](https://github.com/MatiasNicolasAcevedo/devnotes/pull/94) MERGED, `8b0ddd5`): con ella cierran el M9 y el [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia). El dueño decidió el 2026-11-23 borrar la base Free actual y crear una nueva, sin respaldo: el proyecto todavía no se usa en producción y empieza a usarse con la base nueva. Los demás pendientes siguen abajo. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
 

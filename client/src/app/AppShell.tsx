@@ -92,6 +92,8 @@ function SpaceWorkspaces({
 
 const VOICE_TAB = { label: 'Voz', to: '/voice', Icon: MicIcon }
 const NOTES_TAB = { label: 'Notas', to: '/notes', Icon: NoteIcon }
+const COMPACT_WRITING_VIEWPORT =
+  '(width < 768px) and (hover: hover) and (pointer: fine) and (not (any-pointer: coarse))'
 const OTHER_TABS = [
   { label: 'Referencias', to: '/reference', Icon: BookmarkIcon },
   { label: 'Imagen', to: '/image', Icon: ImageIcon },
@@ -174,7 +176,10 @@ function AppShellContent({
   const { status } = useSession()
   const { pathname } = useLocation()
   const daily = matchPath('/notes/:date?', pathname) != null
-  const headerHeight = daily ? 48 : 56
+  const freeNotes = matchPath({ path: '/free-notes', end: false }, pathname) != null
+  const narrowFinePointer = useMediaQuery(COMPACT_WRITING_VIEWPORT, { noSsr: true })
+  const compactWriting = status === 'authenticated' && (daily || freeNotes) && narrowFinePointer
+  const headerHeight = compactWriting ? 32 : daily ? 48 : 56
   const desktop = useMediaQuery('(min-width: 768px)', { noSsr: true })
   // Datos sigue siendo un enlace del shell para el coordinador de navegación diaria.
   const menuContainer = () => navigationRoot.current
@@ -200,6 +205,12 @@ function AppShellContent({
           sx={{
             gap: desktop ? 1.5 : 0.5,
             minHeight: headerHeight,
+            ...(compactWriting && {
+              '--shell-control-size': '28px',
+              '--shell-label-size': '0.8125rem',
+              '--shell-focus-offset': '-2px',
+              '--shell-control-block-padding': '0px',
+            }),
             pl: 'max(8px, env(safe-area-inset-left))',
             pr: 'max(8px, env(safe-area-inset-right))',
           }}
@@ -248,7 +259,7 @@ function AppShellContent({
                 : undefined,
             '--free-writing-height': desktop
               ? `calc(100dvh - ${headerHeight}px - env(safe-area-inset-top) - 24px)`
-              : 'calc(100dvh - 120px - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
+              : `calc(100dvh - ${headerHeight}px - 48px - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom))`,
           }}
         >
           <SessionAlerts />
