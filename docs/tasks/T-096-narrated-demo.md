@@ -1,6 +1,6 @@
 ---
 id: T-096
-status: mergeable
+status: done
 priority: P2
 size: M
 milestone: M9
@@ -30,6 +30,8 @@ Entregar, después del tráiler v2, un recorrido reproducible en español que en
 Toda función habilitada del SHA tiene una escena o una razón verificable de exclusión por entorno/permiso. La narración nombra el control cuando aparece, deja oír la explicación hasta el final y el resultado queda visible. Revisar reproducción completa con y sin audio, sincronía en cada cambio de capítulo, cues ordenados sin solapamiento ni texto cortado. Ejecutar `ffprobe -v error -show_entries stream=codec_type,width,height:format=duration -of json demo.mp4` y `ffprobe -v error -show_packets -select_streams s -show_entries packet=pts_time,duration_time -of csv demo.es.srt`. Cotejar último cue contra duración real y comprobar caracteres españoles en el reproductor. Gate documental, CI del HEAD y FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
 ## Checkpoint vigente
+
+Conciliada el 2026-11-23 en la rama de planificación de T-097. `gh pr view 92 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit` devolvió `MERGED`, `2026-11-23T15:27:11Z` y `57596581876a776edfed0e1769c23827d8d059de`. `git fetch origin` y `git merge-base --is-ancestor 5759658 origin/main` dieron exit 0. La tarea siguiente es [T-097](T-097-demo-page.md).
 
 ### Revisión independiente
 
