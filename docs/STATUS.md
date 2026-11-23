@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-096](tasks/T-096-narrated-demo.md) |
-| Estado | `mergeable` |
-| Siguiente acción | Reviewer APROBÓ el HEAD revisado y el dueño confirmó haber visto y escuchado `demo.mp4`; squash merge del PR #92 y después frontera planner de T-097 ([revisión](tasks/T-096-narrated-demo.md#revisión-independiente)) |
-| Rama / PR | `codex/t-096-narrated-demo` · [PR #92](https://github.com/MatiasNicolasAcevedo/devnotes/pull/92) |
+| Tarea y contrato | [T-097](tasks/T-097-demo-page.md) |
+| Estado | `ready` |
+| Siguiente acción | Contrato en el PR de planificación [PR #93](https://github.com/MatiasNicolasAcevedo/devnotes/pull/93). El dueño revisa el plan; con su conformidad expresa, el planner hace el squash y confirma `MERGED`. Después, frontera implementer de T-097 |
+| Rama / PR | `codex/t-097-demo-page-plan` · [PR #93](https://github.com/MatiasNicolasAcevedo/devnotes/pull/93) (planificación). La implementación va en `codex/t-097-demo-page` |
 
-Modo `FRONTERA_CONTINUA`. T-095 conciliada ([PR #91](https://github.com/MatiasNicolasAcevedo/devnotes/pull/91) MERGED, `b0e46a3`). La [cola](BACKLOG.md#lote-imagen-libres-e-ia) termina con la demo narrada; el dueño pidió después una página Demo con los dos videos ([intención](tasks/T-096-narrated-demo.md#intención-del-dueño-para-la-tarea-siguiente)). [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
+Modo `FRONTERA_CONTINUA`. T-096 conciliada ([PR #92](https://github.com/MatiasNicolasAcevedo/devnotes/pull/92) MERGED, `5759658`). La [cola](BACKLOG.md#lote-imagen-libres-e-ia) termina con T-097: página Demo pública con el tráiler y la demo de YouTube, destino rojo en la barra superior también en móvil ([decisiones del dueño](tasks/T-097-demo-page.md#decisiones-del-dueño)). [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
 Piloto aprobado con cinco destinos: Groq 20B/120B, Workers AI 20B/120B y Gemini 3.1 Flash-Lite. Gemini 3.8 Flash y OpenRouter Free quedan diferidos. El selector y el compositor muestran disponibilidad, fallos y cuota. El usuario elige y confirma otro destino. [Decisión y cierre observable](tasks/T-094-ai-workspace.md#decisión-de-alcance-del-dueño). FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
@@ -27,12 +27,12 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 | Dato | Valor |
 |---|---|
 | Último integrado válido | FULL local del 2026-11-15 sobre `398801f` ([T-069](tasks/T-069-ocr-workspace.md#evidencia-del-full-de-cierre)); STARTER de T-068 conservado |
-| Mergeado desde entonces | T-070 (recorrido E2E de OCR), T-074 (navegación de Imagen), T-071 y T-092 (documentales), la adopción documental del flujo y el encadenamiento del lote hasta T-085 |
+| Mergeado desde entonces | T-070 (recorrido E2E de OCR), T-074 (navegación de Imagen), T-071 y T-092 (documentales), la adopción documental del flujo, el encadenamiento del lote hasta T-085 y T-093 a T-096 (IA Free, tráiler y demo narrada) |
 | Corte acumulado | Desde `7aa8946` hasta el HEAD de `main` que indique el dueño ([TESTING](TESTING.md#corte-acumulado-vigente)). El FULL/STARTER de I5 sigue diferido |
 | Recomendación | Ejecutar el integrado del corte acumulado con V8 y V9 cuando el dueño lo ordene. T-094 incorpora rutas privadas y cambia Compose |
 
 ### Prompt de la siguiente sesión
 
 ```text
-Frontera planner de T-097 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/agents/planner.md, docs/WORKFLOW.md y docs/tasks/T-096-narrated-demo.md («Intención del dueño para la tarea siguiente») y media/demo/YOUTUBE.md. PRECONDICIÓN: gh pr view 92 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit devuelve MERGED con mergedAt y mergeCommit.oid válidos, y git merge-base --is-ancestor con ese oid y origin/main sale con exit 0; si no, devolvé el paso vigente. ACCIÓN: conciliá T-096 a done con el SHA de merge en una rama de planificación. Escribí T-097, la página Demo: destino Demo destacado junto a Historial, reproductor central con lista lateral de los dos videos, embed youtube-nocookie cargado al hacer clic con los IDs -xhokMtK-Hw (tráiler) y XAIHdmHAhA0 (demo) y las portadas de media/demo/youtube. Resolvé con el dueño el lugar en la navegación móvil de cinco destinos y la visibilidad sin sesión, y definí pruebas de componente y el E2E filtrado. Encolala en BACKLOG y STATUS. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: PR de planificación con el contrato y el prompt completo para el implementer de T-097.
+Frontera implementer de T-097 en MatiasNicolasAcevedo/devnotes, sesión nueva. LEER: AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md y docs/tasks/T-097-demo-page.md completa. PRECONDICIÓN: gh pr view 93 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit devuelve MERGED con mergedAt y mergeCommit.oid válidos, y git merge-base --is-ancestor con ese oid y origin/main sale con exit 0; si no, informá el estado real y entregá el paso vigente. ACCIÓN: (1) Creá codex/t-097-demo-page desde origin/main; en el primer commit pasá T-097 a in_progress y STATUS a la implementación. (2) Implementá los pasos 1 a 3 de la tarea: DEMO_RED, PlayIcon, videos.ts con las portadas copiadas de media/demo/youtube, DemoPage con el iframe youtube-nocookie montado recién al clic, DemoLink en la barra superior fuera de «Navegación principal», ruta pública /demo, pruebas de componente, e2e/tests/demo-page.spec.ts y Demo en la lista controls del caso T-050. (3) Corré los comandos de «Aceptación y pruebas» y registrá exit y resultados en el checkpoint. (4) Publicá el PR con Conventional Commits en inglés y footer Refs: T-097, staging de rutas explícitas y trailer/ sin versionar. GATE: diario (Vitest dirigido, typecheck, E2E "demo page:" en desktop y mobile, regresión "T-050|T-064|SP-06", docs-check, verify-required). FULL y STARTER están diferidos: no ejecutarlos sin orden expresa del dueño. SALIDA: PR de T-097 listo para revisión y el prompt de reviewer de la tarea, con número de PR y SHA, en STATUS y completo en la respuesta final.
 ```

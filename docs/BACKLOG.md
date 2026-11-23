@@ -59,7 +59,8 @@ La primera entrega de [S-112](specs/S-112-screenshot-ocr.md) terminó en T-071. 
 | 14 | [T-093](tasks/T-093-ai-media-plan.md) · Plan de IA y materiales finales | T-085 |
 | 15 | [T-094](tasks/T-094-ai-workspace.md) · IA Free completa y prueba por proveedor | T-093 |
 | 16 | [T-095](tasks/T-095-trailer-v2.md#checkpoint-vigente) · Tráiler musical v2 de escritorio (16:9); done tras PR91 MERGED (squash `b0e46a3`) | T-094 |
-| 17 | [T-096](tasks/T-096-narrated-demo.md) · Recorrido completo, guion, voz y SRT | T-095 |
+| 17 | [T-096](tasks/T-096-narrated-demo.md#checkpoint-vigente) · Recorrido completo, guion, voz y SRT; done tras PR92 MERGED (squash `5759658`) | T-095 |
+| 18 | [T-097](tasks/T-097-demo-page.md) · Página Demo pública con el tráiler y la demo de YouTube; `ready` | T-096 |
 
 ### Pendientes tras T-071
 
