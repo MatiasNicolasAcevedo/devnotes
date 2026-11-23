@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-094](tasks/T-094-ai-workspace.md) · [S-116](specs/S-116-ai-workspace.md) |
-| Estado | `changes_requested` |
-| Siguiente acción | Frontera implementer corrige los dos hallazgos del PR #90 en una sesión nueva |
+| Estado | `in_review` |
+| Siguiente acción | Frontera reviewer independiente verifica la corrección extraordinaria y el gate del PR #90 |
 | Rama / PR | `codex/t-094-ai-workspace` · [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90) |
 
 Modo `FRONTERA_CONTINUA`. T-093 conciliada. La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con IA, tráiler v2 y demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
@@ -34,15 +34,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera implementer de corrección extraordinaria de T-094 en MatiasNicolasAcevedo/devnotes. Sesión nueva, PR #90, rama codex/t-094-ai-workspace.
+Actuá como frontera reviewer independiente de la corrección extraordinaria de T-094 en MatiasNicolasAcevedo/devnotes. Sesión nueva, PR #90, rama codex/t-094-ai-workspace.
 
-LEER: AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/agents/implementer.md, docs/tasks/T-094-ai-workspace.md (checkpoint y segunda revisión), docs/specs/S-116-ai-workspace.md, server/AGENTS.md y client/AGENTS.md.
+LEER: AGENTS.md, docs/STATUS.md, docs/AUTONOMY.md, docs/agents/reviewer.md, docs/tasks/T-094-ai-workspace.md (checkpoint y segunda revisión), docs/specs/S-116-ai-workspace.md, server/AGENTS.md y client/AGENTS.md.
 
-PRECONDICIÓN: ejecutá gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup y git fetch origin main codex/t-094-ai-workspace. Confirmá PR OPEN, isDraft=false, base dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795 y refs iguales a GitHub. Verificá con git rev-parse origin/codex/t-094-ai-workspace^ que el padre es e19dc465d72073f0a0d3af15c2ffe8d4587f7834 y que el HEAD publicado solo registra esta decisión en STATUS y T-094. Si cambió la precondición, informá el estado real y entregá el prompt corregido.
+PRECONDICIÓN: ejecutá gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup y git fetch origin main codex/t-094-ai-workspace. Confirmá PR OPEN y listo para revisión, base dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795, refs iguales a GitHub y verify-required SUCCESS sobre el HEAD publicado. Con git rev-parse 'origin/codex/t-094-ai-workspace^' verificá el padre técnico 4a99c87e29fb5477c6313ed47dadfbe2ef3ba1d3. El HEAD agrega el checkpoint de T-094 y STATUS. Si cambió la precondición, informá el estado real y entregá el prompt vigente.
 
-ACCIÓN: resolvé solo los dos hallazgos en el mismo PR. En OpenRouter, exigí evidencia positiva de la política completa de S-116 y un identificador que restrinja la inferencia a la ruta exacta de la variante :free. Metadatos ausentes, indeterminados o ruta ambigua implican indisponibilidad y cero POST de inferencia. Cubrí esos negativos y el positivo con dobles. Para 429 remoto, usá «Límite temporal del proveedor» si el motivo es incierto y reservá «Cuota agotada» para una señal inequívoca comprobada. Separá la concurrencia local. Conservá borrador y fragmento, respetá Retry-After válido y permití rehabilitar el intento explícitamente si falta una espera válida. Solo Enviar con el destino confirmado hace una consulta. Reusá los flujos existentes y documentá las señales que siguen siendo inciertas.
+ACCIÓN: revisá ambos hallazgos y sus regresiones. En OpenRouter, cotejá la evidencia de política y precio, el ID :free exacto, la unicidad del slug y las restricciones del POST. Comprobá cero inferencias con metadatos insuficientes y en el piloto diferido. En 429, verificá límite temporal genérico, señal diaria inequívoca de Groq y concurrencia local, borrador y fragmento, Retry-After y rehabilitación manual. Cotejá que solo Enviar con destino confirmado consulta. Conservá la matriz real de cinco destinos, los dos diferimientos y Render Auto-Deploy On Commit.
 
-GATE: reproducí los dos rojos y aplicá el gate diario de T-094 con pruebas dirigidas, E2E filtrado, docs-check y verify-required verde sobre el HEAD publicado. Usá dobles externos y muestras ficticias. Conservá la evidencia real ya registrada para los cinco destinos, los dos diferimientos y Render Auto-Deploy On Commit. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: cotejá los rojos y el gate diario sobre las fuentes publicadas, incluidos PostgreSQL 18, Vitest y typecheck, E2E filtrados con dobles, docs-check y CI. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-SALIDA: publicá la corrección y su checkpoint en el PR #90. Dejá el prompt completo para un reviewer independiente centrado en ambos hallazgos y el gate. Si queda un hallazgo abierto, devolvé la evidencia a dueño o frontera. T-095 sigue condicionada a MERGED verificado según AUTONOMY.
+SALIDA: emití el veredicto ligado al HEAD/base. Si aprobás, seguí AUTONOMY para el squash y confirmá MERGED, mergedAt y mergeCommit.oid mediante gh pr view con --repo explícito. Si persiste un hallazgo, mantené el PR abierto y devolvé la evidencia a dueño o frontera. T-095 queda condicionada a MERGED verificado. Terminá con el prompt completo que corresponda.
 ```
