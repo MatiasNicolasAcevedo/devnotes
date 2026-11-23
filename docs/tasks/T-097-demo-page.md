@@ -1,6 +1,6 @@
 ---
 id: T-097
-status: in_progress
+status: in_review
 priority: P2
 size: M
 milestone: M9
@@ -9,7 +9,7 @@ depends_on: [T-096]
 branch: codex/t-097-demo-page
 role: implementer
 executor: frontier
-pr: null
+pr: 94
 ---
 
 # T-097 · Página Demo con el tráiler y la demo narrada
@@ -110,7 +110,32 @@ El último comando solo informa el perfil del diff. FULL/STARTER: DIFERIDO POR E
 
 ## Checkpoint vigente
 
-2026-11-23. Contrato escrito por frontera planner en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`) sobre `origin/main` `5759658`, con las decisiones del dueño de esta sesión. Sin implementación todavía.
+2026-11-23. Frontera implementer en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, gh, Node 24 y Docker Desktop. [PR #94](https://github.com/MatiasNicolasAcevedo/devnotes/pull/94), rama `codex/t-097-demo-page` sobre `origin/main` `74ccaf6`. Precondición: PR #93 `MERGED` (`2026-11-23T15:36:29Z`, `74ccaf61abcb69b805115e37cb3389fb4701b00d`) y `git merge-base --is-ancestor` exit 0. Commits: `5fe5bb3` (estado), `ac5154e` (implementación), `8efa323` (ajuste de regresiones) y el commit documental hijo con este checkpoint, que es el HEAD de entrega.
+
+**Hecho.** Pasos 1 a 3 completos según el contrato: `DEMO_RED`, `PlayIcon`, `videos.ts` con `embedUrl` como único constructor de la URL del embed, portadas copiadas byte a byte (`cmp`) desde `media/demo/youtube/`, `DemoPage`, `DemoLink` fuera de «Navegación principal» (tras Historial en escritorio, antes del estado en móvil, solo ícono por debajo de 360 px), ruta pública `/demo`. Sin cambios de servidor, `nginx.conf`, `vite.config.ts` ni CSP. `trailer/` sigue sin versionar.
+
+**Impacto.** UI: un destino nuevo en la barra superior y una página pública. Sin cambios de API, permisos ni datos. El único tercero es `www.youtube-nocookie.com`, contactado solo tras un clic.
+
+| Comando | Exit | Resultado |
+|---|---|---|
+| `npm test -- --run src/features/demo src/app/AppShell.test.tsx src/app/AppRoutes.test.tsx` | 0 | 3 archivos, 34 pruebas |
+| `npm run typecheck` | 0 | |
+| `npx eslint src/features/demo src/app src/shared/ui --max-warnings 0` | 0 | |
+| `npx prettier --check src/features/demo src/app src/shared/ui` | 0 | |
+| `STARTER_E2E_PROJECT=starter-e2e-t097-desktop bash scripts/e2e.sh --grep "demo page:" --project desktop` | 0 | 2/2, 129 s |
+| `STARTER_E2E_PROJECT=starter-e2e-t097-mobile bash scripts/e2e.sh --grep "demo page:" --project mobile` | 0 | 2/2, 92 s |
+| `STARTER_E2E_PROJECT=starter-e2e-t097-shell bash scripts/e2e.sh --grep "T-050\|T-064\|SP-06" --project desktop` | 1 → 0 | Primera corrida: T-050 y T-064 rojas (ver correcciones). Tras `8efa323`: 3/3, 118 s |
+| Línea base en worktree temporal de `origin/main`: `STARTER_E2E_PROJECT=starter-e2e-t097-baseline bash scripts/e2e.sh --grep "T-050" --project desktop` | 1 | Mismo error de T-050 (56 esperado, 48 recibido): falla previa a T-097 |
+| `node scripts/docs-check.mjs` | 0 | En worktree limpio del HEAD técnico. En el checkout del dueño da 1 error solo por `trailer/CLAUDE.md`, carpeta no versionada que no se toca |
+| `git diff --check origin/main...HEAD` | 0 | |
+| `bash scripts/verify.sh --policy origin/main` | 0 | `policy=FULL`, `profile=APPLICATION`, 16 rutas. FULL/STARTER: DIFERIDO POR EL DUEÑO |
+
+| Corrección | Causa | Arreglo | Prueba / SHA |
+|---|---|---|---|
+| T-064 | A 640 px, Shift+Tab desde Cuenta ahora llega a Demo, que el contrato ubica entre el selector y el estado. La frase «T-064 pasa sin cambios» choca con esa ubicación | La prueba pasa por Demo enfocado y con otro Shift+Tab llega al selector; el resto del caso queda igual | Regresión 3/3, `8efa323` |
+| T-050 | Esperaba barra de 56 px en `/notes`; T-081 (PR #84) la compactó a 48 px. Ya fallaba en `origin/main` | Expectativa a 48 px con comentario; Demo agregado a `controls` según el contrato | Línea base exit 1; regresión 3/3, `8efa323` |
+
+Pendiente: revisión independiente y `verify-required` verde sobre el HEAD publicado. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
 ## Prompts de salida
 
