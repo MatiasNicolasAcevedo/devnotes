@@ -4,10 +4,12 @@
 |---|---|
 | Tarea y contrato | [T-094](tasks/T-094-ai-workspace.md) · [S-116](specs/S-116-ai-workspace.md) |
 | Estado | `changes_requested` |
-| Siguiente acción | El dueño resuelve el alcance del piloto Free antes de devolver el PR #90 a un implementer nuevo |
+| Siguiente acción | Frontera implementer nuevo corrige el PR #90 con el piloto Free acotado |
 | Rama / PR | `codex/t-094-ai-workspace` · [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90) |
 
 Modo `FRONTERA_CONTINUA`. T-093 conciliada. La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con IA, tráiler v2 y demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
+
+Piloto aprobado con cinco destinos: Groq 20B/120B, Workers AI 20B/120B y Gemini 3.1 Flash-Lite. Gemini 3.8 Flash y OpenRouter Free quedan diferidos. El selector y el compositor muestran disponibilidad, fallos y cuota. El usuario elige y confirma otro destino. [Decisión y cierre observable](tasks/T-094-ai-workspace.md#decisión-de-alcance-del-dueño). FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
 ## Pendientes del dueño
 
@@ -32,15 +34,20 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como dueño de DevNotes con frontera para resolver T-094 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
+Actuá como frontera implementer de corrección de T-094 en MatiasNicolasAcevedo/devnotes. Sesión nueva, mismo PR #90 y rama codex/t-094-ai-workspace.
 
-Leé AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-094-ai-workspace.md, docs/specs/S-116-ai-workspace.md y la sección IA de docs/design/WRITING-WORKSPACES.md.
+LEER: AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-094-ai-workspace.md, docs/specs/S-116-ai-workspace.md, la sección IA de docs/design/WRITING-WORKSPACES.md y el banco ficticio de T-072.
 
-Ejecutá gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup y git fetch origin main codex/t-094-ai-workspace. Confirmá que el PR sigue OPEN y que HEAD/base coinciden con los refs publicados, con base dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795 y el checkpoint de cambios requeridos de T-094 en HEAD. Si cambió la precondición, informá el estado real y entregá el prompt corregido.
+PRECONDICIÓN: ejecutá gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup y git fetch origin main codex/t-094-ai-workspace. Confirmá OPEN, refs iguales a GitHub, base dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795 y HEAD con la decisión publicada y el checkpoint de reviewer 3f0ffde6f16c1c703c32edbbc6c9afba34e1b97f como ancestro. Verificá con git merge-base --is-ancestor 3f0ffde6f16c1c703c32edbbc6c9afba34e1b97f origin/codex/t-094-ai-workspace. Si cambió la precondición o no se puede verificar, informá el estado real y entregá el prompt corregido.
 
-Resolvé esta decisión de alcance: ¿mantenés la aceptación de los cuatro proveedores con los modelos de S-116 hasta acreditar Gemini 3.8 Flash y OpenRouter Free con una ruta compatible, o autorizás un ajuste explícito de S-116/T-094 que identifique qué modelo o proveedor queda indisponible o diferido y la nueva evidencia exigida? Si mantenés el contrato, el piloto debe devolver texto para Gemini 3.8 Flash y para el OpenRouter ligero y una alternativa Free elegible, con muestras ficticias de T-072 y la matriz completa. Si aún falta una ruta compatible, conservá el bloqueo o resolvé el alcance de forma explícita.
+ACCIÓN
+1. Aplicá el alcance de S-116/T-094. El piloto ofrece Groq 20B/120B, Workers AI 20B/120B y Gemini 3.1 Flash-Lite. Gemini 3.8 Flash y OpenRouter Free quedan diferidos, sin selección ni envío en el piloto, incluso con credenciales cargadas. Probá el catálogo y el rechazo de ambos destinos vía POST directo. Conservá los cuatro adaptadores y el positivo de OpenRouter con un doble externo en pruebas aisladas de compatibilidad.
+2. Corregí OpenRouter según los hallazgos de T-094. GET y POST deben compartir la comprobación vigente de ruta para la variante de texto :free exacta. Ausencia de ruta, variante distinta, precio desconocido o no cero, política incompatible y caché vencida sin refresco válido dejan indisponibilidad saneada y cero POST de inferencia. Probá esos negativos y una ruta válida con dobles. Conservá caché de hasta 5 minutos y refresco deduplicado, ZDR, data_collection: deny, precio cero, sin fallback ni reintento automático, sin créditos ni BYOK.
+3. Mostrá en la UI la hora de observación de la cuota Groq y las unidades de solicitudes restantes por día y tokens restantes por minuto según cada cabecera válida. Probá cabeceras válidas, cero, parcial, ausente e inválida desde el adaptador hasta la UI. Sin estimar saldo ni confundir consumo con cuota.
+4. Mostrá el estado por modelo en el selector y para el destino del compositor, con texto e icono además del color. «Disponible para intentar» (verde) expresa elegibilidad. «No disponible», «No responde» y «Cuota agotada» tienen motivos visibles. Ante timeout o fallo transitorio, conservá el borrador, suspendé Enviar hacia ese par y ofrecé «Elegir otro modelo» y «Volver a intentar» de manera explícita. Para 429 remoto, respetá Retry-After válido antes de volver a habilitar el intento, sin reenviar. Si falta, no inventes hora ni saldo y permití un nuevo intento deliberado con motivo visible. Abrir selector, aplicar un destino, refrescar opciones o vencer la espera no comparte texto. El usuario elige el destino y confirma Enviar. Cubrí teclado, anuncios accesibles, timeouts y 429 con/sin espera válida, cambio manual y ausencia de envíos involuntarios.
+5. Completá la matriz de T-094 con respuesta real y muestra ficticia de T-072 para cada uno de los cinco destinos habilitables, usando solo las cuentas Free ya autorizadas. Conservá los resultados previos y explicitá las dos filas diferidas, su evidencia y la condición de reactivación. Para OpenRouter en esta ronda, si el acceso existente lo permite, actualizá solo la evidencia de metadatos y registrá su resultado. Sin probar inferencia externa de los destinos diferidos, sin datos reales ni cambios de Render. Conservá Auto-Deploy On Commit.
 
-Devolvé el mismo PR #90 a un frontera implementer nuevo con esa decisión y los hallazgos del checkpoint. Exigí que el catálogo y el POST de OpenRouter reconozcan la ausencia de una ruta compatible con negativos sin POST de inferencia, y que la UI muestre la hora y las unidades de la cuota de Groq basadas en cabeceras válidas. Conservá ZDR, rechazo de recolección, precio cero, sin fallback, sin créditos ni BYOK, sin datos reales, y Render Auto-Deploy On Commit. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+GATE: rojo antes del arreglo y luego gate diario de T-094 con backend dirigido y Failsafe PostgreSQL, cliente y typecheck, E2E filtrados, docs-check y perfil informativo. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-Dejá una decisión explícita, condiciones de cierre observables y el prompt completo del implementer en STATUS y al final de la respuesta. La eventual aprobación y el squash corresponden a otro reviewer independiente con verify-required verde sobre el SHA revisado.
+SALIDA: publicá en el mismo PR #90 el checkpoint con matriz, negativos de cero inferencia, evidencia de cuota y estados de UI, comandos y exit. Confirmá el HEAD con gh pr view y verify-required verde sobre él. Cerrá STATUS y la respuesta con el prompt completo de un reviewer independiente para ese HEAD/base. La eventual aprobación y el squash corresponden a ese reviewer.
 ```

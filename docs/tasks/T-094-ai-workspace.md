@@ -7,7 +7,7 @@ milestone: M8
 spec: S-116
 depends_on: [T-093]
 branch: codex/t-094-ai-workspace
-role: reviewer
+role: implementer
 executor: frontier
 pr: 90
 ---
@@ -16,14 +16,14 @@ pr: 90
 
 ## Objetivo
 
-Desde el navbar se puede elegir un destino Free y obtener una respuesta copiable usando cualquiera de los cuatro proveedores. Una sola tarea incluye los adaptadores, la interfaz, los fragmentos y la prueba del piloto. [Contrato S-116](../specs/S-116-ai-workspace.md) · [Diseño](../design/WRITING-WORKSPACES.md#ia) · [Muestras ficticias](T-072-writing-provider-evaluation.md).
+Desde el navbar se puede elegir un destino Free y obtener una respuesta copiable usando los cinco destinos habilitables del piloto aprobado. Una sola tarea incluye los cuatro adaptadores, la interfaz, los fragmentos y la prueba del piloto. [Contrato S-116](../specs/S-116-ai-workspace.md) · [Diseño](../design/WRITING-WORKSPACES.md#ia) · [Muestras ficticias](T-072-writing-provider-evaluation.md).
 
 ## Alcance y pasos
 
 1. En `server/` crear la feature `ai` y actualizar seguridad, OpenAPI, configuración y ejemplo de variables. Catalogar modelos de S-116 y usar cuatro adaptadores independientes. Solo el servidor acepta o rechaza la pareja pedida. Preservar las rutas y claves de Voz/Imagen.
 2. En `client/src/app/AppShell.tsx`, rutas y `client/src/features/ai/` implementar el control lila, pantalla, opciones y envío. Conectar Diario y Libres al mismo flujo de selección, consentimiento y vista previa. Reutilizar el cliente HTTP con sesión/CSRF y la tipografía del tema.
 3. En el doble externo de `docker-compose.e2e.yml` y los tests, simular éxito y fallos de cada proveedor. Incluir positivos/negativos de propiedad y espacio, origen cambiado, Unicode, precio desconocido, secreto ausente, respuesta tardía, 429 sin reenvío y regresiones de Voz/OCR. El navegador llama a DevNotes.
-4. En backend local aislado, usar las variables privadas ya cargadas por el dueño. Verificar Free sin cargos antes de consumir cuota. Ejecutar una muestra corta de T-072 por cada modelo directo ofrecido, ligero primero; para el catálogo dinámico de OpenRouter, probar el ligero y una alternativa explícita disponible, y validar el filtro sobre todo el catálogo. Sin reintento automático. Registrar cada resultado y motivo si una credencial, modelo, cuota o ruta ZDR impide la prueba. Pedir al dueño solo el dato de plan ausente si fuese necesario. Durante este ensayo no transmitir notas personales.
+4. En backend local aislado, usar las variables privadas ya cargadas por el dueño. Verificar Free sin cargos antes de consumir cuota. Ejecutar una muestra corta de T-072 por cada uno de los cinco destinos del piloto, ligero primero. Validar el filtro de OpenRouter con dobles y actualizar solo los metadatos reales si el acceso existente lo permite. Sin reintento automático. Registrar cada resultado y, por separado, la evidencia de los destinos diferidos. Pedir al dueño solo el dato de plan ausente si fuese necesario. Durante este ensayo no transmitir notas personales.
 
 ## Aceptación y pruebas
 
@@ -31,7 +31,7 @@ Desde el navbar se puede elegir un destino Free y obtener una respuesta copiable
 |---|---|
 | Contrato backend | Los cuatro adaptadores responden con texto válido o error saneado, sin enviar en los negativos de S-116. Cambiar proveedor/modelo es deliberado. IT con PostgreSQL 18 y dos actores. |
 | Navbar/editor | Destino visible antes del envío, teclado y foco de retorno, sin pérdida de borrador o desplazamiento lateral a 360 px, cuarto de pantalla y escritorio. Acción contextual en ambos editores; el texto copiado coincide con la respuesta. |
-| Piloto | Matriz con proveedor, modelo, Free, muestra, estado, modelo servido, duración, cuota conocida y fecha. Distinguir doble, prueba real y bloqueo. Las cuatro integraciones requieren resultado real explícito antes de anunciar validación integral. |
+| Piloto | Matriz con proveedor, modelo, Free, muestra, estado, modelo servido, duración, cuota conocida y fecha. Distinguir doble, prueba real y diferimiento. Exigir texto real en los cinco destinos del alcance aprobado, incluidas las dos alternativas directas de Groq y Workers AI. Registrar los dos diferimientos y la condición de reactivación. |
 
 Comandos desde Git Bash con JDK 21, Node ≥24 y Docker. Crear las pruebas de la feature nombradas a continuación. Registrar cantidades por fase, duración y cleanup por label del proyecto.
 
@@ -48,11 +48,36 @@ STARTER_E2E_PROJECT=starter-e2e-t094-mobile bash scripts/e2e.sh --grep 'ai works
 
 Si cambia el doble compartido, ejecutar además `STARTER_E2E_PROJECT=starter-e2e-t094-regression bash scripts/e2e.sh --grep 'screenshot OCR:|voice' --project desktop`. Aplicar el [gate diario](../TESTING.md#gate-diario). FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
+## Decisión de alcance del dueño
+
+2026-11-22. Se aprueba ajustar S-116/T-094 y continuar en el PR #90. El piloto comprende los dos destinos Groq, los dos Workers AI y Gemini 3.1 Flash-Lite. Gemini 3.8 Flash queda diferido tras el agotamiento del plazo y el 502 saneado del piloto. OpenRouter Free queda diferido porque el piloto no acreditó una ruta compatible para la variante Free. Los dos diferimientos se aplican en catálogo y servidor aunque el proveedor esté configurado. La evidencia histórica describe lo observado en esa corrida.
+
+| Condición de cierre | Evidencia exigida |
+|---|---|
+| Piloto acotado | Matriz actualizada con texto real en los cinco destinos habilitables y muestras ficticias T-072. Por destino: fecha y hora, plan Free, muestra, pedido/servido, estado, duración y consumo o cuota informados. Conservar corridas previas y filas diferidas con su motivo. Si falla un destino del alcance, conservar el bloqueo. |
+| Destinos diferidos | GET y selector los presentan indisponibles y POST directo los rechaza sin inferencia externa aunque haya credenciales configuradas en el fixture. En esta ronda, para OpenRouter se puede consultar el catálogo y los metadatos de ruta con el acceso existente. Registrar compatibilidad comprobada, ausencia o evidencia insuficiente, con fecha y motivo. |
+| Política de rutas OpenRouter | GET y POST usan la misma comprobación vigente de la variante `:free` exacta, con ruta de texto, ZDR, rechazo de recolección, precio cero de entrada, salida y por solicitud cuando se publique, sin fallback, créditos ni BYOK. Casos negativos con cero POST al tercero: ruta ausente, variante distinta, precio desconocido o no cero, política incompatible y caché vencida sin refresco válido. Positivo con doble para la variante y ruta compatibles, con las restricciones efectivas en el POST. |
+| Cuota Groq | La UI muestra hora de observación junto a solicitudes restantes por día y tokens restantes por minuto según las cabeceras válidas. Cubrir válidas, cero, parciales, ausentes e inválidas. Sin inferir saldo ni presentar consumo como cuota. |
+| Disponibilidad y recuperación visibles | Selector y compositor muestran etiqueta e icono además del color, con motivo accesible. Reproducir en componente y E2E dirigido con doble externo el timeout o fallo transitorio y el 429 remoto con y sin espera válida. Preservar el borrador, probar bloqueo del destino afectado, que la concurrencia local no se presente como cuota y que elegir o rehabilitar destino no envíe. Verificar que solo un Enviar deliberado llega al destino confirmado. |
+| Revisión | Gate diario y `verify-required` verde sobre el HEAD publicado. Reviewer independiente para el veredicto y eventual squash. Render Auto-Deploy On Commit, sin cambios de configuración ni datos reales. FULL/STARTER: DIFERIDO POR EL DUEÑO. |
+
+Reactivación en una decisión posterior del dueño. Para Gemini 3.8 Flash, comprobar acceso a texto Standard en el proyecto Free y obtener texto dentro de 30 s con una muestra ficticia T-072. Para OpenRouter, acreditar con metadatos vigentes una ruta compatible por cada ID exacto del ligero y una alternativa explícita Free y obtener texto real con ambos bajo la política completa y con muestras ficticias T-072. Completar la misma matriz en los dos casos.
+
 ## Checkpoint vigente
+
+2026-11-22. Dueño con frontera en Codex desktop (GPT-6, versión puntual no expuesta, PowerShell, Git y gh). Alcance de producto y disponibilidad del catálogo/POST del piloto ajustados en el contrato. Código, controles de acceso, datos y Render pendientes de la implementación o sin cambios en esta sesión documental. Estado `changes_requested`. Se devuelve al implementer nuevo del mismo PR para las condiciones de cierre.
+
+| Comando | Resultado |
+|---|---|
+| `gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup` | Exit 1 por conexión dentro del sandbox, exit 0 con red. OPEN, `isDraft=false`, `verify-required` SUCCESS sobre `3f0ffde6f16c1c703c32edbbc6c9afba34e1b97f` al recibir la tarea. |
+| `git fetch origin main codex/t-094-ai-workspace` y `git rev-parse HEAD origin/main origin/codex/t-094-ai-workspace` | Exit 0. Base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795` y rama `3f0ffde6f16c1c703c32edbbc6c9afba34e1b97f` conciliadas con GitHub. El último commit recibido contiene el checkpoint de revisión. |
+| Verificación documental | `node scripts/docs-check.mjs` en una copia del árbol versionado con los tres documentos modificados y `git diff --check`, exit 0. Se excluyó el directorio local ajeno `trailer/` de la copia. |
+
+### Hallazgos y evidencia del reviewer anterior
 
 2026-11-22. Frontera reviewer independiente en Codex desktop (GPT-6, PowerShell, Git Bash y gh). [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90), base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`, HEAD revisado `1ab08eb47057d91ba48cf948ee6bd3dcb230e51d`. `gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup` dio exit 1 dentro del sandbox al conectar a la API y exit 0 con acceso de red. PR OPEN, listo para revisión, con ambos `verify-required` SUCCESS. `git fetch origin main codex/t-094-ai-workspace` y `git merge-base --is-ancestor cd0076b70fc81f75bc126800747b14fb016ca677 origin/codex/t-094-ai-workspace` dieron exit 0. Los refs coincidieron con GitHub y `git log --name-only cd0076b..origin/codex/t-094-ai-workspace` confirmó un único commit de checkpoint y transición. T-093 ya estaba conciliada en esta rama.
 
-**Cambios requeridos.** El PR sigue abierto y el dueño decide cómo cerrar el piloto antes de retomar la implementación. La revisión modifica solo el checkpoint y STATUS.
+**Cambios requeridos del reviewer.** La revisión dejó el PR abierto y remitió el alcance del piloto al dueño. La decisión vigente está arriba.
 
 | Hallazgo | Evidencia | Condición de cierre |
 |---|---|---|
@@ -60,7 +85,7 @@ Si cambia el doble compartido, ejecutar además `STARTER_E2E_PROJECT=starter-e2e
 | P1 · OpenRouter ofrece candidatos sin comprobar la compatibilidad de la ruta | `OpenRouterCatalog.options/filter` usa `/api/v1/models` sin comprobar endpoints ZDR y marca `available=true` por ID, precios y modalidades. `AiMessageService.send` habilita el POST según ese catálogo. El adaptador exige ZDR al inferir y puede recibir rechazo después de ofrecer el destino. [Catálogo de OpenRouter](https://openrouter.ai/docs/api/api-reference/models/get-models). | Hacer que opciones y envío usen disponibilidad comprobada para la variante Free y la política completa. Probar candidato Free sin ruta compatible, catálogo vencido sin refresco válido y candidato válido con el doble externo. Los casos no elegibles muestran indisponibilidad y registran cero POST de inferencia. Conservar ZDR, `data_collection: deny`, precio cero, sin fallback, sin créditos ni BYOK. |
 | P2 · La cuota de Groq pierde la hora de medición | `GroqAiClient` recoge los dos contadores válidos y `AiPage` los muestra por turno sin hora. S-116 exige hora y unidades cuando hay cabeceras válidas. [Cabeceras de Groq](https://console.groq.com/docs/rate-limits). | Mostrar la hora de observación junto con las unidades válidas. Probar cabeceras válidas y ausentes o inválidas, sin inferir saldo. |
 
-En el diff publicado se revisaron selección manual y confirmación por turno, descarte de respuestas tardías, adaptadores y configuración, sesión/CSRF, y resolución de fragmentos contra propietario, espacio, revisión, rango Unicode y digest. El backend aplica permisos por proveedor, espacio y origen antes de inferir. La separación entre filtros de catálogo y restricciones de inferencia de OpenRouter origina el hallazgo anterior. Para repetir el piloto se requiere la decisión del dueño indicada en STATUS.
+En el diff publicado se revisaron selección manual y confirmación por turno, descarte de respuestas tardías, adaptadores y configuración, sesión/CSRF, y resolución de fragmentos contra propietario, espacio, revisión, rango Unicode y digest. El backend aplica permisos por proveedor, espacio y origen antes de inferir. La separación entre filtros de catálogo y restricciones de inferencia de OpenRouter origina el hallazgo anterior. La decisión del dueño que solicitó la revisión quedó registrada arriba.
 
 ### Verificación independiente del reviewer
 
@@ -131,7 +156,7 @@ FULL/STARTER: DIFERIDO POR EL DUEÑO.
 ## Prompts de salida
 
 ```text
-Frontera reviewer independiente de T-094 en MatiasNicolasAcevedo/devnotes. Leé AGENTS.md, ambos AGENTS de capa, STATUS, docs/agents/reviewer.md, T-094 y S-116. Comprobá gh pr view <PR> --repo MatiasNicolasAcevedo/devnotes --json state,headRefOid,baseRefOid,statusCheckRollup contra HEAD/base publicados. Revisá cada selección, los cuatro adaptadores, acceso a fragmentos, prueba real por modelo y gate dirigido. Si aprobás y verify-required está verde, squash al SHA revisado y confirmá MERGED, fecha y oid. Si hay hallazgos devolvé el mismo PR a un implementer nuevo. Entregá el prompt vigente completo.
+Frontera reviewer independiente de T-094 en MatiasNicolasAcevedo/devnotes. Leé AGENTS.md, ambos AGENTS de capa, STATUS, docs/agents/reviewer.md, T-094 y S-116. Comprobá gh pr view <PR> --repo MatiasNicolasAcevedo/devnotes --json state,headRefOid,baseRefOid,statusCheckRollup contra HEAD/base publicados. Revisá cada selección, los cuatro adaptadores, acceso a fragmentos, matriz del piloto acotado, diferimientos, negativos de cero inferencia, hora y unidades de Groq y gate dirigido. Si aprobás y verify-required está verde, squash al SHA revisado y confirmá MERGED, fecha y oid. Si hay hallazgos devolvé el mismo PR a un implementer nuevo. Entregá el prompt vigente completo.
 ```
 
 ```text
