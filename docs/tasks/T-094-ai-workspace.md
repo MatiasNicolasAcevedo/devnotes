@@ -1,6 +1,6 @@
 ---
 id: T-094
-status: mergeable
+status: done
 priority: P1
 size: L
 milestone: M8
@@ -64,6 +64,8 @@ Si cambia el doble compartido, ejecutar además `STARTER_E2E_PROJECT=starter-e2e
 Reactivación en una decisión posterior del dueño. Para Gemini 3.8 Flash, comprobar acceso a texto Standard en el proyecto Free y obtener texto dentro de 30 s con una muestra ficticia T-072. Para OpenRouter, acreditar con metadatos vigentes una ruta compatible por cada ID exacto del ligero y una alternativa explícita Free y obtener texto real con ambos bajo la política completa y con muestras ficticias T-072. Completar la misma matriz en los dos casos.
 
 ## Checkpoint vigente
+
+Conciliada el 2026-11-23 en la rama de T-095. `gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit` devolvió `MERGED`, `2026-11-23T03:11:08Z` y `076e4ed32f82fd2ee9fbd25ee7de4d743ecd2e9c`. `git fetch origin` y `git merge-base --is-ancestor 076e4ed origin/main` dieron exit 0.
 
 2026-11-23. Frontera reviewer independiente en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, Git, gh, Maven y Node; sesión distinta de la del implementer. **APROBADO** para el [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90): HEAD técnico revisado `80d0826cd108276e48bb4c7add57c2982201119b`, base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`, commit técnico `176f66c` ancestro. Estado `mergeable`; el squash va ligado al HEAD de este commit de transición tras `verify-required` verde. T-095 sigue condicionada a MERGED confirmado con `gh pr view` y `--repo` explícito.
 

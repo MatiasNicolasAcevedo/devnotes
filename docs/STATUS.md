@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-094](tasks/T-094-ai-workspace.md) · [S-116](specs/S-116-ai-workspace.md) |
-| Estado | `mergeable` |
-| Siguiente acción | APROBADO por reviewer independiente; squash del PR #90 y confirmación MERGED. Luego T-095 ([checkpoint](tasks/T-094-ai-workspace.md#checkpoint-vigente)) |
-| Rama / PR | `codex/t-094-ai-workspace` · [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90) |
+| Tarea y contrato | [T-095](tasks/T-095-trailer-v2.md) |
+| Estado | `in_progress` |
+| Siguiente acción | Implementer produce el corte de escritorio ([checkpoint](tasks/T-095-trailer-v2.md#checkpoint-vigente)) |
+| Rama / PR | `codex/t-095-trailer-v2` · PR pendiente |
 
-Modo `FRONTERA_CONTINUA`. T-093 conciliada. La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con IA, tráiler v2 y demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
+Modo `FRONTERA_CONTINUA`. T-094 conciliada ([PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90) MERGED, `076e4ed`). La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con el tráiler v2 y la demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
 Piloto aprobado con cinco destinos: Groq 20B/120B, Workers AI 20B/120B y Gemini 3.1 Flash-Lite. Gemini 3.8 Flash y OpenRouter Free quedan diferidos. El selector y el compositor muestran disponibilidad, fallos y cuota. El usuario elige y confirma otro destino. [Decisión y cierre observable](tasks/T-094-ai-workspace.md#decisión-de-alcance-del-dueño). FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
