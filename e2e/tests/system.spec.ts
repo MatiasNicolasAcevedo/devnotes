@@ -41,7 +41,8 @@ test('T-050: visitor navigation fits on one row while readiness is pending', asy
         await layout(page);
         await expect(banner).toBeVisible();
         const bar = (await banner.boundingBox())!;
-        expect(bar.height).toBe(56);
+        // T-081: la ruta índice abre Notas, cuya barra compacta mide 48 px (56 px en las demás pantallas).
+        expect(bar.height).toBe(48);
         let previousRight = -1;
         for (const control of controls) {
           await expect(control).toBeVisible();
@@ -95,6 +96,9 @@ test('T-064: selector y navegación responden con la sesión real', async ({ pag
   await expect(page.getByRole('menuitem', { name: 'Datos de la cuenta' })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(account).toBeFocused();
+  // T-097: en angosto el enlace Demo va entre el selector y el estado del servidor, así que es la parada anterior.
+  await page.keyboard.press('Shift+Tab');
+  await expect(banner.getByRole('link', { name: 'Demo', exact: true })).toBeFocused();
   await page.keyboard.press('Shift+Tab');
   await expect(selector).toBeFocused();
   await expect(selector).toHaveCSS('outline-width', '2px');
