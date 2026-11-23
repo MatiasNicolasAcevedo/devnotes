@@ -1,13 +1,24 @@
 # Publicación en YouTube
 
-Textos y archivos para subir el tráiler v2 ([T-095](../../docs/tasks/T-095-trailer-v2.md)) y la demo narrada ([T-096](../../docs/tasks/T-096-narrated-demo.md)). Los videos y las miniaturas se generan en local y no se versionan. Los enlaces publicados se cargan en la página Demo de la tarea siguiente.
+Textos y archivos del tráiler v2 ([T-095](../../docs/tasks/T-095-trailer-v2.md)) y de la demo narrada ([T-096](../../docs/tasks/T-096-narrated-demo.md)). Los videos no se versionan porque YouTube los aloja y se regeneran desde las fuentes. Las miniaturas sí se versionan en [`youtube/`](youtube/), en JPG livianos, para usarlas como portada en la página Demo.
+
+## Publicados
+
+Subidos por el dueño el 2026-11-23.
+
+| Video | Enlace | ID | Embed sin cookies | Portada |
+|---|---|---|---|---|
+| Tráiler | https://youtu.be/-xhokMtK-Hw | `-xhokMtK-Hw` | `https://www.youtube-nocookie.com/embed/-xhokMtK-Hw` | [`youtube/miniatura-trailer.jpg`](youtube/miniatura-trailer.jpg) |
+| Demo | https://youtu.be/XAIHdmHAhA0 | `XAIHdmHAhA0` | `https://www.youtube-nocookie.com/embed/XAIHdmHAhA0` | [`youtube/miniatura-demo.jpg`](youtube/miniatura-demo.jpg) |
 
 ## Archivos locales
 
 | Video | Archivo | Miniatura (1280×720) | Subtítulos |
 |---|---|---|---|
-| Tráiler | `media/trailer-v2/renders/devnotes-trailer-v2-16x9.mp4` (46 s) | `media/demo/build/youtube/miniatura-trailer.png` | Sin locución |
-| Demo | `media/demo/build/demo.mp4` (5:53) | `media/demo/build/youtube/miniatura-demo.png` | `media/demo/build/demo.es.srt`, español |
+| Tráiler | `media/trailer-v2/renders/devnotes-trailer-v2-16x9.mp4` (46 s) | `media/demo/youtube/miniatura-trailer.jpg` | Sin locución |
+| Demo | `media/demo/build/demo.mp4` (5:53) | `media/demo/youtube/miniatura-demo.jpg` | `media/demo/build/demo.es.srt`, español |
+
+Las miniaturas se regeneran con `node media/demo/scripts/thumbs.mjs`, que además deja un PNG en `media/demo/build/youtube/`.
 
 Para la demo conviene subir `demo.mp4` y cargar `demo.es.srt` como subtítulos en español, porque así se pueden activar y desactivar. `demo-subtitulado.mp4` queda como copia con subtítulos quemados.
 
@@ -22,7 +33,7 @@ DevNotes es un cuaderno de trabajo diario para quien programa. Escribís en un e
 
 Funciona en escritorio y en el teléfono, separa Trabajo y Personal, y te deja exportar e importar tus datos en Excel.
 
-Demo completa, paso a paso: [enlace de la demo]
+Demo completa, paso a paso: https://youtu.be/XAIHdmHAhA0
 
 Música original sintetizada para este tráiler. Datos y cuentas de prueba.
 ```
@@ -50,5 +61,5 @@ Capítulos
 La demo usa cuentas, datos y proveedores de prueba.
 Voz: Sofía, generada con ElevenLabs. Música original sintetizada para este recorrido.
 
-Tráiler: [enlace del tráiler]
+Tráiler: https://youtu.be/-xhokMtK-Hw
 ```

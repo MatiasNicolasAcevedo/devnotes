@@ -17,8 +17,10 @@ Recorrido completo en español, con la voz de Sofía (ElevenLabs, `h60rOzgfLmYsn
 | `scripts/make-music.mjs` | Música de fondo determinista, misma armonía y timbres del tráiler v2, más lenta y sin batería marcada |
 | `scripts/montage.mjs` | Montaje: video 1920×1080 a 30 fps, voz, música atenuada bajo la voz, SRT y pista de subtítulos |
 | `scripts/guion.mjs` | Regenera `GUION.md` |
+| `scripts/thumbs.mjs` y `scripts/thumb.html` | Miniaturas de YouTube del tráiler y de la demo |
+| [`youtube/`](youtube/) | Miniaturas versionadas en JPG, portada de la futura página Demo |
 
-Todo lo generado queda en `build/` y está en `.gitignore`: clips de voz, captura, música y videos.
+Lo generado queda en `build/` y está en `.gitignore`: clips de voz, captura, música y videos. Las dos miniaturas JPG son la excepción versionada.
 
 ## Reproducir
 
