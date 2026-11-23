@@ -9,6 +9,7 @@ Recorrido completo en español, con la voz de Sofía (ElevenLabs, `h60rOzgfLmYsn
 | [`script.json`](script.json) | Guion editable: capítulos y escenas con ID estable, ruta, gesto, diálogo, resultado y pausa |
 | [`GUION.md`](GUION.md) | Guion legible generado desde `script.json`, con tiempos previstos y finales |
 | [`MATRIZ.md`](MATRIZ.md) | Función → escena → acción → resultado visible, y exclusiones por entorno |
+| [`YOUTUBE.md`](YOUTUBE.md) | Títulos, descripciones, capítulos y rutas de los videos y miniaturas para YouTube |
 | [`../../e2e/tests/demo-tour.spec.ts`](../../e2e/tests/demo-tour.spec.ts) | El recorrido. Sin ritmo es un E2E funcional; con ritmo graba cuadros y marcas |
 | `scripts/voice.mjs` | Voz: verificación de la voz y el saldo, muestra, un clip por escena con caché y alineación por carácter |
 | `scripts/pacing.mjs` | Ritmo por escena: duración real del clip o estimación para el ensayo en silencio |
