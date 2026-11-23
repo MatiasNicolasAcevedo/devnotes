@@ -1,6 +1,6 @@
 ---
 id: T-094
-status: changes_requested
+status: in_review
 priority: P1
 size: L
 milestone: M8
@@ -65,13 +65,30 @@ Reactivación en una decisión posterior del dueño. Para Gemini 3.8 Flash, comp
 
 ## Checkpoint vigente
 
-2026-11-22. Dueño con frontera en Codex desktop (GPT-6, versión puntual no expuesta, PowerShell, Git y gh). Alcance de producto y disponibilidad del catálogo/POST del piloto ajustados en el contrato. Código, controles de acceso, datos y Render pendientes de la implementación o sin cambios en esta sesión documental. Estado `changes_requested`. Se devuelve al implementer nuevo del mismo PR para las condiciones de cierre.
+2026-11-22. Frontera implementer de corrección en Codex desktop (GPT-6, versión puntual no expuesta, PowerShell, Git Bash, Git, gh y Docker). [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90), base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`, candidato técnico `15e94c4f69d5e2f172627a262f440f7ad3f1a331`. El siguiente commit documenta este gate. El impacto abarca elegibilidad de destinos en API, comprobación de la ruta externa, cuota observada y recuperación en la UI. Se conservaron sesión/CSRF, propiedad de los fragmentos, límites del turno, los cuatro adaptadores y Render Auto-Deploy On Commit. El dueño confirmó usar [las cinco respuestas reales documentadas](#piloto-free-del-2026-11-22). Pendiente el veredicto del reviewer independiente.
 
 | Comando | Resultado |
 |---|---|
-| `gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup` | Exit 1 por conexión dentro del sandbox, exit 0 con red. OPEN, `isDraft=false`, `verify-required` SUCCESS sobre `3f0ffde6f16c1c703c32edbbc6c9afba34e1b97f` al recibir la tarea. |
-| `git fetch origin main codex/t-094-ai-workspace` y `git rev-parse HEAD origin/main origin/codex/t-094-ai-workspace` | Exit 0. Base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795` y rama `3f0ffde6f16c1c703c32edbbc6c9afba34e1b97f` conciliadas con GitHub. El último commit recibido contiene el checkpoint de revisión. |
-| Verificación documental | `node scripts/docs-check.mjs` en una copia del árbol versionado con los tres documentos modificados y `git diff --check`, exit 0. Se excluyó el directorio local ajeno `trailer/` de la copia. |
+| `gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup` | Exit 1 por conexión dentro del sandbox y exit 0 con red. Al ingresar, OPEN, `isDraft=false`, base solicitada y `verify-required` SUCCESS sobre `f9793500ca49bcc0847580fdb14062d1a5aacf39`, que publica la decisión del dueño. |
+| `git fetch origin main codex/t-094-ai-workspace`, `git rev-parse HEAD origin/main origin/codex/t-094-ai-workspace`, `git merge-base --is-ancestor 3f0ffde6f16c1c703c32edbbc6c9afba34e1b97f origin/codex/t-094-ai-workspace` | Exit 0 para los tres. Los refs coincidieron con GitHub y se verificó la ascendencia del checkpoint del reviewer. |
+| Rojo previo | `npm test -- --run src/features/ai/AiWorkspace.test.tsx`, exit 1, Enviar seguía activo tras 429 con espera válida. `mvnw.cmd -q test -Dtest=GroqAiClientTest`, exit 1, faltaba la hora de observación pese al cero válido de solicitudes. |
+| Backend dirigido y Failsafe | Comando de [Aceptación y pruebas](#aceptación-y-pruebas) por `mvnw.cmd` con JDK 21, exit 0. Surefire 26/26 en las siete clases dirigidas, Failsafe 14/14 con `AiMessageApiIT,VoiceTranscriptionApiIT,FreeNoteApiIT` contra PostgreSQL 18.6. |
+| Cliente | `npm run typecheck` y `npx eslint src/features/ai --max-warnings 0`, ambos exit 0. `npm test -- --run src/app/AppRoutes.test.tsx src/app/AppShell.test.tsx src/features/ai`, primer intento con el editor diario todavía en carga 36/37, exit 1. Repetición con el mismo comando y deadlines, 37/37, 38,83 s, exit 0. |
+| E2E escritorio | `STARTER_E2E_PROJECT=starter-e2e-t094-quota-desktop bash scripts/e2e.sh --grep 'ai workspace:' --project desktop`, 4/4, exit 0. 12,78 s de casos, aproximadamente 283 s desde inicio hasta exportación. |
+| E2E móvil | `STARTER_E2E_PROJECT=starter-e2e-t094-fix-mobile bash scripts/e2e.sh --grep 'ai workspace: navbar' --project mobile`, 1/1, exit 0. 1,38 s de caso, aproximadamente 176 s desde inicio hasta exportación. |
+| E2E regresión del doble compartido | `STARTER_E2E_PROJECT=starter-e2e-t094-fix-regression bash scripts/e2e.sh --grep 'screenshot OCR:\|voice' --project desktop`, 7/7, exit 0. 130,55 s de casos, aproximadamente 419 s desde inicio hasta exportación. |
+| Cleanup E2E | `docker ps -aq`, `docker network ls -q` y `docker volume ls -q`, filtrados por cada label exacto `com.docker.compose.project`, exit 0. Cero contenedores, redes y volúmenes en los cinco proyectos de la sesión, incluidos los intentos iniciales. |
+| Documentación | `node scripts/docs-check.mjs` sobre una copia del árbol versionado, 154 Markdown y 91 tareas, exit 0. La sonda en el workspace completo devolvió exit 1 por un `CLAUDE.md` de `trailer/`, que es local y ajeno a este PR. `git diff --check origin/main...HEAD`, exit 0. |
+| Perfil informativo | `bash scripts/verify.sh --policy origin/main` por Git Bash con Node 24.21.0, exit 0, política FULL y perfil STARTER por el diff técnico del PR. **FULL/STARTER: DIFERIDO POR EL DUEÑO.** |
+| Metadatos OpenRouter | Dos GET públicos, exit 0. [Matriz y diferimientos](#piloto-free-del-2026-11-22). |
+| Publicación y CI | El commit documental inmediatamente posterior al candidato técnico fija el HEAD para revisión. Consultar `gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup` contra los refs publicados y confirmar `verify-required` sobre ese HEAD. |
+
+| Causa | Arreglo | Evidencia en el candidato técnico |
+|---|---|---|
+| Las credenciales bastaban para ofrecer los destinos diferidos. | El piloto publica cinco destinos elegibles. Gemini 3.8 Flash y OpenRouter Free muestran motivo de diferimiento y el POST los rechaza antes del tercero. | `AiMessageApiIT` prueba ambos 409 saneados y cero interacciones remotas aun con configuración ficticia. E2E comprueba el catálogo y el rechazo directo. |
+| El catálogo de OpenRouter acreditaba candidatos por modelo y precio, sin ruta vigente. | Opciones y envío comparten el catálogo comprobado. Se exige ID `:free` exacto, modalidades de texto, precio cero y endpoint ZDR compatible. Se fija el endpoint permitido en el POST y se conservan ZDR, rechazo de recolección, precio cero y fallback desactivado. La caché dura hasta cinco minutos y deduplica refrescos. | `OpenRouterCatalogTest` prueba ruta ausente, variante distinta, precio desconocido o no cero, recolección incompatible, ruta sin ZDR, BYOK y caché vencida con refresco fallido. Cada negativo devuelve indisponibilidad y verifica cero despacho. `OpenRouterAiClientTest` prueba el positivo de compatibilidad con un doble HTTP y el cuerpo de inferencia restringido a la ruta probada. |
+| Los contadores de Groq llegaban sin hora; 429 o fallo remoto permitían volver a pulsar Enviar de inmediato. | El backend conserva la hora de observación con las cabeceras válidas. La UI muestra hora y unidades. El selector y el compositor anuncian el estado por destino y bloquean Enviar cuando corresponde, con selección, actualización y recuperación explícitas. | Groq y E2E cubren válidas, cero, parcial, ausente e inválida. El cliente comprueba timeout, concurrencia local y conservación del borrador. E2E cubre fallo remoto, teclado, anuncios, 429 con y sin espera válida, cambio manual, refresco y ausencia de reenvío al vencer la espera. |
+| El doble de cuota trataba 20B y 120B como el mismo modelo al comparar sufijos. | Comparar el ID completo del modelo. | Primer E2E de escritorio con 3/4 y exit 1 por la aserción de cero para 120B. El ajuste solo cambia las cabeceras ficticias de la ruta Groq de texto. |
 
 ### Hallazgos y evidencia del reviewer anterior
 
@@ -103,7 +120,7 @@ Impacto en UI, API y permisos. Selector en memoria por cuenta y espacio, dos rut
 
 ### Piloto Free del 2026-11-22
 
-Proceso Java aislado con los adaptadores de T-094, variables inyectadas desde el entorno local y primer ejemplo ficticio de T-072. El dueño confirmó las cuentas Free y el nombre original de la variable de Groq. El ensayo inicial de Groq quedó bloqueado por ausencia de `GROQ_AI_API_KEY`. Se inyectó temporalmente el mismo valor como variable de IA solo en el proceso del piloto. El dueño luego agregó la variable de IA a su entorno. Voz conserva `GROQ_API_KEY`.
+Proceso Java aislado con los adaptadores de T-094, variables inyectadas desde el entorno local y primer ejemplo ficticio de T-072 («Redactá un aviso breve del T-055»). El dueño confirmó las cuentas Free y el nombre original de la variable de Groq. El ensayo inicial de Groq quedó bloqueado por ausencia de `GROQ_AI_API_KEY`. Se inyectó temporalmente el mismo valor como variable de IA solo en el proceso del piloto. El dueño luego agregó la variable de IA a su entorno. Voz conserva `GROQ_API_KEY`.
 
 | Proveedor y modelo pedido | Evidencia Free | Hora AR | Resultado y modelo servido | Duración | Consumo o cuota informados |
 |---|---|---|---|---:|---|
@@ -118,7 +135,14 @@ Proceso Java aislado con los adaptadores de T-094, variables inyectadas desde el
 | OpenRouter `google/gemma-4-26b-a4b-it:free` (ligero) | `is_free_tier` y uso BYOK declarado 0 | 21:47:53 | Modelo no disponible | 152 ms | Sin medición |
 | OpenRouter `google/gemma-4-31b-it:free` | `is_free_tier` y uso BYOK declarado 0 | 21:47:53 | Modelo no disponible | 112 ms | Sin medición |
 
-OpenRouter: 11 modelos de texto de 441 cumplieron el filtro local. El catálogo ZDR devolvió 934 endpoints y cero coincidencias por ID `:free` exacto con esos 11. Las solicitudes conservaron ZDR, rechazo de recolección, techo de precio cero y fallback desactivado. Se observaron respuestas reales de Groq, Workers AI y Gemini Flash-Lite. La aceptación integral del piloto sigue pendiente por Gemini 3.8 Flash y OpenRouter.
+En la corrida histórica de OpenRouter, 11 modelos de texto de 441 cumplieron el filtro local. El catálogo ZDR devolvió 934 endpoints y cero coincidencias por ID `:free` exacto con esos 11. Las solicitudes conservaron ZDR, rechazo de recolección, techo de precio cero y fallback desactivado.
+
+El dueño confirmó en esta sesión que las primeras cinco filas son la evidencia real del piloto acotado. Cada una obtuvo una respuesta de texto con la muestra ficticia indicada, en las cuentas Free ya autorizadas. Las credenciales estaban ausentes del entorno expuesto a esta sesión y no se repitieron los ensayos de inferencia.
+
+| Destino diferido | Evidencia vigente y condición para reactivarlo |
+|---|---|
+| Gemini 3.8 Flash | El piloto previo agotó 30 s y obtuvo 502 saneado al repetirlo manualmente. Requiere decisión del dueño, acceso a texto Standard en el proyecto Free y respuesta real en 30 s con una muestra T-072. |
+| OpenRouter Free | El 2026-11-22 a las 22:42:44 AR, `GET /api/v1/models` y `GET /api/v1/endpoints/zdr` públicos devolvieron 476 modelos, 11 candidatos Free de texto a precio cero y 934 endpoints ZDR. Hubo 0 coincidencias por ID exacto y 0 rutas compatibles. Los dos GET salieron con exit 0 con acceso de red. La consulta sin clave acredita metadatos públicos. Reactivar con decisión del dueño, ruta y respuesta real para un ligero y una alternativa con ID `:free` exacto, Free sin créditos ni BYOK y todas las restricciones de [S-116](../specs/S-116-ai-workspace.md#catálogo-y-cuota). |
 
 Referencias consultadas para formatos y límites. [Groq](https://console.groq.com/docs/rate-limits) · [Workers AI](https://developers.cloudflare.com/workers-ai/configuration/open-ai-compatibility/) · [Gemini](https://ai.google.dev/gemini-api/docs/pricing) · [OpenRouter](https://openrouter.ai/docs/guides/routing/provider-selection) · [Endpoints ZDR](https://openrouter.ai/docs/api/api-reference/endpoints/list-endpoints-zdr).
 
