@@ -13,18 +13,28 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const VOICE_ID = 'h60rOzgfLmYsntfqgGu2'
+// En la biblioteca pública la voz se publica como «Sofía» (sharing.name); en el espacio del dueño figura como «Delfina…».
 const EXPECTED_NAME = /sof[ií]a/i
-const MODEL = 'eleven_multilingual_v2'
-const SETTINGS = { stability: 0.5, similarity_boost: 0.8, style: 0.15, use_speaker_boost: true, speed: 1.0 }
+// Modelo y ajustes de la vista previa oficial de la voz (es-AR verificado en eleven_turbo_v2_5) y sus valores por defecto.
+const MODEL = 'eleven_turbo_v2_5'
+const SETTINGS = { stability: 0.3, similarity_boost: 0.75, style: 0, use_speaker_boost: true, speed: 1.0 }
 const FORMAT = 'mp3_44100_128'
 const API = 'https://api.elevenlabs.io/v1'
 const OUT = path.join(ROOT, 'build', 'voice')
-const SAMPLE = 'Hola, soy Sofía. Te muestro devnotes en un recorrido completo.'
+const SAMPLE = 'Hola, soy Sofía. Te muestro DevNotes en un recorrido completo.'
 
 const command = process.argv[2]
 const script = () => JSON.parse(fs.readFileSync(path.join(ROOT, 'script.json'), 'utf8'))
+// Si el entorno no trae la clave, toma solo ELEVENLABS_API_KEY del .env de la raíz (ignorado por Git).
+// No carga otras variables y nunca imprime el valor.
+function keyFromDotenv() {
+  const file = path.resolve(ROOT, '..', '..', '.env')
+  if (!fs.existsSync(file)) return undefined
+  const line = fs.readFileSync(file, 'utf8').split(/\r?\n/).find((l) => l.startsWith('ELEVENLABS_API_KEY='))
+  return line?.slice('ELEVENLABS_API_KEY='.length).trim().replace(/^(['"])(.*)\1$/, '$2') || undefined
+}
 const key = () => {
-  const value = process.env.ELEVENLABS_API_KEY
+  const value = process.env.ELEVENLABS_API_KEY || keyFromDotenv()
   if (!value) {
     console.error('Falta ELEVENLABS_API_KEY en el entorno de este proceso.')
     process.exit(3)
@@ -59,8 +69,9 @@ async function check() {
   console.log(JSON.stringify({
     voiceId: VOICE_ID,
     voiceName: voice.name,
+    libraryName: voice.sharing?.name ?? null,
     voiceCategory: voice.category ?? null,
-    matchesSofia: EXPECTED_NAME.test(voice.name ?? ''),
+    matchesSofia: EXPECTED_NAME.test(voice.sharing?.name ?? voice.name ?? ''),
     tier: sub.tier,
     characterLimit: sub.character_limit,
     characterCount: sub.character_count,
@@ -68,7 +79,7 @@ async function check() {
     pendingCharacters: pending,
     enough: remaining >= pending,
   }, null, 2))
-  if (!EXPECTED_NAME.test(voice.name ?? '')) process.exit(4)
+  if (!EXPECTED_NAME.test(voice.sharing?.name ?? voice.name ?? '')) process.exit(4)
 }
 
 async function synthesize(text, base) {

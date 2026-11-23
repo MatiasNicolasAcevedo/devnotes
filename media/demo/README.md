@@ -1,6 +1,6 @@
 # Demo narrada de DevNotes
 
-Recorrido completo en español, con la voz de Sofía (ElevenLabs), música de fondo suave y subtítulos. Es el entregable de [T-096](../../docs/tasks/T-096-narrated-demo.md). Se graba sobre la aplicación real en el stack E2E propio, con una cuenta ficticia, el proveedor OIDC de prueba y los dobles de Groq, OCR.space y los proveedores de IA. No usa datos reales ni Google real.
+Recorrido completo en español, con la voz de Sofía (ElevenLabs, `h60rOzgfLmYsntfqgGu2`, modelo `eleven_turbo_v2_5` con acento es-AR), música de fondo suave y subtítulos. Es el entregable de [T-096](../../docs/tasks/T-096-narrated-demo.md). Se graba sobre la aplicación real en el stack E2E propio, con una cuenta ficticia, el proveedor OIDC de prueba y los dobles de Groq, OCR.space y los proveedores de IA. No usa datos reales ni Google real.
 
 ## Archivos
 
@@ -21,7 +21,7 @@ Todo lo generado queda en `build/` y está en `.gitignore`: clips de voz, captur
 
 ## Reproducir
 
-Desde Git Bash, con Docker Desktop y Node 24, en la raíz del repositorio. La clave de ElevenLabs solo se inyecta en el entorno del proceso que genera la voz. Nunca se escribe en archivos ni se imprime.
+Desde Git Bash, con Docker Desktop y Node 24, en la raíz del repositorio. `voice.mjs` toma la clave de `ELEVENLABS_API_KEY` del entorno o, si falta, solo esa línea del `.env` de la raíz, que Git ignora. Nunca la imprime ni la escribe. En la biblioteca pública la voz se llama «Sofía»; en el espacio del dueño figura como «Delfina…», y `check` valida el nombre público.
 
 ```bash
 cd media/demo

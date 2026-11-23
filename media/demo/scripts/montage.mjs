@@ -1,4 +1,4 @@
-// Montaje de la demo narrada (T-096): cuadros de la captura + voz de Sofía + música de fondo + SRT.
+// Montaje de la demo narrada (T-096): cuadros de la captura + voz + música de fondo + SRT.
 // Entradas: build/capture (frames.jsonl, markers.jsonl, frames/, pacing.json), script.json y, si existen,
 // build/voice/manifest.json con un MP3 y su alineación por carácter por escena. Sin clips arma el ensayo en
 // silencio con subtítulos estimados. Salidas en build/: demo.mp4 (H.264 1920×1080 30 fps, AAC, pista de
@@ -179,40 +179,48 @@ fs.writeFileSync(path.join(BUILD, 'demo.es.srt'), srt, 'utf8')
 execFileSync('node', [path.join(ROOT, 'scripts', 'make-music.mjs'), String(Math.ceil(total) + 1),
   path.join(BUILD, 'music.wav')], { stdio: 'inherit' })
 const voiced = timeline.filter((s) => s.file)
-const inputs = ['-f', 'concat', '-safe', '0', '-i', path.join(CAP, 'concat.txt'), '-i', path.join(BUILD, 'music.wav')]
-for (const s of voiced) inputs.push('-i', s.file)
-const filters = [
-  `[0:v]scale=${W}:${H}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=${BG},`
-    + `fps=${FPS},format=yuv420p[v]`,
-]
-if (voiced.length) {
-  voiced.forEach((s, i) => {
-    const ms = Math.round(s.voiceStart * 1000)
-    filters.push(`[${i + 2}:a]aresample=48000,aformat=channel_layouts=stereo,adelay=${ms}|${ms}[a${i}]`)
-  })
-  filters.push(`${voiced.map((_, i) => `[a${i}]`).join('')}amix=inputs=${voiced.length}:normalize=0:dropout_transition=0,`
-    + `apad,atrim=0:${total.toFixed(3)},loudnorm=I=-16:TP=-1.5:LRA=11,asplit=2[voice][key]`)
-  filters.push(`[1:a]aresample=48000,atrim=0:${total.toFixed(3)},volume=-13dB[bed]`)
-  filters.push('[bed][key]sidechaincompress=threshold=0.015:ratio=5:attack=60:release=700:makeup=1[ducked]')
-  filters.push('[voice][ducked]amix=inputs=2:normalize=0,alimiter=limit=0.89[a]')
-} else {
-  filters.push(`[1:a]aresample=48000,atrim=0:${total.toFixed(3)},volume=-13dB,alimiter=limit=0.89[a]`)
-}
-const out = path.join(BUILD, 'demo.mp4')
+const T = total.toFixed(3)
 const ffmpeg = (args) => execFileSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...args], { stdio: 'inherit', cwd: BUILD })
-ffmpeg([...inputs, '-i', path.join(BUILD, 'demo.es.srt'), '-filter_complex', filters.join(';'),
-  '-map', '[v]', '-map', '[a]', '-map', `${voiced.length + 2}:s`,
-  '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-r', String(FPS), '-c:a', 'aac', '-b:a', '192k',
-  '-c:s', 'mov_text', '-metadata:s:s:0', 'language=spa', '-metadata:s:s:0', 'title=Español',
-  '-metadata', `title=${script.title}`, '-t', total.toFixed(3), '-movflags', '+faststart', out])
-if (burn) {
-  ffmpeg(['-i', 'demo.mp4', '-vf', "subtitles=demo.es.srt:charenc=UTF-8:force_style='FontName=Segoe UI,FontSize=22,"
-    + "Outline=1.2,Shadow=0,BorderStyle=3,BackColour=&H90000000,MarginV=34'", '-map', '0:v', '-map', '0:a',
-  '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-c:a', 'copy', '-movflags', '+faststart', 'demo-subtitulado.mp4'])
+// Pasada 1: pista de voz sola, cada clip en su inicio de escena, normalizada a -16 LUFS.
+// Pasada 2: música a -13 dB que se atenúa sola bajo la voz (la voz entra dos veces como archivo, sin asplit).
+// Separar las pasadas evita el bloqueo del grafo de audio que se observó al mezclar todo junto con el video.
+const mix = path.join(BUILD, 'mix.wav')
+if (voiced.length) {
+  const voiceTrack = path.join(BUILD, 'voice-track.wav')
+  const inputs = voiced.flatMap((s) => ['-i', s.file])
+  const delays = voiced.map((s, i) => {
+    const ms = Math.round(s.voiceStart * 1000)
+    return `[${i}:a]aresample=48000,aformat=channel_layouts=stereo,adelay=${ms}|${ms}[a${i}]`
+  })
+  ffmpeg([...inputs, '-filter_complex', `${delays.join(';')};${voiced.map((_, i) => `[a${i}]`).join('')}`
+    + `amix=inputs=${voiced.length}:normalize=0:dropout_transition=0,apad=whole_dur=${T},atrim=0:${T},`
+    + 'loudnorm=I=-16:TP=-1.5:LRA=11,aresample=48000[v]', '-map', '[v]', '-c:a', 'pcm_s16le', voiceTrack])
+  ffmpeg(['-i', path.join(BUILD, 'music.wav'), '-i', voiceTrack, '-i', voiceTrack, '-filter_complex',
+    `[0:a]aresample=48000,atrim=0:${T},volume=-13dB[bed];`
+    + '[bed][1:a]sidechaincompress=threshold=0.015:ratio=5:attack=60:release=700:makeup=1[ducked];'
+    + '[2:a][ducked]amix=inputs=2:normalize=0:duration=first,alimiter=limit=0.89[a]',
+  '-map', '[a]', '-c:a', 'pcm_s16le', mix])
+} else {
+  ffmpeg(['-i', path.join(BUILD, 'music.wav'), '-af', `aresample=48000,atrim=0:${T},volume=-13dB,alimiter=limit=0.89`,
+    '-c:a', 'pcm_s16le', mix])
 }
 fs.writeFileSync(path.join(BUILD, 'timeline.json'), JSON.stringify({
   total, fps: FPS, cuts: cuts.map(([a, b]) => ({ at: toOutput(a), removed: (b - a) / 1000 })),
   scenes: timeline.map(({ alignment, dialogue, file, ...s }) => ({ ...s, file: file && path.relative(ROOT, file) })),
   cues: cues.length,
 }, null, 1))
+// Pasada 3: video desde los cuadros, la mezcla y la pista de subtítulos seleccionable.
+const out = path.join(BUILD, 'demo.mp4')
+ffmpeg(['-f', 'concat', '-safe', '0', '-i', path.join(CAP, 'concat.txt'), '-i', mix, '-i', path.join(BUILD, 'demo.es.srt'),
+  '-vf', `scale=${W}:${H}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=${BG},`
+    + `fps=${FPS},format=yuv420p`,
+  '-map', '0:v', '-map', '1:a', '-map', '2:s',
+  '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-r', String(FPS), '-c:a', 'aac', '-b:a', '192k',
+  '-c:s', 'mov_text', '-metadata:s:s:0', 'language=spa', '-metadata:s:s:0', 'title=Español',
+  '-metadata', `title=${script.title}`, '-t', T, '-movflags', '+faststart', out])
+if (burn) {
+  ffmpeg(['-i', 'demo.mp4', '-vf', "subtitles=demo.es.srt:charenc=UTF-8:force_style='FontName=Segoe UI,FontSize=15,"
+    + "Outline=1.2,Shadow=0,BorderStyle=3,BackColour=&H80000000,MarginV=20'", '-map', '0:v', '-map', '0:a',
+  '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-c:a', 'copy', '-movflags', '+faststart', 'demo-subtitulado.mp4'])
+}
 console.log(`ok ${out} duración=${total.toFixed(2)}s escenas=${timeline.length} con_voz=${voiced.length} cues=${cues.length}`)
