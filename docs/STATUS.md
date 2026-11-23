@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-094](tasks/T-094-ai-workspace.md) · [S-116](specs/S-116-ai-workspace.md) |
-| Estado | `in_review` |
-| Siguiente acción | Revisión independiente del PR #90 y de la aceptación pendiente del piloto Free |
+| Estado | `changes_requested` |
+| Siguiente acción | El dueño resuelve el alcance del piloto Free antes de devolver el PR #90 a un implementer nuevo |
 | Rama / PR | `codex/t-094-ai-workspace` · [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90) |
 
 Modo `FRONTERA_CONTINUA`. T-093 conciliada. La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con IA, tráiler v2 y demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
@@ -32,13 +32,15 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Actuá como frontera reviewer independiente de T-094 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
+Actuá como dueño de DevNotes con frontera para resolver T-094 en MatiasNicolasAcevedo/devnotes. Sesión nueva.
 
 Leé AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/AUTONOMY.md, docs/TESTING.md, docs/tasks/T-094-ai-workspace.md, docs/specs/S-116-ai-workspace.md y la sección IA de docs/design/WRITING-WORKSPACES.md.
 
-Ejecutá gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup y git fetch origin main codex/t-094-ai-workspace. Verificá PR OPEN, base dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795 y HEAD igual a origin/codex/t-094-ai-workspace. Comprobá que el HEAD contiene cd0076b70fc81f75bc126800747b14fb016ca677 y que los commits posteriores solo actualizan el checkpoint. Si la precondición falla, informá el estado real y entregá el prompt corregido.
+Ejecutá gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup y git fetch origin main codex/t-094-ai-workspace. Confirmá que el PR sigue OPEN y que HEAD/base coinciden con los refs publicados, con base dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795 y el checkpoint de cambios requeridos de T-094 en HEAD. Si cambió la precondición, informá el estado real y entregá el prompt corregido.
 
-Revisá el diff publicado, los cuatro adaptadores, la selección y el consentimiento, el acceso a los fragmentos y la evidencia por modelo y por fase del gate. Contrastá el fallo remoto de Gemini 3.8 Flash y la falta de ruta OpenRouter Free compatible con ZDR contra la aceptación de S-116. Si sigue faltando evidencia, registrá el hallazgo y devolvé al dueño o a un implementer nuevo el mismo PR con la condición de cierre. Conservá las restricciones de privacidad y precio.
+Resolvé esta decisión de alcance: ¿mantenés la aceptación de los cuatro proveedores con los modelos de S-116 hasta acreditar Gemini 3.8 Flash y OpenRouter Free con una ruta compatible, o autorizás un ajuste explícito de S-116/T-094 que identifique qué modelo o proveedor queda indisponible o diferido y la nueva evidencia exigida? Si mantenés el contrato, el piloto debe devolver texto para Gemini 3.8 Flash y para el OpenRouter ligero y una alternativa Free elegible, con muestras ficticias de T-072 y la matriz completa. Si aún falta una ruta compatible, conservá el bloqueo o resolvé el alcance de forma explícita.
 
-FULL/STARTER: DIFERIDO POR EL DUEÑO. Conservá Render Auto-Deploy On Commit. Si se satisface la aceptación y aprobás de forma independiente con verify-required verde, hacé el squash ligado al SHA revisado y confirmá MERGED, mergedAt y mergeCommit.oid. Cerrá con el prompt completo de la sesión siguiente.
+Devolvé el mismo PR #90 a un frontera implementer nuevo con esa decisión y los hallazgos del checkpoint. Exigí que el catálogo y el POST de OpenRouter reconozcan la ausencia de una ruta compatible con negativos sin POST de inferencia, y que la UI muestre la hora y las unidades de la cuota de Groq basadas en cabeceras válidas. Conservá ZDR, rechazo de recolección, precio cero, sin fallback, sin créditos ni BYOK, sin datos reales, y Render Auto-Deploy On Commit. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+
+Dejá una decisión explícita, condiciones de cierre observables y el prompt completo del implementer en STATUS y al final de la respuesta. La eventual aprobación y el squash corresponden a otro reviewer independiente con verify-required verde sobre el SHA revisado.
 ```

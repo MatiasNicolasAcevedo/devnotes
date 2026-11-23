@@ -1,6 +1,6 @@
 ---
 id: T-094
-status: in_review
+status: changes_requested
 priority: P1
 size: L
 milestone: M8
@@ -50,7 +50,29 @@ Si cambia el doble compartido, ejecutar además `STARTER_E2E_PROJECT=starter-e2e
 
 ## Checkpoint vigente
 
-2026-11-22. Frontera implementer en Codex desktop (GPT-6, PowerShell y Git Bash). [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90), base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`. T-093 conciliada en `d039bae038eebff069012d15ea23488ee09e4b1d` tras verificar PR #89 y ascendencia.
+2026-11-22. Frontera reviewer independiente en Codex desktop (GPT-6, PowerShell, Git Bash y gh). [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90), base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`, HEAD revisado `1ab08eb47057d91ba48cf948ee6bd3dcb230e51d`. `gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup` dio exit 1 dentro del sandbox al conectar a la API y exit 0 con acceso de red. PR OPEN, listo para revisión, con ambos `verify-required` SUCCESS. `git fetch origin main codex/t-094-ai-workspace` y `git merge-base --is-ancestor cd0076b70fc81f75bc126800747b14fb016ca677 origin/codex/t-094-ai-workspace` dieron exit 0. Los refs coincidieron con GitHub y `git log --name-only cd0076b..origin/codex/t-094-ai-workspace` confirmó un único commit de checkpoint y transición. T-093 ya estaba conciliada en esta rama.
+
+**Cambios requeridos.** El PR sigue abierto y el dueño decide cómo cerrar el piloto antes de retomar la implementación. La revisión modifica solo el checkpoint y STATUS.
+
+| Hallazgo | Evidencia | Condición de cierre |
+|---|---|---|
+| P1 · El piloto Free está incompleto | Gemini 3.8 Flash agotó 30 s y la repetición manual devolvió 502 saneado de DevNotes. El estado remoto exacto queda sin determinar. Tres modelos OpenRouter devolvieron indisponibilidad. El piloto registró cero coincidencias por ID `:free` exacto entre 11 candidatos y 934 endpoints ZDR. Los dobles acreditan el contrato HTTP local. | Obtener texto real para Gemini 3.8 Flash y para OpenRouter ligero y una alternativa Free elegible, con matriz por modelo, o aplicar un ajuste explícito de alcance autorizado por el dueño a S-116/T-094. Usar exclusivamente muestras ficticias. Si sigue ausente la ruta compatible, conservar el bloqueo bajo el contrato actual. |
+| P1 · OpenRouter ofrece candidatos sin comprobar la compatibilidad de la ruta | `OpenRouterCatalog.options/filter` usa `/api/v1/models` sin comprobar endpoints ZDR y marca `available=true` por ID, precios y modalidades. `AiMessageService.send` habilita el POST según ese catálogo. El adaptador exige ZDR al inferir y puede recibir rechazo después de ofrecer el destino. [Catálogo de OpenRouter](https://openrouter.ai/docs/api/api-reference/models/get-models). | Hacer que opciones y envío usen disponibilidad comprobada para la variante Free y la política completa. Probar candidato Free sin ruta compatible, catálogo vencido sin refresco válido y candidato válido con el doble externo. Los casos no elegibles muestran indisponibilidad y registran cero POST de inferencia. Conservar ZDR, `data_collection: deny`, precio cero, sin fallback, sin créditos ni BYOK. |
+| P2 · La cuota de Groq pierde la hora de medición | `GroqAiClient` recoge los dos contadores válidos y `AiPage` los muestra por turno sin hora. S-116 exige hora y unidades cuando hay cabeceras válidas. [Cabeceras de Groq](https://console.groq.com/docs/rate-limits). | Mostrar la hora de observación junto con las unidades válidas. Probar cabeceras válidas y ausentes o inválidas, sin inferir saldo. |
+
+En el diff publicado se revisaron selección manual y confirmación por turno, descarte de respuestas tardías, adaptadores y configuración, sesión/CSRF, y resolución de fragmentos contra propietario, espacio, revisión, rango Unicode y digest. El backend aplica permisos por proveedor, espacio y origen antes de inferir. La separación entre filtros de catálogo y restricciones de inferencia de OpenRouter origina el hallazgo anterior. Para repetir el piloto se requiere la decisión del dueño indicada en STATUS.
+
+### Verificación independiente del reviewer
+
+| Fase | Comando y resultado |
+|---|---|
+| Backend dirigido | El comando de [Aceptación y pruebas](#aceptación-y-pruebas) con `mvnw.cmd` en PowerShell dio exit 0. Surefire 18/18 con los cuatro dobles HTTP. Failsafe 14/14 en PostgreSQL 18.6 con los tres IT indicados, incluidos permiso, propiedad, espacio y revisión con OIDC ficticio. |
+| Cliente dirigido | `npm.cmd test -- --run src/app/AppRoutes.test.tsx src/app/AppShell.test.tsx src/features/ai` dio exit 0, 30/30 en 13,75 s. `npm.cmd run typecheck` dio exit 0. |
+| E2E y piloto | Se cotejaron el código y la evidencia aportada abajo sobre el mismo candidato técnico. Esta sesión repitió backend y cliente, y no repitió los E2E ni consumió cuota de proveedores. |
+| Perfil | `bash scripts/verify.sh --policy origin/main` dio exit 0 en Git Bash del host, FULL y perfil STARTER. La primera invocación de Git Bash en el sandbox terminó con código -1073741502. |
+| Documentación y diff | `git diff --check origin/main...HEAD` dio exit 0. `node scripts/docs-check.mjs` en el árbol de trabajo detectó `trailer/CLAUDE.md` ajeno y sin seguimiento, exit 1. Sobre el índice exportado del cierre, `node scripts/docs-check.mjs` y `git diff --cached --check` dieron exit 0. |
+
+### Evidencia aportada por el implementer
 
 Impacto en UI, API y permisos. Selector en memoria por cuenta y espacio, dos rutas privadas, envío con sesión y CSRF, y selección exacta de Diario y Libres reconstruida en el backend. Cambios de revisión o del texto visible invalidan el fragmento. Conversación y preferencia son efímeras. Claves y flags por proveedor se configuran en el backend. Los permisos sobre fragmentos empiezan vacíos y requieren habilitación por proveedor, espacio y origen. El piloto usa texto ficticio. Render conserva Auto-Deploy On Commit.
 
@@ -102,7 +124,7 @@ Los comandos exactos están en [Aceptación y pruebas](#aceptación-y-pruebas). 
 | OCR buscaba ausencia de Herramientas, aunque el menú de Diario ahora incluye acciones de nota en la base. | Conservar el negativo funcional y comprobar que Herramientas carece de una entrada de OCR antes de navegar por Imagen. | Tres casos OCR verdes, `cd0076b`. |
 | Spotless reformateó dos archivos de Libres heredados durante la primera compilación. | Aplicar solo el formato que requiere `spotless:check` en el gate. | Maven `verify`, exit 0. |
 
-Los scripts cerraron sus proyectos aislados. La aceptación del piloto queda en revisión independiente con los fallos remotos indicados arriba.
+El implementer registró el cierre de sus proyectos aislados. La revisión conserva el resultado inicial de regresión y el resultado corregido de OCR como fases distintas.
 
 FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
