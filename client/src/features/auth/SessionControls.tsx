@@ -83,11 +83,14 @@ function AccountMenu({
         onClick={(event) => setMenu({ anchor: event.currentTarget, location: location.key })}
         sx={{
           flexShrink: 0,
-          width: 44,
-          height: 44,
+          width: 'var(--shell-control-size, 44px)',
+          height: 'var(--shell-control-size, 44px)',
           border: 1,
           borderColor: 'divider',
-          '&.Mui-focusVisible': { outline: '2px solid currentColor', outlineOffset: 2 },
+          '&.Mui-focusVisible': {
+            outline: '2px solid currentColor',
+            outlineOffset: 'var(--shell-focus-offset, 2px)',
+          },
         }}
       >
         <PersonIcon />

@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-098](tasks/T-098-compact-writing-header.md) · [S-117](specs/S-117-compact-writing-header.md) |
-| Estado | `ready` |
-| Siguiente acción | El dueño revisa el plan de la barra compacta. Tras su conformidad y el merge documental, frontera implementer aplica T-098 en sesión nueva. |
-| Rama / PR | Plan `codex/t-098-compact-window-plan` · implementación `codex/t-098-compact-writing-header` |
+| Estado | `mergeable` |
+| Siguiente acción | Frontera reviewer verifica el CI de la transición, publica el veredicto y confirma el squash. Con MERGED confirmado, frontera planner concilia T-098 y retoma el pendiente de PostgreSQL. |
+| Rama / PR | `codex/t-098-compact-writing-header` · [PR #97](https://github.com/MatiasNicolasAcevedo/devnotes/pull/97) |
 
 Modo `FRONTERA_CONTINUA`. T-097 conciliada ([PR #94](https://github.com/MatiasNicolasAcevedo/devnotes/pull/94) MERGED, `8b0ddd5`): con ella cierran el M9 y el [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia). El dueño decidió el 2026-11-23 borrar la base Free actual y crear una nueva, sin respaldo: el proyecto todavía no se usa en producción y empieza a usarse con la base nueva. Los demás pendientes siguen abajo. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
@@ -34,5 +34,5 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Frontera implementer de T-098 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/specs/S-117-compact-writing-header.md y docs/tasks/T-098-compact-writing-header.md. PRECONDICIÓN: gh pr view codex/t-098-compact-window-plan --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit devuelve MERGED con fecha y oid válidos, y git merge-base --is-ancestor con ese oid y origin/main sale con exit 0. Si el plan está abierto, devolvé el estado y dejá la implementación pendiente de la conformidad del dueño y el merge documental. ACCIÓN: en codex/t-098-compact-writing-header desde origin/main, registrá el rojo y las medidas base a 640×480 CSS px. Implementá la fila superior de 32 px para Diario y Libres autenticados en ventana angosta con puntero fino, preservando el tamaño táctil y verificando que el espacio llegue al editor. Ejecutá el gate dirigido de T-098 y registrá medidas antes y después, comandos y exits. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: un PR de T-098 con verify-required verde y el prompt de reviewer independiente.
+Frontera planner de seguimiento de T-098 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/agents/planner.md, docs/tasks/T-098-compact-writing-header.md, docs/AUTONOMY.md y docs/DEPLOYMENT.md. PRECONDICIÓN: gh pr view 97 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit confirma MERGED con mergedAt y mergeCommit.oid válidos. Actualizá origin/main con git fetch origin main y asigná el oid confirmado a la variable mergeOid y comprobá que git merge-base --is-ancestor $mergeOid origin/main sale con exit 0. Si alguna comprobación falla, devolvé el estado vigente. ACCIÓN: conciliá T-098 como done y retomá el pendiente de PostgreSQL en STATUS con el dueño. Pedí solo datos no secretos del panel y confirmación de login. Sin otra tarea predefinida, presentá el paso vigente para decisión del dueño. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: registro de cierre y prompt vigente.
 ```

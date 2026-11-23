@@ -48,15 +48,20 @@ export function SpaceSelector() {
         onClick={(event) => setMenu({ anchor: event.currentTarget, owner })}
         sx={{
           flexShrink: 0,
-          minHeight: 44,
+          minHeight: 'var(--shell-control-size, 44px)',
+          py: 'var(--shell-control-block-padding, 6px)',
           px: 1.25,
-          fontSize: '1rem',
+          fontSize: 'var(--shell-label-size, 1rem)',
           fontWeight: 600,
+          whiteSpace: 'nowrap',
           color,
           border: `1px solid ${color}`,
           bgcolor: alpha(color, 0.08),
           '&:hover': { bgcolor: alpha(color, 0.16) },
-          '&.Mui-focusVisible': { outline: `2px solid ${color}`, outlineOffset: 2 },
+          '&.Mui-focusVisible': {
+            outline: `2px solid ${color}`,
+            outlineOffset: 'var(--shell-focus-offset, 2px)',
+          },
         }}
       >
         {label}

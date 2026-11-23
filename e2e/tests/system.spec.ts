@@ -62,7 +62,7 @@ test('T-050: visitor navigation fits on one row while readiness is pending', asy
   await expect(serverStatus(page, 'Servidor conectado')).toBeVisible();
 });
 
-test('T-064: selector y navegación responden con la sesión real', async ({ page, identity }) => {
+test('T-064: selector y navegación responden con la sesión real', async ({ page, identity, isMobile }) => {
   await login(page, identity);
   const banner = page.getByRole('banner');
   const selector = banner.getByRole('button', { name: 'Espacio: Trabajo' });
@@ -75,7 +75,7 @@ test('T-064: selector y navegación responden con la sesión real', async ({ pag
     await test.step(`${width} CSS px`, async () => {
       await page.setViewportSize({ width, height: 800 });
       await expect(selector).toBeVisible();
-      expect((await selector.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+      expect((await selector.boundingBox())!.height).toBeGreaterThanOrEqual(!isMobile && width < 768 ? 28 : 44);
       await expect(selector).toHaveCSS('color', 'rgb(134, 239, 172)');
       expect(await banner.getByRole('navigation').count()).toBe(width >= 768 ? 1 : 0);
       if (width < 768) {

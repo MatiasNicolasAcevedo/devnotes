@@ -37,7 +37,7 @@ export function AiNavbar() {
         underline="none"
         color="inherit"
         sx={{
-          minHeight: 44,
+          minHeight: 'var(--shell-control-size, 44px)',
           minWidth: 49,
           display: 'inline-flex',
           gap: 0.5,
@@ -45,7 +45,7 @@ export function AiNavbar() {
           justifyContent: 'center',
           px: 0.5,
           borderRadius: '5px 0 0 5px',
-          fontSize: '.875rem',
+          fontSize: 'var(--shell-label-size, .875rem)',
           bgcolor: active ? 'rgba(206,179,255,.15)' : undefined,
           ...focus,
         }}
@@ -61,8 +61,9 @@ export function AiNavbar() {
         aria-haspopup="dialog"
         onClick={(event) => ai.open(event.currentTarget)}
         sx={{
-          width: 44,
-          height: 44,
+          width: 'var(--shell-control-size, 44px)',
+          height: 'var(--shell-control-size, 44px)',
+          fontSize: 'var(--shell-label-size, 1.5rem)',
           color: 'inherit',
           borderRadius: '0 5px 5px 0',
           borderLeft: 1,
