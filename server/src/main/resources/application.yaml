@@ -101,6 +101,28 @@ logging:
 
 # Voice — disabled by default; activation requires explicit configuration (S-105).
 devnotes:
+  ai:
+    enabled: ${DEVNOTES_AI_ENABLED:false}
+    pilot-id: ${DEVNOTES_AI_PILOT_ID:}
+    test-provider: ${DEVNOTES_AI_TEST_PROVIDER:false}
+    providers:
+      groq:
+        enabled: ${DEVNOTES_AI_GROQ_ENABLED:false}
+        key: ${GROQ_AI_API_KEY:}
+        excerpt-scopes: ${DEVNOTES_AI_GROQ_EXCERPT_SCOPES:}
+      workers:
+        enabled: ${DEVNOTES_AI_WORKERS_ENABLED:false}
+        key: ${CLOUDFLARE_API_TOKEN:}
+        account-id: ${CLOUDFLARE_ACCOUNT_ID:}
+        excerpt-scopes: ${DEVNOTES_AI_WORKERS_EXCERPT_SCOPES:}
+      gemini:
+        enabled: ${DEVNOTES_AI_GEMINI_ENABLED:false}
+        key: ${GEMINI_API_KEY:}
+        excerpt-scopes: ${DEVNOTES_AI_GEMINI_EXCERPT_SCOPES:}
+      openrouter:
+        enabled: ${DEVNOTES_AI_OPENROUTER_ENABLED:false}
+        key: ${OPENROUTER_API_KEY:}
+        excerpt-scopes: ${DEVNOTES_AI_OPENROUTER_EXCERPT_SCOPES:}
   voice:
     enabled: ${DEVNOTES_VOICE_ENABLED:false}
     api-key: ${GROQ_API_KEY:}

@@ -285,6 +285,11 @@ function DailyNotesInner() {
             <DailyEditor
               initialContent={content ?? emptyDocument()}
               onChange={handleEditorChange}
+              saveAiSource={async () => {
+                await ctx.flush()
+                const revision = ctx.getRevision()
+                return revision > 0 ? { source: 'daily', id: ctx.activeDate, revision } : null
+              }}
               readOnly={ctx.navigationLocked || ctx.isLoading || ctx.copyTargetNeedsReload}
               toolbarStart={toolbarStart}
               toolbarEnd={toolbarEnd}

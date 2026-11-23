@@ -4,6 +4,7 @@ import http from 'node:http';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { Readable } from 'node:stream';
+import { handleAiProvider } from './ai-provider.mjs';
 
 const PORT = 8091;
 const HEALTH_PATH = '/healthz';
@@ -85,6 +86,7 @@ function readBody(req) {
 }
 
 const server = http.createServer((req, res) => {
+  if (handleAiProvider(req, res)) return;
   // Health check
   if (req.method === 'GET' && req.url?.startsWith(HEALTH_PATH)) {
     const url = new URL(req.url, `http://127.0.0.1:${PORT}`);

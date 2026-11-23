@@ -14,6 +14,7 @@ import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
 import { Fragment, Slice } from '@tiptap/pm/model'
 import { EditorContent, useEditor, type JSONContent } from '@tiptap/react'
+import { ConsultAiButton } from '../ai/ConsultAiButton'
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router'
@@ -490,6 +491,15 @@ function FreeNoteForm({
         >
           <EditorContent editor={editor} />
         </Paper>
+        <ConsultAiButton
+          editor={editor}
+          save={async () => {
+            if (isDirty || !stored.current) {
+              if (!(await save())) return null
+            }
+            return stored.current ? { source: 'free', ...stored.current } : null
+          }}
+        />
         {contentError && (
           <Typography id={contentErrorId} role="alert" variant="caption" color="error">
             {contentError}

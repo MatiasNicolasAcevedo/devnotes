@@ -82,7 +82,8 @@ public final class FreeNoteDocument {
     private static long headingPoints(JsonNode heading) {
         requireNode(heading, "heading", ATTRIBUTED_BLOCK_FIELDS);
         JsonNode level = requireAttribute(heading, "level");
-        if (!level.isNumber() || level.decimalValue().compareTo(java.math.BigDecimal.ONE) < 0
+        if (!level.isNumber()
+                || level.decimalValue().compareTo(java.math.BigDecimal.ONE) < 0
                 || level.decimalValue().compareTo(java.math.BigDecimal.valueOf(3)) > 0
                 || level.decimalValue().stripTrailingZeros().scale() > 0) {
             throw new IllegalArgumentException("Free note headings require a level from 1 to 3");

@@ -11,6 +11,8 @@ import Typography from '@mui/material/Typography'
 import { useRef, useState, type ReactNode, type RefObject } from 'react'
 import { Link as RouterLink, matchPath, useLocation } from 'react-router'
 import { SessionAlerts } from '../features/auth/SessionAlerts'
+import { AiNavbar } from '../features/ai/AiNavbar'
+import { AiProvider } from '../features/ai/AiProvider'
 import { SessionControls } from '../features/auth/SessionControls'
 import { useSession } from '../features/auth/sessionContext'
 import { DailyDraftWorkspace } from '../features/daily/DailyDraftNavigation'
@@ -40,13 +42,15 @@ export function AppShell() {
   return (
     <SpaceProvider owner={owner}>
       <ImageDraftContext.Provider value={{ imageEdited, setImageEdited }}>
-        <FreeNotesProvider key={owner}>
+        <AiProvider>
           <AppShellContent navigationRoot={navigationRoot}>
-            <DailyCopyRecoveryProvider key={owner}>
-              <SpaceWorkspaces owner={owner} navigationRoot={navigationRoot} />
-            </DailyCopyRecoveryProvider>
+            <FreeNotesProvider key={owner}>
+              <DailyCopyRecoveryProvider key={owner}>
+                <SpaceWorkspaces owner={owner} navigationRoot={navigationRoot} />
+              </DailyCopyRecoveryProvider>
+            </FreeNotesProvider>
           </AppShellContent>
-        </FreeNotesProvider>
+        </AiProvider>
       </ImageDraftContext.Provider>
     </SpaceProvider>
   )
@@ -207,6 +211,7 @@ function AppShellContent({
             sx={{ ml: 'auto', flexShrink: 0, alignItems: 'center' }}
           >
             <ServerStatus compact={!desktop} />
+            <AiNavbar />
             <SessionControls menuContainer={menuContainer} />
           </Stack>
         </Toolbar>

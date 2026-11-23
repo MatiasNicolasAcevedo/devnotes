@@ -241,12 +241,11 @@ class XlsxFreeNotesRoundTripTest {
                 invalid("unknown space", book -> replace(book, "\"work\"", "\"unknown\"")),
                 invalid("untrimmed title", book -> replace(book, "Libre ficticia", " Libre ficticia ")),
                 invalid("invalid node", book -> replace(book, "paragraph", "heading")),
-                invalid("unknown heading level", book -> replace(
-                        book, "\"type\":\"paragraph\"", "\"type\":\"heading\",\"attrs\":{\"level\":4}")),
-                invalid("unknown mark", book -> replace(
-                        book,
-                        "\"type\":\"paragraph\"",
-                        """
+                invalid(
+                        "unknown heading level",
+                        book -> replace(
+                                book, "\"type\":\"paragraph\"", "\"type\":\"heading\",\"attrs\":{\"level\":4}")),
+                invalid("unknown mark", book -> replace(book, "\"type\":\"paragraph\"", """
                         "type":"paragraph","content":[{"type":"text","text":"Ajeno","marks":[{"type":"italic"}]}]
                         """)),
                 invalid("inverted dates", book -> replace(book, "T13:", "T11:")));
