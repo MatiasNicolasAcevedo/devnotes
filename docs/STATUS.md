@@ -3,9 +3,9 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-095](tasks/T-095-trailer-v2.md) |
-| Estado | `in_progress` |
-| Siguiente acción | Implementer produce el corte de escritorio ([checkpoint](tasks/T-095-trailer-v2.md#checkpoint-vigente)) |
-| Rama / PR | `codex/t-095-trailer-v2` · PR pendiente |
+| Estado | `in_review` |
+| Siguiente acción | Reviewer independiente revisa el corte de escritorio y, si aprueba, hace el squash ([checkpoint](tasks/T-095-trailer-v2.md#checkpoint-vigente)) |
+| Rama / PR | `codex/t-095-trailer-v2` · [PR #91](https://github.com/MatiasNicolasAcevedo/devnotes/pull/91) |
 
 Modo `FRONTERA_CONTINUA`. T-094 conciliada ([PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90) MERGED, `076e4ed`). La [cola](BACKLOG.md#lote-imagen-libres-e-ia) continúa con el tráiler v2 y la demo narrada. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
@@ -34,5 +34,5 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Frontera implementer de T-095 en MatiasNicolasAcevedo/devnotes. Leé AGENTS.md, STATUS, docs/agents/implementer.md y docs/tasks/T-095-trailer-v2.md. Precondición: PR 90 MERGED, comprobado con gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit (state MERGED, mergedAt y mergeCommit.oid válidos) y la ascendencia del squash en origin/main; si no, devolvé el paso vigente. Conciliá T-094 a done en codex/t-095-trailer-v2 en el primer commit. Partí del tráiler local y del producto probado, entregá los dos cortes con música, sus fuentes y el gate de T-095 en un PR. Cerrá con el prompt completo de reviewer independiente.
+Frontera reviewer independiente de T-095 en MatiasNicolasAcevedo/devnotes, en sesión distinta de la del implementer. Leé AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/tasks/T-095-trailer-v2.md y media/trailer-v2/STORYBOARD.md. PRECONDICIÓN: gh pr view 91 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup devuelve OPEN, no draft, base main con 076e4ed32f82fd2ee9fbd25ee7de4d743ecd2e9c como ancestro y el commit técnico 027f02d contenido en el HEAD; si no, devolvé el paso vigente. ACCIÓN: revisá el diff contra la decisión del dueño del 2026-11-23 (un único corte de escritorio 16:9, ventana que se achica y móvil como función), el storyboard y cada rótulo frente al producto. En media/trailer-v2 ejecutá npm run check y npm run render (HyperFrames 0.9.37). Desde renders ejecutá ffprobe -v error -show_entries stream=codec_type,width,height:format=duration -of json devnotes-trailer-v2-16x9.mp4 y mirá el MP4 completo con sonido, que el implementer no pudo escuchar. Confirmá que trailer/ sigue sin versionar ni modificar y que no se versionan WAV, MP4 ni cachés. FULL/STARTER: DIFERIDO POR EL DUEÑO. Ante hallazgos devolvé el mismo PR con la lista y el prompt de corrección. SALIDA: si aprobás y verify-required está verde sobre el HEAD, hacé squash ligado a ese HEAD según docs/AUTONOMY.md, verificá MERGED con gh pr view 91 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit y entregá completo el prompt de T-096 de la tarea con el oid real.
 ```
