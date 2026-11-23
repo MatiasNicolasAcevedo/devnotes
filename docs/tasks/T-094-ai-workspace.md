@@ -1,6 +1,6 @@
 ---
 id: T-094
-status: changes_requested
+status: in_review
 priority: P1
 size: L
 milestone: M8
@@ -65,22 +65,30 @@ Reactivación en una decisión posterior del dueño. Para Gemini 3.8 Flash, comp
 
 ## Checkpoint vigente
 
-2026-11-22. Frontera planner de cierre en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, Git y gh. Decisión del dueño en la sesión, respuesta «Autorizo la corrección»: se autoriza **una corrección limitada** de los dos P2 de la [revisión de la corrección extraordinaria](#hallazgos-de-la-revisión-de-la-corrección-extraordinaria) en el mismo [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90). Próximo responsable: frontera implementer en sesión nueva. Después, reviewer independiente. Si persiste un hallazgo, el PR sigue abierto y vuelve al dueño. T-095 espera MERGED verificado con `gh pr view` y `--repo` explícito.
+2026-11-23. Frontera implementer de corrección limitada en Claude Code desktop (Claude Opus 5.5, `claude-opus-5-5`), Git Bash, Git, gh, Maven, Node y Docker. Se aplicaron los dos P2 de la [revisión de la corrección extraordinaria](#hallazgos-de-la-revisión-de-la-corrección-extraordinaria) en el [PR #90](https://github.com/MatiasNicolasAcevedo/devnotes/pull/90), dentro del contrato cerrado. Commit técnico `176f66c`. Próximo responsable: frontera reviewer independiente. T-095 espera MERGED verificado con `gh pr view` y `--repo` explícito.
 
-Contrato cerrado. No cambia otra regla, ruta, permiso, dato ni dependencia. Se conservan los cinco destinos del piloto, los dos diferimientos (Gemini 3.8 Flash y OpenRouter Free), los cuatro adaptadores, las cinco respuestas reales registradas y Render Auto-Deploy On Commit. Solo dobles y muestras ficticias, sin inferencia real.
+Impacto: el adaptador OpenRouter diferido rechaza también un estado de ruta fuera de rango. En la UI, un 429 con espera cero conserva su aviso y deja Enviar habilitado. No cambian API, permisos, datos, dependencias ni el doble E2E compartido. Se conservan los cinco destinos, los dos diferimientos, los cuatro adaptadores y Render Auto-Deploy On Commit. No hubo inferencia real.
 
-| Hallazgo | Corrección exigida | Rojo previo y prueba de cierre |
+| Causa | Arreglo | Prueba / SHA |
 |---|---|---|
-| P2 · Estado de ruta fuera de rango de `long` aceptado como operativo | En `OpenRouterCatalog.compatibleRoute`, aceptar solo un estado entero que sea exactamente cero sin conversión que trunque o redondee (por ejemplo comparar `canConvertToLong()` y el valor, o `bigIntegerValue().signum() == 0`). Cualquier estado ausente, no entero, fuera de rango o distinto de cero deja la ruta incompatible. La misma comprobación rige GET y POST. | Rojo: `OpenRouterCatalogTest#listsUnavailableAndRejectsBeforeInferenceWithIncompatibleEndpoints` con el estado `18446744073709551616` en la ruta exacta y los demás campos válidos, exit 1 antes del arreglo. Cierre: opción indisponible con motivo, rechazo antes del despacho y **cero llamadas** al doble de inferencia para ese caso y para un estado decimal o negativo. El positivo existente sigue verde. |
-| P2 · Un 429 con `Retry-After: 0` pierde el aviso | En `AiPage`/`AiProvider`, una espera válida de cero no debe borrar el estado en el mismo ciclo. Conservar el anuncio accesible del rechazo («Límite temporal del proveedor» o «Cuota agotada» según `ai-rate-limit`/`ai-quota`) en selector, compositor y región viva hasta el siguiente envío deliberado o un cambio de destino. Con espera cero, Enviar queda habilitado sin espera adicional, sin rehabilitación manual obligatoria y sin reenvío automático. Borrador y fragmento intactos. | Rojo: `AiWorkspace.test.tsx -t 'confirma el modelo elegido'` con `Retry-After: 0`, exit 1 antes del arreglo. Cierre en Vitest: ambos códigos con espera cero muestran el aviso accesible, Enviar habilitado, borrador y fragmento conservados, un único POST hasta una nueva pulsación de Enviar y exactamente dos tras ella. Se conservan espera positiva, ausencia de espera con rehabilitación manual y concurrencia local `ai-busy`. |
+| `status.longValue() == 0` truncaba `18446744073709551616` a cero | `status.isIntegralNumber() && status.bigIntegerValue().signum() == 0` en `OpenRouterCatalog.compatibleRoute`, la misma comprobación para GET y POST | `OpenRouterCatalogTest#listsUnavailableAndRejectsBeforeInferenceWithIncompatibleEndpoints` con cuatro casos nuevos: `status-overflow`, `status-decimal`, `status-negative` y `status-absent`. Cada uno verifica la opción indisponible, el rechazo `MODEL` y `never()` sobre `generate`. Rojo exit 1 en el caso overflow (1/21), verde 21/21 · `176f66c` |
+| `Retry-After: 0` generaba un vencimiento inmediato y `AiProvider` borraba el aviso | La espera cero crea un `limited` con `ready: true` y `retryAt: null`. `modelStatus` lo muestra con tono `warning` y conserva la etiqueta «Límite temporal del proveedor» o «Cuota agotada». `allowed` acepta `warning`, así que Enviar queda habilitado. El botón de rehabilitación manual no aparece en este caso. El aviso se limpia al empezar el siguiente Enviar deliberado | `AiWorkspace.test.tsx` «conserva el aviso %s con Retry-After: 0…» para `ai-rate-limit` y `ai-quota`: aviso en la región viva y en el selector, Enviar habilitado, borrador intacto, 1 POST sin reenvío y 2 POST tras pulsar Enviar. Rojo exit 1 (2/2), verde · `176f66c` |
 
-Gate del implementer: ambos rojos y su paso a verde, los comandos de [Aceptación y pruebas](#aceptación-y-pruebas) (Maven `verify` dirigido con Failsafe sobre PostgreSQL 18.6, Vitest y typecheck, E2E `ai workspace:` escritorio y móvil con dobles; la regresión OCR/Voz solo si cambia el doble compartido), cleanup por label exacto, docs-check y `verify-required` verde sobre el HEAD publicado. `bash scripts/verify.sh --policy origin/main` solo informa. **FULL/STARTER: DIFERIDO POR EL DUEÑO.**
+Nota para el reviewer: el fragmento comparte el camino del borrador (`setExcerpt(null)` solo ocurre ante una respuesta exitosa). El caso nuevo no agrega un fragmento y los casos existentes de fragmentos siguen verdes.
 
 | Comando | Resultado |
 |---|---|
-| `gh pr view 90 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup,mergedAt,mergeCommit` | Exit 0. OPEN, `isDraft=false`, HEAD `d502efa5e1cb2dc1b503c200c5e144782461c7d8`, base `dee843c8b5dfa7f1e9c12ed50a2e305b0b9cc795`, sin merge, [verify-required SUCCESS](https://github.com/MatiasNicolasAcevedo/devnotes/actions/runs/45101835114/job/137454218727). |
-| `git fetch origin main codex/t-094-ai-workspace` y `git rev-parse HEAD origin/codex/t-094-ai-workspace origin/main` | Exit 0. HEAD local igual a remoto, `origin/main` igual a la base. |
-| `git diff --exit-code 4a99c87e29fb5477c6313ed47dadfbe2ef3ba1d3 origin/codex/t-094-ai-workspace -- . ':(exclude)docs/STATUS.md' ':(exclude)docs/tasks/T-094-ai-workspace.md'` | Exit 0. El árbol técnico publicado es el revisado. |
+| `gh pr view 90 --repo … --json state,isDraft,headRefOid,baseRefOid,mergedAt,mergeCommit` y `git fetch origin main codex/t-094-ai-workspace` | Exit 0. OPEN, `isDraft=false`, HEAD `239fff8` igual al remoto, base `dee843c` igual a `origin/main` |
+| `./mvnw -q test -Dtest=OpenRouterCatalogTest` (rojo, antes del arreglo) | Exit 1, 21 casos, 1 falla (`status-overflow`) |
+| `npm test -- --run src/features/ai/AiWorkspace.test.tsx -t 'Retry-After: 0'` (rojo) | Exit 1, 2/2 fallan con «Disponible para intentar» |
+| `./mvnw -q verify -Dtest=…siete… -Dit.test=AiMessageApiIT,VoiceTranscriptionApiIT,FreeNoteApiIT -Djacoco.skip=true` | Exit 0. Surefire 42/42, Failsafe 14/14 con PostgreSQL 18.6 |
+| `npm test -- --run src/app/AppRoutes.test.tsx src/app/AppShell.test.tsx src/features/ai`, `npm run typecheck`, `eslint src/features/ai --max-warnings 0` | Exit 0, 40/40 · exit 0 · exit 0 |
+| `STARTER_E2E_PROJECT=starter-e2e-t094c-desktop bash scripts/e2e.sh --grep 'ai workspace:' --project desktop` | Exit 0, 4/4 |
+| `STARTER_E2E_PROJECT=starter-e2e-t094c-mobile bash scripts/e2e.sh --grep 'ai workspace: navbar' --project mobile` | Exit 0, 1/1 |
+| Cleanup `docker ps -a` / `docker volume ls` con `label=com.docker.compose.project=<proyecto>` exacto | 0 contenedores y 0 volúmenes en ambos proyectos |
+| Regresión `screenshot OCR:\|voice` | No se ejecutó: el doble compartido no cambió |
+| `bash scripts/verify.sh --policy origin/main` | Exit 0, informativo: perfil STARTER. **FULL/STARTER: DIFERIDO POR EL DUEÑO** |
+| `node scripts/docs-check.mjs`, `git diff --check origin/main...HEAD` y `verify-required` | Ver la fila de cierre del commit documental en el PR. El reviewer debe confirmar `verify-required` verde sobre el HEAD publicado |
 
 ### Hallazgos de la revisión de la corrección extraordinaria
 
