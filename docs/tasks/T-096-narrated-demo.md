@@ -52,7 +52,7 @@ Toda función habilitada del SHA tiene una escena o una razón verificable de ex
 | `sha256sum` | `demo.mp4` `af327741…b815`, `demo-subtitulado.mp4` `3a589670…2c2e`, `demo.es.srt` `05074e84…9d9d` |
 | `bash scripts/verify.sh --policy origin/main` | exit 0, perfil FULL/STARTER por 11 rutas técnicas. **FULL/STARTER: DIFERIDO POR EL DUEÑO** |
 
-La reproducción completa del MP4 con y sin audio queda para el dueño y el reviewer; la sincronía se revisó por fotogramas.
+**Confirmación del dueño.** El 2026-11-23, en el chat de la sesión del implementer, el dueño vio `demo-subtitulado.mp4` completo con sonido y respondió: «está muy bien, me gusta la voz, es esa, coincide bien con lo que se muestra en el video, está alineada con los subtítulos y la música; lo doy por aprobado». El reviewer igual pide su propia confirmación antes del merge.
 
 **Correcciones significativas.**
 
