@@ -1,6 +1,6 @@
 ---
 id: T-100
-status: changes_requested
+status: in_review
 priority: P1
 size: S
 milestone: post-M9
@@ -86,6 +86,23 @@ Completar el [gate diario](../TESTING.md) con `node scripts/docs-check.mjs`, `gi
 
 ## Checkpoint vigente
 
+### Corrección de H1 · ronda 1
+
+2026-11-24. Frontera implementer de corrección en Claude Code Desktop con Claude Opus 5.5, sesión nueva. Precondición: PR #100 OPEN, base `5dcb171`, HEAD `8f91cc2` (commit documental del reviewer). Corrección en `f9abefe`, solo `e2e/tests/daily-notes.spec.ts`; el producto no cambia. `linkWord` recibe la palabra y, tras soltar `Shift`, espera con `expect.poll` a que `window.getSelection()?.toString()` sea esa palabra, deja pasar un frame con `requestAnimationFrame` dentro de `page.evaluate` y, con el diálogo abierto, afirma que muestra `«Sitio»` o `«Ticket»`. Sin retries, timeouts nuevos ni `waitForTimeout`.
+
+| Comando (Git Bash, desde la raíz) | Resultado |
+|---|---|
+| `STARTER_E2E_PROJECT=starter-e2e-t100-h1-d1 bash scripts/e2e.sh --grep 'flexible link:\|T-020:\|CA-05:\|T-050:\|T-064:\|screenshot OCR: extract through the proxy' --project desktop` | Exit 0, 8/8 |
+| Igual con `starter-e2e-t100-h1-d2` | Exit 0, 8/8 |
+| Igual con `starter-e2e-t100-h1-d3` | Exit 0, 8/8 |
+| `STARTER_E2E_PROJECT=starter-e2e-t100-h1-m1 bash scripts/e2e.sh --grep 'flexible link:\|T-050:\|T-064:\|screenshot OCR: extract through the proxy' --project mobile` | Exit 0, 4/4 |
+| Cleanup por label exacto `com.docker.compose.project=starter-e2e-t100-h1-{d1,d2,d3,m1}` | 0 contenedores, 0 volúmenes y 0 redes en cada namespace |
+| `node scripts/docs-check.mjs` | Exit 1 solo por `trailer/CLAUDE.md`, directorio sin versionar previo y ajeno a T-100 |
+| `git diff --check origin/main` | Exit 0 |
+| `bash scripts/verify.sh` | No corrido: FULL/STARTER: DIFERIDO POR EL DUEÑO |
+
+Las tres corridas de escritorio son consecutivas; en la shell las barras verticales del patrón van sin escapar y aquí se escapan solo por Markdown. **Pendiente.** `verify-required` en el HEAD publicado y revisión independiente, ronda 2.
+
 ### Revisión independiente · ronda 1
 
 2026-11-24. Frontera reviewer en Claude Code Desktop con Claude Opus 5.5, sesión distinta de la implementer. Worktree aislado `.orchestrator/review-t100` sobre HEAD `e5642ea` y base `5dcb171`. `verify-required` verde en ese HEAD (corridas 45442600707 y 45442664102, `headSha` comprobado). Veredicto: **CAMBIOS REQUERIDOS**, con un solo hallazgo en el E2E nuevo. El código de producto queda revisado sin hallazgos.
@@ -141,6 +158,7 @@ Completar el [gate diario](../TESTING.md) con `node scripts/docs-check.mjs`, `gi
 |---|---|---|---|
 | `2a122ba` | `T-020:` no encontraba «Agregar enlace» en escritorio. Falla igual sobre `origin/main@5dcb171` (corrida `starter-e2e-t100-base020`): desde #84, en escritorio Enlace vive en la barra y `openDailyTools` abría el popover Herramientas, que deja la barra con `aria-hidden`. | `openDailyTools` no abre el popover si el botón de enlace ya está en la barra. | E2E de escritorio 8/8 y usuarios del helper 4/4. |
 | `2a122ba` | `flexible link:` enlazaba «itio»: el cursor desde `End` cruzaba de forma distinta el enlace ya creado. | Cada palabra se selecciona desde su extremo, `End` para «Ticket» y `Home` para «Sitio». | Escritorio y móvil en verde. |
+| `f9abefe` | H1: `Control+k` leía una selección de ProseMirror vieja, porque `Shift+Arrow` se aplica en el `selectionchange` asíncrono. | `linkWord` espera la selección nativa con la palabra y un frame, y afirma la palabra en el diálogo. | AC-03 escritorio 8/8 tres veces seguidas y AC-04 móvil 4/4. |
 
 ## Prompts de salida
 
@@ -148,6 +166,12 @@ Al publicar la implementación:
 
 ```text
 Frontera reviewer independiente de T-100 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/tasks/T-100-flexible-links-nav-order.md y los ajustes del 2026-11-24 en S-102 y S-112. PRECONDICIÓN: gh pr view <PR> --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup confirma OPEN, listo, HEAD <SHA> y verify-required verde en ese HEAD. Si no se cumple, devolvé el estado vigente. ACCIÓN: revisá normalizeLinkHref contra la tabla y los rechazos de T-100. Comprobá que todo href aceptado pasa dailyDocument.ts y DailyContent, que no se relajó el servidor, los mensajes y el foco del diálogo, y el orden único de navegación en móvil y escritorio. Cotejá el gate diario y corré el E2E dirigido de escritorio de T-100 con un namespace propio. Si aprobás, squash ligado al HEAD revisado y confirmá MERGED con gh pr view <PR> --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: veredicto y prompt vigente.
+```
+
+Tras la corrección de H1 (revisión independiente, ronda 2):
+
+```text
+Frontera reviewer independiente de T-100, ronda 2, en MatiasNicolasAcevedo/devnotes, sesión nueva y distinta de la implementer. Leé AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md y docs/tasks/T-100-flexible-links-nav-order.md, en especial «Revisión independiente · ronda 1» y «Corrección de H1 · ronda 1». PRECONDICIÓN: gh pr view 100 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup confirma OPEN, listo, base 5dcb1718051259cfbbf2cf68bd40e7162810ca12, HEAD igual al último commit de codex/t-100-flexible-links-nav-order (commit documental sobre f9abefe) y verify-required verde en ese HEAD. Si no se cumple, devolvé el estado vigente. ACCIÓN: comprobá que desde 8f91cc2 solo cambian e2e/tests/daily-notes.spec.ts y la documentación, y que linkWord espera la selección y un frame y afirma «Sitio»/«Ticket» en el diálogo, sin retries, timeouts más largos ni waitForTimeout. En un worktree aislado corré el comando AC-03 de escritorio con un namespace propio, barras verticales sin escapar, y registrá exit y cleanup por label. Si aprobás, squash ligado al HEAD revisado y confirmá MERGED con gh pr view 100 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. Máximo dos rondas: si H1 persiste, devolvé a dueño o frontera. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: veredicto y prompt vigente.
 ```
 
 Tras el merge de T-100:
