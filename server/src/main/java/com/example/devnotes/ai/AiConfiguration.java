@@ -1,5 +1,6 @@
 package com.example.devnotes.ai;
 
+import com.example.devnotes.identity.IdentityService;
 import com.example.devnotes.security.AuthOpenApi;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import java.net.URI;
@@ -40,7 +41,12 @@ class AiConfiguration {
 
     @Bean
     AiMessageService aiMessageService(
-            AiProperties properties, AiNoteContext context, AiHttp http, Clock clock, Environment env) {
+            AiProperties properties,
+            AiNoteContext context,
+            AiHttp http,
+            Clock clock,
+            Environment env,
+            IdentityService identities) {
         boolean useDouble = properties.testProvider() && env.acceptsProfiles(Profiles.of("e2e & !google"));
         var workers = properties.provider(AiOptions.WORKERS);
         var openRouterClient = new OpenRouterAiClient(
@@ -66,7 +72,8 @@ class AiConfiguration {
                                 base(useDouble, "https://generativelanguage.googleapis.com"),
                                 properties.provider(AiOptions.GEMINI).key()),
                 AiOptions.OPENROUTER, openRouter);
-        return new AiMessageService(properties, new AiOptions(properties, openRouter), context, clients, useDouble);
+        return new AiMessageService(
+                properties, new AiOptions(properties, openRouter), context, clients, useDouble, identities::subject);
     }
 
     private static URI base(boolean useDouble, String production) {

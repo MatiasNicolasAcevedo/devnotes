@@ -82,6 +82,13 @@ function execute(request) {
     case 'stop-db': case 'start-db':
       compose([request.operation === 'stop-db' ? 'stop' : 'start', 'db']);
       return true;
+    case 'revoke-sessions': {
+      // Controlled server-side expiry for one local user id; never prints the session rows.
+      assert.match(request.identity, /^[a-f0-9-]{36}$/);
+      compose(['exec', '-T', 'db', 'psql', '-U', 'starter_auth_test', '-d', 'starter_auth_test', '-Atc',
+        `DELETE FROM spring_session WHERE principal_name = '${request.identity}'`]);
+      return true;
+    }
     case 'fingerprint': {
       assert.match(request.identity, /^[a-f0-9-]{36}$/);
       const query = "SELECT json_build_object('id',id,'createdAt',created_at)::text FROM app_user " +

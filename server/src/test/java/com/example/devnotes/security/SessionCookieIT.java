@@ -30,7 +30,7 @@ class SessionCookieIT {
     private WebApplicationContext application;
 
     @Test
-    void sessionCookieIsHostOnlySecureHttpOnlyLaxNonPersistentAndCookieOnly() throws Exception {
+    void preLoginSessionCookieIsHostOnlySecureHttpOnlyLaxNonPersistentAndCookieOnly() throws Exception {
         var response = HttpClient.newBuilder()
                 .followRedirects(HttpClient.Redirect.NEVER)
                 .build()
@@ -51,7 +51,8 @@ class SessionCookieIT {
         assertThat(session)
                 .contains("Path=/", "Secure", "HttpOnly", "SameSite=Lax")
                 .doesNotContain("Domain=", "Max-Age=", "Expires=");
-        assertThat(application.getServletContext().getSessionTimeout()).isEqualTo(30);
+        // Pre-login correlation lifetime (T-099); a valid login raises the stored session to 7 days.
+        assertThat(application.getServletContext().getSessionTimeout()).isEqualTo(10);
         assertThat(application.getServletContext().getEffectiveSessionTrackingModes())
                 .containsExactly(SessionTrackingMode.COOKIE);
     }

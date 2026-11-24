@@ -6,8 +6,7 @@ Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este í
 
 | Tarea | Resultado | Entrada |
 |---|---|---|
-| [T-100](tasks/T-100-flexible-links-nav-order.md) | Guardar enlaces sin `https://` y ordenar la navegación como Notas · Referencias · Voz · Imagen · Historial | [PR documental #98](https://github.com/MatiasNicolasAcevedo/devnotes/pull/98) MERGED y aprobación del PR de planificación de T-100 |
-| [T-099](tasks/T-099-persistent-google-session.md) | Conservar la sesión de Google al volver al mismo navegador y después de un reinicio. `draft` hasta el MERGED de T-100, por orden del dueño del 2026-11-24 | T-100 MERGED; su implementer la pasa a `ready` en el primer commit |
+| [T-099](tasks/T-099-persistent-google-session.md) | Conservar la sesión de Google al volver al mismo navegador y después de un reinicio | [T-100](tasks/T-100-flexible-links-nav-order.md#conciliación) done tras [PR #100](https://github.com/MatiasNicolasAcevedo/devnotes/pull/100) MERGED (squash `70729d3`) |
 
 ## Planificación I5 autorizada el 2026-11-12
 

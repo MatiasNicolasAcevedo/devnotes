@@ -1,5 +1,7 @@
 package com.example.devnotes.security;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Set;
@@ -7,10 +9,11 @@ import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
@@ -64,9 +67,33 @@ public class OidcConfiguration {
         return new InMemoryClientRegistrationRepository(registration.build());
     }
 
+    /**
+     * DevNotes never calls Google APIs, so access and refresh tokens are used during the callback only and never
+     * kept: not in the session store, not in memory (T-099).
+     */
     @Bean
     OAuth2AuthorizedClientRepository authorizedClientRepository() {
-        return new HttpSessionOAuth2AuthorizedClientRepository();
+        return new OAuth2AuthorizedClientRepository() {
+            @Override
+            public <T extends OAuth2AuthorizedClient> T loadAuthorizedClient(
+                    String clientRegistrationId, Authentication principal, HttpServletRequest request) {
+                return null;
+            }
+
+            @Override
+            public void saveAuthorizedClient(
+                    OAuth2AuthorizedClient authorizedClient,
+                    Authentication principal,
+                    HttpServletRequest request,
+                    HttpServletResponse response) {}
+
+            @Override
+            public void removeAuthorizedClient(
+                    String clientRegistrationId,
+                    Authentication principal,
+                    HttpServletRequest request,
+                    HttpServletResponse response) {}
+        };
     }
 
     @Bean

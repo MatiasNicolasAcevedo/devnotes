@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-100](tasks/T-100-flexible-links-nav-order.md) |
+| Tarea y contrato | [T-099](tasks/T-099-persistent-google-session.md) |
 | Estado | `mergeable` |
-| Siguiente acción | Ronda 2 [APROBADA](tasks/T-100-flexible-links-nav-order.md#revisión-independiente--ronda-2); el reviewer hace el squash del [PR #100](https://github.com/MatiasNicolasAcevedo/devnotes/pull/100). Tras el MERGED, frontera implementer de [T-099](tasks/T-099-persistent-google-session.md) |
-| Rama / PR | `codex/t-100-flexible-links-nav-order` · [PR #100](https://github.com/MatiasNicolasAcevedo/devnotes/pull/100), código en `2a122ba`, corrección de H1 en `f9abefe` y cierre documental en el HEAD publicado |
+| Siguiente acción | Revisión independiente APROBADA ([ronda 1](tasks/T-099-persistent-google-session.md#revisión-independiente--ronda-1)); squash del [PR #101](https://github.com/MatiasNicolasAcevedo/devnotes/pull/101) y, tras MERGED, planner de seguimiento |
+| Rama / PR | `codex/t-099-persistent-google-session` · [PR #101](https://github.com/MatiasNicolasAcevedo/devnotes/pull/101), código en `6d5f740` y cierre documental en el HEAD publicado |
 
-Modo `FRONTERA_CONTINUA`. [PR documental #98](https://github.com/MatiasNicolasAcevedo/devnotes/pull/98) MERGED (`190e105`) con T-099 planificada. El 2026-11-24 el dueño pidió antes dos ajustes de UI: enlaces sin `https://` y un orden único de navegación. [PR de planificación #99](https://github.com/MatiasNicolasAcevedo/devnotes/pull/99) MERGED (`5dcb171`); T-100 implementada; la ronda 1 pidió cambios solo en el E2E nuevo (H1); la ronda 2 lo aprobó con el E2E de escritorio 8/8. T-099 queda en `draft` solo por ese orden. [Configuración y evidencia del cron externo](DEPLOYMENT.md#despertador-externo-de-devnotes).
+Modo `FRONTERA_CONTINUA`. [T-100](tasks/T-100-flexible-links-nav-order.md#conciliación) done tras el [PR #100](https://github.com/MatiasNicolasAcevedo/devnotes/pull/100) MERGED (squash `70729d3`). T-099 guarda la sesión en PostgreSQL: vence a los 7 días sin actividad o a los 30 desde cada login. AC-01, AC-02 y AC-03 en verde ([evidencia](tasks/T-099-persistent-google-session.md#checkpoint-vigente)). Tras el merge, el primer despliegue pide un login más. [Configuración y evidencia del cron externo](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
 Piloto aprobado con cinco destinos: Groq 20B/120B, Workers AI 20B/120B y Gemini 3.1 Flash-Lite. Gemini 3.8 Flash y OpenRouter Free quedan diferidos. El selector y el compositor muestran disponibilidad, fallos y cuota. El usuario elige y confirma otro destino. [Decisión y cierre observable](tasks/T-094-ai-workspace.md#decisión-de-alcance-del-dueño). FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
@@ -29,10 +29,10 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 | Último integrado válido | FULL local del 2026-11-15 sobre `398801f` ([T-069](tasks/T-069-ocr-workspace.md#evidencia-del-full-de-cierre)); STARTER de T-068 conservado |
 | Mergeado desde entonces | T-070 (recorrido E2E de OCR), T-074 (navegación de Imagen), T-071 y T-092 (documentales), la adopción documental del flujo, el encadenamiento del lote hasta T-085 y T-093 a T-096 (IA Free, tráiler y demo narrada) |
 | Corte acumulado | Desde `7aa8946` hasta el HEAD de `main` que indique el dueño ([TESTING](TESTING.md#corte-acumulado-vigente)). El FULL/STARTER de I5 sigue diferido |
-| Recomendación | Ejecutar el integrado del corte acumulado con V8 y V9 cuando el dueño lo ordene. T-094 incorpora rutas privadas y cambia Compose |
+| Recomendación | Ejecutar el integrado del corte acumulado con V8 y V9 cuando el dueño lo ordene. T-094 incorpora rutas privadas y cambia Compose; T-099 agrega Spring Session JDBC, cambia autenticación y suma la migración V10 |
 
 ### Prompt de la siguiente sesión
 
 ```text
-Frontera implementer de T-099 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md y docs/tasks/T-099-persistent-google-session.md con sus referencias. PRECONDICIÓN: gh pr view codex/t-100-flexible-links-nav-order --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit confirma MERGED con fecha y oid. Actualizá origin/main con git fetch origin main y comprobá que git merge-base --is-ancestor con el oid confirmado y origin/main sale 0. ACCIÓN: desde origin/main usá la rama codex/t-099-persistent-google-session. En el primer commit conciliá T-100 como done y pasá T-099 a ready en la tarea, BACKLOG y STATUS. Reproducí primero la pérdida de sesión al reiniciar y después implementá persistencia en PostgreSQL con siete días de inactividad y un máximo de 30 días desde cada login. Conservá OIDC, CSRF, revocación y privacidad por propietario. Ejecutá los IT y E2E dirigidos de T-099 con datos ficticios, corré el gate diario y publicá un único PR para revisión independiente. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: PR con evidencia de reinicio, expiración y logout, y prompt completo de reviewer.
+Frontera planner de seguimiento de T-099 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/tasks/T-099-persistent-google-session.md y docs/DEPLOYMENT.md. PRECONDICIÓN: gh pr view 101 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit confirma MERGED con fecha y oid y git merge-base --is-ancestor con el oid confirmado y origin/main sale 0. ACCIÓN: conciliá T-099 como done en una rama nueva, confirmá el SHA activo y readiness. Coordiná la verificación de continuidad con el dueño en sus dispositivos, con Google real, y retomá el pendiente de vencimiento de PostgreSQL. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: registro de cierre y prompt vigente.
 ```

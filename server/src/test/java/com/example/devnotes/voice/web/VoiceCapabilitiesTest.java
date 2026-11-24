@@ -2,7 +2,7 @@ package com.example.devnotes.voice.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -11,18 +11,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.devnotes.identity.IdentityService;
 import com.example.devnotes.security.AuthMeResponse;
 import com.example.devnotes.security.LocalOidcUser;
+import com.example.devnotes.security.LocalSessionAuthentication;
 import com.example.devnotes.security.SecurityConfig;
 import com.example.devnotes.voice.config.VoiceProperties;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -44,15 +41,9 @@ class VoiceCapabilitiesTest {
     @MockitoBean
     private VoiceProperties voiceProperties;
 
-    private LocalOidcUser user() {
-        var token = OidcIdToken.withTokenValue("fictitious")
-                .subject("fictitious")
-                .issuedAt(Instant.parse("2026-10-18T12:00:00Z"))
-                .expiresAt(Instant.parse("2026-10-18T13:00:00Z"))
-                .build();
-        return new LocalOidcUser(
-                new DefaultOidcUser(List.of(new SimpleGrantedAuthority("OIDC_USER")), token),
-                new AuthMeResponse(OWNER, null, null, false));
+    private LocalSessionAuthentication user() {
+        return new LocalSessionAuthentication(
+                new LocalOidcUser(new AuthMeResponse(OWNER, null, null, false), Instant.parse("2026-10-18T12:00:00Z")));
     }
 
     @Test
@@ -60,7 +51,7 @@ class VoiceCapabilitiesTest {
         when(voiceProperties.isRecordingEnabled()).thenReturn(false);
         when(voiceProperties.getReason()).thenReturn("disabled");
 
-        mvc.perform(get(PATH).with(oidcLogin().oidcUser(user())))
+        mvc.perform(get(PATH).with(authentication(user())))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", "no-store"))
                 .andExpect(jsonPath("$.recordingEnabled").value(false))
@@ -78,7 +69,7 @@ class VoiceCapabilitiesTest {
         when(voiceProperties.isRecordingEnabled()).thenReturn(false);
         when(voiceProperties.getReason()).thenReturn("not_configured");
 
-        mvc.perform(get(PATH).with(oidcLogin().oidcUser(user())))
+        mvc.perform(get(PATH).with(authentication(user())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.recordingEnabled").value(false))
                 .andExpect(jsonPath("$.reason").value("not_configured"));
@@ -89,7 +80,7 @@ class VoiceCapabilitiesTest {
         when(voiceProperties.isRecordingEnabled()).thenReturn(true);
         when(voiceProperties.getReason()).thenReturn(null);
 
-        mvc.perform(get(PATH).with(oidcLogin().oidcUser(user())))
+        mvc.perform(get(PATH).with(authentication(user())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.recordingEnabled").value(true))
                 .andExpect(jsonPath("$.reason").doesNotExist());
@@ -100,7 +91,7 @@ class VoiceCapabilitiesTest {
         when(voiceProperties.isRecordingEnabled()).thenReturn(true);
         when(voiceProperties.getReason()).thenReturn(null);
 
-        var response = mvc.perform(get(PATH).with(oidcLogin().oidcUser(user())))
+        var response = mvc.perform(get(PATH).with(authentication(user())))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -113,7 +104,7 @@ class VoiceCapabilitiesTest {
         when(voiceProperties.isRecordingEnabled()).thenReturn(true);
         when(voiceProperties.getReason()).thenReturn(null);
 
-        var response = mvc.perform(get(PATH).with(oidcLogin().oidcUser(user())))
+        var response = mvc.perform(get(PATH).with(authentication(user())))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()

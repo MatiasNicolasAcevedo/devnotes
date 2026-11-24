@@ -2,7 +2,7 @@ package com.example.devnotes.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
@@ -164,7 +164,7 @@ class ApiDocsEnabledIT {
             mockMvc.perform(get(path))
                     .andExpect(status().isUnauthorized())
                     .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
-            mockMvc.perform(get(path).with(oidcLogin().oidcUser(AuthFixtures.localUser("Demo", null, false))))
+            mockMvc.perform(get(path).with(authentication(AuthFixtures.localUser("Demo", null, false))))
                     .andExpect(status().isForbidden());
         }
     }

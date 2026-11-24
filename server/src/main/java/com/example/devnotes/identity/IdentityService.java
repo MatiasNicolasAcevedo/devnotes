@@ -2,6 +2,8 @@ package com.example.devnotes.identity;
 
 import java.time.Clock;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,14 @@ public class IdentityService {
         this.clock = clock;
         this.transaction = new TransactionTemplate(transactionManager);
         this.transaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    }
+
+    /**
+     * Provider subject of a local user, for test-only gates that must not read it from the session principal (T-099
+     * keeps provider identifiers out of the session store).
+     */
+    public Optional<String> subject(UUID id) {
+        return repository.findById(id).map(AppUser::getSubject);
     }
 
     /** Returns a committed local user; the caller must not expose the persistence entity over HTTP. */
