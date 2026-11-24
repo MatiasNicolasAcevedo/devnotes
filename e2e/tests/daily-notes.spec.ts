@@ -321,25 +321,30 @@ test('flexible link: addresses without scheme persist normalized after reload', 
   const input = dialog.getByRole('textbox', { name: 'URL', exact: true });
 
   // Cada palabra se selecciona desde un extremo del párrafo, sin cruzar el enlace ya creado, y se enlaza con Ctrl+K.
-  const linkWord = async (from: 'Home' | 'End', length: number, address: string) => {
+  // Shift+Arrow mueve la selección nativa y ProseMirror la toma en el selectionchange asíncrono: antes del atajo se
+  // espera esa selección y un frame, y el diálogo debe nombrar la palabra.
+  const linkWord = async (from: 'Home' | 'End', word: 'Sitio' | 'Ticket', address: string) => {
     await page.keyboard.press(from);
     await page.keyboard.down('Shift');
-    for (let i = 0; i < length; i++) await page.keyboard.press(from === 'End' ? 'ArrowLeft' : 'ArrowRight');
+    for (let i = 0; i < word.length; i++) await page.keyboard.press(from === 'End' ? 'ArrowLeft' : 'ArrowRight');
     await page.keyboard.up('Shift');
+    await expect.poll(() => page.evaluate(() => window.getSelection()?.toString())).toBe(word);
+    await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => resolve())));
     await page.keyboard.press('Control+k');
     await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText(`«${word}»`);
     await expect(input).toHaveAttribute('placeholder', 'google.com');
     await input.fill(address);
     await dialog.getByRole('button', { name: 'Guardar', exact: true }).click();
     await expect(dialog).not.toBeVisible();
   };
 
-  await linkWord('End', 'Ticket'.length, 'jira.ejemplo.test/browse/ABC 1279');
+  await linkWord('End', 'Ticket', 'jira.ejemplo.test/browse/ABC 1279');
   const saved = page.waitForResponse(response =>
     new URL(response.url()).pathname.startsWith('/api/v1/daily-notes/')
     && response.request().method() === 'PUT'
     && (response.request().postData() ?? '').includes('https://www.ejemplo.test/'));
-  await linkWord('Home', 'Sitio'.length, 'www.ejemplo.test');
+  await linkWord('Home', 'Sitio', 'www.ejemplo.test');
   expect((await saved).status()).toBe(200);
 
   await page.reload();
