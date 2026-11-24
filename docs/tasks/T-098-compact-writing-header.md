@@ -1,6 +1,6 @@
 ---
 id: T-098
-status: mergeable
+status: done
 priority: P1
 size: S
 milestone: post-M9
@@ -39,7 +39,11 @@ En Diario y Libres, leer y escribir más líneas al usar DevNotes con mouse o tr
 - En raíz, Git Bash: `STARTER_E2E_PROJECT=starter-e2e-t098-mobile bash scripts/e2e.sh --grep 'T-064:|SP-06/SP-07|CA-01:' --project mobile`. Este filtro comprueba específicamente los objetivos táctiles y el editor dentro del espacio disponible.
 - Completar [gate diario](../TESTING.md): `node scripts/docs-check.mjs`, `git diff --check origin/main...HEAD` y `verify-required` del HEAD publicado. Acreditar limpieza por label exacto de cada namespace. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
-## Checkpoint vigente
+## Conciliación
+
+2026-11-24. `gh pr view 97 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit` devolvió MERGED, `2026-11-23T19:26:04Z` y `89c375869b8183089fdd9cd57a9616f0f2383e19`. `git fetch origin main` y `git merge-base --is-ancestor 89c375869b8183089fdd9cd57a9616f0f2383e19 origin/main` salieron 0. El mismo SHA estaba activo en Render. La siguiente prioridad solicitada queda en [T-099](T-099-persistent-google-session.md).
+
+## Checkpoint de revisión
 
 2026-11-23. Frontera reviewer independiente en Codex Desktop con GPT-6, variante y esfuerzo sin dato expuesto. Git, gh, PowerShell, Git Bash, Node 24.21.0 y Docker Desktop. [PR #97](https://github.com/MatiasNicolasAcevedo/devnotes/pull/97), HEAD revisado `983f6a0dce26226749dba2df158cf651709b5b69`, base `80ca79c770590f2557a755a2971d08db5ffd5ac8`. Impacto en la cabecera y el área útil de Diario y Libres. El diff conserva el contrato de API, autorización y datos.
 

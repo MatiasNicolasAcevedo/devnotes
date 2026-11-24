@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-098](tasks/T-098-compact-writing-header.md) · [S-117](specs/S-117-compact-writing-header.md) |
-| Estado | `mergeable` |
-| Siguiente acción | Frontera reviewer verifica el CI de la transición, publica el veredicto y confirma el squash. Con MERGED confirmado, frontera planner concilia T-098 y retoma el pendiente de PostgreSQL. |
-| Rama / PR | `codex/t-098-compact-writing-header` · [PR #97](https://github.com/MatiasNicolasAcevedo/devnotes/pull/97) |
+| Tarea y contrato | [T-099](tasks/T-099-persistent-google-session.md) |
+| Estado | `ready` |
+| Siguiente acción | Frontera implementer toma T-099 en sesión nueva tras comprobar el MERGED del [PR documental #98](https://github.com/MatiasNicolasAcevedo/devnotes/pull/98). |
+| Rama / PR | `codex/t-099-persistent-google-session` · PR de implementación pendiente |
 
-Modo `FRONTERA_CONTINUA`. T-097 conciliada ([PR #94](https://github.com/MatiasNicolasAcevedo/devnotes/pull/94) MERGED, `8b0ddd5`): con ella cierran el M9 y el [lote Imagen, Libres e IA](BACKLOG.md#lote-imagen-libres-e-ia). El dueño decidió el 2026-11-23 borrar la base Free actual y crear una nueva, sin respaldo: el proyecto todavía no se usa en producción y empieza a usarse con la base nueva. Los demás pendientes siguen abajo. [Cron externo configurado](DEPLOYMENT.md#despertador-externo-de-devnotes).
+Modo `FRONTERA_CONTINUA`. [T-098 conciliada](tasks/T-098-compact-writing-header.md#conciliación) tras PR #97 MERGED. El dueño priorizó disponibilidad y continuidad de sesión. [Configuración y evidencia del cron externo](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
 Piloto aprobado con cinco destinos: Groq 20B/120B, Workers AI 20B/120B y Gemini 3.1 Flash-Lite. Gemini 3.8 Flash y OpenRouter Free quedan diferidos. El selector y el compositor muestran disponibilidad, fallos y cuota. El usuario elige y confirma otro destino. [Decisión y cierre observable](tasks/T-094-ai-workspace.md#decisión-de-alcance-del-dueño). FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
@@ -34,5 +34,5 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Frontera planner de seguimiento de T-098 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/agents/planner.md, docs/tasks/T-098-compact-writing-header.md, docs/AUTONOMY.md y docs/DEPLOYMENT.md. PRECONDICIÓN: gh pr view 97 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit confirma MERGED con mergedAt y mergeCommit.oid válidos. Actualizá origin/main con git fetch origin main y asigná el oid confirmado a la variable mergeOid y comprobá que git merge-base --is-ancestor $mergeOid origin/main sale con exit 0. Si alguna comprobación falla, devolvé el estado vigente. ACCIÓN: conciliá T-098 como done y retomá el pendiente de PostgreSQL en STATUS con el dueño. Pedí solo datos no secretos del panel y confirmación de login. Sin otra tarea predefinida, presentá el paso vigente para decisión del dueño. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: registro de cierre y prompt vigente.
+Frontera implementer de T-099 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md y docs/tasks/T-099-persistent-google-session.md con sus referencias. PRECONDICIÓN: gh pr view 98 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit confirma MERGED con fecha y oid. Actualizá origin/main con git fetch origin main y comprobá que git merge-base --is-ancestor con el oid confirmado y origin/main sale 0. ACCIÓN: desde origin/main usá la rama codex/t-099-persistent-google-session. Reproducí primero la pérdida de sesión al reiniciar y después implementá persistencia en PostgreSQL con siete días de inactividad y un máximo de 30 días desde cada login. Conservá OIDC, CSRF, revocación y privacidad por propietario. Ejecutá los IT y E2E dirigidos de T-099 con datos ficticios, corré el gate diario y publicá un único PR para revisión independiente. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: PR con evidencia de reinicio, expiración y logout, y prompt completo de reviewer.
 ```

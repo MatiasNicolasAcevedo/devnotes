@@ -6,7 +6,7 @@ Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este í
 
 | Tarea | Resultado | Entrada |
 |---|---|---|
-| [T-098](tasks/T-098-compact-writing-header.md) | Recuperar alto de escritura al usar Diario y Libres en una ventana chica | T-097 conciliada y plan documental aprobado y mergeado |
+| [T-099](tasks/T-099-persistent-google-session.md) | Conservar la sesión de Google al volver al mismo navegador y después de un reinicio | [T-098 conciliada](tasks/T-098-compact-writing-header.md#conciliación) y aprobación del PR de planificación |
 
 ## Planificación I5 autorizada el 2026-11-12
 
