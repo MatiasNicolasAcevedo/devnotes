@@ -286,7 +286,7 @@ test('demo tour: every delivered feature from an empty day to the restored backu
     await expect(savedIndicator(page)).toBeVisible();
   });
   await tl.scene('S03-navegacion', async () => {
-    for (const name of ['Voz', 'Notas', 'Referencias', 'Imagen', 'Historial']) {
+    for (const name of ['Notas', 'Referencias', 'Voz', 'Imagen', 'Historial']) {
       await tl.hover(nav.getByRole('link', { name, exact: true }));
       await tl.beat(650);
     }

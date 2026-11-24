@@ -9,50 +9,16 @@ import { useForm } from 'react-hook-form'
 import { useEffect } from 'react'
 import { z } from 'zod'
 import { FormTextField } from '../../../shared/forms/FormTextField'
-
-const MAX_HREF_LENGTH = 2048
+import { normalizeLinkHref } from './linkHref'
 
 /**
- * Valida que una URL sea HTTP/HTTPS absoluta, sin credenciales, host no vacío,
- * sin esquemas javascript:/data:/mailto: ni URLs relativas.
+ * Acepta direcciones con o sin esquema (T-100) y las normaliza con `normalizeLinkHref`:
+ * el documento solo recibe hrefs HTTP/HTTPS absolutos que también acepta el servidor.
  */
-const hrefSchema = z
-  .string()
-  .trim()
-  .max(MAX_HREF_LENGTH, 'La URL no puede exceder 2048 caracteres.')
-  .refine(
-    (val) => {
-      try {
-        const url = new URL(val)
-        return url.protocol === 'http:' || url.protocol === 'https:'
-      } catch {
-        return false
-      }
-    },
-    { message: 'Ingresá una URL válida (http:// o https://).' },
-  )
-  .refine(
-    (val) => {
-      try {
-        const url = new URL(val)
-        return url.username === '' && url.password === ''
-      } catch {
-        return false
-      }
-    },
-    { message: 'La URL no puede contener credenciales.' },
-  )
-  .refine(
-    (val) => {
-      try {
-        const url = new URL(val)
-        return url.hostname.length > 0
-      } catch {
-        return false
-      }
-    },
-    { message: 'La URL debe tener un host válido.' },
-  )
+const hrefSchema = z.string().superRefine((value, ctx) => {
+  const result = normalizeLinkHref(value)
+  if (!result.ok) ctx.addIssue({ code: 'custom', message: result.error })
+})
 
 const linkFormSchema = z.object({
   href: hrefSchema,
@@ -115,7 +81,9 @@ export function LinkDialog({
   }
 
   const onSubmit = handleSubmit((values) => {
-    onSave(values.href)
+    const result = normalizeLinkHref(values.href)
+    if (!result.ok) return
+    onSave(result.href)
     onClose()
   })
 
@@ -163,7 +131,7 @@ export function LinkDialog({
               control={control}
               name="href"
               label="URL"
-              placeholder="https://ejemplo.com"
+              placeholder="google.com"
               fullWidth
               autoFocus
               disabled={isSubmitting}

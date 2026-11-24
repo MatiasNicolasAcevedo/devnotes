@@ -85,10 +85,7 @@ async function captureLayout(
   const narrowNavigation = width < 768;
   const nav = page.getByRole('navigation', { name: 'Navegación principal' });
   const links = nav.getByRole('link');
-  await expect(links).toHaveText([
-    ...(narrowNavigation ? ['Notas', 'Voz'] : ['Voz', 'Notas']),
-    'Referencias', 'Imagen', 'Historial',
-  ]);
+  await expect(links).toHaveText(['Notas', 'Referencias', 'Voz', 'Imagen', 'Historial']);
   await expect(page.getByRole('link', { name: 'Imagen', exact: true })).toHaveCSS('color', 'rgb(255, 183, 77)');
   await expect.poll(() => page.evaluate(() => {
     const main = document.querySelector('main')!;

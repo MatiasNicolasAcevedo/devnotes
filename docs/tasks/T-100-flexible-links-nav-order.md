@@ -1,6 +1,6 @@
 ---
 id: T-100
-status: ready
+status: mergeable
 priority: P1
 size: S
 milestone: post-M9
@@ -9,7 +9,7 @@ depends_on: [T-098]
 branch: codex/t-100-flexible-links-nav-order
 role: implementer
 executor: frontier
-pr: null
+pr: 100
 ---
 
 # T-100 · Enlaces sin esquema y navegación con Notas primero
@@ -86,19 +86,94 @@ Completar el [gate diario](../TESTING.md) con `node scripts/docs-check.mjs`, `gi
 
 ## Checkpoint vigente
 
-2026-11-24. Frontera planner en Claude Code Desktop con Claude Opus 5.5, esfuerzo sin dato expuesto. Herramientas: Git Bash, gh, Node y Java 21 del host. Base `origin/main@190e105` tras el [PR documental #98](https://github.com/MatiasNicolasAcevedo/devnotes/pull/98) MERGED. Impacto: UI del diálogo de enlace y de la navegación principal. Sin cambios de API, permisos ni datos guardados.
+### Revisión independiente · ronda 2
 
-| Evidencia | Resultado |
+2026-11-24. Frontera reviewer en Claude Code Desktop con Claude Opus 5.5, sesión distinta de la implementer. Worktree aislado `.orchestrator/review-t100-r2` sobre HEAD `e711888` y base `5dcb171`; `verify-required` verde en ese HEAD. Veredicto: **APROBADO**. H1 queda cerrado.
+
+Desde `8f91cc2` solo cambian `e2e/tests/daily-notes.spec.ts`, la tarea y STATUS. `linkWord` recibe la palabra, espera con `expect.poll` la selección nativa igual a esa palabra, deja pasar un frame con `requestAnimationFrame` y afirma `«Sitio»` o `«Ticket»` en el diálogo, que `LinkDialog` muestra con `«{selectedText}»`. El diff no agrega retries, timeouts ni `waitForTimeout`. El código de producto no cambió desde la ronda 1, que lo revisó sin hallazgos.
+
+| Comando del reviewer | Resultado |
 |---|---|
-| `gh pr list --repo MatiasNicolasAcevedo/devnotes --state all --limit 8` | Exit 0. PR #98 MERGED el 2026-11-24T15:12:15Z, squash `190e105` en `origin/main`. |
-| `new URL(...)` en Node 24 | `URL` acepta y conserva `%` suelto, `\|`, un segundo `#` y `mi_sitio.test`. Entrega punycode, minúsculas y `/` final según la tabla. |
-| `java UriCheck.java` en el scratchpad, Java 21 | `java.net.URI` rechaza `100%`, `a\|b`, `a#b#c` y `a[b]`. Devuelve host nulo para `mi_sitio.test` y `ejemplo.123` y acepta las formas codificadas de la tabla. |
+| `STARTER_E2E_PROJECT=starter-e2e-t100-review-r2 bash scripts/e2e.sh --grep 'flexible link:\|T-020:\|CA-05:\|T-050:\|T-064:\|screenshot OCR: extract through the proxy' --project desktop`, barras verticales sin escapar en la shell | Exit 0, 8/8 |
+| Cleanup por label exacto `com.docker.compose.project=starter-e2e-t100-review-r2` | 0 contenedores, 0 volúmenes y 0 redes |
+| `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` en el worktree | Exit 0 ambos |
+| `bash scripts/verify.sh` | No corrido: FULL/STARTER: DIFERIDO POR EL DUEÑO |
+
+**Pendiente.** `verify-required` sobre el commit de transición, comentario `APROBADO`, squash ligado a ese HEAD y confirmación `MERGED`. La sesión siguiente concilia T-100 como `done`.
+
+### Corrección de H1 · ronda 1
+
+2026-11-24. Frontera implementer de corrección en Claude Code Desktop con Claude Opus 5.5, sesión nueva. Precondición: PR #100 OPEN, base `5dcb171`, HEAD `8f91cc2` (commit documental del reviewer). Corrección en `f9abefe`, solo `e2e/tests/daily-notes.spec.ts`; el producto no cambia. `linkWord` recibe la palabra y, tras soltar `Shift`, espera con `expect.poll` a que `window.getSelection()?.toString()` sea esa palabra, deja pasar un frame con `requestAnimationFrame` dentro de `page.evaluate` y, con el diálogo abierto, afirma que muestra `«Sitio»` o `«Ticket»`. Sin retries, timeouts nuevos ni `waitForTimeout`.
+
+| Comando (Git Bash, desde la raíz) | Resultado |
+|---|---|
+| `STARTER_E2E_PROJECT=starter-e2e-t100-h1-d1 bash scripts/e2e.sh --grep 'flexible link:\|T-020:\|CA-05:\|T-050:\|T-064:\|screenshot OCR: extract through the proxy' --project desktop` | Exit 0, 8/8 |
+| Igual con `starter-e2e-t100-h1-d2` | Exit 0, 8/8 |
+| Igual con `starter-e2e-t100-h1-d3` | Exit 0, 8/8 |
+| `STARTER_E2E_PROJECT=starter-e2e-t100-h1-m1 bash scripts/e2e.sh --grep 'flexible link:\|T-050:\|T-064:\|screenshot OCR: extract through the proxy' --project mobile` | Exit 0, 4/4 |
+| Cleanup por label exacto `com.docker.compose.project=starter-e2e-t100-h1-{d1,d2,d3,m1}` | 0 contenedores, 0 volúmenes y 0 redes en cada namespace |
+| `node scripts/docs-check.mjs` | Exit 1 solo por `trailer/CLAUDE.md`, directorio sin versionar previo y ajeno a T-100 |
+| `git diff --check origin/main` | Exit 0 |
+| `bash scripts/verify.sh` | No corrido: FULL/STARTER: DIFERIDO POR EL DUEÑO |
+
+Las tres corridas de escritorio son consecutivas; en la shell las barras verticales del patrón van sin escapar y aquí se escapan solo por Markdown. **Pendiente.** `verify-required` en el HEAD publicado y revisión independiente, ronda 2.
+
+### Revisión independiente · ronda 1
+
+2026-11-24. Frontera reviewer en Claude Code Desktop con Claude Opus 5.5, sesión distinta de la implementer. Worktree aislado `.orchestrator/review-t100` sobre HEAD `e5642ea` y base `5dcb171`. `verify-required` verde en ese HEAD (corridas 45442600707 y 45442664102, `headSha` comprobado). Veredicto: **CAMBIOS REQUERIDOS**, con un solo hallazgo en el E2E nuevo. El código de producto queda revisado sin hallazgos.
+
+**Revisado sin hallazgos.** `normalizeLinkHref` cumple los pasos, la tabla y los rechazos del contrato. Una prueba fuera del repo pasó 2375 entradas por `normalizeLinkHref`: 5 prefijos × 19 hosts × 25 rutas con `%`, `#`, `|`, espacios, no ASCII, IDN, IPv4/IPv6, puertos y corchetes. Aceptó 2000 y rechazó 375, y `java.net.URI` aceptó los 2000 hrefs con las reglas de `DailyContent.validateHref` (esquema, host, sin credenciales ni espacios). `DailyContent.java` y `dailyDocument.ts` no cambian. Mensajes y placeholder según contrato. El foco (`autoFocus`), Quitar, Abrir y Cancelar se conservan. `onSave` recibe el href normalizado. `PRIMARY_TABS` da un orden único en todos los anchos y `T-050:`, `captureLayout` y S03 están alineados. La corrección de `openDailyTools` es correcta: en escritorio no abre Herramientas si Enlace está visible en la barra, y en móvil sigue igual. Entradas como `javascript:1` o `http:5173` se toman como `host:puerto` y se guardan como `https://javascript:1/`. Son HTTPS e inofensivas: no es un hallazgo.
+
+**Hallazgo H1 · `flexible link:` no es determinista.** Evidencia: con el comando AC-03 de escritorio falló 2/2 en esta revisión, cada vez con otro síntoma. Los otros siete casos pasaron en ambas corridas.
+- `starter-e2e-t100-review`: tras escribir «Sitio Ticket», `End` y seis `Shift+ArrowLeft`, `Control+k` no abre el diálogo y vence `expect(dialog).toBeVisible()`. El párrafo queda sin enlaces y no había ningún PUT ni GET en vuelo: el PUT llega unos 650 ms después.
+- `starter-e2e-t100-review2`: el enlace queda sobre «icket», cinco letras, y vence `getByRole('link', { name: 'Ticket' })`.
+- Causa: `Shift+Arrow` mueve la selección nativa y ProseMirror la toma recién en el evento asíncrono `selectionchange`. `Control+k` llega unos 5 ms después y `openLinkDialog` lee una selección vieja, vacía o una letra corta. Con la selección vacía sale sin abrir. Es la misma causa que la segunda corrección registrada («itio»): cambiar el extremo no elimina la carrera. Los casos existentes usan `Control+a`, que ProseMirror resuelve en su keymap de forma síncrona.
+- Corrección suficiente, solo en `e2e/tests/daily-notes.spec.ts` y sin tocar producto: en `linkWord`, después de soltar `Shift` y antes de `Control+k`, esperar con `expect.poll` a que `window.getSelection()?.toString()` sea la palabra y dejar pasar un frame con `requestAnimationFrame` dentro de `page.evaluate`. Tras abrir el diálogo, afirmar que muestra `«Sitio»` o `«Ticket»` según la palabra. Sin retries, timeouts más largos ni `waitForTimeout`. Vale otra técnica equivalente que deje la selección de ProseMirror aplicada antes del atajo y la afirme en el diálogo.
+- Condición de cierre: tres corridas consecutivas del comando AC-03 de escritorio, cada una con namespace propio, todas 8/8, y una del comando AC-04 móvil 4/4, con exit y cleanup por label registrados.
+
+**Fallo local de `FreeNotesPage`.** Se reproduce igual sobre `5dcb171` en un worktree de base: `FreeNotesPage.test.tsx › protege el borrador al cerrar sesión…`, sin el diálogo «Guardar los cambios». Es previo y ajeno a T-100 y no bloquea. `verify-required` lo pasa en CI.
+
+| Comando del reviewer | Resultado |
+|---|---|
+| En `client/`: vitest dirigido de AC-01 y AC-04 y `npm run typecheck` | Exit 0, 88/88, typecheck exit 0 |
+| En `server/`: `./mvnw -q test -Dtest=DailyContentTest` | Exit 0 |
+| `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` en el worktree | Exit 0 ambos |
+| `STARTER_E2E_PROJECT=starter-e2e-t100-review` y `…-review2` con el patrón AC-03 de escritorio, barras verticales sin escapar | Exit 1 las dos, 7/8, falla `flexible link:` (H1). Cleanup por label exacto: 0 contenedores, volúmenes y redes en cada namespace |
+| `npx vitest run src/features/free-notes/FreeNotesPage.test.tsx` en HEAD y en base | 1 fallo igual en ambos |
+
+### Implementación
+
+2026-11-24. Frontera implementer en Claude Code Desktop con Claude Opus 5.5, esfuerzo sin dato expuesto. Herramientas: Git Bash, gh, Node, Docker y Java 21 del host. Base `origin/main@5dcb171` tras el [PR de planificación #99](https://github.com/MatiasNicolasAcevedo/devnotes/pull/99) MERGED el 2026-11-24T15:33:06Z (`merge-base --is-ancestor` exit 0). Implementación en `2a122ba`, [PR #100](https://github.com/MatiasNicolasAcevedo/devnotes/pull/100). Impacto: UI del diálogo de enlace y de la navegación principal, y el helper E2E `openDailyTools`. Sin cambios de API, permisos, servidor ni datos guardados: `DailyContent.java` y `dailyDocument.ts` no cambian.
+
+**Hecho.** `normalizeLinkHref` en `linkHref.ts` con los pasos del contrato. `LinkDialog` valida con ella desde Zod, entrega el href normalizado a `onSave` y usa el placeholder `google.com`. `AppShell` usa la lista única `PRIMARY_TABS`. Se alinearon `T-050:`, `captureLayout` de OCR y la escena S03 de la demo, sin regrabar. Una entrada que empieza con una sola `/` sigue rechazada con el mensaje de dirección inválida: `URL` la convertiría en host y S-101 rechaza las relativas.
+
+**Tabla de hrefs comprobada.** Los once pares de la tabla dan exactamente el href de la columna derecha en `linkHref.test.ts`, y cada uno pasa `validateDailyContent` del cliente. `DailyContentTest#acceptsEveryHrefNormalizedByTheLinkDialog` acepta los once más `https://jira.ejemplo.test/browse/ABC%201279` del E2E. Los trece rechazos devuelven su mensaje.
+
+| Comando | Resultado |
+|---|---|
+| Rojo, en `client/`: `npx vitest run src/features/daily/editor/linkHref.test.ts src/features/daily/editor/LinkDialog.test.tsx src/app/AppShell.test.tsx src/app/AppRoutes.test.tsx` sobre la base | Exit 1. `linkHref.test.ts` no resuelve el módulo; 15 fallos: orden en los 7 anchos de `AppShell` y en `AppRoutes`, placeholder, `mi_sitio.test` y los mensajes nuevos del diálogo. |
+| Rojo E2E: `STARTER_E2E_PROJECT=starter-e2e-t100-red bash scripts/e2e.sh --grep 'flexible link:\|T-050:' --project desktop` | Exit 1, 2/2 fallan: placeholder `https://ejemplo.com` en lugar de `google.com` y orden `Voz, Notas…`. Dos intentos previos no valen como rojo: el primero cortó en el build de la imagen, que typecheckea los tests, porque `linkHref.ts` todavía no existía; el segundo, con el patrón escrito con barra invertida antes de cada barra vertical en la shell, corrió 0 tests. En la shell el patrón va con barras verticales sin escapar; en esta tabla se escapan solo por Markdown. |
+| Verde, mismo vitest dirigido | Exit 0, 4 archivos, 88/88. |
+| En `client/`: `npm run typecheck` y `npx eslint src/features/daily/editor src/app/AppShell.tsx --max-warnings 0` | Exit 0 ambos. |
+| En `server/`: `./mvnw -q test -Dtest=DailyContentTest` | Exit 0, 96 tests, 0 fallos. |
+| `STARTER_E2E_PROJECT=starter-e2e-t100-desktop bash scripts/e2e.sh --grep 'flexible link:\|T-020:\|CA-05:\|T-050:\|T-064:\|screenshot OCR: extract through the proxy' --project desktop` | Exit 0, 8/8: el filtro también toma el segundo `T-020:` y el segundo `CA-05:`. |
+| `STARTER_E2E_PROJECT=starter-e2e-t100-mobile bash scripts/e2e.sh --grep 'flexible link:\|T-050:\|T-064:\|screenshot OCR: extract through the proxy' --project mobile` | Exit 0, 4/4. |
+| `STARTER_E2E_PROJECT=starter-e2e-t100-helper bash scripts/e2e.sh --grep 'copy previous: preserves\|portability: A exports\|multiline clipboard, persistence, scroll focus and compact layout$\|remove a link only from the selected fragment' --project desktop` | Exit 0, 4/4. Usuarios de escritorio de `openDailyTools`. |
+| Cleanup Docker por label exacto `com.docker.compose.project=starter-e2e-t100-{red,desktop,mobile,helper,base020}` | 0 contenedores, 0 volúmenes y 0 redes en cada namespace. |
+| En `client/`: `npm run verify` | Exit 1: 940/941. Falla solo `FreeNotesPage.test.tsx › protege el borrador al cerrar sesión…`, que falla igual dos veces sobre un worktree limpio de `origin/main@5dcb171`. `verify-required` lo pasó en #97 y #99: es local y ajeno a T-100. Typecheck, lint, formato y build sin errores. |
+| `node scripts/docs-check.mjs` | Exit 1 solo por `trailer/CLAUDE.md`, directorio sin versionar previo a la sesión y ajeno a T-100; no se tocó. |
+| `git diff --check origin/main...HEAD` | Exit 0. |
+| `bash scripts/verify.sh --policy origin/main` | Exit 0, `profile=APPLICATION`, 13 rutas técnicas. FULL/STARTER: DIFERIDO POR EL DUEÑO. |
+
+**Pendiente.** Corregir H1 en el mismo PR y volver a revisión independiente.
 
 ## Correcciones significativas
 
 | Fecha / SHA o pendiente de commit | Problema y causa comprobada | Corrección | Prueba y resultado |
 |---|---|---|---|
-| Sin correcciones todavía | | | |
+| `2a122ba` | `T-020:` no encontraba «Agregar enlace» en escritorio. Falla igual sobre `origin/main@5dcb171` (corrida `starter-e2e-t100-base020`): desde #84, en escritorio Enlace vive en la barra y `openDailyTools` abría el popover Herramientas, que deja la barra con `aria-hidden`. | `openDailyTools` no abre el popover si el botón de enlace ya está en la barra. | E2E de escritorio 8/8 y usuarios del helper 4/4. |
+| `2a122ba` | `flexible link:` enlazaba «itio»: el cursor desde `End` cruzaba de forma distinta el enlace ya creado. | Cada palabra se selecciona desde su extremo, `End` para «Ticket» y `Home` para «Sitio». | Escritorio y móvil en verde. |
+| `f9abefe` | H1: `Control+k` leía una selección de ProseMirror vieja, porque `Shift+Arrow` se aplica en el `selectionchange` asíncrono. | `linkWord` espera la selección nativa con la palabra y un frame, y afirma la palabra en el diálogo. | AC-03 escritorio 8/8 tres veces seguidas y AC-04 móvil 4/4. |
 
 ## Prompts de salida
 
@@ -106,6 +181,12 @@ Al publicar la implementación:
 
 ```text
 Frontera reviewer independiente de T-100 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md, docs/tasks/T-100-flexible-links-nav-order.md y los ajustes del 2026-11-24 en S-102 y S-112. PRECONDICIÓN: gh pr view <PR> --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup confirma OPEN, listo, HEAD <SHA> y verify-required verde en ese HEAD. Si no se cumple, devolvé el estado vigente. ACCIÓN: revisá normalizeLinkHref contra la tabla y los rechazos de T-100. Comprobá que todo href aceptado pasa dailyDocument.ts y DailyContent, que no se relajó el servidor, los mensajes y el foco del diálogo, y el orden único de navegación en móvil y escritorio. Cotejá el gate diario y corré el E2E dirigido de escritorio de T-100 con un namespace propio. Si aprobás, squash ligado al HEAD revisado y confirmá MERGED con gh pr view <PR> --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: veredicto y prompt vigente.
+```
+
+Tras la corrección de H1 (revisión independiente, ronda 2):
+
+```text
+Frontera reviewer independiente de T-100, ronda 2, en MatiasNicolasAcevedo/devnotes, sesión nueva y distinta de la implementer. Leé AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md y docs/tasks/T-100-flexible-links-nav-order.md, en especial «Revisión independiente · ronda 1» y «Corrección de H1 · ronda 1». PRECONDICIÓN: gh pr view 100 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup confirma OPEN, listo, base 5dcb1718051259cfbbf2cf68bd40e7162810ca12, HEAD igual al último commit de codex/t-100-flexible-links-nav-order (commit documental sobre f9abefe) y verify-required verde en ese HEAD. Si no se cumple, devolvé el estado vigente. ACCIÓN: comprobá que desde 8f91cc2 solo cambian e2e/tests/daily-notes.spec.ts y la documentación, y que linkWord espera la selección y un frame y afirma «Sitio»/«Ticket» en el diálogo, sin retries, timeouts más largos ni waitForTimeout. En un worktree aislado corré el comando AC-03 de escritorio con un namespace propio, barras verticales sin escapar, y registrá exit y cleanup por label. Si aprobás, squash ligado al HEAD revisado y confirmá MERGED con gh pr view 100 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. Máximo dos rondas: si H1 persiste, devolvé a dueño o frontera. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: veredicto y prompt vigente.
 ```
 
 Tras el merge de T-100:

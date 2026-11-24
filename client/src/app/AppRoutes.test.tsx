@@ -12,9 +12,9 @@ import { AppRoutes } from './AppRoutes'
 
 const nav = () => screen.getByRole('navigation', { name: 'Navegación principal' })
 const TABS = [
-  ['Voz', '/voice'],
   ['Notas', '/notes'],
   ['Referencias', '/reference'],
+  ['Voz', '/voice'],
   ['Imagen', '/image'],
   ['Historial', '/history'],
 ]
@@ -69,7 +69,7 @@ describe('AppRoutes', () => {
     expect(screen.getByLabelText('Fecha')).toHaveValue(todayLocal())
   })
 
-  it('la barra de escritorio ordena Voz, Notas, Referencias, Imagen e Historial, sin «Inicio»', () => {
+  it('la barra de escritorio ordena Notas, Referencias, Voz, Imagen e Historial, sin «Inicio»', () => {
     installAuthBackend()
     renderWithProviders(<AppRoutes />, { route: '/login' })
 

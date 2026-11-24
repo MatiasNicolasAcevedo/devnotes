@@ -4,6 +4,9 @@ import { expect, savedIndicator } from './fixtures';
 type Space = 'work' | 'personal';
 
 export async function openDailyTools(page: Page) {
+  // Con Enlace en la barra (escritorio), abrir Herramientas dejaría la barra con aria-hidden.
+  const toolbar = page.getByRole('group', { name: 'Herramientas del editor', exact: true });
+  if (await toolbar.getByRole('button', { name: /^(Agregar|Editar) enlace$/ }).isVisible()) return;
   const trigger = page.getByRole('button', { name: 'Herramientas', exact: true });
   if (await trigger.isVisible() && await trigger.getAttribute('aria-expanded') === 'false') {
     await trigger.click();

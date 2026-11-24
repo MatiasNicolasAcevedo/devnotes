@@ -90,12 +90,13 @@ function SpaceWorkspaces({
   )
 }
 
-const VOICE_TAB = { label: 'Voz', to: '/voice', Icon: MicIcon }
-const NOTES_TAB = { label: 'Notas', to: '/notes', Icon: NoteIcon }
 const COMPACT_WRITING_VIEWPORT =
   '(width < 768px) and (hover: hover) and (pointer: fine) and (not (any-pointer: coarse))'
-const OTHER_TABS = [
+/** T-100: un solo orden de navegación para todos los anchos. */
+const PRIMARY_TABS = [
+  { label: 'Notas', to: '/notes', Icon: NoteIcon },
   { label: 'Referencias', to: '/reference', Icon: BookmarkIcon },
+  { label: 'Voz', to: '/voice', Icon: MicIcon },
   { label: 'Imagen', to: '/image', Icon: ImageIcon },
   { label: 'Historial', to: '/history', Icon: HistoryIcon },
 ]
@@ -103,9 +104,6 @@ const OTHER_TABS = [
 function PrimaryNavigation({ mobile }: { mobile: boolean }) {
   const { pathname } = useLocation()
   const href = useSpaceHref()
-  const tabs = mobile
-    ? [NOTES_TAB, VOICE_TAB, ...OTHER_TABS]
-    : [VOICE_TAB, NOTES_TAB, ...OTHER_TABS]
 
   return (
     <Box
@@ -127,7 +125,7 @@ function PrimaryNavigation({ mobile }: { mobile: boolean }) {
           : { display: 'flex', alignItems: 'center', gap: 0.25, flexShrink: 0 }
       }
     >
-      {tabs.map(({ label, to, Icon }) => (
+      {PRIMARY_TABS.map(({ label, to, Icon }) => (
         <Link
           key={to}
           component={RouterLink}
