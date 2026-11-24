@@ -4,8 +4,8 @@
 |---|---|
 | Tarea y contrato | [T-099](tasks/T-099-persistent-google-session.md) |
 | Estado | `ready` |
-| Siguiente acción | Frontera planner verifica el PR documental de T-099 y confirma su squash con la conformidad expresa del dueño. Después frontera implementer de T-099, en sesión nueva. |
-| Rama / PR | `codex/t-099-session-continuity-plan` · PR de planificación |
+| Siguiente acción | Frontera implementer toma T-099 en sesión nueva tras comprobar el MERGED del [PR documental #98](https://github.com/MatiasNicolasAcevedo/devnotes/pull/98). |
+| Rama / PR | `codex/t-099-persistent-google-session` · PR de implementación pendiente |
 
 Modo `FRONTERA_CONTINUA`. [T-098 conciliada](tasks/T-098-compact-writing-header.md#conciliación) tras PR #97 MERGED. El dueño priorizó disponibilidad y continuidad de sesión. [Configuración y evidencia del cron externo](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
@@ -34,5 +34,5 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Frontera planner de T-099 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/agents/planner.md, docs/tasks/T-099-persistent-google-session.md y docs/DEPLOYMENT.md («Despertador externo de DevNotes»). PRECONDICIÓN: gh pr view codex/t-099-session-continuity-plan --repo MatiasNicolasAcevedo/devnotes --json state,headRefOid,statusCheckRollup,mergedAt,mergeCommit devuelve el PR documental. ACCIÓN: si está abierto, acreditá verify-required verde en el HEAD vigente y confirmá el squash solo con la conformidad expresa del dueño para el plan de siete días de inactividad y 30 días desde el login. Si ya está mergeado, verificá mergedAt y mergeCommit.oid y que ese oid sea ancestro de origin/main. Prepará el prompt para una sesión nueva de frontera implementer de T-099, con sus pruebas dirigidas. Consultá el último resultado documentado del cron y rescatá incidencias posteriores si las hay. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: estado confirmado del PR, evidencia operativa que falte y prompt vigente.
+Frontera implementer de T-099 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md y docs/tasks/T-099-persistent-google-session.md con sus referencias. PRECONDICIÓN: gh pr view 98 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit confirma MERGED con fecha y oid. Actualizá origin/main con git fetch origin main y comprobá que git merge-base --is-ancestor con el oid confirmado y origin/main sale 0. ACCIÓN: desde origin/main usá la rama codex/t-099-persistent-google-session. Reproducí primero la pérdida de sesión al reiniciar y después implementá persistencia en PostgreSQL con siete días de inactividad y un máximo de 30 días desde cada login. Conservá OIDC, CSRF, revocación y privacidad por propietario. Ejecutá los IT y E2E dirigidos de T-099 con datos ficticios, corré el gate diario y publicá un único PR para revisión independiente. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: PR con evidencia de reinicio, expiración y logout, y prompt completo de reviewer.
 ```

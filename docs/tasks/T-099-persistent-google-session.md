@@ -34,7 +34,7 @@ Una persona que vuelve a DevNotes desde el mismo perfil de navegador, incluso de
 
 ## Archivos y pasos
 
-1. Adaptar el E2E de reinicio para esperar la misma sesión después de readiness, conservando la comprobación de identidad y el cambio de cuenta. Demostrar el fallo sobre la base antes de implementar.
+1. Adaptar el E2E de reinicio para esperar la misma sesión después de readiness, conservando la comprobación de identidad y el cambio de cuenta. Mover las aserciones de pérdida de sesión, limpieza de datos y ausencia de redirect en bucle a una sesión expirada o revocada de forma controlada. Demostrar el fallo sobre la base antes de implementar.
 2. Agregar la dependencia gestionada, `V10` de Flyway y la configuración de Spring Session JDBC y cookie. Separar el principal transitorio de OIDC del principal local durable al guardar el contexto en sesión. Reusar la identidad local actual en `/auth/me` y en controladores por propietario.
 3. Validar expiración con datos ficticios y tiempo controlado en HTTP/PostgreSQL real. Revisar que la persistencia excluya tokens y que CSRF, callback fallido y logout mantengan sus negativos. Ajustar S-001, ADR 0002 y el escenario de reinicio en DEPLOYMENT al comportamiento probado.
 
@@ -52,9 +52,12 @@ Completar el gate diario con `node scripts/docs-check.mjs`, `git diff --check or
 
 2026-11-24. Frontera, diagnóstico operativo y planificación en Codex Desktop, GPT-6, variante y esfuerzo sin dato expuesto. Herramientas: Brave, cron-job.org, Render, PowerShell, curl, Git y gh. Base y deploy activo `89c375869b8183089fdd9cd57a9616f0f2383e19`. Esta rama documenta disponibilidad y prepara un cambio de comportamiento, seguridad y datos de sesión. La implementación y sus pruebas corresponden a T-099 en una sesión nueva.
 
+El dueño autorizó el squash del [PR documental #98](https://github.com/MatiasNicolasAcevedo/devnotes/pull/98) y pidió el prompt de implementación. También indicó que revisará la disponibilidad por la mañana del 25/11.
+
 | Evidencia | Resultado |
 |---|---|
 | `gh pr view 97 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit`, `git fetch origin main`, `git merge-base --is-ancestor 89c375869b8183089fdd9cd57a9616f0f2383e19 origin/main` | Exit 0. PR #97 MERGED el 2026-11-23 a las 19:26:04 UTC, merge SHA igual a la base. |
+| `git push --set-upstream origin codex/t-099-session-continuity-plan` y `gh pr view 98 --repo MatiasNicolasAcevedo/devnotes --json state,baseRefName,headRefOid` | Exit 0. PR documental #98 abierto contra `main`, primer HEAD publicado `40be46e823ca7b2d9e1bbe44c0cb24a21e617f90`. |
 | `curl.exe` a readiness y a las rutas candidatas | El sandbox inicial devolvió error 6 de DNS. Con red autorizada, readiness dio 200 y `{"status":"UP"}` en 1,52 s. Liveness pública dio 404, información de sistema dio 200 en 0,54 s. |
 | Historial de cron-job.org y logs de Render | [Resultados operativos](../DEPLOYMENT.md#despertador-externo-de-devnotes). |
 | `node scripts/docs-check.mjs`, `git diff --check` | Exit 0 para el plan documental. FULL/STARTER: DIFERIDO POR EL DUEÑO. |
