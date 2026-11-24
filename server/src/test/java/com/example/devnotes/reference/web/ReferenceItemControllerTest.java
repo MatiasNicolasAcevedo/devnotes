@@ -5,7 +5,7 @@ import static com.example.devnotes.shared.space.PrivateSpace.WORK;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -20,9 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.core.oidc.OidcIdToken;
-import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -44,15 +41,9 @@ class ReferenceItemControllerTest {
     @MockitoBean
     private IdentityService identities;
 
-    private LocalOidcUser user() {
-        var token = OidcIdToken.withTokenValue("fictitious")
-                .subject("fictitious")
-                .issuedAt(Instant.parse("2026-10-18T12:00:00Z"))
-                .expiresAt(Instant.parse("2026-10-18T13:00:00Z"))
-                .build();
-        return new LocalOidcUser(
-                new DefaultOidcUser(List.of(new SimpleGrantedAuthority("OIDC_USER")), token),
-                new AuthMeResponse(OWNER, null, null, false));
+    private LocalSessionAuthentication user() {
+        return new LocalSessionAuthentication(
+                new LocalOidcUser(new AuthMeResponse(OWNER, null, null, false), Instant.parse("2026-10-18T12:00:00Z")));
     }
 
     @Test
@@ -70,7 +61,7 @@ class ReferenceItemControllerTest {
                 .getCookie("XSRF-TOKEN");
         assertThat(cookie).isNotNull();
         mvc.perform(post(PATH)
-                        .with(oidcLogin().oidcUser(user()))
+                        .with(authentication(user()))
                         .cookie(cookie)
                         .header("X-XSRF-TOKEN", cookie.getValue())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -93,7 +84,7 @@ class ReferenceItemControllerTest {
                 .getResponse()
                 .getCookie("XSRF-TOKEN");
         mvc.perform(post(PATH)
-                        .with(oidcLogin().oidcUser(user()))
+                        .with(authentication(user()))
                         .cookie(cookie)
                         .header("X-XSRF-TOKEN", cookie.getValue())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -109,7 +100,7 @@ class ReferenceItemControllerTest {
             "{\"title\":\"x\",\"description\":false}"
         }) {
             var response = mvc.perform(post(PATH)
-                            .with(oidcLogin().oidcUser(user()))
+                            .with(authentication(user()))
                             .cookie(cookie)
                             .header("X-XSRF-TOKEN", cookie.getValue())
                             .contentType(MediaType.APPLICATION_JSON)
@@ -129,7 +120,7 @@ class ReferenceItemControllerTest {
         for (String suffix :
                 new String[] {"?page=-1", "?size=0", "?size=101", "?page=1.5", "?size=PRIVATE_INPUT", "/PRIVATE_INPUT"
                 }) {
-            var response = mvc.perform(get(PATH + suffix).with(oidcLogin().oidcUser(user())))
+            var response = mvc.perform(get(PATH + suffix).with(authentication(user())))
                     .andExpect(status().isBadRequest())
                     .andReturn()
                     .getResponse()
@@ -142,8 +133,7 @@ class ReferenceItemControllerTest {
     @Test
     void rejectsExcessiveQueryWithoutEchoingContent() throws Exception {
         String longQuery = "x".repeat(121);
-        var response = mvc.perform(
-                        get(PATH).queryParam("q", longQuery).with(oidcLogin().oidcUser(user())))
+        var response = mvc.perform(get(PATH).queryParam("q", longQuery).with(authentication(user())))
                 .andExpect(status().isBadRequest())
                 .andExpect(header().string("Cache-Control", "no-store"))
                 .andReturn()
@@ -159,7 +149,7 @@ class ReferenceItemControllerTest {
         mvc.perform(get(PATH)
                         .queryParam("space", "personal")
                         .queryParam("q", "spring")
-                        .with(oidcLogin().oidcUser(user())))
+                        .with(authentication(user())))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", "no-store"))
                 .andExpect(jsonPath("$.content").isEmpty())
@@ -171,7 +161,7 @@ class ReferenceItemControllerTest {
     void omitsQueryDelegatesToListAll() throws Exception {
         when(service.list(eq(OWNER), eq(WORK), eq(0), eq(20), isNull()))
                 .thenReturn(new ReferenceItemPage(List.of(), 0, 20, 0L, 0));
-        mvc.perform(get(PATH).with(oidcLogin().oidcUser(user())))
+        mvc.perform(get(PATH).with(authentication(user())))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", "no-store"));
         verify(service).list(OWNER, WORK, 0, 20, null);

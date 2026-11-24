@@ -186,20 +186,21 @@ class DailyContentTest {
 
     /** T-100: cada href que entrega normalizeLinkHref del cliente debe pasar la validación del servidor. */
     @ParameterizedTest
-    @ValueSource(strings = {
-        "https://google.com/",
-        "https://www.google.com/",
-        "https://www.ejemplo.test/Ruta?q=a%20b",
-        "http://ejemplo.test/",
-        "https://jira.ejemplo.test/browse/ABC-1279",
-        "https://ejemplo.test/a",
-        "https://localhost:5173/notas",
-        "https://xn--and-6ma2c.test/",
-        "https://ejemplo.test/100%25",
-        "https://ejemplo.test/a%7Cb",
-        "https://ejemplo.test/a#b%23c",
-        "https://jira.ejemplo.test/browse/ABC%201279"
-    })
+    @ValueSource(
+            strings = {
+                "https://google.com/",
+                "https://www.google.com/",
+                "https://www.ejemplo.test/Ruta?q=a%20b",
+                "http://ejemplo.test/",
+                "https://jira.ejemplo.test/browse/ABC-1279",
+                "https://ejemplo.test/a",
+                "https://localhost:5173/notas",
+                "https://xn--and-6ma2c.test/",
+                "https://ejemplo.test/100%25",
+                "https://ejemplo.test/a%7Cb",
+                "https://ejemplo.test/a#b%23c",
+                "https://jira.ejemplo.test/browse/ABC%201279"
+            })
     void acceptsEveryHrefNormalizedByTheLinkDialog(String href) {
         ObjectNode para = firstPara();
         ArrayNode inline = MAPPER.createArrayNode();
@@ -219,7 +220,10 @@ class DailyContentTest {
 
         var result = DailyContent.validate(validDoc);
 
-        assertThat(result.getTree().at("/content/0/content/0/marks/0/attrs/href").asText()).isEqualTo(href);
+        assertThat(result.getTree()
+                        .at("/content/0/content/0/marks/0/attrs/href")
+                        .asText())
+                .isEqualTo(href);
     }
 
     @Test

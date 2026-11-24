@@ -53,7 +53,7 @@ class LocalOidcUserServiceTest {
         when(delegate.loadUser(request)).thenReturn(validated);
         when(identities.resolve(any())).thenReturn(local);
 
-        var result = (LocalOidcUser) service.loadUser(request);
+        var result = (ValidatedOidcUser) service.loadUser(request);
 
         var order = inOrder(delegate, identities);
         order.verify(delegate).loadUser(request);
@@ -98,7 +98,7 @@ class LocalOidcUserServiceTest {
         when(local.getId()).thenReturn(AuthFixtures.USER_ID);
         when(identities.resolve(new IdentityProfile("https://accounts.google.com", "subject-demo", null, null, null)))
                 .thenReturn(local);
-        var result = (LocalOidcUser) service.loadUser(request);
+        var result = (ValidatedOidcUser) service.loadUser(request);
         assertThat(result.identity()).isEqualTo(new AuthMeResponse(local.getId(), null, null, false));
     }
 

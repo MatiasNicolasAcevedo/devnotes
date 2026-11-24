@@ -14,6 +14,7 @@ Comparación con la referencia Git seleccionada: coordenadas/versiones/scopes, p
 | org.springframework.boot:spring-boot-starter-flyway | `BOM` | 4.1.1 | compile | Runtime backend · server/pom.xml |
 | org.springframework.boot:spring-boot-starter-security | `BOM` | 4.1.1 | compile | Runtime backend · server/pom.xml |
 | org.springframework.boot:spring-boot-starter-security-oauth2-client | `BOM` | 4.1.1 | compile | Runtime backend · server/pom.xml |
+| org.springframework.boot:spring-boot-starter-session-jdbc | `BOM` | 4.1.1 | compile | Runtime backend · server/pom.xml |
 | org.springframework.boot:spring-boot-starter-validation | `BOM` | 4.1.1 | compile | Runtime backend · server/pom.xml |
 | org.springframework.boot:spring-boot-starter-webmvc | `BOM` | 4.1.1 | compile | Runtime backend · server/pom.xml |
 | org.flywaydb:flyway-database-postgresql | `BOM` | 12.4.0 | compile | Runtime backend · server/pom.xml |

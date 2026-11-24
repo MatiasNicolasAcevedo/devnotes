@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.example.devnotes.shared.space.PrivateSpace;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -27,8 +28,8 @@ class AiMessageServiceTest {
             PILOT,
             false,
             Map.of("groq", new AiProperties.Provider(true, "fictitious", "", List.of("work/daily"))));
-    private final AiMessageService service =
-            new AiMessageService(config, new AiOptions(config, null), notes, Map.of("groq", client), false);
+    private final AiMessageService service = new AiMessageService(
+            config, new AiOptions(config, null), notes, Map.of("groq", client), false, id -> Optional.empty());
 
     @Test
     void rejectsMissingSecretUnlistedPairOversizedUnicodeAndUnpermittedOriginsBeforeInference() {
@@ -56,7 +57,7 @@ class AiMessageServiceTest {
                     throw AiFailure.Reason.QUOTA.failure();
                 })
                 .thenReturn(new AiClient.Result("Respuesta", MODEL, null));
-        var first = CompletableFuture.supplyAsync(() -> service.send(PILOT, "pilot", PrivateSpace.WORK, input));
+        var first = CompletableFuture.supplyAsync(() -> service.send(PILOT, PrivateSpace.WORK, input));
         try {
             assertThat(entered.await(5, TimeUnit.SECONDS)).isTrue();
             assertFailure(AiFailure.Reason.BUSY, "groq", MODEL, "Otra consulta", null);
@@ -67,18 +68,14 @@ class AiMessageServiceTest {
                 .failsWithin(java.time.Duration.ofSeconds(5))
                 .withThrowableOfType(java.util.concurrent.ExecutionException.class)
                 .withCauseInstanceOf(AiFailure.class);
-        assertThat(service.send(PILOT, "pilot", PrivateSpace.WORK, input).text())
-                .isEqualTo("Respuesta");
+        assertThat(service.send(PILOT, PrivateSpace.WORK, input).text()).isEqualTo("Respuesta");
     }
 
     private void assertFailure(
             AiFailure.Reason code, String provider, String model, String message, AiNoteContext.Excerpt excerpt) {
         assertThatExceptionOfType(AiFailure.class)
                 .isThrownBy(() -> service.send(
-                        PILOT,
-                        "pilot",
-                        PrivateSpace.WORK,
-                        new AiMessageService.Input(provider, model, message, excerpt)))
+                        PILOT, PrivateSpace.WORK, new AiMessageService.Input(provider, model, message, excerpt)))
                 .satisfies(error -> assertThat(error.reason).isEqualTo(code));
     }
 }

@@ -8,9 +8,11 @@ import jakarta.validation.constraints.Size;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.function.LongSupplier;
 
 final class AiMessageService {
@@ -21,6 +23,7 @@ final class AiMessageService {
     private final AiNoteContext context;
     private final Map<String, AiClient> clients;
     private final boolean testProvider;
+    private final Function<UUID, Optional<String>> subjects;
     private final Set<UUID> active = ConcurrentHashMap.newKeySet();
 
     AiMessageService(
@@ -28,12 +31,14 @@ final class AiMessageService {
             AiOptions options,
             AiNoteContext context,
             Map<String, AiClient> clients,
-            boolean testProvider) {
+            boolean testProvider,
+            Function<UUID, Optional<String>> subjects) {
         this.properties = properties;
         this.options = options;
         this.context = context;
         this.clients = clients;
         this.testProvider = testProvider;
+        this.subjects = subjects;
     }
 
     record Input(
@@ -44,14 +49,14 @@ final class AiMessageService {
 
     record Output(String text, String provider, String requestedModel, String servedModel, Map<String, Long> quota) {}
 
-    List<AiOptions.Provider> list(UUID owner, String subject, boolean refresh) {
-        requirePilot(owner, subject);
+    List<AiOptions.Provider> list(UUID owner, boolean refresh) {
+        requirePilot(owner);
         return options.list(refresh, budget());
     }
 
-    Output send(UUID owner, String subject, PrivateSpace space, Input input) {
+    Output send(UUID owner, PrivateSpace space, Input input) {
         LongSupplier budget = budget();
-        requirePilot(owner, subject);
+        requirePilot(owner);
         if (!active.add(owner)) {
             throw AiFailure.Reason.BUSY.failure();
         }
@@ -78,11 +83,17 @@ final class AiMessageService {
         }
     }
 
-    private void requirePilot(UUID owner, String subject) {
-        if (!properties.enabled()
-                || !(owner.equals(properties.pilotId()) || (testProvider && subject.matches("e2e-ai-[a-f0-9-]{36}")))) {
+    private void requirePilot(UUID owner) {
+        if (!properties.enabled() || !(owner.equals(properties.pilotId()) || testPilot(owner))) {
             throw AiFailure.Reason.FORBIDDEN.failure();
         }
+    }
+
+    private boolean testPilot(UUID owner) {
+        return testProvider
+                && subjects.apply(owner)
+                        .filter(subject -> subject.matches("e2e-ai-[a-f0-9-]{36}"))
+                        .isPresent();
     }
 
     private static LongSupplier budget() {

@@ -38,7 +38,7 @@ class AiController {
         requireSession(user);
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
-                .body(service.list(user.identity().id(), user.getSubject(), refresh));
+                .body(service.list(user.identity().id(), refresh));
     }
 
     @Operation(summary = "Enviar un turno al destino seleccionado en un espacio privado")
@@ -50,7 +50,7 @@ class AiController {
         requireSession(user);
         return ResponseEntity.ok()
                 .cacheControl(CacheControl.noStore())
-                .body(service.send(user.identity().id(), user.getSubject(), PrivateSpace.parse(space), input));
+                .body(service.send(user.identity().id(), PrivateSpace.parse(space), input));
     }
 
     @ExceptionHandler(AiFailure.class)

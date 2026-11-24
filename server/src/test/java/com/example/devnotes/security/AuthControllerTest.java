@@ -3,6 +3,7 @@ package com.example.devnotes.security;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -60,8 +61,7 @@ class AuthControllerTest {
     @Test
     void meReturnsOnlyCurrentLocalIdentity() throws Exception {
         mvc.perform(get("/api/v1/auth/me")
-                        .with(oidcLogin()
-                                .oidcUser(AuthFixtures.localUser("Persona Demo", "persona@example.com", true))))
+                        .with(authentication(AuthFixtures.localUser("Persona Demo", "persona@example.com", true))))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Cache-Control", "no-store"))
                 .andExpect(content()
@@ -73,7 +73,7 @@ class AuthControllerTest {
 
     @Test
     void mePreservesNullableAttributesAndFalseVerification() throws Exception {
-        mvc.perform(get("/api/v1/auth/me").with(oidcLogin().oidcUser(AuthFixtures.localUser(null, null, false))))
+        mvc.perform(get("/api/v1/auth/me").with(authentication(AuthFixtures.localUser(null, null, false))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.displayName").value(nullValue()))
                 .andExpect(jsonPath("$.email").value(nullValue()))
@@ -143,8 +143,8 @@ class AuthControllerTest {
 
     @Test
     void logoutInvalidatesSessionContextAndDeletesBothCookies() throws Exception {
-        MvcResult me = mvc.perform(
-                        get("/api/v1/auth/me").with(oidcLogin().oidcUser(AuthFixtures.localUser("Demo", null, false))))
+        MvcResult me = mvc.perform(get("/api/v1/auth/me")
+                        .session(AuthFixtures.session(AuthFixtures.localUser("Demo", null, false))))
                 .andExpect(status().isOk())
                 .andReturn();
         MockHttpSession session = (MockHttpSession) me.getRequest().getSession(false);
@@ -188,7 +188,7 @@ class AuthControllerTest {
     void getLogoutNeverLogsOutOrShowsAForm() throws Exception {
         mvc.perform(get("/logout")).andExpect(status().isUnauthorized());
         MvcResult result = mvc.perform(
-                        get("/logout").with(oidcLogin().oidcUser(AuthFixtures.localUser("Demo", null, false))))
+                        get("/logout").session(AuthFixtures.session(AuthFixtures.localUser("Demo", null, false))))
                 .andExpect(status().isMethodNotAllowed())
                 .andExpect(header().string("Allow", "POST"))
                 .andExpect(content().string(""))

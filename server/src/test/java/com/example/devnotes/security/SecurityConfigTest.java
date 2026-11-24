@@ -2,7 +2,7 @@ package com.example.devnotes.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -20,6 +20,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -29,7 +31,10 @@ import org.springframework.web.context.WebApplicationContext;
 
 /** Contrato de rechazo de la base de seguridad: JSON ProblemDetail, nunca HTML ni redirección al login. */
 @ActiveProfiles("test")
-@WebMvcTest
+// The AI pilot (package-private service, own configuration) is outside this slice; its routes stay covered by the
+// denyAll/authenticated matrix of the real filter chain and by the AI web tests.
+@WebMvcTest(
+        excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = "com[.]example[.]devnotes[.]ai[.].*"))
 @Import(SecurityConfig.class)
 class SecurityConfigTest {
 
@@ -72,6 +77,9 @@ class SecurityConfigTest {
     @MockitoBean
     private com.example.devnotes.imagetext.application.ImageTextService imageTexts;
 
+    @MockitoBean
+    private com.example.devnotes.freenote.application.FreeNoteService freeNotes;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -95,13 +103,13 @@ class SecurityConfigTest {
         for (String path : new String[] {
             "/api/v1/reference/private", "/api/v1/reference-items/extra/child", "/api/v1/reference-items/"
         }) {
-            mockMvc.perform(get(path).with(oidcLogin().oidcUser(AuthFixtures.localUser("Demo", null, false))))
+            mockMvc.perform(get(path).with(authentication(AuthFixtures.localUser("Demo", null, false))))
                     .andExpect(status().isForbidden());
         }
         for (String method : new String[] {"HEAD", "OPTIONS", "PATCH", "PUT", "DELETE"}) {
             mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request(
                                     org.springframework.http.HttpMethod.valueOf(method), "/api/v1/reference-items")
-                            .with(oidcLogin().oidcUser(AuthFixtures.localUser("Demo", null, false)))
+                            .with(authentication(AuthFixtures.localUser("Demo", null, false)))
                             .cookie(token)
                             .header("X-XSRF-TOKEN", token.getValue()))
                     .andExpect(status().isForbidden());
@@ -144,7 +152,7 @@ class SecurityConfigTest {
             "/oauth2/authorization/other",
             "/login/oauth2/code/other"
         }) {
-            mockMvc.perform(get(path).with(oidcLogin().oidcUser(AuthFixtures.localUser("Demo", null, false))))
+            mockMvc.perform(get(path).with(authentication(AuthFixtures.localUser("Demo", null, false))))
                     .andExpect(status().isForbidden())
                     .andExpect(jsonPath("$.status").value(403));
         }
@@ -238,7 +246,7 @@ class SecurityConfigTest {
                 .andReturn()
                 .getResponse()
                 .getCookie("XSRF-TOKEN");
-        var user = oidcLogin().oidcUser(AuthFixtures.localUser("Demo", null, false));
+        var user = authentication(AuthFixtures.localUser("Demo", null, false));
 
         // Uncontracted methods denied on collection
         for (String method : new String[] {"HEAD", "OPTIONS", "PATCH"}) {
@@ -276,7 +284,7 @@ class SecurityConfigTest {
                 .andReturn()
                 .getResponse()
                 .getCookie("XSRF-TOKEN");
-        var user = oidcLogin().oidcUser(AuthFixtures.localUser("Demo", null, false));
+        var user = authentication(AuthFixtures.localUser("Demo", null, false));
 
         // Uncontracted methods denied on collection and item
         for (String path : new String[] {
@@ -317,7 +325,7 @@ class SecurityConfigTest {
                 .andReturn()
                 .getResponse()
                 .getCookie("XSRF-TOKEN");
-        var user = oidcLogin().oidcUser(AuthFixtures.localUser("Demo", null, false));
+        var user = authentication(AuthFixtures.localUser("Demo", null, false));
 
         mockMvc.perform(get("/api/v1/portability/export").accept(MediaType.ALL))
                 .andExpect(status().isUnauthorized())
@@ -347,7 +355,7 @@ class SecurityConfigTest {
                 .andReturn()
                 .getResponse()
                 .getCookie("XSRF-TOKEN");
-        var user = oidcLogin().oidcUser(AuthFixtures.localUser("Demo", null, false));
+        var user = authentication(AuthFixtures.localUser("Demo", null, false));
 
         for (String path : new String[] {"/api/v1/portability/import-preview", "/api/v1/portability/imports"}) {
             // No session: 401 with a CSRF token, 403 without it.

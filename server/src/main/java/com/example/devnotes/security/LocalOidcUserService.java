@@ -47,7 +47,7 @@ public class LocalOidcUserService implements OAuth2UserService<OidcUserRequest, 
                     validated.getEmail(),
                     validated.getEmailVerified(),
                     validated.getFullName()));
-            return new LocalOidcUser(
+            return new ValidatedOidcUser(
                     validated,
                     new AuthMeResponse(user.getId(), user.getDisplayName(), user.getEmail(), user.isEmailVerified()));
         } catch (RuntimeException failure) {

@@ -1,6 +1,8 @@
 package com.example.devnotes.security;
 
 import com.example.devnotes.voice.config.VoiceProperties;
+import java.time.Clock;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -34,12 +36,15 @@ public class SecurityConfig {
             ApiDocsAccess apiDocs,
             LocalOidcUserService oidcUsers,
             ClientRegistrationRepository registrations,
+            ObjectProvider<Clock> clock,
             @Qualifier("handlerExceptionResolver") HandlerExceptionResolver exceptionResolver)
             throws Exception {
         var csrfCookies = CookieCsrfTokenRepository.withHttpOnlyFalse();
         csrfCookies.setCookiePath("/");
         csrfCookies.setCookieCustomizer(cookie -> cookie.sameSite("Lax").secure(origin.secure()));
+        var sessionContexts = new PersistentSessionSecurityContextRepository(clock.getIfAvailable(Clock::systemUTC));
         http.addFilterBefore(new PublicOriginFilter(origin), CsrfFilter.class)
+                .securityContext(context -> context.securityContextRepository(sessionContexts))
                 .authorizeHttpRequests(auth -> {
                     if (apiDocs.enabled()) {
                         // ADR 0003 opt-in: anonymous GET of the exact documentation routes; nothing else changes.
