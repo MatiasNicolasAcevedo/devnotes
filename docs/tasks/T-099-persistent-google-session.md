@@ -1,6 +1,6 @@
 ---
 id: T-099
-status: in_review
+status: mergeable
 priority: P1
 size: M
 milestone: post-M9
@@ -52,6 +52,28 @@ Completar el gate diario con `node scripts/docs-check.mjs`, `git diff --check or
 
 ## Checkpoint vigente
 
+### Revisión independiente · ronda 1
+
+2026-11-24. Frontera reviewer en Claude Code Desktop con Claude Opus 5.5 (`claude-opus-5-5`), sesión distinta de la implementer. Worktree aislado `.orchestrator/t099-review` sobre HEAD `fafa303` y base `70729d3`; `verify-required` verde en ese HEAD. Veredicto: **APROBADO**, sin hallazgos bloqueantes.
+
+- La sesión guarda solo `SPRING_SECURITY_CONTEXT` con `LocalSessionAuthentication(LocalOidcUser(AuthMeResponse, loginAt))`: sin credenciales, detalles de request, tokens, claims, issuer ni subject. `ValidatedOidcUser` no es serializable y se reemplaza en `saveContext`; el repositorio de clientes autorizados no guarda nada. `PersistentGoogleSessionIT` lo comprueba sobre los bytes de la fila.
+- Inactividad de 7 días por `setMaxInactiveInterval` al login; 30 días desde cada login en `Admitted.get()`, que invalida la fila antes de autorizar. La carga es diferida, sin `SessionFlashMapManager` ni `ServletRequestHandledEvent`, y el IT prueba que system/info, csrf y readiness no cambian `last_access_time`.
+- Rotación con `changeSessionId`; el id previo al login no queda en la tabla y se rechaza tras reinicio. Cada dispositivo tiene su fila; logout exige CSRF (403 sin token), borra solo esa fila y la cookie, y el replay del id da 401. Callback fallido cubierto por `OidcFailureIT` 16/16.
+- Cookie `JSESSIONID` host-only, `Path=/`, HttpOnly, Lax, Secure desde `APP_PUBLIC_URL`; `Max-Age` de 30 días solo en la respuesta de un login válido. `V10` solo crea tablas e índices. El gate de IA de prueba usa `IdentityService.subject(id)`; `revoke-sessions` valida el UUID antes del `DELETE`.
+- No bloqueante: la identidad en sesión es una instantánea de nombre y correo que se renueva en cada login, y rige el límite de serialización Java ya documentado. El diff toca dependencias, autenticación y una migración: se recomienda incluirlo en el integrado diferido del corte acumulado.
+
+| Comando del reviewer | Resultado |
+|---|---|
+| `(cd server && ./mvnw -q verify -Dtest=SecurityConfigTest -Dit.test=PersistentGoogleSessionIT,OidcLoginIT,OidcFailureIT,PublicOriginIT -Djacoco.skip=true)` (AC-02) | Exit 0: 14, 5, 2, 16 y 14 casos |
+| `STARTER_E2E_PROJECT=starter-e2e-t099-review bash scripts/e2e.sh --grep 'visitor, real OIDC callback\|backend restart\|logout requires CSRF\|provider cancellation' --project desktop`, barras verticales sin escapar en la shell (AC-01) | Exit 0, 4/4 |
+| Cleanup por label exacto `com.docker.compose.project=starter-e2e-t099-review` | 0 contenedores, 0 volúmenes y 0 redes |
+| `node scripts/docs-check.mjs` y `git diff --check 70729d3 fafa303` en el worktree | Exit 0 ambos |
+| `bash scripts/verify.sh` | No corrido: FULL/STARTER: DIFERIDO POR EL DUEÑO |
+
+**Pendiente.** `verify-required` sobre el commit de transición, comentario `APROBADO`, squash ligado a ese HEAD y confirmación `MERGED`. La sesión siguiente concilia T-099 como `done`.
+
+### Implementación
+
 2026-11-24. Frontera implementer en Claude Code Desktop con Claude Opus 5.5 (`claude-opus-5-5`), sesión nueva. Herramientas: Git Bash, PowerShell, Git, gh, JDK 21 con Maven Wrapper, Docker Desktop y Node del host. Base `origin/main` = `70729d3b5ec038b6ba0c600b8bcb963d842a1be9`. [PR #101](https://github.com/MatiasNicolasAcevedo/devnotes/pull/101): conciliación en `1cdc24c`, E2E en `592473f`, código en `6d5f740` y este cierre documental en el HEAD publicado. Impacto en comportamiento, seguridad y datos de sesión: tablas nuevas `spring_session*` (Flyway `V10`, aditiva), cookie persistente tras el login y vencimientos de 7 y 30 días. API, permisos por propietario y UI sin cambios de contrato.
 
 Hecho:
@@ -97,14 +119,14 @@ Límites conocidos: el principal se guarda con serialización Java y `serialVers
 
 ## Prompts de salida
 
-Al publicar la implementación (vigente):
+Al publicar la implementación (ejecutado):
 
 ```text
 Frontera reviewer independiente de T-099 en MatiasNicolasAcevedo/devnotes, sesión nueva y distinta de la implementer. Leé AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md y docs/tasks/T-099-persistent-google-session.md, en especial «Checkpoint vigente» y «Correcciones significativas». PRECONDICIÓN: gh pr view 101 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup confirma OPEN, listo, base 70729d3b5ec038b6ba0c600b8bcb963d842a1be9, HEAD igual al último commit de codex/t-099-persistent-google-session (commit documental sobre 6d5f740) y verify-required verde en ese HEAD. Si no se cumple, devolvé el estado vigente. ACCIÓN: revisá que la sesión persista solo LocalSessionAuthentication/LocalOidcUser, sin tokens, claims ni ids del proveedor. Comprobá en el servidor ambos vencimientos (7 días de inactividad y 30 desde cada login) y que las rutas anónimas no prolonguen la sesión. Revisá aislamiento por dispositivo, rotación y revocación del id anterior, logout con CSRF, callback fallido, atributos de cookie, V10 aditiva y el gate de IA con IdentityService.subject. En un worktree aislado corré el comando AC-02 de la tarea y el E2E de AC-01 de escritorio con un namespace propio, barras verticales sin escapar; registrá exit y cleanup por label. Si aprobás, squash ligado al HEAD revisado y confirmá MERGED con gh pr view 101 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. Máximo dos rondas. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: veredicto y prompt vigente.
 ```
 
-Tras el merge:
+Tras el merge (vigente):
 
 ```text
-Frontera planner de seguimiento de T-099 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/tasks/T-099-persistent-google-session.md y docs/DEPLOYMENT.md. PRECONDICIÓN: gh pr view codex/t-099-persistent-google-session --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit confirma MERGED con fecha y oid y git merge-base --is-ancestor con el oid confirmado y origin/main sale 0. ACCIÓN: conciliá T-099, confirmá el SHA activo y readiness. Coordiná la verificación de continuidad con el dueño en sus dispositivos y retomá el pendiente de vencimiento de PostgreSQL. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: registro de cierre y prompt vigente.
+Frontera planner de seguimiento de T-099 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/tasks/T-099-persistent-google-session.md y docs/DEPLOYMENT.md. PRECONDICIÓN: gh pr view 101 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit confirma MERGED con fecha y oid y git merge-base --is-ancestor con el oid confirmado y origin/main sale 0. ACCIÓN: conciliá T-099, confirmá el SHA activo y readiness. Coordiná la verificación de continuidad con el dueño en sus dispositivos y retomá el pendiente de vencimiento de PostgreSQL. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: registro de cierre y prompt vigente.
 ```

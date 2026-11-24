@@ -3,8 +3,8 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-099](tasks/T-099-persistent-google-session.md) |
-| Estado | `in_review` |
-| Siguiente acción | Frontera reviewer independiente revisa la sesión persistente en el [PR #101](https://github.com/MatiasNicolasAcevedo/devnotes/pull/101) |
+| Estado | `mergeable` |
+| Siguiente acción | Revisión independiente APROBADA ([ronda 1](tasks/T-099-persistent-google-session.md#revisión-independiente--ronda-1)); squash del [PR #101](https://github.com/MatiasNicolasAcevedo/devnotes/pull/101) y, tras MERGED, planner de seguimiento |
 | Rama / PR | `codex/t-099-persistent-google-session` · [PR #101](https://github.com/MatiasNicolasAcevedo/devnotes/pull/101), código en `6d5f740` y cierre documental en el HEAD publicado |
 
 Modo `FRONTERA_CONTINUA`. [T-100](tasks/T-100-flexible-links-nav-order.md#conciliación) done tras el [PR #100](https://github.com/MatiasNicolasAcevedo/devnotes/pull/100) MERGED (squash `70729d3`). T-099 guarda la sesión en PostgreSQL: vence a los 7 días sin actividad o a los 30 desde cada login. AC-01, AC-02 y AC-03 en verde ([evidencia](tasks/T-099-persistent-google-session.md#checkpoint-vigente)). Tras el merge, el primer despliegue pide un login más. [Configuración y evidencia del cron externo](DEPLOYMENT.md#despertador-externo-de-devnotes).
@@ -29,10 +29,10 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 | Último integrado válido | FULL local del 2026-11-15 sobre `398801f` ([T-069](tasks/T-069-ocr-workspace.md#evidencia-del-full-de-cierre)); STARTER de T-068 conservado |
 | Mergeado desde entonces | T-070 (recorrido E2E de OCR), T-074 (navegación de Imagen), T-071 y T-092 (documentales), la adopción documental del flujo, el encadenamiento del lote hasta T-085 y T-093 a T-096 (IA Free, tráiler y demo narrada) |
 | Corte acumulado | Desde `7aa8946` hasta el HEAD de `main` que indique el dueño ([TESTING](TESTING.md#corte-acumulado-vigente)). El FULL/STARTER de I5 sigue diferido |
-| Recomendación | Ejecutar el integrado del corte acumulado con V8 y V9 cuando el dueño lo ordene. T-094 incorpora rutas privadas y cambia Compose |
+| Recomendación | Ejecutar el integrado del corte acumulado con V8 y V9 cuando el dueño lo ordene. T-094 incorpora rutas privadas y cambia Compose; T-099 agrega Spring Session JDBC, cambia autenticación y suma la migración V10 |
 
 ### Prompt de la siguiente sesión
 
 ```text
-Frontera reviewer independiente de T-099 en MatiasNicolasAcevedo/devnotes, sesión nueva y distinta de la implementer. Leé AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md y docs/tasks/T-099-persistent-google-session.md, en especial «Checkpoint vigente» y «Correcciones significativas». PRECONDICIÓN: gh pr view 101 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup confirma OPEN, listo, base 70729d3b5ec038b6ba0c600b8bcb963d842a1be9, HEAD igual al último commit de codex/t-099-persistent-google-session (commit documental sobre 6d5f740) y verify-required verde en ese HEAD. Si no se cumple, devolvé el estado vigente. ACCIÓN: revisá que la sesión persista solo LocalSessionAuthentication/LocalOidcUser, sin tokens, claims ni ids del proveedor. Comprobá en el servidor ambos vencimientos (7 días de inactividad y 30 desde cada login) y que las rutas anónimas no prolonguen la sesión. Revisá aislamiento por dispositivo, rotación y revocación del id anterior, logout con CSRF, callback fallido, atributos de cookie, V10 aditiva y el gate de IA con IdentityService.subject. En un worktree aislado corré el comando AC-02 de la tarea y el E2E de AC-01 de escritorio con un namespace propio, barras verticales sin escapar; registrá exit y cleanup por label. Si aprobás, squash ligado al HEAD revisado y confirmá MERGED con gh pr view 101 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. Máximo dos rondas. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: veredicto y prompt vigente.
+Frontera planner de seguimiento de T-099 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/tasks/T-099-persistent-google-session.md y docs/DEPLOYMENT.md. PRECONDICIÓN: gh pr view 101 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit confirma MERGED con fecha y oid y git merge-base --is-ancestor con el oid confirmado y origin/main sale 0. ACCIÓN: conciliá T-099 como done en una rama nueva, confirmá el SHA activo y readiness. Coordiná la verificación de continuidad con el dueño en sus dispositivos, con Google real, y retomá el pendiente de vencimiento de PostgreSQL. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: registro de cierre y prompt vigente.
 ```
