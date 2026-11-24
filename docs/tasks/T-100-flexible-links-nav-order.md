@@ -1,6 +1,6 @@
 ---
 id: T-100
-status: in_review
+status: mergeable
 priority: P1
 size: S
 milestone: post-M9
@@ -85,6 +85,21 @@ El E2E `flexible link:` entra a Notas con identidad ficticia. Enlaza una palabra
 Completar el [gate diario](../TESTING.md) con `node scripts/docs-check.mjs`, `git diff --check origin/main...HEAD` y `verify-required` sobre el HEAD publicado. Acreditar el cleanup Docker por label exacto de cada namespace. `bash scripts/verify.sh --policy origin/main` solo informa el perfil. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
 ## Checkpoint vigente
+
+### Revisión independiente · ronda 2
+
+2026-11-24. Frontera reviewer en Claude Code Desktop con Claude Opus 5.5, sesión distinta de la implementer. Worktree aislado `.orchestrator/review-t100-r2` sobre HEAD `e711888` y base `5dcb171`; `verify-required` verde en ese HEAD. Veredicto: **APROBADO**. H1 queda cerrado.
+
+Desde `8f91cc2` solo cambian `e2e/tests/daily-notes.spec.ts`, la tarea y STATUS. `linkWord` recibe la palabra, espera con `expect.poll` la selección nativa igual a esa palabra, deja pasar un frame con `requestAnimationFrame` y afirma `«Sitio»` o `«Ticket»` en el diálogo, que `LinkDialog` muestra con `«{selectedText}»`. El diff no agrega retries, timeouts ni `waitForTimeout`. El código de producto no cambió desde la ronda 1, que lo revisó sin hallazgos.
+
+| Comando del reviewer | Resultado |
+|---|---|
+| `STARTER_E2E_PROJECT=starter-e2e-t100-review-r2 bash scripts/e2e.sh --grep 'flexible link:\|T-020:\|CA-05:\|T-050:\|T-064:\|screenshot OCR: extract through the proxy' --project desktop`, barras verticales sin escapar en la shell | Exit 0, 8/8 |
+| Cleanup por label exacto `com.docker.compose.project=starter-e2e-t100-review-r2` | 0 contenedores, 0 volúmenes y 0 redes |
+| `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` en el worktree | Exit 0 ambos |
+| `bash scripts/verify.sh` | No corrido: FULL/STARTER: DIFERIDO POR EL DUEÑO |
+
+**Pendiente.** `verify-required` sobre el commit de transición, comentario `APROBADO`, squash ligado a ese HEAD y confirmación `MERGED`. La sesión siguiente concilia T-100 como `done`.
 
 ### Corrección de H1 · ronda 1
 
