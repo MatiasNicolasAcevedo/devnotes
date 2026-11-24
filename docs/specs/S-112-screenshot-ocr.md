@@ -86,7 +86,7 @@ Texto extraído
 
 ## Seguimiento · Imagen como destino principal
 
-Pedido del dueño del 2026-11-16 después del cierre inicial. **Imagen** abre una pantalla propia con título **Imagen a texto**. En escritorio, Voz · Notas · Referencias · Imagen · Historial. En móvil, Notas · Voz · Referencias · Imagen · Historial, con icono de imagen, texto visible en cada destino y cinco celdas de igual ancho. Conservar el tema de DevNotes, foco visible, selección ámbar, 48 CSS px mínimos de alto táctil y áreas seguras. Al mover OCR a Imagen, retirar el acceso en Herramientas y preservar el borrador de Notas al navegar.
+Pedido del dueño del 2026-11-16 después del cierre inicial. **Imagen** abre una pantalla propia con título **Imagen a texto**. El orden de destinos vigente es el del [ajuste del 2026-11-24](#ajuste-del-dueño-del-2026-11-24). Lleva icono de imagen, texto visible en cada destino y cinco celdas de igual ancho. Conservar el tema de DevNotes, foco visible, selección ámbar, 48 CSS px mínimos de alto táctil y áreas seguras. Al mover OCR a Imagen, retirar el acceso en Herramientas y preservar el borrador de Notas al navegar.
 
 La caja de captura recibe `Ctrl+V` y permite abrir el selector local con **Elegir imagen**. **Pegar** lee imágenes del portapapeles por gesto explícito cuando el navegador lo permite. Ante permiso denegado o API ausente, orientar a `Ctrl+V` en la caja o al selector. Pegado y selección muestran la vista previa. **Extraer texto** inicia el envío tras mostrar el aviso de OCR.space. La caja de resultado conserva edición de texto normal y **Copiar texto**. Apertura, pegado, vista previa, copia, selección y guardado no envían una nueva captura.
 
@@ -114,3 +114,7 @@ Conservar las convenciones de [S-107](S-107-xlsx-portability.md) y [S-109](S-109
 Extender vista previa/import/export a v3/v4. Agregar `imageTexts` y, en v4, `freeNotes` en sus versiones a los conteos total y por espacio. Leer libros anteriores con cero para colecciones ausentes en las capacidades que conoce el servidor; `version` sigue identificando el libro leído. Cuentas con cualquiera de las nuevas colecciones cuentan como ocupadas. Aplicar formato estricto por versión, sin ignorar hojas/JSON desconocidos; falla completa ante duplicados, mezcla de espacios inválida, documento no admitido o exceso de límites. Previsualización nunca escribe. Mantener exclusión con escrituras concurrentes de ambas colecciones. Un libro nuevo requiere una versión de DevNotes compatible para restaurar; explicar esta compatibilidad en la UI/guía.
 
 [Referencia visual](../design/WRITING-WORKSPACES.md#imagen). El objetivo de salida es pegar un recorte real de Windows, extraerlo desde Imagen y guardar, recuperar y borrar el resultado como texto.
+
+## Ajuste del dueño del 2026-11-24
+
+Orden de navegación principal. Reemplaza el orden por ancho del seguimiento de Imagen y los de [S-109](S-109-private-spaces.md). En todos los anchos el orden es **Notas · Referencias · Voz · Imagen · Historial**. En escritorio va en la barra y en móvil en la navegación inferior. Se conservan iconos, texto visible, cinco celdas móviles de igual ancho, 48 CSS px táctiles, foco, estado activo, enlaces con espacio y Demo fuera de la navegación. La demo narrada y el tráiler publicados no se regraban por este cambio. Tarea: [T-100](../tasks/T-100-flexible-links-nav-order.md).
