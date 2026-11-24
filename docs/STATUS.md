@@ -3,11 +3,11 @@
 | Campo | Valor |
 |---|---|
 | Tarea y contrato | [T-099](tasks/T-099-persistent-google-session.md) |
-| Estado | `ready` |
-| Siguiente acción | Frontera implementer de T-099: sesión persistente en PostgreSQL con siete días de inactividad y 30 días desde cada login |
-| Rama / PR | `codex/t-099-persistent-google-session` · PR pendiente |
+| Estado | `in_review` |
+| Siguiente acción | Frontera reviewer independiente revisa la sesión persistente en el [PR #101](https://github.com/MatiasNicolasAcevedo/devnotes/pull/101) |
+| Rama / PR | `codex/t-099-persistent-google-session` · [PR #101](https://github.com/MatiasNicolasAcevedo/devnotes/pull/101), código en `6d5f740` y cierre documental en el HEAD publicado |
 
-Modo `FRONTERA_CONTINUA`. [T-100](tasks/T-100-flexible-links-nav-order.md#conciliación) done tras el [PR #100](https://github.com/MatiasNicolasAcevedo/devnotes/pull/100) MERGED (squash `70729d3`). [Configuración y evidencia del cron externo](DEPLOYMENT.md#despertador-externo-de-devnotes).
+Modo `FRONTERA_CONTINUA`. [T-100](tasks/T-100-flexible-links-nav-order.md#conciliación) done tras el [PR #100](https://github.com/MatiasNicolasAcevedo/devnotes/pull/100) MERGED (squash `70729d3`). T-099 guarda la sesión en PostgreSQL: vence a los 7 días sin actividad o a los 30 desde cada login. AC-01, AC-02 y AC-03 en verde ([evidencia](tasks/T-099-persistent-google-session.md#checkpoint-vigente)). Tras el merge, el primer despliegue pide un login más. [Configuración y evidencia del cron externo](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
 Piloto aprobado con cinco destinos: Groq 20B/120B, Workers AI 20B/120B y Gemini 3.1 Flash-Lite. Gemini 3.8 Flash y OpenRouter Free quedan diferidos. El selector y el compositor muestran disponibilidad, fallos y cuota. El usuario elige y confirma otro destino. [Decisión y cierre observable](tasks/T-094-ai-workspace.md#decisión-de-alcance-del-dueño). FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
@@ -34,5 +34,5 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 ### Prompt de la siguiente sesión
 
 ```text
-Frontera implementer de T-099 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md y docs/tasks/T-099-persistent-google-session.md con sus referencias. PRECONDICIÓN: git ls-remote origin codex/t-099-persistent-google-session devuelve un SHA y gh pr list --repo MatiasNicolasAcevedo/devnotes --head codex/t-099-persistent-google-session --json number,state muestra el PR abierto o ninguno. ACCIÓN: retomá el checkpoint vigente de la tarea en esa rama, reproducí la pérdida de sesión al reiniciar si falta la evidencia roja, implementá la persistencia en PostgreSQL con siete días de inactividad y 30 días desde cada login, corré los IT y E2E dirigidos de T-099 y el gate diario, y publicá un único PR. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: PR con evidencia de reinicio, expiración y logout, y prompt completo de reviewer.
+Frontera reviewer independiente de T-099 en MatiasNicolasAcevedo/devnotes, sesión nueva y distinta de la implementer. Leé AGENTS.md, server/AGENTS.md, docs/STATUS.md, docs/agents/reviewer.md y docs/tasks/T-099-persistent-google-session.md, en especial «Checkpoint vigente» y «Correcciones significativas». PRECONDICIÓN: gh pr view 101 --repo MatiasNicolasAcevedo/devnotes --json state,isDraft,headRefOid,baseRefOid,statusCheckRollup confirma OPEN, listo, base 70729d3b5ec038b6ba0c600b8bcb963d842a1be9, HEAD igual al último commit de codex/t-099-persistent-google-session (commit documental sobre 6d5f740) y verify-required verde en ese HEAD. Si no se cumple, devolvé el estado vigente. ACCIÓN: revisá que la sesión persista solo LocalSessionAuthentication/LocalOidcUser, sin tokens, claims ni ids del proveedor. Comprobá en el servidor ambos vencimientos (7 días de inactividad y 30 desde cada login) y que las rutas anónimas no prolonguen la sesión. Revisá aislamiento por dispositivo, rotación y revocación del id anterior, logout con CSRF, callback fallido, atributos de cookie, V10 aditiva y el gate de IA con IdentityService.subject. En un worktree aislado corré el comando AC-02 de la tarea y el E2E de AC-01 de escritorio con un namespace propio, barras verticales sin escapar; registrá exit y cleanup por label. Si aprobás, squash ligado al HEAD revisado y confirmá MERGED con gh pr view 101 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit. Máximo dos rondas. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: veredicto y prompt vigente.
 ```
