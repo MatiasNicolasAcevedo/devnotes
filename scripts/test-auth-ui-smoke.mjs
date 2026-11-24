@@ -229,10 +229,14 @@ try {
   step('Reload keeps the backend session');
   await bothLayouts('Authenticated shell', '03-sesion');
 
-  // 4. Expiry: the server restarts (in-memory session lost) and focus revalidation reports it once, without a loop.
+  // 4. A restart keeps the persistent session (T-099); a server-side revocation then expires it, and focus
+  // revalidation reports it once, without a loop.
   compose(['restart', 'server']);
   compose(['up', '-d', '--wait', '--wait-timeout', '180', 'server'], 300_000);
   await until('server reachable again through the proxy', async () => (await fetch(`${base}/api/v1/system/info`)).ok, 60_000);
+  await page.send('Page.reload');
+  await until('session survives the backend restart', loggedIn);
+  compose(['exec', '-T', 'db', 'psql', '-U', 'starter_auth_test', '-d', 'starter_auth_test', '-Atc', 'DELETE FROM spring_session']);
   const beforeExpiry = meCalls();
   await evaluate(`document.dispatchEvent(new Event('visibilitychange', { bubbles: true }))`);
   await until('expiry message', async () => (await text()).includes('La sesión terminó. Volvé a ingresar.'));
@@ -242,7 +246,7 @@ try {
   await delay(3_000); // bounded observation window: proves no request loop after the single 401
   assert.equal(meCalls() - beforeExpiry, 1, 'exactly one me request: no retry/loop');
   assert.equal(await path(), '/');
-  step('Expiry: one me 401 after restart → fixed message, cache/user cleared, no retry, no redirect loop (3 s window)');
+  step('Restart keeps the session; expiry: one me 401 after revocation → fixed message, cache/user cleared, no retry, no redirect loop (3 s window)');
   await bothLayouts('Expired session', '04-expirada');
 
   // 5. Login again (mouse), then logout.

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { test, expect, control, readiness, login, label, layout, keyboardActivate, issuer, accountButton, expectLoggedIn, notesUrl, returnToForeground } from './fixtures';
+import { test, expect, control, readiness, login, label, layout, keyboardActivate, issuer, accountButton, expectLoggedIn, notesUrl, returnToForeground, csrfHeaders } from './fixtures';
 
 test.describe.configure({ timeout: 90_000 });
 
@@ -71,11 +71,46 @@ test('logout requires CSRF, confirms 204, renews protection and rejects the old 
   await layout(page);
 });
 
-test('backend restart expires the session once without redirects; a different identity replaces the old one', async ({ page, identity }) => {
+test('backend restart keeps the same persistent session; a revoked session expires once without redirects; a different identity replaces the old one', async ({ page, browser, identity }) => {
   const first = await login(page, identity);
   const fingerprint = await control('fingerprint', identity);
+  const text = `Privada T-099 ${identity.slice(0, 8)}`;
+  expect((await page.request.post('/api/v1/voice-notes', { headers: await csrfHeaders(page), data: { text } })).status()).toBe(201);
   await control('restart');
   await readiness(page);
+  const kept = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/auth/me');
+  await returnToForeground(page);
+  expect((await kept).status()).toBe(200);
+  await page.reload();
+  await expectLoggedIn(page, identity);
+  expect((await (await page.request.get('/api/v1/auth/me')).json()).id).toBe(first);
+  const listed = await page.request.get('/api/v1/voice-notes');
+  expect(listed.status()).toBe(200);
+  expect(JSON.stringify(await listed.json())).toContain(text);
+  await expect(page.getByText('La sesión terminó. Volvé a ingresar.')).toHaveCount(0);
+  const session = (await page.context().cookies()).find(cookie => cookie.name === 'JSESSIONID');
+  // Persistent cookie: about 30 days from this login, host-only, HttpOnly, Lax.
+  expect(Boolean(session?.httpOnly)).toBe(true);
+  expect(session?.sameSite).toBe('Lax');
+  expect(session?.path).toBe('/');
+  expect(session?.domain).toBe('localhost');
+  const lifetime = session!.expires - Date.now() / 1000;
+  expect(lifetime).toBeGreaterThan(29 * 86_400);
+  expect(lifetime).toBeLessThanOrEqual(30 * 86_400 + 60);
+
+  // Close and reopen the browser profile: only the persistent session cookie is carried over, in memory.
+  const reopened = await browser.newContext({ baseURL: 'http://localhost', viewport: page.viewportSize()! });
+  try {
+    await reopened.addCookies([session!]);
+    const again = await reopened.newPage();
+    await again.goto('/');
+    await expect(again).toHaveURL(notesUrl);
+    await expectLoggedIn(again, identity);
+    expect((await (await again.request.get('/api/v1/auth/me')).json()).id).toBe(first);
+  } finally { await reopened.close(); }
+
+  // Controlled server-side revocation stands in for an expired session.
+  await control('revoke-sessions', first);
   let meRequests = 0;
   let redirects = 0;
   page.on('request', request => {
