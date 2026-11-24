@@ -15,7 +15,7 @@ En cada tarea de frontend, usar frontend-design sobre el alcance y cotejar el re
 ## Diario y Libres
 
 ```text
-Trabajo ▾   Voz  Notas  Referencias  Imagen  Historial      ✦ IA  Cuenta
+Trabajo ▾   Notas  Referencias  Voz  Imagen  Historial      ✦ IA  Cuenta
 16/11 ▾  Hoy  Libres              Guardado      Guardar    Herramientas
 01  Revisar despliegue
 02  Actualizar variable del servicio
@@ -72,7 +72,7 @@ Conservar aproximadamente 60/40 desde 1.100 px útiles. El lector tiene scroll p
 ## IA
 
 ```text
-Trabajo ▾           Notas · Voz · Referencias · Imagen · Historial      [✦ IA | ▾]  Cuenta
+Trabajo ▾           Notas · Referencias · Voz · Imagen · Historial      [✦ IA | ▾]  Cuenta
                                                                             │
                                                    Proveedor  [GroqCloud   ▾]
                                                    Modelo     [GPT OSS 20B ▾]
