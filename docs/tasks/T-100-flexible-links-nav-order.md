@@ -1,6 +1,6 @@
 ---
 id: T-100
-status: ready
+status: in_review
 priority: P1
 size: S
 milestone: post-M9
@@ -9,7 +9,7 @@ depends_on: [T-098]
 branch: codex/t-100-flexible-links-nav-order
 role: implementer
 executor: frontier
-pr: null
+pr: 100
 ---
 
 # T-100 · Enlaces sin esquema y navegación con Notas primero
@@ -86,19 +86,36 @@ Completar el [gate diario](../TESTING.md) con `node scripts/docs-check.mjs`, `gi
 
 ## Checkpoint vigente
 
-2026-11-24. Frontera planner en Claude Code Desktop con Claude Opus 5.5, esfuerzo sin dato expuesto. Herramientas: Git Bash, gh, Node y Java 21 del host. Base `origin/main@190e105` tras el [PR documental #98](https://github.com/MatiasNicolasAcevedo/devnotes/pull/98) MERGED. Impacto: UI del diálogo de enlace y de la navegación principal. Sin cambios de API, permisos ni datos guardados.
+2026-11-24. Frontera implementer en Claude Code Desktop con Claude Opus 5.5, esfuerzo sin dato expuesto. Herramientas: Git Bash, gh, Node, Docker y Java 21 del host. Base `origin/main@5dcb171` tras el [PR de planificación #99](https://github.com/MatiasNicolasAcevedo/devnotes/pull/99) MERGED el 2026-11-24T15:33:06Z (`merge-base --is-ancestor` exit 0). Implementación en `2a122ba`, [PR #100](https://github.com/MatiasNicolasAcevedo/devnotes/pull/100). Impacto: UI del diálogo de enlace y de la navegación principal, y el helper E2E `openDailyTools`. Sin cambios de API, permisos, servidor ni datos guardados: `DailyContent.java` y `dailyDocument.ts` no cambian.
 
-| Evidencia | Resultado |
+**Hecho.** `normalizeLinkHref` en `linkHref.ts` con los pasos del contrato. `LinkDialog` valida con ella desde Zod, entrega el href normalizado a `onSave` y usa el placeholder `google.com`. `AppShell` usa la lista única `PRIMARY_TABS`. Se alinearon `T-050:`, `captureLayout` de OCR y la escena S03 de la demo, sin regrabar. Una entrada que empieza con una sola `/` sigue rechazada con el mensaje de dirección inválida: `URL` la convertiría en host y S-101 rechaza las relativas.
+
+**Tabla de hrefs comprobada.** Los once pares de la tabla dan exactamente el href de la columna derecha en `linkHref.test.ts`, y cada uno pasa `validateDailyContent` del cliente. `DailyContentTest#acceptsEveryHrefNormalizedByTheLinkDialog` acepta los once más `https://jira.ejemplo.test/browse/ABC%201279` del E2E. Los trece rechazos devuelven su mensaje.
+
+| Comando | Resultado |
 |---|---|
-| `gh pr list --repo MatiasNicolasAcevedo/devnotes --state all --limit 8` | Exit 0. PR #98 MERGED el 2026-11-24T15:12:15Z, squash `190e105` en `origin/main`. |
-| `new URL(...)` en Node 24 | `URL` acepta y conserva `%` suelto, `\|`, un segundo `#` y `mi_sitio.test`. Entrega punycode, minúsculas y `/` final según la tabla. |
-| `java UriCheck.java` en el scratchpad, Java 21 | `java.net.URI` rechaza `100%`, `a\|b`, `a#b#c` y `a[b]`. Devuelve host nulo para `mi_sitio.test` y `ejemplo.123` y acepta las formas codificadas de la tabla. |
+| Rojo, en `client/`: `npx vitest run src/features/daily/editor/linkHref.test.ts src/features/daily/editor/LinkDialog.test.tsx src/app/AppShell.test.tsx src/app/AppRoutes.test.tsx` sobre la base | Exit 1. `linkHref.test.ts` no resuelve el módulo; 15 fallos: orden en los 7 anchos de `AppShell` y en `AppRoutes`, placeholder, `mi_sitio.test` y los mensajes nuevos del diálogo. |
+| Rojo E2E: `STARTER_E2E_PROJECT=starter-e2e-t100-red bash scripts/e2e.sh --grep 'flexible link:\|T-050:' --project desktop` | Exit 1, 2/2 fallan: placeholder `https://ejemplo.com` en lugar de `google.com` y orden `Voz, Notas…`. Dos intentos previos no valen como rojo: el primero cortó en el build de la imagen, que typecheckea los tests, porque `linkHref.ts` todavía no existía; el segundo, con el patrón escrito con barra invertida antes de cada barra vertical en la shell, corrió 0 tests. En la shell el patrón va con barras verticales sin escapar; en esta tabla se escapan solo por Markdown. |
+| Verde, mismo vitest dirigido | Exit 0, 4 archivos, 88/88. |
+| En `client/`: `npm run typecheck` y `npx eslint src/features/daily/editor src/app/AppShell.tsx --max-warnings 0` | Exit 0 ambos. |
+| En `server/`: `./mvnw -q test -Dtest=DailyContentTest` | Exit 0, 96 tests, 0 fallos. |
+| `STARTER_E2E_PROJECT=starter-e2e-t100-desktop bash scripts/e2e.sh --grep 'flexible link:\|T-020:\|CA-05:\|T-050:\|T-064:\|screenshot OCR: extract through the proxy' --project desktop` | Exit 0, 8/8: el filtro también toma el segundo `T-020:` y el segundo `CA-05:`. |
+| `STARTER_E2E_PROJECT=starter-e2e-t100-mobile bash scripts/e2e.sh --grep 'flexible link:\|T-050:\|T-064:\|screenshot OCR: extract through the proxy' --project mobile` | Exit 0, 4/4. |
+| `STARTER_E2E_PROJECT=starter-e2e-t100-helper bash scripts/e2e.sh --grep 'copy previous: preserves\|portability: A exports\|multiline clipboard, persistence, scroll focus and compact layout$\|remove a link only from the selected fragment' --project desktop` | Exit 0, 4/4. Usuarios de escritorio de `openDailyTools`. |
+| Cleanup Docker por label exacto `com.docker.compose.project=starter-e2e-t100-{red,desktop,mobile,helper,base020}` | 0 contenedores, 0 volúmenes y 0 redes en cada namespace. |
+| En `client/`: `npm run verify` | Exit 1: 940/941. Falla solo `FreeNotesPage.test.tsx › protege el borrador al cerrar sesión…`, que falla igual dos veces sobre un worktree limpio de `origin/main@5dcb171`. `verify-required` lo pasó en #97 y #99: es local y ajeno a T-100. Typecheck, lint, formato y build sin errores. |
+| `node scripts/docs-check.mjs` | Exit 1 solo por `trailer/CLAUDE.md`, directorio sin versionar previo a la sesión y ajeno a T-100; no se tocó. |
+| `git diff --check origin/main...HEAD` | Exit 0. |
+| `bash scripts/verify.sh --policy origin/main` | Exit 0, `profile=APPLICATION`, 13 rutas técnicas. FULL/STARTER: DIFERIDO POR EL DUEÑO. |
+
+**Pendiente.** `verify-required` sobre el HEAD publicado del PR #100 y la revisión independiente.
 
 ## Correcciones significativas
 
 | Fecha / SHA o pendiente de commit | Problema y causa comprobada | Corrección | Prueba y resultado |
 |---|---|---|---|
-| Sin correcciones todavía | | | |
+| `2a122ba` | `T-020:` no encontraba «Agregar enlace» en escritorio. Falla igual sobre `origin/main@5dcb171` (corrida `starter-e2e-t100-base020`): desde #84, en escritorio Enlace vive en la barra y `openDailyTools` abría el popover Herramientas, que deja la barra con `aria-hidden`. | `openDailyTools` no abre el popover si el botón de enlace ya está en la barra. | E2E de escritorio 8/8 y usuarios del helper 4/4. |
+| `2a122ba` | `flexible link:` enlazaba «itio»: el cursor desde `End` cruzaba de forma distinta el enlace ya creado. | Cada palabra se selecciona desde su extremo, `End` para «Ticket» y `Home` para «Sitio». | Escritorio y móvil en verde. |
 
 ## Prompts de salida
 
