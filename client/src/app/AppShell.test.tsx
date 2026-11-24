@@ -57,11 +57,13 @@ describe('AppShell', () => {
       const links = within(nav).getAllByRole('link')
       const mobile = width < 768
       expect(banner.contains(nav)).toBe(!mobile)
-      expect(links.map((link) => link.textContent)).toEqual(
-        mobile
-          ? ['Notas', 'Voz', 'Referencias', 'Imagen', 'Historial']
-          : ['Voz', 'Notas', 'Referencias', 'Imagen', 'Historial'],
-      )
+      expect(links.map((link) => link.textContent)).toEqual([
+        'Notas',
+        'Referencias',
+        'Voz',
+        'Imagen',
+        'Historial',
+      ])
       if (mobile) {
         for (const link of links) expect(link.querySelector('svg')).not.toBeNull()
       }

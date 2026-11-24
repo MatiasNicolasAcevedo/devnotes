@@ -51,6 +51,36 @@ describe('LinkDialog', () => {
     expect(onClose).toHaveBeenCalled()
   })
 
+  it('guarda una dirección sin esquema normalizada con https', async () => {
+    const onSave = vi.fn()
+    const { user } = renderWithProviders(
+      <LinkDialog open={true} selectedText="1279" onClose={vi.fn()} onSave={onSave} />,
+    )
+
+    const urlInput = screen.getByRole('textbox', { name: /URL/ })
+    expect(urlInput).toHaveAttribute('placeholder', 'google.com')
+    await user.type(urlInput, 'www.ejemplo.test')
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    expect(onSave).toHaveBeenCalledWith('https://www.ejemplo.test/')
+  })
+
+  it('rechaza un dominio inválido junto al campo sin guardar', async () => {
+    const onSave = vi.fn()
+    const { user } = renderWithProviders(
+      <LinkDialog open={true} selectedText="1279" onClose={vi.fn()} onSave={onSave} />,
+    )
+
+    const urlInput = screen.getByRole('textbox', { name: /URL/ })
+    await user.type(urlInput, 'mi_sitio.test')
+    await user.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    expect(
+      await screen.findByText('Ingresá una dirección web válida, por ejemplo google.com.'),
+    ).toBeInTheDocument()
+    expect(onSave).not.toHaveBeenCalled()
+  })
+
   it('valida que URL debe ser http:// o https://', async () => {
     const { user } = renderWithProviders(
       <LinkDialog open={true} selectedText="1279" onClose={vi.fn()} onSave={vi.fn()} />,
@@ -60,7 +90,7 @@ describe('LinkDialog', () => {
     await user.type(urlInput, 'ftp://ejemplo.com')
     await user.click(screen.getByRole('button', { name: 'Guardar' }))
 
-    const error = await screen.findByText(/Ingresá una URL válida/)
+    const error = await screen.findByText('Solo se aceptan direcciones web (http o https).')
     expect(error).toBeInTheDocument()
   })
 
@@ -73,7 +103,7 @@ describe('LinkDialog', () => {
     await user.type(urlInput, 'javascript:alert(1)')
     await user.click(screen.getByRole('button', { name: 'Guardar' }))
 
-    const error = await screen.findByText(/Ingresá una URL válida/)
+    const error = await screen.findByText('Solo se aceptan direcciones web (http o https).')
     expect(error).toBeInTheDocument()
   })
 
@@ -86,7 +116,7 @@ describe('LinkDialog', () => {
     await user.type(urlInput, 'data:text/html,<h1>xss</h1>')
     await user.click(screen.getByRole('button', { name: 'Guardar' }))
 
-    const error = await screen.findByText(/Ingresá una URL válida/)
+    const error = await screen.findByText('Solo se aceptan direcciones web (http o https).')
     expect(error).toBeInTheDocument()
   })
 
@@ -99,7 +129,9 @@ describe('LinkDialog', () => {
     await user.type(urlInput, '/ruta/relativa')
     await user.click(screen.getByRole('button', { name: 'Guardar' }))
 
-    const error = await screen.findByText(/Ingresá una URL válida/)
+    const error = await screen.findByText(
+      'Ingresá una dirección web válida, por ejemplo google.com.',
+    )
     expect(error).toBeInTheDocument()
   })
 
@@ -112,7 +144,7 @@ describe('LinkDialog', () => {
     await user.type(urlInput, 'mailto:test@ejemplo.com')
     await user.click(screen.getByRole('button', { name: 'Guardar' }))
 
-    const error = await screen.findByText(/Ingresá una URL válida/)
+    const error = await screen.findByText('Solo se aceptan direcciones web (http o https).')
     expect(error).toBeInTheDocument()
   })
 

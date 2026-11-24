@@ -310,6 +310,52 @@ test('CA-03: four separator commands on Enter, widths measured against area with
   await layout(page);
 });
 
+test('flexible link: addresses without scheme persist normalized after reload', async ({ page, identity }) => {
+  await login(page, identity);
+  await page.getByRole('link', { name: 'Notas', exact: true }).click();
+  const editor = page.locator('.daily-editor-content[role="textbox"]');
+  await expect(editor).toHaveAttribute('contenteditable', 'true');
+  await editor.click();
+  await page.keyboard.type('Sitio Ticket');
+  const dialog = page.getByRole('dialog');
+  const input = dialog.getByRole('textbox', { name: 'URL', exact: true });
+
+  // Cada palabra se selecciona desde un extremo del párrafo, sin cruzar el enlace ya creado, y se enlaza con Ctrl+K.
+  const linkWord = async (from: 'Home' | 'End', length: number, address: string) => {
+    await page.keyboard.press(from);
+    await page.keyboard.down('Shift');
+    for (let i = 0; i < length; i++) await page.keyboard.press(from === 'End' ? 'ArrowLeft' : 'ArrowRight');
+    await page.keyboard.up('Shift');
+    await page.keyboard.press('Control+k');
+    await expect(dialog).toBeVisible();
+    await expect(input).toHaveAttribute('placeholder', 'google.com');
+    await input.fill(address);
+    await dialog.getByRole('button', { name: 'Guardar', exact: true }).click();
+    await expect(dialog).not.toBeVisible();
+  };
+
+  await linkWord('End', 'Ticket'.length, 'jira.ejemplo.test/browse/ABC 1279');
+  const saved = page.waitForResponse(response =>
+    new URL(response.url()).pathname.startsWith('/api/v1/daily-notes/')
+    && response.request().method() === 'PUT'
+    && (response.request().postData() ?? '').includes('https://www.ejemplo.test/'));
+  await linkWord('Home', 'Sitio'.length, 'www.ejemplo.test');
+  expect((await saved).status()).toBe(200);
+
+  await page.reload();
+  await expect(editor).toHaveAttribute('contenteditable', 'true', { timeout: 10_000 });
+  const site = editor.getByRole('link', { name: 'Sitio' });
+  const ticket = editor.getByRole('link', { name: 'Ticket' });
+  await expect(site).toHaveAttribute('href', 'https://www.ejemplo.test/');
+  await expect(ticket).toHaveAttribute('href', 'https://jira.ejemplo.test/browse/ABC%201279');
+  for (const link of [site, ticket]) {
+    await expect(link).toHaveAttribute('target', '_blank');
+    await expect(link).toHaveAttribute('rel', /noopener noreferrer/);
+  }
+  await expect(editor).toHaveText('Sitio Ticket');
+  await layout(page);
+});
+
 test('CA-05: javascript: URL rejected; literal HTML text does not execute; reload recovers work', async ({ page, identity }) => {
   await login(page, identity);
   await page.getByRole('link', { name: 'Notas', exact: true }).click();
@@ -340,7 +386,7 @@ test('CA-05: javascript: URL rejected; literal HTML text does not execute; reloa
   await expect(badLink).not.toBeVisible();
 
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByText('Ingresá una URL válida (http:// o https://).', { exact: true })).toBeVisible();
+  await expect(dialog.getByText('Solo se aceptan direcciones web (http o https).', { exact: true })).toBeVisible();
   await expect(editor).toHaveText('No ejecutar');
   await dialog.getByRole('button', { name: 'Cancelar', exact: true }).click();
   await expect(dialog).not.toBeVisible();
