@@ -1,6 +1,6 @@
 ---
 id: T-099
-status: draft
+status: ready
 priority: P1
 size: M
 milestone: post-M9
@@ -18,7 +18,7 @@ pr: null
 
 Una persona que vuelve a DevNotes desde el mismo perfil de navegador, incluso después de cerrar el navegador o de que Render reinicie Spring, puede volver a sus notas con la sesión que ya inició. Aplica también a Android. El dueño pidió el 2026-11-24 evitar entradas repetidas cada 30–60 minutos y priorizó que DevNotes estuviera disponible al abrirlo. La configuración operativa del despertador está en [DEPLOYMENT](../DEPLOYMENT.md#despertador-externo-de-devnotes).
 
-Queda en `draft` solo por orden: el 2026-11-24 el dueño pidió hacer antes los ajustes de [T-100](T-100-flexible-links-nav-order.md). No hay dependencia técnica. Tras el MERGED de T-100, el implementer de T-099 la concilia y pasa esta tarea a `ready` en su primer commit, sin otra sesión de planner.
+Quedó en `draft` solo por orden: el 2026-11-24 el dueño pidió hacer antes los ajustes de [T-100](T-100-flexible-links-nav-order.md). T-100 quedó MERGED (`70729d3`) y [conciliada](T-100-flexible-links-nav-order.md#conciliación); esta tarea pasa a `ready`.
 
 ## Alcance y decisiones resueltas
 

@@ -1,6 +1,6 @@
 ---
 id: T-100
-status: mergeable
+status: done
 priority: P1
 size: S
 milestone: post-M9
@@ -83,6 +83,10 @@ El E2E `flexible link:` entra a Notas con identidad ficticia. Enlaza una palabra
 | AC-04. Notas · Referencias · Voz · Imagen · Historial de 320 a 1280 px, con iconos y 48 px táctiles en móvil y sin desborde horizontal. | Componente y E2E móvil: el orden depende del ancho y del proyecto táctil. | En `client/`: `npx vitest run src/app/AppShell.test.tsx src/app/AppRoutes.test.tsx`. Desde la raíz: `STARTER_E2E_PROJECT=starter-e2e-t100-mobile bash scripts/e2e.sh --grep 'flexible link:\|T-050:\|T-064:\|screenshot OCR: extract through the proxy' --project mobile` | Rojo del orden en la base y verde con el cambio. Los cuatro casos móviles pasan. |
 
 Completar el [gate diario](../TESTING.md) con `node scripts/docs-check.mjs`, `git diff --check origin/main...HEAD` y `verify-required` sobre el HEAD publicado. Acreditar el cleanup Docker por label exacto de cada namespace. `bash scripts/verify.sh --policy origin/main` solo informa el perfil. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+
+## Conciliación
+
+2026-11-24. `gh pr view codex/t-100-flexible-links-nav-order --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit` devolvió MERGED, `2026-11-24T17:42:55Z` y `70729d3b5ec038b6ba0c600b8bcb963d842a1be9`. `git fetch origin main` y `git merge-base --is-ancestor 70729d3b5ec038b6ba0c600b8bcb963d842a1be9 origin/main` salieron 0. La siguiente tarea es [T-099](T-099-persistent-google-session.md), que pasa a `ready`.
 
 ## Checkpoint vigente
 
