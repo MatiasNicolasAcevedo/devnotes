@@ -1,6 +1,6 @@
 ---
 id: T-100
-status: in_review
+status: changes_requested
 priority: P1
 size: S
 milestone: post-M9
@@ -86,6 +86,31 @@ Completar el [gate diario](../TESTING.md) con `node scripts/docs-check.mjs`, `gi
 
 ## Checkpoint vigente
 
+### Revisión independiente · ronda 1
+
+2026-11-24. Frontera reviewer en Claude Code Desktop con Claude Opus 5.5, sesión distinta de la implementer. Worktree aislado `.orchestrator/review-t100` sobre HEAD `e5642ea` y base `5dcb171`. `verify-required` verde en ese HEAD (corridas 45442600707 y 45442664102, `headSha` comprobado). Veredicto: **CAMBIOS REQUERIDOS**, con un solo hallazgo en el E2E nuevo. El código de producto queda revisado sin hallazgos.
+
+**Revisado sin hallazgos.** `normalizeLinkHref` cumple los pasos, la tabla y los rechazos del contrato. Una prueba fuera del repo pasó 2375 entradas por `normalizeLinkHref`: 5 prefijos × 19 hosts × 25 rutas con `%`, `#`, `|`, espacios, no ASCII, IDN, IPv4/IPv6, puertos y corchetes. Aceptó 2000 y rechazó 375, y `java.net.URI` aceptó los 2000 hrefs con las reglas de `DailyContent.validateHref` (esquema, host, sin credenciales ni espacios). `DailyContent.java` y `dailyDocument.ts` no cambian. Mensajes y placeholder según contrato. El foco (`autoFocus`), Quitar, Abrir y Cancelar se conservan. `onSave` recibe el href normalizado. `PRIMARY_TABS` da un orden único en todos los anchos y `T-050:`, `captureLayout` y S03 están alineados. La corrección de `openDailyTools` es correcta: en escritorio no abre Herramientas si Enlace está visible en la barra, y en móvil sigue igual. Entradas como `javascript:1` o `http:5173` se toman como `host:puerto` y se guardan como `https://javascript:1/`. Son HTTPS e inofensivas: no es un hallazgo.
+
+**Hallazgo H1 · `flexible link:` no es determinista.** Evidencia: con el comando AC-03 de escritorio falló 2/2 en esta revisión, cada vez con otro síntoma. Los otros siete casos pasaron en ambas corridas.
+- `starter-e2e-t100-review`: tras escribir «Sitio Ticket», `End` y seis `Shift+ArrowLeft`, `Control+k` no abre el diálogo y vence `expect(dialog).toBeVisible()`. El párrafo queda sin enlaces y no había ningún PUT ni GET en vuelo: el PUT llega unos 650 ms después.
+- `starter-e2e-t100-review2`: el enlace queda sobre «icket», cinco letras, y vence `getByRole('link', { name: 'Ticket' })`.
+- Causa: `Shift+Arrow` mueve la selección nativa y ProseMirror la toma recién en el evento asíncrono `selectionchange`. `Control+k` llega unos 5 ms después y `openLinkDialog` lee una selección vieja, vacía o una letra corta. Con la selección vacía sale sin abrir. Es la misma causa que la segunda corrección registrada («itio»): cambiar el extremo no elimina la carrera. Los casos existentes usan `Control+a`, que ProseMirror resuelve en su keymap de forma síncrona.
+- Corrección suficiente, solo en `e2e/tests/daily-notes.spec.ts` y sin tocar producto: en `linkWord`, después de soltar `Shift` y antes de `Control+k`, esperar con `expect.poll` a que `window.getSelection()?.toString()` sea la palabra y dejar pasar un frame con `requestAnimationFrame` dentro de `page.evaluate`. Tras abrir el diálogo, afirmar que muestra `«Sitio»` o `«Ticket»` según la palabra. Sin retries, timeouts más largos ni `waitForTimeout`. Vale otra técnica equivalente que deje la selección de ProseMirror aplicada antes del atajo y la afirme en el diálogo.
+- Condición de cierre: tres corridas consecutivas del comando AC-03 de escritorio, cada una con namespace propio, todas 8/8, y una del comando AC-04 móvil 4/4, con exit y cleanup por label registrados.
+
+**Fallo local de `FreeNotesPage`.** Se reproduce igual sobre `5dcb171` en un worktree de base: `FreeNotesPage.test.tsx › protege el borrador al cerrar sesión…`, sin el diálogo «Guardar los cambios». Es previo y ajeno a T-100 y no bloquea. `verify-required` lo pasa en CI.
+
+| Comando del reviewer | Resultado |
+|---|---|
+| En `client/`: vitest dirigido de AC-01 y AC-04 y `npm run typecheck` | Exit 0, 88/88, typecheck exit 0 |
+| En `server/`: `./mvnw -q test -Dtest=DailyContentTest` | Exit 0 |
+| `node scripts/docs-check.mjs` y `git diff --check origin/main...HEAD` en el worktree | Exit 0 ambos |
+| `STARTER_E2E_PROJECT=starter-e2e-t100-review` y `…-review2` con el patrón AC-03 de escritorio, barras verticales sin escapar | Exit 1 las dos, 7/8, falla `flexible link:` (H1). Cleanup por label exacto: 0 contenedores, volúmenes y redes en cada namespace |
+| `npx vitest run src/features/free-notes/FreeNotesPage.test.tsx` en HEAD y en base | 1 fallo igual en ambos |
+
+### Implementación
+
 2026-11-24. Frontera implementer en Claude Code Desktop con Claude Opus 5.5, esfuerzo sin dato expuesto. Herramientas: Git Bash, gh, Node, Docker y Java 21 del host. Base `origin/main@5dcb171` tras el [PR de planificación #99](https://github.com/MatiasNicolasAcevedo/devnotes/pull/99) MERGED el 2026-11-24T15:33:06Z (`merge-base --is-ancestor` exit 0). Implementación en `2a122ba`, [PR #100](https://github.com/MatiasNicolasAcevedo/devnotes/pull/100). Impacto: UI del diálogo de enlace y de la navegación principal, y el helper E2E `openDailyTools`. Sin cambios de API, permisos, servidor ni datos guardados: `DailyContent.java` y `dailyDocument.ts` no cambian.
 
 **Hecho.** `normalizeLinkHref` en `linkHref.ts` con los pasos del contrato. `LinkDialog` valida con ella desde Zod, entrega el href normalizado a `onSave` y usa el placeholder `google.com`. `AppShell` usa la lista única `PRIMARY_TABS`. Se alinearon `T-050:`, `captureLayout` de OCR y la escena S03 de la demo, sin regrabar. Una entrada que empieza con una sola `/` sigue rechazada con el mensaje de dirección inválida: `URL` la convertiría en host y S-101 rechaza las relativas.
@@ -108,7 +133,7 @@ Completar el [gate diario](../TESTING.md) con `node scripts/docs-check.mjs`, `gi
 | `git diff --check origin/main...HEAD` | Exit 0. |
 | `bash scripts/verify.sh --policy origin/main` | Exit 0, `profile=APPLICATION`, 13 rutas técnicas. FULL/STARTER: DIFERIDO POR EL DUEÑO. |
 
-**Pendiente.** `verify-required` sobre el HEAD publicado del PR #100 y la revisión independiente.
+**Pendiente.** Corregir H1 en el mismo PR y volver a revisión independiente.
 
 ## Correcciones significativas
 
