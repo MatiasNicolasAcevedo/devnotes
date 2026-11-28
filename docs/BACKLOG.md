@@ -17,11 +17,11 @@ Plan del 2026-11-28 sobre `bfd76c2`, aprobado por el dueño en la sesión. [Spec
 | 1 | [T-101](tasks/T-101-unified-note-document.md) · Documento único en el servidor | T-099 |
 | 2 | [T-102](tasks/T-102-note-versions-api.md) · API de versiones con retención de 15 días | T-101 |
 | 3 | [T-103](tasks/T-103-unified-note-editor.md) · Editor único con barra de íconos, primero en Libres | T-102 |
-| 4 | [T-104](tasks/T-104-notes-tabs-cutover.md) · Corte: pestañas, migración del Diario y Guardar versión | T-103 y exportación XLSX previa del dueño |
+| 4 | [T-104](tasks/T-104-notes-tabs-cutover.md) · Corte: pestañas y Guardar versión | T-103 |
 | 5 | [T-105](tasks/T-105-general-history.md) · Historial general | T-104 |
 | 6 | [T-106](tasks/T-106-retire-daily.md) · Lectura lateral e IA sobre notas; retiro del Diario | T-105 |
 | 7 | [T-107](tasks/T-107-mobile-notes.md) · Notas e Historial en el teléfono | T-106 |
-| 8 | [T-108](tasks/T-108-xlsx-v5.md) · XLSX v5 sin historial; vuelve a frontera | T-107 |
+| 8 | [T-108](tasks/T-108-xlsx-v5.md) · XLSX v5 sin historial y tablas del Diario eliminadas; luego, integrado final (T-109) | T-107 |
 
 ## Planificación I5 autorizada el 2026-11-12
 

@@ -55,7 +55,7 @@ Archivos previstos: `V11__create_note_version.sql` y, en `freenote/version/`, `N
 | Regresión de notas | IT existente | `./mvnw -q verify -Dit.test=FreeNoteApiIT -Djacoco.skip=true` en server/ | Verde |
 | Documentos | Gate diario | `node scripts/docs-check.mjs`, `git diff --check` y `bash scripts/verify.sh --policy origin/main` | Exit 0; anotar el perfil |
 
-Sin E2E: no hay flujo visible. La migración V11 cuenta para la recomendación de integrado en STATUS. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+Sin E2E: no hay flujo visible. V11 se cubre en el integrado final de S-118, después de T-108. FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
 ## Checkpoint vigente
 

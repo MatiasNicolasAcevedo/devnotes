@@ -92,17 +92,17 @@ Salida de [S-112 · Copiar texto de una captura](specs/S-112-screenshot-ocr.md):
 
 ## I9 / M10 · Notas en pestañas, editor único e historial con retención
 
-Plan del dueño del 2026-11-28 en [S-118](specs/S-118-notes-tabs.md), con la [referencia visual](../media/design/notes-tabs/README.md) aprobada (propuesta A con la barra de íconos de B). Notas pasa a pestañas, todas las notas comparten un editor, desaparecen el calendario y la copia del día anterior, y el Diario queda como una nota «Diario». «Guardar versión» funciona en cualquier nota; Historial muestra todas las versiones y las borra a los 15 días, salvo la última de cada nota. El XLSX v5 lleva solo el contenido actual. El teléfono se diseña y prueba aparte.
+Plan del dueño del 2026-11-28 en [S-118](specs/S-118-notes-tabs.md), con la [referencia visual](../media/design/notes-tabs/README.md) aprobada (propuesta A con la barra de íconos de B). Notas pasa a pestañas, todas las notas comparten un editor y desaparecen el calendario y la copia del día anterior. Las notas diarias no se migran: la base todavía no tiene datos productivos. «Guardar versión» funciona en cualquier nota; Historial muestra todas las versiones y las borra a los 15 días, salvo la última de cada nota. El XLSX v5 lleva solo el contenido actual. El teléfono se diseña y prueba aparte.
 
 | Tramo | Resultado para el dueño | Tareas |
 |---|---|---|
 | Base | El servidor acepta el documento único y guarda versiones con retención | [T-101](tasks/T-101-unified-note-document.md) → [T-102](tasks/T-102-note-versions-api.md) |
-| Escritura | Editor único con barra de íconos; corte a pestañas con migración del Diario | [T-103](tasks/T-103-unified-note-editor.md) → [T-104](tasks/T-104-notes-tabs-cutover.md) |
+| Escritura | Editor único con barra de íconos; corte a pestañas | [T-103](tasks/T-103-unified-note-editor.md) → [T-104](tasks/T-104-notes-tabs-cutover.md) |
 | Consulta | Historial general; lectura lateral e IA sobre notas; retiro del Diario | [T-105](tasks/T-105-general-history.md) → [T-106](tasks/T-106-retire-daily.md) |
-| Teléfono y respaldo | Diseño final en el teléfono y XLSX v5 sin historial | [T-107](tasks/T-107-mobile-notes.md) → [T-108](tasks/T-108-xlsx-v5.md) |
+| Teléfono y respaldo | Diseño final en el teléfono, XLSX v5 sin historial y tablas del Diario eliminadas | [T-107](tasks/T-107-mobile-notes.md) → [T-108](tasks/T-108-xlsx-v5.md) |
 
-Se vuelve a frontera al mergear T-108. Recomendación de integrado: después de T-104 (migración y corte) y al cerrar la iteración.
+Al mergear T-108, una sesión de frontera corre el integrado STARTER/FULL por orden del dueño y corrige sus fallos (T-109). Después, el dueño crea la base vacía de Render y empieza el uso productivo.
 
 ## Objetivos futuros sin contrato de ejecución
 
-Restauración, comparación y múltiples versiones por nota pasan a [S-118](specs/S-118-notes-tabs.md). Plantillas de enlaces y personalización siguen como opciones. Borrar las tablas `daily_note` y `daily_version` queda para después de S-118, con decisión del dueño. [Selección y retiros de la cola](FUTURE-FEATURES.md). Producción en VPS queda como propuesta de DEPLOYMENT. Google real, servicios pagos y datos reales reservados al dueño.
+Restauración, comparación y múltiples versiones por nota pasan a [S-118](specs/S-118-notes-tabs.md). Plantillas de enlaces y personalización siguen como opciones. Las tablas del Diario se eliminan dentro de S-118 (T-108). [Selección y retiros de la cola](FUTURE-FEATURES.md). Producción en VPS queda como propuesta de DEPLOYMENT. Google real, servicios pagos y datos reales reservados al dueño.

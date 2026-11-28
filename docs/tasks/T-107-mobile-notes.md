@@ -83,7 +83,7 @@ Frontera reviewer independiente de T-107 en MatiasNicolasAcevedo/devnotes, sesi�
 
 Al aprobar y mergear (para la tarea siguiente):
 ```text
-Frontera implementer de T-108 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/specs/S-118-notes-tabs.md (XLSX v5) y docs/tasks/T-108-xlsx-v5.md. PRECONDICIÓN: gh pr view codex/t-107-mobile-notes --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit confirma MERGED y git merge-base --is-ancestor <oid> origin/main sale 0. ACCIÓN: en codex/t-108-xlsx-v5 desde main, concilia T-107 como done y pasá T-108 a in_progress en el primer commit. Implementá el XLSX v5 sin historial y la importación compatible v1–v4. GATE: diario con E2E «portability:» desktop. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: PR publicado y prompt del reviewer.
+Frontera implementer de T-108 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/specs/S-118-notes-tabs.md (XLSX v5) y docs/tasks/T-108-xlsx-v5.md. PRECONDICIÓN: gh pr view codex/t-107-mobile-notes --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit confirma MERGED y git merge-base --is-ancestor <oid> origin/main sale 0. ACCIÓN: en codex/t-108-xlsx-v5 desde main, concilia T-107 como done y pasá T-108 a in_progress en el primer commit. Implementá el XLSX v5 sin historial (importa solo v5) y eliminá las tablas y clases del Diario con V12. GATE: diario con E2E «portability:» desktop. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: PR publicado y prompt del reviewer.
 ```
 
 ## Cierre y siguiente tarea

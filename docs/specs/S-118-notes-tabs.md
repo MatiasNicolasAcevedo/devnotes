@@ -1,7 +1,7 @@
 ---
 id: S-118
 status: approved
-version: 1
+version: 2
 milestone: M10
 tasks: [T-101, T-102, T-103, T-104, T-105, T-106, T-107, T-108]
 ---
@@ -16,11 +16,11 @@ Objetivo observable al cerrar la iteración:
 1. Notas muestra una tira de pestañas. Cada nota se abre, se cierra (×) y se reabre con un clic, y la sesión siguiente recupera las pestañas abiertas.
 2. Todas las notas usan el mismo editor: numeración, separadores, títulos, negrita, listas, casillas, bloques de código, enlaces y referencias, con una barra de íconos compacta y guardado automático.
 3. «Guardar versión» funciona en cualquier nota. Historial muestra las versiones de todas las notas del espacio y las borra a los 15 días, salvo la última de cada nota.
-4. Desaparecen el calendario, «Hoy», la navegación por fecha y «Copiar del día anterior». El contenido del Diario se conserva como una nota «Diario».
+4. Desaparecen el calendario, «Hoy», la navegación por fecha y «Copiar del día anterior». Las notas diarias actuales no se migran: la base todavía no tiene datos productivos y sus tablas se eliminan.
 5. El teléfono tiene el mismo comportamiento, adaptado al pulgar y al teclado.
 6. Exportar e importar llevan solo el contenido actual de cada nota.
 
-Se vuelve a frontera al mergear T-108 o ante una decisión que este contrato no resuelve. Referencia visual: [media/design/notes-tabs](../../media/design/notes-tabs/README.md).
+Al mergear T-108 se vuelve a frontera para correr el integrado FULL y STARTER final y corregir sus fallos (orden del dueño en [AUTONOMY](../AUTONOMY.md#modo-y-decisiones-vigentes)). También se vuelve antes ante una decisión que este contrato no resuelve. Después, el dueño crea una base vacía y empieza el uso productivo. Referencia visual: [media/design/notes-tabs](../../media/design/notes-tabs/README.md).
 
 ## Problema y usuario
 
@@ -56,8 +56,8 @@ Referencias: [S-101](S-101-daily-notes.md), [S-103](S-103-separators.md), [S-104
 | ID | Regla | Motivo |
 |---|---|---|
 | F-01 | El modelo de nota es el actual `free_note` (título, documento JSONB, revisión, espacio). La API conserva la ruta `/api/spaces/{space}/free-notes`; en la interfaz se llaman «notas» | Evita una migración de tabla y de API. El nombre interno no se ve |
-| F-02 | Migración del Diario: por cada dueño y espacio con notas diarias, la de fecha más reciente pasa a una nota «Diario» (o «Diario (migrado)» si ya existe una nota con ese título). Las notas diarias de los últimos 15 días y sus versiones manuales pasan a versiones de esa nota, con su fecha original, y vencen solas. Las tablas `daily_note` y `daily_version` no se borran en esta iteración | No se pierde nada de golpe. La base real existe desde el 2026-11-23, así que hay pocos días de datos |
-| F-03 | El documento de nota es la unión de los dos formatos actuales; todo documento de Diario o de Libres ya guardado es válido sin transformarlo | Migración en SQL, sin conversión |
+| F-02 | Sin migración ni recuperación de datos. Las notas diarias y sus versiones se descartan; T-108 elimina `daily_note` y `daily_version` con V12. Las notas libres existentes siguen siendo notas sin cambios | Confirmado por el dueño el 2026-11-28: la base no tiene datos productivos y se recrea vacía al cerrar S-118 ([AUTONOMY](../AUTONOMY.md#modo-y-decisiones-vigentes)) |
+| F-03 | El documento de nota es la unión de los dos formatos actuales; todo documento de Diario o de Libres es válido sin transformarlo | El editor único guarda cualquier formato sin conversiones |
 | F-04 | Guardado automático para todas las notas, con el debounce de Diario (700 ms) y sus estados. El título también se guarda solo | El dueño pide escribir en todas como en Diario |
 | F-05 | Las pestañas abiertas, su orden y la activa se guardan en `localStorage`, por espacio, en cada dispositivo. Clave `devnotes.notes.tabs.v1.<space>`; se borra al cerrar sesión | Cada dispositivo es una ventana distinta, como un editor. No hace falta API |
 | F-06 | Hasta 20 pestañas abiertas. Al abrir la 21.ª se cierra la menos usada, que no es la activa, y se anuncia en la región viva | Límite de memoria y de ancho |
@@ -78,13 +78,13 @@ Referencias: [S-101](S-101-daily-notes.md), [S-103](S-103-separators.md), [S-104
 | AC-05 | Una versión con más de 15 días que no es la última de su nota desaparece de la lista y la limpieza la borra; la última de cada nota se conserva aunque sea vieja; la 31.ª versión borra la más vieja | IT | `NoteVersionRetentionIT` | T-102 |
 | AC-06 | Restaurar guarda el contenido actual como versión si difiere de la última, reemplaza el documento y sube la revisión; borrar la nota borra sus versiones | IT | `NoteVersionApiIT` | T-102 |
 | AC-07 | En Libres, el editor único numera cada bloque e ítem, y la barra de íconos aplica cada formato con su atajo y su `aria-pressed` | componente + E2E | `NoteEditor.test.tsx`, `notes-editor.spec.ts` | T-103 |
-| AC-08 | La migración V12 convierte cada Diario en una nota «Diario» con las versiones de los últimos 15 días, por dueño y espacio, sin tocar las tablas de origen | IT | `DailyToNoteMigrationIT` | T-104 |
+| AC-08 | V12 elimina `daily_version` y `daily_note`; todas las migraciones corren desde una base vacía y las notas, versiones y demás tablas siguen intactas | IT | `DailyTablesDropMigrationIT` | T-108 |
 | AC-09 | En escritorio, crear con título, renombrar, cerrar con ×, reabrir desde «Todas las notas», recargar y recuperar las pestañas, eliminar con confirmación y guardar versión con Ctrl+S | componente + E2E | `NotesWorkspace.test.tsx`, `notes-tabs.spec.ts` | T-104 |
 | AC-10 | `/notes/2026-11-20` y `/free-notes/:id` redirigen a Notas sin error y la barra superior sigue D-05 | componente | `AppRoutes.test.tsx` | T-104 |
 | AC-11 | Historial lista por día, filtra por nota, compara con la actual, copia, abre en pestaña de solo lectura y restaura con confirmación | componente + E2E | `NoteHistoryPage.test.tsx`, `note-history.spec.ts` | T-105 |
 | AC-12 | La lectura lateral y la IA usan notas y versiones; ya no existen rutas, botones ni llamadas al Diario por fecha | componente + E2E | `ReadingSelector.test.tsx`, `side-reading.spec.ts`, `ai-workspace.spec.ts` | T-106 |
 | AC-13 | Con 375 px: pestañas deslizables, panel «Todas las notas», barra de 44 px abajo y pegada al teclado, navegación inferior oculta mientras se escribe y confirmación de borrado | componente + E2E móvil | `NotesWorkspace.mobile.test.tsx`, `notes-tabs.spec.ts` | T-107 |
-| AC-14 | El XLSX v5 exporta notas actuales sin versiones ni diarias; importa v5 y convierte v1–v4 según F-02 sin versiones | unit + IT + E2E | `XlsxNotesV5RoundTripTest`, `PortabilityNotesV5ApiIT`, `portability.spec.ts` | T-108 |
+| AC-14 | El XLSX v5 exporta notas actuales sin versiones ni diarias e importa v5; un archivo v1–v4 se rechaza con `IMPORT_UNSUPPORTED_FORMAT` y el mensaje «Este respaldo es de una versión anterior. Exportá de nuevo desde DevNotes.» | unit + IT + E2E | `XlsxNotesV5RoundTripTest`, `PortabilityNotesV5ApiIT`, `portability.spec.ts` | T-108 |
 
 ## Contrato backend
 
@@ -147,24 +147,26 @@ Retención: `NoteVersionRetention` borra en una sentencia las versiones con `sav
 
 Restaurar (F-09), en una transacción: bloquea la nota; si la revisión no coincide, 409; si el documento actual difiere de la última versión, lo guarda como versión; copia el documento de la versión a la nota y sube la revisión. Borrar una nota borra sus versiones por `ON DELETE CASCADE`.
 
-### Migración del Diario (T-104)
+### Sin migración del Diario (F-02)
 
-Flyway V12, en SQL, con `uuidv7()` de PostgreSQL 18. Por cada `(owner_id, space)` con filas en `daily_note`:
-
-1. La fila de `note_date` más reciente se inserta en `free_note` con el título «Diario» («Diario (migrado)» si ya existe una nota con ese título), `document = content`, `revision = 1`, `created_at` igual al menor `created_at` del grupo y `updated_at` igual al `updated_at` de esa fila.
-2. Las demás filas de `daily_note` del grupo con `updated_at >= now() - interval '15 days'` se insertan en `note_version` con `saved_at = updated_at`.
-3. Las filas de `daily_version` de esas notas con `saved_at >= now() - interval '15 days'` se insertan en `note_version` con su `saved_at`.
-4. `preview` se calcula en SQL con el primer texto no vacío, o «(vacía)».
-
-No se borran ni se modifican `daily_note` ni `daily_version`. Una iteración futura decidirá si se eliminan.
+No hay conversión de datos. Desde el corte de T-104 la interfaz deja de leer y escribir notas diarias; las filas que existan quedan sin uso hasta que T-108 elimina las tablas.
 
 ### Retiro del Diario (T-106 y T-108)
 
-T-106 elimina `DailyNoteController`, `DailyVersionController`, `CopyPreviousDailyNoteService` y sus pruebas, así como las rutas `/api/v1/daily-notes/**` y `/api/v1/daily-versions/**`. Las entidades y repositorios quedan mientras el XLSX los lea. T-108 retira la lectura de Diario en la exportación; la importación v1–v4 sigue leyendo las hojas `diarias`.
+T-106 elimina `DailyNoteController`, `DailyVersionController`, `CopyPreviousDailyNoteService`, sus servicios y sus pruebas. `/api/v1/daily-notes/**` y `/api/v1/daily-versions/**` pasan a responder 404. Las entidades y repositorios quedan mientras la exportación los lea.
+
+T-108 retira la lectura de Diario en la portabilidad. Borra `DailyNote`, `DailyVersion`, sus repositorios y `DailyContent` (las reglas compartidas viven en `NoteInlineRules`). Agrega Flyway `V12__drop_daily_notes.sql`:
+
+```sql
+DROP TABLE daily_version;
+DROP TABLE daily_note;
+```
+
+Es la única migración no aditiva de la iteración, autorizada por F-02. Las pruebas comprueban que V1 a V12 corren desde una base vacía.
 
 ### XLSX v5 (T-108)
 
-Hojas `devnotes`, `referencias`, `voz`, `imagen_textos` y `notas`. `notas` usa las columnas actuales de `notas_libres` más `espacio`. No hay hojas `diarias` ni `versiones`. La importación exige, como hoy, una cuenta vacía. Para v1–v4: `notas_libres` pasa a notas; de `diarias`, solo la más reciente de cada espacio pasa a la nota «Diario» según F-02. Las demás filas de `diarias` y todas las de `versiones` se omiten, y la vista previa informa cuántas.
+Hojas `devnotes`, `referencias`, `voz`, `imagen_textos` y `notas`. `notas` usa las columnas actuales de `notas_libres` más `espacio`. No hay hojas `diarias` ni `versiones`. La importación exige, como hoy, una cuenta vacía, y solo acepta v5. Un archivo v1–v4 responde `IMPORT_UNSUPPORTED_FORMAT` con «Este respaldo es de una versión anterior. Exportá de nuevo desde DevNotes.».
 
 ## Frontend
 
@@ -244,14 +246,14 @@ Cargando: esqueleto de la tira y del editor, sin saltos. Vacío: «Todavía no h
 
 ## Datos y compatibilidad
 
-- V11 y V12 son aditivas. No se borran tablas ni columnas en esta iteración.
-- Antes de desplegar T-104, el dueño hace una exportación XLSX manual de producción. Es un pendiente del dueño en STATUS, no un paso de un agente.
+- V11 (T-102) es aditiva. V12 (T-108) borra las tablas del Diario por F-02.
+- No se exporta, migra ni recupera nada de la base actual. Al cerrar S-118, después del integrado final, el dueño borra la base de Render y crea una vacía. Desde ahí empieza el uso productivo.
 - Las pruebas usan datos ficticios por caso y namespaces E2E propios.
-- Reversión: si T-104 falla en producción, revertir el merge deja visibles las tablas de Diario intactas. Las notas creadas por V12 quedan como notas libres.
+- Reversión: hasta T-108 basta con revertir el merge, porque las tablas del Diario siguen en la base. Después de V12 no hay vuelta atrás para esos datos, y eso es aceptable por F-02.
 
 ## Fuera de alcance
 
-- Borrar las tablas `daily_note` y `daily_version`.
+- Migrar, exportar o recuperar datos de la base actual, e importar respaldos v1–v4.
 - Sincronizar las pestañas abiertas entre dispositivos.
 - Búsqueda de texto completo en el servidor sobre versiones.
 - Menú `/`, barra flotante de formato y explorador lateral (propuestas B y C).
@@ -265,14 +267,16 @@ Cargando: esqueleto de la tira y del editor, sin saltos. Vacío: «Todavía no h
 | T-101 | Las notas aceptan separadores, enlaces, referencias y negrita | T-099 | [T-101](../tasks/T-101-unified-note-document.md) | AC-01, AC-02 y MERGED |
 | T-102 | API de versiones con retención | T-101 | [T-102](../tasks/T-102-note-versions-api.md) | AC-03 a AC-06 y MERGED |
 | T-103 | Editor único con barra de íconos en Libres | T-102 | [T-103](../tasks/T-103-unified-note-editor.md) | AC-07 y MERGED |
-| T-104 | Corte: Notas en pestañas, migración del Diario y Guardar versión | T-103 | [T-104](../tasks/T-104-notes-tabs-cutover.md) | AC-08 a AC-10 y MERGED |
+| T-104 | Corte: Notas en pestañas y Guardar versión | T-103 | [T-104](../tasks/T-104-notes-tabs-cutover.md) | AC-09, AC-10 y MERGED |
 | T-105 | Historial general | T-104 | [T-105](../tasks/T-105-general-history.md) | AC-11 y MERGED |
 | T-106 | Lectura lateral e IA sobre notas; retiro del Diario | T-105 | [T-106](../tasks/T-106-retire-daily.md) | AC-12 y MERGED |
 | T-107 | Notas en el teléfono | T-106 | [T-107](../tasks/T-107-mobile-notes.md) | AC-13 y MERGED |
-| T-108 | XLSX v5 sin historial | T-107 | [T-108](../tasks/T-108-xlsx-v5.md) | AC-14 y MERGED; vuelve a frontera |
+| T-108 | XLSX v5 sin historial y tablas del Diario eliminadas | T-107 | [T-108](../tasks/T-108-xlsx-v5.md) | AC-08, AC-14 y MERGED; vuelve a frontera para el integrado final |
 
-WIP1. T-101 queda `ready` y las demás `draft` hasta que se mergee la anterior. T-104 es la única que cambia lo que el dueño ve de golpe: lleva la migración y el cambio de cliente en el mismo PR para que un solo despliegue haga el corte.
+WIP1. T-101 queda `ready` y las demás `draft` hasta que se mergee la anterior. T-104 es la única que cambia de golpe lo que ve el dueño: las pestañas, el editor y Guardar versión llegan en un solo despliegue.
+
+Cierre (orden del dueño del 2026-11-28): al mergear T-108, una sesión de frontera corre FULL y STARTER sobre `main` y corrige los fallos en una tarea de ajuste con su PR y revisión independiente. Después, el dueño recrea la base vacía.
 
 ## Validación de planificación
 
-Frontera planner, Claude Code (Opus 5.5), 2026-11-28, sobre `origin/main` `bfd76c2`. El dueño aprobó la propuesta A con sus ajustes (D-01 a D-09) en la misma sesión, después de revisar el lienzo. Las decisiones F-01 a F-11 son propuestas de frontera y el dueño puede cambiarlas. Recomendación de gate diferido: FULL/STARTER al terminar T-104 (migración y corte) y al cerrar la iteración. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+Frontera planner, Claude Code (Opus 5.5), 2026-11-28, sobre `origin/main` `bfd76c2`. El dueño aprobó la propuesta A con sus ajustes (D-01 a D-09) en la misma sesión, después de revisar el lienzo. Las decisiones F-01 a F-11 son propuestas de frontera y el dueño puede cambiarlas. Versión 2, del mismo día: el dueño descarta la migración de datos (F-02) y ordena correr FULL/STARTER una sola vez, al terminar T-108. Hasta entonces, cada tarea registra `FULL/STARTER: DIFERIDO POR EL DUEÑO`.
