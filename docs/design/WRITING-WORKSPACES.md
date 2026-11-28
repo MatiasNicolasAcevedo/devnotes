@@ -1,5 +1,7 @@
 # DevNotes · Diseño de Imagen, Notas e IA
 
+> Desde el 2026-11-28, las secciones de Diario, Libres y la barra superior las reemplaza [S-118](../specs/S-118-notes-tabs.md) con su [referencia visual](../../media/design/notes-tabs/README.md). Lo demás sigue vigente.
+
 Referencia para la revisión de frontend de T-073…T-085 y T-094. Parte de la PWA oscura de Windows del dueño. Las capturas adjuntas sirvieron para localizar el espacio antes de la primera línea y el listado bajo Notas. Todos los ejemplos de esta referencia son ficticios.
 
 ## Sistema visual

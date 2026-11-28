@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Propuesta B · Explorador lateral y pestañas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#181a1b}
+a{color:#8ab4f8}a:hover{color:#b3cdfb}
+button{font:inherit;cursor:pointer}
+.ln{display:grid;grid-template-columns:44px minmax(0,1fr);align-items:start;min-height:22px}
+.n{color:#7d848e;text-align:right;padding-right:14px;font-size:12px;line-height:22px;user-select:none}
+.ib{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;padding:0 6px;border:0;border-radius:6px;background:transparent;color:#e1e3e6;font-size:13px;font-weight:600}
+.ib:hover{background:#2b2e30}
+.sep{width:1px;height:20px;background:#393d42;margin:0 6px}
+.fi{display:flex;align-items:center;gap:10px;height:34px;padding:0 10px;border:0;border-radius:6px;background:transparent;color:#c9ced4;font-size:13px;width:100%;text-align:left}
+.fi:hover{background:#26292b}
+</style>
+</head>
+<body>
+<div style="width: 100%; height: 900px; display: flex; flex-direction: column; background: #181a1b; color: #e1e3e6; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; overflow: hidden;">
+
+  <header style="display: flex; align-items: center; gap: 24px; height: 52px; padding: 0 20px; background: #212324; border-bottom: 1px solid #393d42;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffb74d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h12l4 4v12H4z"/><path d="M8 12h8M8 16h5"/></svg>
+      <span style="font-weight: 700; font-size: 16px;">DevNotes</span>
+    </div>
+    <nav aria-label="Navegación principal" style="display: flex; align-items: stretch; gap: 4px; height: 52px; flex: 1;">
+      <a href="#" style="display: flex; align-items: center; padding: 0 14px; color: #ffb74d; text-decoration: none; font-size: 14px; font-weight: 600; border-bottom: 2px solid #ffb74d;">Notas</a>
+      <a href="#" style="display: flex; align-items: center; padding: 0 14px; color: #a6adb7; text-decoration: none; font-size: 14px;">Referencias</a>
+      <a href="#" style="display: flex; align-items: center; padding: 0 14px; color: #a6adb7; text-decoration: none; font-size: 14px;">Voz</a>
+      <a href="#" style="display: flex; align-items: center; padding: 0 14px; color: #a6adb7; text-decoration: none; font-size: 14px;">Imagen</a>
+      <a href="02-historial-escritorio.html" style="display: flex; align-items: center; padding: 0 14px; color: #a6adb7; text-decoration: none; font-size: 14px;">Historial</a>
+    </nav>
+    <button aria-label="Cuenta" style="width: 32px; height: 32px; border-radius: 50%; border: 0; background: #3c4a5e; color: #e1e3e6; font-size: 13px; font-weight: 600;">MA</button>
+  </header>
+
+  <div style="flex: 1; display: flex; min-height: 0; flex-wrap: wrap;">
+
+    <aside aria-label="Explorador de notas" style="flex: 1 1 260px; max-width: 280px; display: flex; flex-direction: column; gap: 14px; padding: 14px 10px; background: #1c1e20; border-right: 1px solid #393d42; box-sizing: border-box;">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 6px;">
+        <span style="font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: #a6adb7; font-weight: 600;">Notas · Trabajo</span>
+        <button aria-label="Ocultar explorador" class="ib" style="min-width: 28px; height: 28px; color: #a6adb7;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></button>
+      </div>
+      <label style="display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 10px; background: #131516; border: 1px solid #393d42; border-radius: 6px; color: #7d848e; font-size: 13px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input aria-label="Buscar notas" placeholder="Buscar notas" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; color: #e1e3e6; font-size: 13px;">
+        <span style="font-size: 11px; padding: 1px 5px; border: 1px solid #393d42; border-radius: 4px;">Ctrl+P</span>
+      </label>
+
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <span style="font-size: 11px; color: #7d848e; padding: 0 10px 4px;">Fijadas</span>
+        <button class="fi" style="background: #2a2f36; color: #ffffff; font-weight: 600;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffb74d" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 17v5M8 3h8l-1 6 3 3H6l3-3z"/></svg>
+          Diario<span style="flex: 1;"></span><span style="font-size: 11px; color: #a6adb7; font-weight: 400;">abierta</span>
+        </button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 2px; flex: 1;">
+        <span style="font-size: 11px; color: #7d848e; padding: 0 10px 4px;">Todas · por última edición</span>
+        <button class="fi"><span style="width: 6px; height: 6px; border-radius: 50%; background: #8ab4f8;"></span>Comandos<span style="flex: 1;"></span><span style="font-size: 11px; color: #7d848e;">10:42</span></button>
+        <button class="fi"><span style="width: 6px; height: 6px; border-radius: 50%; background: #8ab4f8;"></span>Tareas<span style="flex: 1;"></span><span style="font-size: 11px; color: #7d848e;">09:15</span></button>
+        <button class="fi"><span style="width: 6px; height: 6px; border-radius: 50%; background: #8ab4f8;"></span>Revisión PR<span style="flex: 1;"></span><span style="font-size: 11px; color: #7d848e;">ayer</span></button>
+        <button class="fi"><span style="width: 6px; height: 6px;"></span>Borrador 1<span style="flex: 1;"></span><span style="font-size: 11px; color: #7d848e;">ayer</span></button>
+        <button class="fi"><span style="width: 6px; height: 6px;"></span>Borrador 2<span style="flex: 1;"></span><span style="font-size: 11px; color: #7d848e;">25 nov</span></button>
+        <button class="fi"><span style="width: 6px; height: 6px;"></span>Usuarios de prueba<span style="flex: 1;"></span><span style="font-size: 11px; color: #7d848e;">22 nov</span></button>
+        <button class="fi"><span style="width: 6px; height: 6px;"></span>Ideas de refactor<span style="flex: 1;"></span><span style="font-size: 11px; color: #7d848e;">18 nov</span></button>
+        <span style="font-size: 11px; color: #7d848e; padding: 6px 10px 0;">El punto azul indica que la nota tiene pestaña abierta.</span>
+      </div>
+
+      <button style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 38px; background: transparent; border: 1px dashed #4a5058; border-radius: 6px; color: #e1e3e6; font-size: 13px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Nueva nota
+      </button>
+      <a href="02-historial-escritorio.html" style="display: flex; align-items: center; gap: 8px; padding: 0 6px; font-size: 13px; color: #a6adb7; text-decoration: none;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>
+        Historial de versiones
+      </a>
+    </aside>
+
+    <section style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+      <div role="tablist" aria-label="Notas abiertas" style="display: flex; align-items: stretch; height: 40px; background: #131516; border-bottom: 1px solid #393d42;">
+        <button role="tab" aria-selected="true" style="display: flex; align-items: center; gap: 8px; padding: 0 16px; background: #181a1b; border: 0; border-right: 1px solid #393d42; box-shadow: inset 0 2px 0 #ffb74d; margin-bottom: -1px; color: #ffffff; font-size: 13px; font-weight: 600;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffb74d" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 17v5M8 3h8l-1 6 3 3H6l3-3z"/></svg>
+          Diario
+        </button>
+        <button role="tab" aria-selected="false" style="display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; background: transparent; border: 0; border-right: 1px solid #2c2f33; color: #a6adb7; font-size: 13px;">Comandos
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7d848e" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+        <button role="tab" aria-selected="false" style="display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; background: transparent; border: 0; border-right: 1px solid #2c2f33; color: #a6adb7; font-size: 13px;">Tareas
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7d848e" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+        <button role="tab" aria-selected="false" style="display: flex; align-items: center; gap: 10px; padding: 0 12px 0 16px; background: transparent; border: 0; border-right: 1px solid #2c2f33; color: #a6adb7; font-size: 13px; font-style: italic;">Revisión PR
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7d848e" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+        </button>
+        <div style="flex: 1;"></div>
+      </div>
+
+      <div role="toolbar" aria-label="Herramientas del editor" style="display: flex; align-items: center; gap: 2px; min-height: 46px; padding: 4px 12px; border-bottom: 1px solid #2c2f33; flex-wrap: wrap;">
+        <div role="group" aria-label="Formato de bloque" style="display: flex; padding: 2px; background: #131516; border: 1px solid #393d42; border-radius: 7px; gap: 2px;">
+          <button class="ib" aria-label="Párrafo" style="font-weight: 500; background: #2f3a48; color: #ffffff;">P</button>
+          <button class="ib" aria-label="Título 1">H1</button>
+          <button class="ib" aria-label="Título 2">H2</button>
+          <button class="ib" aria-label="Título 3">H3</button>
+        </div>
+        <span class="sep"></span>
+        <button class="ib" aria-label="Negrita" style="font-weight: 800;">B</button>
+        <span class="sep"></span>
+        <button class="ib" aria-label="Viñetas"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg></button>
+        <button class="ib" aria-label="Lista numerada"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 6h10M10 12h10M10 18h10M4 5h1v4M4 15h2l-2 3h2"/></svg></button>
+        <button class="ib" aria-label="Casillas"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="6" height="6" rx="1"/><path d="m4.5 7 1 1 2-2M12 7h9M12 17h9"/><rect x="3" y="14" width="6" height="6" rx="1"/></svg></button>
+        <span class="sep"></span>
+        <button class="ib" aria-label="Bloque de código"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m8 8-4 4 4 4M16 8l4 4-4 4"/></svg></button>
+        <button class="ib" aria-label="Enlace"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
+        <button class="ib" aria-label="Separador"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 12h16M4 6h4M4 18h4" opacity="0.6"/></svg></button>
+        <button class="ib" aria-label="Insertar referencia"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4z"/></svg></button>
+        <div style="flex: 1;"></div>
+        <span style="font-size: 12px; color: #a6adb7; margin-right: 8px;">Guardado · hace 2 s</span>
+        <button style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 14px; background: transparent; border: 1px solid #ffb74d; border-radius: 6px; color: #ffb74d; font-size: 13px; font-weight: 600;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg>
+          Guardar versión
+        </button>
+      </div>
+
+      <main style="flex: 1; min-height: 0; padding: 14px 0; font-family: 'Roboto Mono', monospace; font-size: 14px; line-height: 22px; overflow: hidden;">
+        <div class="ln"><span class="n">1</span><div style="font-size: 20px; line-height: 30px; font-weight: 700; color: #ffffff;">Diario</div></div>
+        <div class="ln"><span class="n">2</span><div style="color: #a6adb7;">Una sola hoja que se reescribe cada día; si algo importa, Guardar versión.</div></div>
+        <div class="ln"><span class="n">3</span><div style="padding-top: 10px;"><div style="height: 1px; width: 100%; background: #5a6068;"></div></div></div>
+        <div class="ln"><span class="n">4</span><div style="font-size: 16px; line-height: 26px; font-weight: 700; color: #ffffff;">Hoy</div></div>
+        <div class="ln"><span class="n">5</span><div style="display: flex; gap: 10px; align-items: center;"><span style="width: 14px; height: 14px; border-radius: 3px; background: #8ab4f8; display: inline-flex; align-items: center; justify-content: center;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#181a1b" stroke-width="4" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span><span style="color: #7d848e; text-decoration: line-through;">Responder hallazgos de la revisión</span></div></div>
+        <div class="ln"><span class="n">6</span><div style="display: flex; gap: 10px; align-items: center;"><span style="width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid #a6adb7; box-sizing: border-box;"></span>Actualizar la rama con main y correr pruebas dirigidas</div></div>
+        <div class="ln"><span class="n">7</span><div style="display: flex; gap: 10px; align-items: center;"><span style="width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid #a6adb7; box-sizing: border-box;"></span>Pasar spec de pestañas al planner</div></div>
+        <div class="ln"><span class="n">8</span><div style="padding-top: 10px;"><div style="height: 1px; width: 50%; background: #5a6068;"></div></div></div>
+        <div class="ln"><span class="n">9</span><div style="font-size: 16px; line-height: 26px; font-weight: 700; color: #ffffff;">Consulta rápida</div></div>
+        <div class="ln"><span class="n">10</span>
+          <div style="margin: 4px 24px 4px 0; padding: 10px 14px; background: #101213; border: 1px solid #2c2f33; border-radius: 6px; position: relative;">
+            <span style="position: absolute; top: 6px; right: 10px; font-size: 11px; color: #7d848e; font-family: system-ui, sans-serif;">sql</span>
+            <div><span style="color: #8ab4f8;">select</span> id, title, updated_at</div>
+            <div><span style="color: #8ab4f8;">from</span> note <span style="color: #8ab4f8;">where</span> owner_id = :owner</div>
+            <div><span style="color: #8ab4f8;">order by</span> updated_at <span style="color: #8ab4f8;">desc</span>;</div>
+          </div>
+        </div>
+        <div class="ln"><span class="n">11</span><div>1. Validar el índice por propietario</div></div>
+        <div class="ln"><span class="n">12</span><div>2. Medir con <span style="background: #2b2e30; padding: 1px 5px; border-radius: 4px;">explain analyze</span></div></div>
+        <div class="ln" style="background: #1f2224;"><span class="n" style="color: #e1e3e6;">13</span><div><span style="display: inline-block; width: 2px; height: 18px; background: #ffb74d; vertical-align: middle;"></span></div></div>
+      </main>
+
+      <footer style="display: flex; align-items: center; gap: 20px; height: 28px; padding: 0 16px; background: #212324; border-top: 1px solid #393d42; color: #a6adb7; font-size: 12px;">
+        <span>Línea 13, columna 1</span>
+        <div style="flex: 1;"></div>
+        <span>3 versiones de esta nota · la más antigua se borra en 9 días</span>
+      </footer>
+    </section>
+  </div>
+</div>
+</body>
+</html>

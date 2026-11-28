@@ -1,6 +1,6 @@
 ---
 id: T-099
-status: mergeable
+status: done
 priority: P1
 size: M
 milestone: post-M9
@@ -49,6 +49,10 @@ Quedó en `draft` solo por orden: el 2026-11-24 el dueño pidió hacer antes los
 | AC-03. Un navegador de tamaño móvil vuelve a sus notas con la misma sesión y puede salir. | `STARTER_E2E_PROJECT=starter-e2e-t099-mobile bash scripts/e2e.sh --grep 'backend restart\|logout requires CSRF' --project mobile` | Ambos casos pasan en el proyecto móvil. |
 
 Completar el gate diario con `node scripts/docs-check.mjs`, `git diff --check origin/main...HEAD` y `verify-required` sobre el HEAD publicado. Consultar cleanup Docker por label exacto del namespace de cada corrida. `bash scripts/verify.sh --policy origin/main` informa el perfil. FULL/STARTER: DIFERIDO POR EL DUEÑO.
+
+## Conciliación
+
+2026-11-28, por el planner de S-118. `gh pr view 101 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit` devolvió MERGED, `2026-11-24T18:45:03Z` y `bfd76c251abe0a0d9a15af504f209133820cdcc5`. `git fetch origin` y `git merge-base --is-ancestor bfd76c251abe0a0d9a15af504f209133820cdcc5 origin/main` salieron 0. La verificación de continuidad en los dispositivos del dueño y el vencimiento de PostgreSQL quedan en los pendientes del dueño de STATUS. La siguiente tarea es [T-101](T-101-unified-note-document.md), de [S-118](../specs/S-118-notes-tabs.md).
 
 ## Checkpoint vigente
 

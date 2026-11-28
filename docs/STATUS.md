@@ -2,12 +2,12 @@
 
 | Campo | Valor |
 |---|---|
-| Tarea y contrato | [T-099](tasks/T-099-persistent-google-session.md) |
-| Estado | `mergeable` |
-| Siguiente acción | Revisión independiente APROBADA ([ronda 1](tasks/T-099-persistent-google-session.md#revisión-independiente--ronda-1)); squash del [PR #101](https://github.com/MatiasNicolasAcevedo/devnotes/pull/101) y, tras MERGED, planner de seguimiento |
-| Rama / PR | `codex/t-099-persistent-google-session` · [PR #101](https://github.com/MatiasNicolasAcevedo/devnotes/pull/101), código en `6d5f740` y cierre documental en el HEAD publicado |
+| Tarea y contrato | [T-101](tasks/T-101-unified-note-document.md) · primera de [S-118](specs/S-118-notes-tabs.md) |
+| Estado | `ready` |
+| Siguiente acción | Frontera implementer de T-101: el servidor acepta en las notas separadores, enlaces, referencias y negrita |
+| Rama / PR | `codex/t-101-unified-note-document` desde `main`; sin PR |
 
-Modo `FRONTERA_CONTINUA`. [T-100](tasks/T-100-flexible-links-nav-order.md#conciliación) done tras el [PR #100](https://github.com/MatiasNicolasAcevedo/devnotes/pull/100) MERGED (squash `70729d3`). T-099 guarda la sesión en PostgreSQL: vence a los 7 días sin actividad o a los 30 desde cada login. AC-01, AC-02 y AC-03 en verde ([evidencia](tasks/T-099-persistent-google-session.md#checkpoint-vigente)). Tras el merge, el primer despliegue pide un login más. [Configuración y evidencia del cron externo](DEPLOYMENT.md#despertador-externo-de-devnotes).
+Modo `FRONTERA_CONTINUA`. [T-099](tasks/T-099-persistent-google-session.md#conciliación) done tras el [PR #101](https://github.com/MatiasNicolasAcevedo/devnotes/pull/101) MERGED (squash `bfd76c2`): la sesión de Google vive en PostgreSQL, 7 días sin actividad o 30 desde cada login. El 2026-11-28 el dueño aprobó el rediseño de Notas en pestañas ([S-118](specs/S-118-notes-tabs.md), [referencia visual](../media/design/notes-tabs/README.md)): ocho tareas, de T-101 a T-108, en [BACKLOG](BACKLOG.md#siguientes--notas-en-pestañas-s-118-i9--m10). [Configuración y evidencia del cron externo](DEPLOYMENT.md#despertador-externo-de-devnotes).
 
 Piloto aprobado con cinco destinos: Groq 20B/120B, Workers AI 20B/120B y Gemini 3.1 Flash-Lite. Gemini 3.8 Flash y OpenRouter Free quedan diferidos. El selector y el compositor muestran disponibilidad, fallos y cuota. El usuario elige y confirma otro destino. [Decisión y cierre observable](tasks/T-094-ai-workspace.md#decisión-de-alcance-del-dueño). FULL/STARTER: DIFERIDO POR EL DUEÑO.
 
@@ -17,7 +17,9 @@ Piloto aprobado con cinco destinos: Groq 20B/120B, Workers AI 20B/120B y Gemini 
 |---|---|
 | PostgreSQL Free de Render | El 2026-11-23 el dueño borra `devnotes-pilot-db` (sin datos de producción, sin respaldo) y crea una base PostgreSQL 18 Free nueva en Virginia; actualiza `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` y `SPRING_DATASOURCE_PASSWORD`. Falta registrar el vencimiento exacto del panel (30 días, alrededor del 2026-12-23), readiness `UP` y login. Desde ahí hay datos reales: antes del vencimiento rige el [procedimiento de respaldo y reemplazo](DEPLOYMENT.md#respaldo-y-reemplazo-de-postgresql-free) |
 | Sonda interna en Render | Ensayo pendiente de autorización expresa sobre SHA y ventana. [Receta](DEPLOYMENT.md#ensayo-de-la-sonda-interna-en-render-free) |
-| SP-06 | Prueba en Android físico con teclado real y zoom nativo |
+| Exportación antes del corte de Notas | Antes de que se mergee T-104 (migración del Diario a notas), el dueño exporta un XLSX de producción y lo confirma en la sesión de T-104 |
+| Sesión persistente (T-099) | Verificar en sus dispositivos, con Google real, que la sesión se conserva tras cerrar el navegador y tras un despliegue |
+| SP-06 | Prueba en Android físico con teclado real y zoom nativo; en S-118 incluye la barra pegada al teclado de T-107 |
 | Limpieza local | Hay decenas de worktrees en `.orchestrator/`, ramas locales ya mergeadas y siete stashes viejos. Listarlos y decidir cuáles se borran; ningún agente los elimina sin esa decisión |
 
 Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también los documentales.
@@ -29,10 +31,10 @@ Render: Auto-Deploy **On Commit** para `main`; cada merge despliega, también lo
 | Último integrado válido | FULL local del 2026-11-15 sobre `398801f` ([T-069](tasks/T-069-ocr-workspace.md#evidencia-del-full-de-cierre)); STARTER de T-068 conservado |
 | Mergeado desde entonces | T-070 (recorrido E2E de OCR), T-074 (navegación de Imagen), T-071 y T-092 (documentales), la adopción documental del flujo, el encadenamiento del lote hasta T-085 y T-093 a T-096 (IA Free, tráiler y demo narrada) |
 | Corte acumulado | Desde `7aa8946` hasta el HEAD de `main` que indique el dueño ([TESTING](TESTING.md#corte-acumulado-vigente)). El FULL/STARTER de I5 sigue diferido |
-| Recomendación | Ejecutar el integrado del corte acumulado con V8 y V9 cuando el dueño lo ordene. T-094 incorpora rutas privadas y cambia Compose; T-099 agrega Spring Session JDBC, cambia autenticación y suma la migración V10 |
+| Recomendación | Ejecutar el integrado del corte acumulado con V8 y V9 cuando el dueño lo ordene. T-094 incorpora rutas privadas y cambia Compose; T-099 agrega Spring Session JDBC, cambia autenticación y suma la migración V10. S-118 suma V11 y V12: recomendar el integrado después de T-104 y al cerrar T-108 |
 
 ### Prompt de la siguiente sesión
 
 ```text
-Frontera planner de seguimiento de T-099 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, docs/STATUS.md, docs/tasks/T-099-persistent-google-session.md y docs/DEPLOYMENT.md. PRECONDICIÓN: gh pr view 101 --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit confirma MERGED con fecha y oid y git merge-base --is-ancestor con el oid confirmado y origin/main sale 0. ACCIÓN: conciliá T-099 como done en una rama nueva, confirmá el SHA activo y readiness. Coordiná la verificación de continuidad con el dueño en sus dispositivos, con Google real, y retomá el pendiente de vencimiento de PostgreSQL. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: registro de cierre y prompt vigente.
+Frontera implementer de T-101 en MatiasNicolasAcevedo/devnotes, sesión nueva. Leé AGENTS.md, server/AGENTS.md, client/AGENTS.md, docs/STATUS.md, docs/agents/implementer.md, docs/specs/S-118-notes-tabs.md (Documento de nota) y docs/tasks/T-101-unified-note-document.md. PRECONDICIÓN: gh pr view codex/s-118-notes-tabs-plan --repo MatiasNicolasAcevedo/devnotes --json state,mergedAt,mergeCommit confirma MERGED y git merge-base --is-ancestor con ese oid y origin/main sale 0. ACCIÓN: en codex/t-101-unified-note-document desde main, pasá T-101 a in_progress en el primer commit. Escribí primero las pruebas rojas de AC-01 y AC-02, extraé NoteInlineRules de DailyContent sin cambiar su comportamiento, ampliá FreeNoteDocument y el documentSchema del cliente con los límites de S-118, corré el gate diario de la tarea y publicá el PR. FULL/STARTER: DIFERIDO POR EL DUEÑO. SALIDA: PR publicado, checkpoint en la tarea y prompt del reviewer en STATUS.
 ```
