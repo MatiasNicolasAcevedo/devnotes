@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Historial general de versiones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#181a1b}
+a{color:#8ab4f8}a:hover{color:#b3cdfb}
+button{font:inherit;cursor:pointer}
+.row{display:grid;grid-template-columns:64px minmax(0,1fr) auto;align-items:center;gap:12px;width:100%;min-height:52px;padding:6px 14px;border:0;border-radius:8px;background:transparent;color:#e1e3e6;text-align:left;font-size:13px;box-sizing:border-box}
+.row:hover{background:#222528}
+.day{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#a6adb7;font-weight:600;padding:14px 14px 6px}
+.tag{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:11px;font-size:11px;white-space:nowrap}
+.dl{display:grid;grid-template-columns:44px 18px minmax(0,1fr);min-height:22px;line-height:22px}
+.dn{color:#7d848e;text-align:right;padding-right:10px;font-size:12px}
+</style>
+</head>
+<body>
+<div style="width: 100%; height: 900px; display: flex; flex-direction: column; background: #181a1b; color: #e1e3e6; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; overflow: hidden;">
+
+  <header style="display: flex; align-items: center; gap: 16px; height: 48px; padding: 0 16px; background: #212324; border-bottom: 1px solid #393d42;">
+    <button style="display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; background: #2b2e30; border: 1px solid #393d42; border-radius: 6px; color: #e1e3e6; font-size: 13px;">Trabajo
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <nav aria-label="Navegación principal" style="display: flex; align-items: stretch; gap: 2px; height: 48px; flex: 1;">
+      <a href="01-a-escritorio-notas.html" style="display: flex; align-items: center; padding: 0 14px; color: #a6adb7; text-decoration: none; font-size: 14px;">Notas</a>
+      <a href="#" style="display: flex; align-items: center; padding: 0 14px; color: #a6adb7; text-decoration: none; font-size: 14px;">Referencias</a>
+      <a href="#" style="display: flex; align-items: center; padding: 0 14px; color: #a6adb7; text-decoration: none; font-size: 14px;">Voz</a>
+      <a href="#" style="display: flex; align-items: center; padding: 0 14px; color: #a6adb7; text-decoration: none; font-size: 14px;">Imagen</a>
+      <a href="#" style="display: flex; align-items: center; padding: 0 14px; color: #ffb74d; text-decoration: none; font-size: 14px; font-weight: 600; border-bottom: 2px solid #ffb74d;">Historial</a>
+      <a href="#" style="display: flex; align-items: center; gap: 6px; align-self: center; height: 32px; margin-left: 8px; padding: 0 10px; color: #ff6b6b; text-decoration: none; font-size: 14px; border: 1px solid rgba(255,107,107,0.48); border-radius: 10px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>Demo</a>
+    </nav>
+    <button aria-label="Cuenta" style="width: 32px; height: 32px; border-radius: 50%; border: 0; background: #3c4a5e; color: #e1e3e6; font-size: 13px; font-weight: 600;">MA</button>
+  </header>
+
+  <div style="display: flex; align-items: center; gap: 16px; padding: 14px 24px; background: #1d2024; border-bottom: 1px solid #393d42; flex-wrap: wrap;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8ab4f8" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    <div style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 320px;">
+      <span style="font-size: 14px; font-weight: 600;">Las versiones se guardan 15 días y después se borran solas</span>
+      <span style="font-size: 13px; color: #a6adb7;">La última versión de cada nota se conserva siempre. Exportar e importar llevan solo el contenido actual de cada nota.</span>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+      <span style="font-size: 12px; color: #a6adb7;">38 versiones · 412 KB</span>
+      <div style="width: 160px; height: 6px; border-radius: 3px; background: #2c3035; overflow: hidden;"><div style="width: 22%; height: 6px; background: #8ab4f8;"></div></div>
+    </div>
+  </div>
+
+  <div style="flex: 1; min-height: 0; display: flex; flex-wrap: wrap;">
+
+    <section aria-label="Lista de versiones" style="flex: 1 1 480px; max-width: 560px; display: flex; flex-direction: column; border-right: 1px solid #393d42; min-height: 0;">
+      <div style="display: flex; gap: 8px; padding: 14px 14px 6px; flex-wrap: wrap;">
+        <label style="display: flex; align-items: center; gap: 8px; flex: 1; min-width: 180px; height: 36px; padding: 0 10px; background: #131516; border: 1px solid #393d42; border-radius: 6px; color: #7d848e;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input aria-label="Buscar en versiones" placeholder="Buscar texto en versiones" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: none; color: #e1e3e6; font-size: 13px;">
+        </label>
+        <button style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; background: #2b2e30; border: 1px solid #393d42; border-radius: 6px; color: #e1e3e6; font-size: 13px;">Todas las notas
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+      </div>
+
+      <div style="flex: 1; overflow: hidden; padding: 0 8px;">
+        <div class="day">Hoy</div>
+        <button class="row"><span style="color: #a6adb7; font-variant-numeric: tabular-nums;">10:42</span><span style="display: flex; flex-direction: column;"><span style="font-weight: 600;">Comandos</span><span style="color: #a6adb7; font-size: 12px;">+3 bloques · bloque de código bash</span></span><span class="tag" style="background: #233529; color: #91c9b0;">Actual</span></button>
+        <button class="row"><span style="color: #a6adb7;">09:30</span><span style="display: flex; flex-direction: column;"><span style="font-weight: 600; display: flex; align-items: center; gap: 6px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffb74d" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 17v5M8 3h8l-1 6 3 3H6l3-3z"/></svg>Diario</span><span style="color: #a6adb7; font-size: 12px;">2 casillas marcadas</span></span><span class="tag" style="background: #233529; color: #91c9b0;">Actual</span></button>
+        <button class="row"><span style="color: #a6adb7;">09:15</span><span style="display: flex; flex-direction: column;"><span style="font-weight: 600;">Tareas</span><span style="color: #a6adb7; font-size: 12px;">Nueva sección «Pendientes del dueño»</span></span><span class="tag" style="background: #233529; color: #91c9b0;">Actual</span></button>
+
+        <div class="day">Ayer</div>
+        <button class="row" style="background: #263042; box-shadow: inset 3px 0 0 #8ab4f8;"><span style="color: #e1e3e6;">18:05</span><span style="display: flex; flex-direction: column;"><span style="font-weight: 600;">Comandos</span><span style="color: #c9ced4; font-size: 12px;">Sin la sección «E2E dirigido»</span></span><span class="tag" style="background: #2b2e30; color: #c9ced4;">Se borra el 12 dic</span></button>
+        <button class="row"><span style="color: #a6adb7;">16:20</span><span style="display: flex; flex-direction: column;"><span style="font-weight: 600;">Revisión PR</span><span style="color: #a6adb7; font-size: 12px;">Hallazgos de la ronda 1</span></span><span class="tag" style="background: #233529; color: #91c9b0;">Actual</span></button>
+        <button class="row"><span style="color: #a6adb7;">11:02</span><span style="display: flex; flex-direction: column;"><span style="font-weight: 600; display: flex; align-items: center; gap: 6px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffb74d" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 17v5M8 3h8l-1 6 3 3H6l3-3z"/></svg>Diario</span><span style="color: #a6adb7; font-size: 12px;">Cierre del día</span></span><span class="tag" style="background: #2b2e30; color: #c9ced4;">Se borra el 12 dic</span></button>
+
+        <div class="day">14 nov</div>
+        <button class="row"><span style="color: #a6adb7;">17:40</span><span style="display: flex; flex-direction: column;"><span style="font-weight: 600; display: flex; align-items: center; gap: 6px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffb74d" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 17v5M8 3h8l-1 6 3 3H6l3-3z"/></svg>Diario</span><span style="color: #a6adb7; font-size: 12px;">Plan de la semana</span></span><span class="tag" style="background: #3a2e1a; color: #ffcc80;">Se borra mañana</span></button>
+        <button class="row"><span style="color: #a6adb7;">12:10</span><span style="display: flex; flex-direction: column;"><span style="font-weight: 600;">Borrador 2</span><span style="color: #a6adb7; font-size: 12px;">Única versión de esta nota</span></span><span class="tag" style="background: #233529; color: #91c9b0;">Actual · se conserva</span></button>
+      </div>
+    </section>
+
+    <section aria-label="Vista previa de la versión" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; min-height: 0;">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 16px 24px; border-bottom: 1px solid #2c2f33; flex-wrap: wrap;">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 240px;">
+          <span style="font-size: 18px; font-weight: 700;">Comandos · ayer 18:05</span>
+          <span style="font-size: 13px; color: #a6adb7;">Comparada con la versión actual (hoy 10:42)</span>
+        </div>
+        <div role="group" aria-label="Modo de vista" style="display: flex; padding: 2px; background: #131516; border: 1px solid #393d42; border-radius: 7px;">
+          <button style="height: 30px; padding: 0 12px; border: 0; border-radius: 5px; background: #2f3a48; color: #ffffff; font-size: 12px; font-weight: 600;">Cambios</button>
+          <button style="height: 30px; padding: 0 12px; border: 0; border-radius: 5px; background: transparent; color: #a6adb7; font-size: 12px;">Solo esta versión</button>
+        </div>
+      </div>
+
+      <div style="flex: 1; min-height: 0; padding: 16px 0; font-family: 'Roboto Mono', monospace; font-size: 14px; overflow: hidden;">
+        <div class="dl"><span class="dn">1</span><span></span><span style="font-weight: 700; color: #ffffff;">Comandos frecuentes</span></div>
+        <div class="dl"><span class="dn">2</span><span></span><span>Antes de pedir revisión, actualizar la rama con main:</span></div>
+        <div class="dl"><span class="dn">3</span><span></span><span style="color: #c9ced4;">git fetch origin · git pull origin main</span></div>
+        <div class="dl" style="background: rgba(145,201,176,0.12);"><span class="dn">+</span><span style="color: #91c9b0;">+</span><span style="color: #c8e6d8;">bash scripts/verify.sh --policy main</span></div>
+        <div class="dl" style="background: rgba(145,201,176,0.12);"><span class="dn">+</span><span style="color: #91c9b0;">+</span><span style="color: #c8e6d8;">────────</span></div>
+        <div class="dl" style="background: rgba(145,201,176,0.12);"><span class="dn">+</span><span style="color: #91c9b0;">+</span><span style="color: #c8e6d8; font-weight: 700;">E2E dirigido</span></div>
+        <div class="dl" style="background: rgba(145,201,176,0.12);"><span class="dn">+</span><span style="color: #91c9b0;">+</span><span style="color: #c8e6d8;">• Siempre con --grep "patrón" y --project desktop</span></div>
+        <div class="dl" style="background: rgba(255,138,128,0.12);"><span class="dn">−</span><span style="color: #ff8a80;">−</span><span style="color: #ffc9c4; text-decoration: line-through;">Revisar CI antes del merge</span></div>
+        <div class="dl" style="background: rgba(145,201,176,0.12);"><span class="dn">+</span><span style="color: #91c9b0;">+</span><span style="color: #c8e6d8;">☐ Revisar CI del PR antes del merge</span></div>
+        <div class="dl"><span class="dn">10</span><span></span><span>Detalle de pruebas en docs/TESTING.md</span></div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px; padding: 14px 24px; border-top: 1px solid #2c2f33; flex-wrap: wrap;">
+        <button style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 16px; background: #8ab4f8; border: 0; border-radius: 6px; color: #10213d; font-size: 13px; font-weight: 700;">Restaurar como actual</button>
+        <button style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; background: transparent; border: 1px solid #4a5058; border-radius: 6px; color: #e1e3e6; font-size: 13px;">Abrir en pestaña nueva</button>
+        <button style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; background: transparent; border: 1px solid #4a5058; border-radius: 6px; color: #e1e3e6; font-size: 13px;">Copiar texto</button>
+        <div style="flex: 1;"></div>
+        <span style="font-size: 12px; color: #a6adb7;">Restaurar guarda antes la actual como versión nueva</span>
+      </div>
+    </section>
+  </div>
+</div>
+</body>
+</html>

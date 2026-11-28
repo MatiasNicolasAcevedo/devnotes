@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Móvil · Nota abierta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#181a1b}
+a{color:#8ab4f8}a:hover{color:#b3cdfb}
+button{font:inherit;cursor:pointer}
+.ln{display:grid;grid-template-columns:30px minmax(0,1fr);align-items:start;min-height:22px}
+.n{color:#7d848e;text-align:right;padding-right:8px;font-size:11px;line-height:22px}
+.tb{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:0;border-radius:8px;background:transparent;color:#e1e3e6;font-size:14px;font-weight:600}
+.sep{flex:0 0 auto;width:1px;height:24px;background:#393d42;margin:0 2px}
+.tab{flex:0 0 auto;display:flex;align-items:center;gap:4px;height:44px;padding:0 4px 0 14px;border:0;background:transparent;color:#a6adb7;font-size:14px;white-space:nowrap}
+.bn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:58px;color:#a6adb7;text-decoration:none;font-size:11px}
+</style>
+</head>
+<body>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; background: #181a1b; color: #e1e3e6; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; overflow: hidden;">
+
+  <header style="display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 6px 0 12px; background: #212324;">
+    <button style="display: inline-flex; align-items: center; gap: 4px; height: 36px; padding: 0 10px; background: #2b2e30; border: 1px solid #393d42; border-radius: 6px; color: #e1e3e6; font-size: 13px;">Trabajo
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <span style="flex: 1; font-size: 12px; color: #a6adb7; display: inline-flex; align-items: center; gap: 6px;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #91c9b0;"></span>Guardado</span>
+    <a href="#" style="display: inline-flex; align-items: center; gap: 4px; height: 36px; padding: 0 8px; color: #ff6b6b; text-decoration: none; font-size: 13px; border: 1px solid rgba(255,107,107,0.48); border-radius: 10px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>Demo</a>
+    <button aria-label="Guardar versión" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 36px; border: 0; border-radius: 6px; background: #ffb74d; color: #1b1b1b;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/></svg>
+    </button>
+    <button aria-label="Más acciones de la nota" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; background: transparent; color: #c9ced4;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+    </button>
+  </header>
+
+  <div style="display: flex; align-items: stretch; background: #131516; border-bottom: 1px solid #393d42;">
+    <div role="tablist" aria-label="Notas abiertas" style="flex: 1; min-width: 0; display: flex; overflow: hidden; position: relative;">
+      <div role="tab" aria-selected="false" class="tab">Tareas</div>
+      <div role="tab" aria-selected="true" class="tab" style="color: #ffffff; font-weight: 600; background: #181a1b; box-shadow: inset 0 -2px 0 #ffb74d;">Comandos
+        <button aria-label="Cerrar pestaña Comandos" style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border: 0; background: transparent; color: #a6adb7;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+      <div role="tab" aria-selected="false" class="tab">Borrador</div>
+      <div role="tab" aria-selected="false" class="tab">Revisión PR</div>
+      <span style="position: absolute; right: 0; top: 0; bottom: 0; width: 36px; background: linear-gradient(90deg, rgba(19,21,22,0), #131516);"></span>
+    </div>
+    <button aria-label="Todas las notas (9)" style="flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px; height: 44px; padding: 0 12px; border: 0; border-left: 1px solid #393d42; background: #131516; color: #e1e3e6; font-size: 12px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>9
+    </button>
+  </div>
+
+  <main style="flex: 1; min-height: 0; padding: 10px 10px 0 0; font-family: 'Roboto Mono', monospace; font-size: 14px; line-height: 22px; overflow: hidden;">
+    <div class="ln"><span class="n" style="line-height: 28px;">1</span><div style="font-size: 18px; line-height: 28px; font-weight: 700; color: #ffffff;">Comandos frecuentes</div></div>
+    <div class="ln"><span class="n">2</span><div>Antes de pedir revisión, actualizar la rama con main:</div></div>
+    <div class="ln"><span class="n">3</span>
+      <div style="margin: 4px 0; padding: 8px 10px; background: #101213; border: 1px solid #2c2f33; border-radius: 6px; font-size: 13px; overflow: hidden; white-space: nowrap;">
+        <div><span style="color: #91c9b0;">git</span> fetch origin</div>
+        <div><span style="color: #91c9b0;">git</span> pull origin main</div>
+        <div><span style="color: #91c9b0;">bash</span> scripts/verify.sh <span style="color: #ffb74d;">--po</span></div>
+      </div>
+    </div>
+    <div class="ln"><span class="n">4</span><div style="padding-top: 10px;"><div style="height: 1px; width: 50%; background: #5a6068;"></div></div></div>
+    <div class="ln"><span class="n" style="line-height: 26px;">5</span><div style="font-size: 16px; line-height: 26px; font-weight: 700; color: #ffffff;">E2E dirigido</div></div>
+    <div class="ln"><span class="n">6</span><div style="display: flex; gap: 8px;"><span style="color: #8ab4f8;">•</span><span>Siempre con --grep y --project desktop</span></div></div>
+    <div class="ln"><span class="n">7</span><div style="display: flex; gap: 8px;"><span style="color: #8ab4f8;">•</span><span>La suite completa queda diferida</span></div></div>
+    <div class="ln"><span class="n">8</span><div style="display: flex; gap: 8px; align-items: center;"><span style="flex: 0 0 auto; width: 16px; height: 16px; border-radius: 3px; background: #8ab4f8; display: inline-flex; align-items: center; justify-content: center;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#181a1b" stroke-width="4" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span><span style="color: #7d848e; text-decoration: line-through;">Levantar stack local</span></div></div>
+    <div class="ln"><span class="n">9</span><div style="display: flex; gap: 8px; align-items: center;"><span style="flex: 0 0 auto; width: 16px; height: 16px; border-radius: 3px; border: 1.5px solid #a6adb7; box-sizing: border-box;"></span><span>Revisar CI del PR</span></div></div>
+    <div class="ln"><span class="n">10</span><div>Ver <a href="#" style="text-decoration: underline;">docs/TESTING.md</a></div></div>
+  </main>
+
+  <div role="toolbar" aria-label="Herramientas del editor" style="position: relative; display: flex; align-items: center; gap: 0; height: 52px; padding: 0 4px; background: #1d1f21; border-top: 1px solid #393d42; overflow: hidden;">
+    <button class="tb" aria-label="Párrafo" style="font-weight: 500;">P</button>
+    <button class="tb" aria-label="Título 1">H1</button>
+    <button class="tb" aria-label="Título 2" style="background: #2f3a48; color: #ffffff;">H2</button>
+    <button class="tb" aria-label="Título 3">H3</button>
+    <span class="sep"></span>
+    <button class="tb" aria-label="Negrita" style="font-weight: 800;">B</button>
+    <span class="sep"></span>
+    <button class="tb" aria-label="Viñetas"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg></button>
+    <button class="tb" aria-label="Lista numerada"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M10 6h10M10 12h10M10 18h10M4 5h1v4M4 15h2l-2 3h2"/></svg></button>
+    <button class="tb" aria-label="Casillas"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="6" height="6" rx="1"/><path d="M12 7h9M12 17h9"/><rect x="3" y="14" width="6" height="6" rx="1"/></svg></button>
+    <span style="position: absolute; right: 0; top: 0; bottom: 0; width: 44px; background: linear-gradient(90deg, rgba(29,31,33,0), #1d1f21 70%); display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; color: #a6adb7;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></span>
+  </div>
+
+  <nav aria-label="Navegación principal" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: #212324; border-top: 1px solid #393d42;">
+    <a href="#" class="bn" aria-current="page" style="color: #ffb74d; font-weight: 600;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4h12l4 4v12H4z"/><path d="M8 12h8M8 16h5"/></svg>Notas</a>
+    <a href="#" class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4z"/></svg>Referencias</a>
+    <a href="#" class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Voz</a>
+    <a href="#" class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 8"/></svg>Imagen</a>
+    <a href="07-movil-historial.html" class="bn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>Historial</a>
+  </nav>
+</div>
+</body>
+</html>

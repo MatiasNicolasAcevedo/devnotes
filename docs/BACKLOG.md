@@ -6,7 +6,22 @@ Acción actual en [STATUS](STATUS.md); estado y evidencia en cada tarea. Este í
 
 | Tarea | Resultado | Entrada |
 |---|---|---|
-| [T-099](tasks/T-099-persistent-google-session.md) | Conservar la sesión de Google al volver al mismo navegador y después de un reinicio | [T-100](tasks/T-100-flexible-links-nav-order.md#conciliación) done tras [PR #100](https://github.com/MatiasNicolasAcevedo/devnotes/pull/100) MERGED (squash `70729d3`) |
+| [T-101](tasks/T-101-unified-note-document.md) | Las notas aceptan separadores, enlaces, referencias y negrita | [T-099](tasks/T-099-persistent-google-session.md#conciliación) done tras [PR #101](https://github.com/MatiasNicolasAcevedo/devnotes/pull/101) MERGED (squash `bfd76c2`) |
+
+## Siguientes · Notas en pestañas (S-118, I9 / M10)
+
+Plan del 2026-11-28 sobre `bfd76c2`, aprobado por el dueño en la sesión. [Spec](specs/S-118-notes-tabs.md) y [referencia visual](../media/design/notes-tabs/README.md). WIP1: cada fila espera el MERGED de la anterior.
+
+| Orden | Tarea / resultado | Espera |
+|---|---|---|
+| 1 | [T-101](tasks/T-101-unified-note-document.md) · Documento único en el servidor | T-099 |
+| 2 | [T-102](tasks/T-102-note-versions-api.md) · API de versiones con retención de 15 días | T-101 |
+| 3 | [T-103](tasks/T-103-unified-note-editor.md) · Editor único con barra de íconos, primero en Libres | T-102 |
+| 4 | [T-104](tasks/T-104-notes-tabs-cutover.md) · Corte: pestañas, migración del Diario y Guardar versión | T-103 y exportación XLSX previa del dueño |
+| 5 | [T-105](tasks/T-105-general-history.md) · Historial general | T-104 |
+| 6 | [T-106](tasks/T-106-retire-daily.md) · Lectura lateral e IA sobre notas; retiro del Diario | T-105 |
+| 7 | [T-107](tasks/T-107-mobile-notes.md) · Notas e Historial en el teléfono | T-106 |
+| 8 | [T-108](tasks/T-108-xlsx-v5.md) · XLSX v5 sin historial; vuelve a frontera | T-107 |
 
 ## Planificación I5 autorizada el 2026-11-12
 
